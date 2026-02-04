@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a1318;
+  --foreground: #eef7f8;
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-soft: rgba(243, 248, 250, 0.75);
+  --panel: rgba(17, 38, 54, 0.88);
+  --border: rgba(47, 92, 120, 0.25);
+  --accent: #4aa8b3;
+  --accent-deep: #2f7f8e;
+  --accent-soft: rgba(74, 168, 179, 0.25);
+  --red-accent: #ef6b6b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background:
+    radial-gradient(1200px 800px at 20% 10%, rgba(74, 168, 179, 0.25), transparent 60%),
+    radial-gradient(1200px 700px at 85% 15%, rgba(47, 127, 142, 0.28), transparent 55%),
+    linear-gradient(140deg, #0a1318 0%, #0d1a22 50%, #0f1a1f 100%);
+  color: var(--foreground);
+  font-family: var(--font-manrope), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+.app-watermark {
+  position: fixed;
+  inset: 0;
+  background-image: url("/logo-wordmark.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: min(920px, 92vw) auto;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0a1318;
+  font-size: 12px;
+  font-weight: 600;
+  transform: translateY(-200%);
+  transition: transform 0.2s ease;
+  z-index: 70;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

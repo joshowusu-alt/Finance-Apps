@@ -1,0 +1,370 @@
+﻿[
+    {
+        "date":  "2025-12-15",
+        "label":  "Apple cloud subscription",
+        "amount":  2.99,
+        "type":  "outflow",
+        "category":  "Others",
+        "notes":  "Cloud storage"
+    },
+    {
+        "date":  "2025-12-16",
+        "label":  "Electricity",
+        "amount":  10,
+        "type":  "outflow",
+        "category":  "Electricity \u0026 Gas",
+        "notes":  "Electricity"
+    },
+    {
+        "date":  "2025-12-17",
+        "label":  "Electricity",
+        "amount":  10,
+        "type":  "outflow",
+        "category":  "Electricity \u0026 Gas",
+        "notes":  "Gas"
+    },
+    {
+        "date":  "2025-12-17",
+        "label":  "Costco",
+        "amount":  45.6,
+        "type":  "outflow",
+        "category":  "Food",
+        "notes":  "Food for the house"
+    },
+    {
+        "date":  "2025-12-18",
+        "label":  "Tesco",
+        "amount":  4.99,
+        "type":  "outflow",
+        "category":  "Food",
+        "notes":  "water for the house"
+    },
+    {
+        "date":  "2025-12-19",
+        "label":  "Costco",
+        "amount":  4,
+        "type":  "outflow",
+        "category":  "Food",
+        "notes":  "egg"
+    },
+    {
+        "date":  "2025-12-16",
+        "label":  "Transportation - TfL",
+        "amount":  7.2,
+        "type":  "outflow",
+        "category":  "Others",
+        "notes":  "To the office"
+    },
+    {
+        "date":  "2025-12-19",
+        "label":  "Fuel",
+        "amount":  30.01,
+        "type":  "outflow",
+        "category":  "Others",
+        "notes":  "for the week"
+    },
+    {
+        "date":  "2025-12-20",
+        "label":  "Transportation - TfL",
+        "amount":  10.1,
+        "type":  "outflow",
+        "category":  "Others",
+        "notes":  "To Milton keynes - train disruption"
+    },
+    {
+        "date":  "2025-12-20",
+        "label":  "Transportation - TfL",
+        "amount":  4.97,
+        "type":  "outflow",
+        "category":  "Others",
+        "notes":  "Uber to PKG address"
+    },
+    {
+        "date":  "2025-12-21",
+        "label":  "Tyre puncture",
+        "amount":  10,
+        "type":  "outflow",
+        "category":  "Others",
+        "notes":  "flat tyre, puncture repaired "
+    },
+    {
+        "date":  "2025-12-22",
+        "label":  "December Salary",
+        "amount":  3700,
+        "type":  "income",
+        "category":  "Income - FM",
+        "notes":  "N/A"
+    },
+    {
+        "date":  "2025-12-22",
+        "label":  "Cerelac",
+        "amount":  9.5,
+        "type":  "outflow",
+        "category":  "House Keep",
+        "notes":  "food for Josh"
+    },
+    {
+        "date":  "2025-12-23",
+        "label":  "Gas",
+        "amount":  10,
+        "type":  "outflow",
+        "category":  "Electricity \u0026 Gas",
+        "notes":  "Gas for the house"
+    },
+    {
+        "date":  "2025-12-23",
+        "label":  "GRA transport ",
+        "amount":  6.47,
+        "type":  "outflow",
+        "category":  "House Keep",
+        "notes":  "Sent to JJ, trip to GRA office"
+    },
+    {
+        "date":  "2025-12-23",
+        "label":  "FM Tithe",
+        "amount":  371,
+        "type":  "outflow",
+        "category":  "Tithe",
+        "notes":  "Tithe for December"
+    },
+    {
+        "date":  "2025-12-23",
+        "label":  "Utility Sacrifices",
+        "amount":  100,
+        "type":  "outflow",
+        "category":  "Charity - JPC Utilities",
+        "notes":  "Utility sacrifice for December"
+    },
+    {
+        "date":  "2025-12-23",
+        "label":  "Thanksgiving Offering",
+        "amount":  80,
+        "type":  "outflow",
+        "category":  "Offerings",
+        "notes":  "Offering for December - PJ"
+    },
+    {
+        "date":  "2025-12-23",
+        "label":  "Thanksgiving Offering",
+        "amount":  60,
+        "type":  "outflow",
+        "category":  "Offerings",
+        "notes":  "Offering for December - PJ"
+    },
+    {
+        "date":  "2025-12-23",
+        "label":  "Mummy J and Mummy R",
+        "amount":  140,
+        "type":  "outflow",
+        "category":  "Parents",
+        "notes":  "Allowance for December"
+    },
+    {
+        "date":  "2025-12-24",
+        "label":  "Outlier on 24/12/2025",
+        "amount":  111.48,
+        "type":  "income",
+        "category":  "Income - Outlier",
+        "notes":  "Weekly allowance"
+    },
+    {
+        "date":  "2025-12-24",
+        "label":  "Outlier Tithe",
+        "amount":  12,
+        "type":  "outflow",
+        "category":  "Tithe",
+        "notes":  "Tithe on Outlier"
+    },
+    {
+        "date":  "2025-12-23",
+        "label":  "Wipes",
+        "amount":  11.25,
+        "type":  "outflow",
+        "category":  "House Keep",
+        "notes":  "wipes for Josh"
+    },
+    {
+        "date":  "2025-12-22",
+        "label":  "Monzo payment",
+        "amount":  295.21,
+        "type":  "outflow",
+        "category":  "Credit Card Payment",
+        "notes":  "Monzo payment - Dec"
+    },
+    {
+        "date":  "2025-12-22",
+        "label":  "Sacrifice for Dec",
+        "amount":  50,
+        "type":  "outflow",
+        "category":  "Charity - Perez Uni",
+        "notes":  "December contribution"
+    },
+    {
+        "date":  "2025-12-22",
+        "label":  "Lebara ",
+        "amount":  9,
+        "type":  "outflow",
+        "category":  "House Keep",
+        "notes":  "Data wifey"
+    },
+    {
+        "date":  "2025-12-22",
+        "label":  "Body wash",
+        "amount":  16.5,
+        "type":  "outflow",
+        "category":  "House Keep",
+        "notes":  "Avon comestics"
+    },
+    {
+        "date":  "2025-12-24",
+        "label":  "Gift to families",
+        "amount":  457.37,
+        "type":  "outflow",
+        "category":  "One-Off Giving (Christmas)",
+        "notes":  "Gift for the Christmas Season"
+    },
+    {
+        "date":  "2025-12-24",
+        "label":  "Electricity",
+        "amount":  10,
+        "type":  "outflow",
+        "category":  "Electricity \u0026 Gas",
+        "notes":  "Electricity for the house"
+    },
+    {
+        "date":  "2025-12-24",
+        "label":  "Ingredients for cake",
+        "amount":  7.78,
+        "type":  "outflow",
+        "category":  "House Keep",
+        "notes":  "Cake for Auntie Faith \u0026 Fam"
+    },
+    {
+        "date":  "2025-12-24",
+        "label":  "Fuel for Renault Scenic",
+        "amount":  30.17,
+        "type":  "outflow",
+        "category":  "Fuel",
+        "notes":  "on the 24/12 - Fuel"
+    },
+    {
+        "date":  "2025-12-26",
+        "label":  "payment for wifey\u0027s phone",
+        "amount":  29,
+        "type":  "outflow",
+        "category":  "iPhone Payments",
+        "notes":  "last payment for iphone 13"
+    },
+    {
+        "date":  "2025-12-24",
+        "label":  "Subription for Capcut",
+        "amount":  10.99,
+        "type":  "outflow",
+        "category":  "House Keep",
+        "notes":  "Monthly subscription for Capcut"
+    },
+    {
+        "date":  "2025-12-26",
+        "label":  "Gas for house",
+        "amount":  10,
+        "type":  "outflow",
+        "category":  "Electricity \u0026 Gas",
+        "notes":  "Gas for the house"
+    },
+    {
+        "date":  "2025-12-27",
+        "label":  "Hosting Samuel and Honey",
+        "amount":  31.98,
+        "type":  "outflow",
+        "category":  "House Keep",
+        "notes":  "Hosting Samuel and Honey"
+    },
+    {
+        "date":  "2025-12-28",
+        "label":  "Boba for the house",
+        "amount":  16.3,
+        "type":  "outflow",
+        "category":  "House Keep",
+        "notes":  "Boba for the house"
+    },
+    {
+        "date":  "2025-12-29",
+        "label":  "Capital one for Dec",
+        "amount":  111.62,
+        "type":  "outflow",
+        "category":  "Credit Card Payment",
+        "notes":  "Capital one for Dec"
+    },
+    {
+        "date":  "2025-12-29",
+        "label":  "Capital one for Dec",
+        "amount":  32.09,
+        "type":  "outflow",
+        "category":  "Credit Card Payment",
+        "notes":  "Capital one for Dec"
+    },
+    {
+        "date":  "2025-12-29",
+        "label":  "Water bill for December",
+        "amount":  92.77,
+        "type":  "outflow",
+        "category":  "Water Bill",
+        "notes":  "Water bill for December"
+    },
+    {
+        "date":  "2025-12-29",
+        "label":  "Community fibre/ internet for December",
+        "amount":  36.83,
+        "type":  "outflow",
+        "category":  "Community Fibre / Internet",
+        "notes":  "Community fibre/ internet for December"
+    },
+    {
+        "date":  "2025-12-29",
+        "label":  "Laptop for December",
+        "amount":  43,
+        "type":  "outflow",
+        "category":  "Laptop",
+        "notes":  "Laptop for December"
+    },
+    {
+        "date":  "2025-12-29",
+        "label":  "Water and toothpaste",
+        "amount":  10.2,
+        "type":  "outflow",
+        "category":  "House Keep",
+        "notes":  "Water and toothpaste"
+    },
+    {
+        "date":  "2025-12-30",
+        "label":  "Barclays Prtnr Fin",
+        "amount":  24.95,
+        "type":  "outflow",
+        "category":  "iPhone Payments",
+        "notes":  "Iphone payment"
+    },
+    {
+        "date":  "2025-12-29",
+        "label":  "Mayor for his Provisional Lisence",
+        "amount":  34,
+        "type":  "outflow",
+        "category":  "Donations (Variable)",
+        "notes":  "Support for lisence"
+    },
+    {
+        "date":  "2025-12-29",
+        "label":  "Electricity",
+        "amount":  10,
+        "type":  "outflow",
+        "category":  "Electricity \u0026 Gas",
+        "notes":  "Electricity for the house"
+    },
+    {
+        "date":  "2025-12-29",
+        "label":  "Gas",
+        "amount":  10,
+        "type":  "outflow",
+        "category":  "Electricity \u0026 Gas",
+        "notes":  "Gas for the house"
+    }
+]
