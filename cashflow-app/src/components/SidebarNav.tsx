@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+import { VelanovoLogo } from "./VelanovoLogo";
 
 type SidebarNavProps = {
   periodLabel?: string;
@@ -96,14 +96,7 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
         transition={{ delay: 0.1, duration: 0.3 }}
         className="flex items-center px-3"
       >
-        <Image
-          src="/logo-wordmark.svg"
-          alt="Velanovo logo"
-          width={140}
-          height={32}
-          className="h-8 w-auto dark:invert"
-          priority
-        />
+        <VelanovoLogo size={32} showWordmark={true} />
       </motion.div>
 
       {/* Navigation */}
