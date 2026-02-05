@@ -3,6 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import ThemeToggle from "./ThemeToggle";
 
 type NavItem = {
   href: string;
@@ -12,12 +14,15 @@ type NavItem = {
 
 function IconHome(active: boolean) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path
         d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-9.5Z"
         stroke="currentColor"
-        strokeWidth="1.6"
-        opacity={active ? 1 : 0.75}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
       />
     </svg>
   );
@@ -25,19 +30,19 @@ function IconHome(active: boolean) {
 
 function IconTimeline(active: boolean) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path
         d="M7 3v3M17 3v3M4 8h16M6 12h6M6 16h10"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.8"
         strokeLinecap="round"
-        opacity={active ? 1 : 0.75}
       />
       <path
         d="M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"
         stroke="currentColor"
-        strokeWidth="1.6"
-        opacity={active ? 1 : 0.75}
+        strokeWidth="1.8"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
       />
     </svg>
   );
@@ -45,19 +50,19 @@ function IconTimeline(active: boolean) {
 
 function IconSettings(active: boolean) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path
         d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
         stroke="currentColor"
-        strokeWidth="1.6"
-        opacity={active ? 1 : 0.75}
+        strokeWidth="1.8"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
       />
       <path
         d="M19.4 15a8.7 8.7 0 0 0 .05-1l1.6-1.2-1.6-2.8-1.9.5a7.6 7.6 0 0 0-.86-.5l-.3-2H9.6l-.3 2c-.3.14-.58.31-.86.5l-1.9-.5-1.6 2.8L6.6 14a8.7 8.7 0 0 0 0 1l-1.6 1.2 1.6 2.8 1.9-.5c.27.2.56.36.86.5l.3 2h4.8l.3-2c.3-.14.58-.31.86-.5l1.9.5 1.6-2.8L19.4 15Z"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.8"
         strokeLinejoin="round"
-        opacity={active ? 1 : 0.75}
       />
     </svg>
   );
@@ -65,21 +70,23 @@ function IconSettings(active: boolean) {
 
 function IconTransactions(active: boolean) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 2v20M2 12h20"
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <rect
+        x="3"
+        y="3"
+        width="18"
+        height="18"
+        rx="2"
         stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity={active ? 1 : 0.75}
+        strokeWidth="1.8"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
       />
       <path
-        d="M18 6l-6 6m0 0l-6 6m6-6l6 6m-6-6l-6-6"
+        d="M8 10h8M8 14h6"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.8"
         strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={active ? 1 : 0.75}
       />
     </svg>
   );
@@ -87,20 +94,20 @@ function IconTransactions(active: boolean) {
 
 function IconBills(active: boolean) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path
         d="M6 3h12a2 2 0 0 1 2 2v14l-3-1.5-3 1.5-3-1.5-3 1.5-3-1.5V5a2 2 0 0 1 2-2Z"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.8"
         strokeLinejoin="round"
-        opacity={active ? 1 : 0.75}
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
       />
       <path
         d="M8 7h8M8 11h8M8 15h5"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.8"
         strokeLinecap="round"
-        opacity={active ? 1 : 0.75}
       />
     </svg>
   );
@@ -108,28 +115,22 @@ function IconBills(active: boolean) {
 
 function IconIncome(active: boolean) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 4v16"
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
         stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity={active ? 1 : 0.75}
+        strokeWidth="1.8"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
       />
       <path
-        d="M7 9l5-5 5 5"
+        d="M12 8v8M8 12l4-4 4 4"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
-        opacity={active ? 1 : 0.75}
-      />
-      <path
-        d="M4 19h16"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity={active ? 1 : 0.75}
       />
     </svg>
   );
@@ -137,41 +138,21 @@ function IconIncome(active: boolean) {
 
 function IconInsights(active: boolean) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path
-        d="M4 19V5"
+        d="M3 3v15a3 3 0 0 0 3 3h15"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.8"
         strokeLinecap="round"
-        opacity={active ? 1 : 0.75}
+        strokeLinejoin="round"
       />
       <path
-        d="M8 19V11"
+        d="M8 17V12M13 17V8M18 17V14"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.8"
         strokeLinecap="round"
-        opacity={active ? 1 : 0.75}
-      />
-      <path
-        d="M12 19V7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity={active ? 1 : 0.75}
-      />
-      <path
-        d="M16 19V9"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity={active ? 1 : 0.75}
-      />
-      <path
-        d="M20 19V13"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity={active ? 1 : 0.75}
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
       />
     </svg>
   );
@@ -192,12 +173,18 @@ export default function BottomNav() {
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname?.startsWith(href));
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-slate-950/70 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+    <motion.nav
+      initial={{ y: 100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-(--border) bg-surface-elevated/95 backdrop-blur-xl md:hidden"
+      style={{
+        boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.05)",
+      }}
       aria-label="Primary"
     >
-      <div className="mx-auto max-w-5xl px-4">
-        <div className="flex items-center justify-around py-2">
+      <div className="mx-auto max-w-5xl px-2">
+        <div className="flex items-center justify-around py-1">
           {items.map((it) => {
             const active = isActive(it.href);
             return (
@@ -205,18 +192,64 @@ export default function BottomNav() {
                 key={it.href}
                 href={it.href}
                 aria-current={active ? "page" : undefined}
-                className={[
-                  "flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs",
-                  active ? "text-white" : "text-zinc-400 hover:text-zinc-200",
-                ].join(" ")}
+                className="relative"
               >
-                <span className="text-zinc-200">{it.icon(active)}</span>
-                <span className={active ? "font-semibold" : ""}>{it.label}</span>
+                <motion.div
+                  whileTap={{ scale: 0.9 }}
+                  className="relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 text-xs"
+                >
+                  {/* Active indicator background */}
+                  {active && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 rounded-2xl bg-accent/15"
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+
+                  {/* Icon with animation */}
+                  <motion.span
+                    className={`relative ${active ? "text-accent" : "text-(--text-secondary)"}`}
+                    animate={{
+                      scale: active ? 1.05 : 1,
+                      y: active ? -1 : 0,
+                    }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  >
+                    {it.icon(active)}
+                  </motion.span>
+
+                  {/* Label */}
+                  <motion.span
+                    className={`relative text-[10px] ${
+                      active
+                        ? "text-accent font-bold"
+                        : "text-(--text-tertiary) font-medium"
+                    }`}
+                    animate={{
+                      opacity: active ? 1 : 0.85,
+                    }}
+                  >
+                    {it.label}
+                  </motion.span>
+                </motion.div>
               </Link>
             );
           })}
+
+          {/* Theme Toggle */}
+          <div className="px-1">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
-    </nav>
+
+      {/* Bottom safe area for notched devices */}
+      <div className="h-[env(safe-area-inset-bottom)] bg-surface-elevated/95" />
+    </motion.nav>
   );
 }
