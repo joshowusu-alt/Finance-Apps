@@ -1,0 +1,191 @@
+:root {
+  /* Gen Z Brand Colors */
+  --vn-navy: #18181b;        /* Zinc 900 - soft dark */
+  --vn-teal: #6366f1;        /* Soft indigo - Gen Z favorite */
+  --vn-bg: #f5f5f7;          /* Soft warm gray - Apple-style */
+  --vn-gold: #fbbf24;        /* Warm amber */
+  --vn-mist: #e4e4e7;        /* Zinc 200 */
+
+  --vn-text: #18181b;        /* Zinc 900 */
+  --vn-muted: #71717a;       /* Zinc 500 */
+
+  --vn-success: #10b981;     /* Emerald */
+  --vn-warning: #f59e0b;     /* Amber */
+  --vn-error: #ef4444;       /* Red coral */
+  --vn-info: #06b6d4;        /* Cyan */
+
+  /* Semantic tokens */
+  --vn-surface: #ffffff;
+  --vn-border: var(--vn-mist);
+  --vn-primary: var(--vn-teal);
+  --vn-primary-contrast: #ffffff;
+}
+
+html[data-theme="dark"] {
+  --vn-bg: #18181b;          /* Zinc 900 - warm dark */
+  --vn-surface: #27272a;     /* Zinc 800 */
+  --vn-border: #3f3f46;      /* Zinc 700 */
+  --vn-text: #fafafa;        /* Soft white */
+  --vn-muted: #a1a1aa;       /* Zinc 400 */
+  --vn-primary: #818cf8;     /* Bright soft indigo glow */
+  --vn-primary-contrast: #ffffff;
+}
+
+body {
+  background: var(--vn-bg);
+  color: var(--vn-text);
+}
+
+.vn-card {
+  background: var(--vn-surface);
+  border: 1px solid var(--vn-border);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.vn-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 14px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.vn-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.vn-btn:active {
+  transform: translateY(0);
+}
+
+.vn-btn-primary {
+  background: var(--vn-primary);
+  color: var(--vn-primary-contrast);
+}
+
+.vn-btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.vn-btn-ghost {
+  background: transparent;
+  color: var(--vn-text);
+  border-color: var(--vn-border);
+}
+
+.vn-btn-ghost:hover {
+  background: var(--vn-surface);
+}
+
+.vn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--vn-gold) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--vn-gold) 40%, var(--vn-border));
+  color: var(--vn-text);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Input Components */
+.vn-input {
+  display: block;
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--vn-border);
+  background: var(--vn-surface);
+  color: var(--vn-text);
+  font-size: 15px;
+  transition: all 200ms ease;
+}
+
+.vn-input:focus {
+  outline: none;
+  border-color: var(--vn-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--vn-primary) 15%, transparent);
+}
+
+.vn-input::placeholder {
+  color: var(--vn-muted);
+}
+
+.vn-textarea {
+  display: block;
+  width: 100%;
+  min-height: 100px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--vn-border);
+  background: var(--vn-surface);
+  color: var(--vn-text);
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 200ms ease;
+}
+
+.vn-textarea:focus {
+  outline: none;
+  border-color: var(--vn-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--vn-primary) 15%, transparent);
+}
+
+/* Badge Components */
+.vn-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.vn-badge-primary {
+  background: color-mix(in srgb, var(--vn-primary) 15%, transparent);
+  color: var(--vn-primary);
+  border: 1px solid color-mix(in srgb, var(--vn-primary) 30%, transparent);
+}
+
+.vn-badge-success {
+  background: color-mix(in srgb, var(--vn-success) 15%, transparent);
+  color: var(--vn-success);
+  border: 1px solid color-mix(in srgb, var(--vn-success) 30%, transparent);
+}
+
+.vn-badge-warning {
+  background: color-mix(in srgb, var(--vn-warning) 15%, transparent);
+  color: var(--vn-warning);
+  border: 1px solid color-mix(in srgb, var(--vn-warning) 30%, transparent);
+}
+
+.vn-badge-error {
+  background: color-mix(in srgb, var(--vn-error) 15%, transparent);
+  color: var(--vn-error);
+  border: 1px solid color-mix(in srgb, var(--vn-error) 30%, transparent);
+}
+
+/* Secondary Button Variant */
+.vn-btn-secondary {
+  background: var(--vn-surface);
+  color: var(--vn-text);
+  border-color: var(--vn-border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.vn-btn-secondary:hover {
+  background: var(--vn-bg);
+  border-color: var(--vn-muted);
+}
