@@ -13,11 +13,14 @@
     "@neondatabase/serverless": "^1.0.2",
     "@tanstack/react-virtual": "^3.13.1",
     "better-sqlite3": "^12.6.2",
+    "framer-motion": "^12.33.0",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.7",
     "next": "16.1.1",
+    "plaid": "^41.1.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-plaid-link": "^4.1.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
