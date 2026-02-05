@@ -1,43 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  /* Premium Color Palette - Light Mode */
-  --background: #fafbfc;
-  --foreground: #1a1f36;
-  --surface: rgba(255, 255, 255, 0.95);
-  --surface-elevated: rgba(255, 255, 255, 0.98);
-  --surface-soft: rgba(248, 250, 252, 0.85);
-  --panel: rgba(255, 255, 255, 0.92);
-  --border: rgba(226, 232, 240, 0.6);
-  --border-hover: rgba(203, 213, 225, 0.8);
+  /* Premium Color Palette - Light Mode (High Contrast) */
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-elevated: #f8fafc;
+  --surface-soft: #f1f5f9;
+  --panel: #ffffff;
+  --border: #e2e8f0;
+  --border-hover: #cbd5e1;
 
-  /* Brand Colors */
-  --accent: #3b82f6;
-  --accent-deep: #2563eb;
-  --accent-soft: rgba(59, 130, 246, 0.12);
-  --accent-hover: rgba(59, 130, 246, 0.18);
+  /* Brand Colors - Vibrant & Modern */
+  --accent: #2563eb;
+  --accent-deep: #1e40af;
+  --accent-soft: rgba(37, 99, 235, 0.1);
+  --accent-hover: rgba(37, 99, 235, 0.15);
 
-  /* Semantic Colors */
-  --success: #10b981;
-  --success-soft: rgba(16, 185, 129, 0.12);
-  --warning: #f59e0b;
-  --warning-soft: rgba(245, 158, 11, 0.12);
-  --error: #ef4444;
-  --error-soft: rgba(239, 68, 68, 0.12);
-  --info: #06b6d4;
-  --info-soft: rgba(6, 182, 212, 0.12);
+  /* Semantic Colors - Bold & Clear */
+  --success: #059669;
+  --success-soft: rgba(5, 150, 105, 0.1);
+  --warning: #d97706;
+  --warning-soft: rgba(217, 119, 6, 0.1);
+  --error: #dc2626;
+  --error-soft: rgba(220, 38, 38, 0.1);
+  --info: #0284c7;
+  --info-soft: rgba(2, 132, 199, 0.1);
 
-  /* Text Colors */
-  --text-primary: #1a1f36;
-  --text-secondary: #64748b;
-  --text-tertiary: #94a3b8;
-  --text-disabled: #cbd5e1;
+  /* Text Colors - High Contrast */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-disabled: #94a3b8;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+  /* Shadows - Stronger Definition */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
 
   /* Radii */
   --radius-sm: 8px;
@@ -54,43 +54,43 @@
 }
 
 .dark {
-  /* Premium Color Palette - Dark Mode */
-  --background: #0f1419;
-  --foreground: #f8fafc;
-  --surface: rgba(24, 30, 42, 0.92);
-  --surface-elevated: rgba(30, 39, 54, 0.96);
-  --surface-soft: rgba(30, 41, 59, 0.75);
-  --panel: rgba(15, 23, 42, 0.95);
-  --border: rgba(51, 65, 85, 0.4);
-  --border-hover: rgba(71, 85, 105, 0.6);
+  /* Premium Color Palette - Dark Mode (High Contrast) */
+  --background: #0a0f1a;
+  --foreground: #f1f5f9;
+  --surface: #1e293b;
+  --surface-elevated: #334155;
+  --surface-soft: #1e293b;
+  --panel: #0f172a;
+  --border: #334155;
+  --border-hover: #475569;
 
-  /* Brand Colors - Adjusted for dark mode */
+  /* Brand Colors - Bright & Vibrant for Dark Mode */
   --accent: #60a5fa;
   --accent-deep: #3b82f6;
   --accent-soft: rgba(96, 165, 250, 0.15);
-  --accent-hover: rgba(96, 165, 250, 0.22);
+  --accent-hover: rgba(96, 165, 250, 0.25);
 
-  /* Semantic Colors - Dark Mode */
-  --success: #34d399;
-  --success-soft: rgba(52, 211, 153, 0.15);
-  --warning: #fbbf24;
-  --warning-soft: rgba(251, 191, 36, 0.15);
+  /* Semantic Colors - Vibrant for Dark Mode */
+  --success: #10b981;
+  --success-soft: rgba(16, 185, 129, 0.15);
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.15);
   --error: #f87171;
   --error-soft: rgba(248, 113, 113, 0.15);
-  --info: #22d3ee;
-  --info-soft: rgba(34, 211, 238, 0.15);
+  --info: #38bdf8;
+  --info-soft: rgba(56, 189, 248, 0.15);
 
-  /* Text Colors - Dark Mode */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
-  --text-disabled: #475569;
+  /* Text Colors - High Contrast for Dark Mode */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-disabled: #64748b;
 
-  /* Shadows - Enhanced for dark mode */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.45), 0 10px 10px -5px rgba(0, 0, 0, 0.35);
+  /* Shadows - Deep for Dark Mode */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
 }
 
 @theme inline {
@@ -101,7 +101,10 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at 20% 10%, rgba(37, 99, 235, 0.03), transparent 50%),
+    radial-gradient(circle at 85% 85%, rgba(5, 150, 105, 0.03), transparent 50%),
+    var(--background);
   color: var(--text-primary);
   font-family: var(--font-manrope), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   min-height: 100vh;
@@ -112,8 +115,8 @@ body {
 
 .dark body {
   background:
-    radial-gradient(1200px 800px at 20% 10%, rgba(59, 130, 246, 0.08), transparent 60%),
-    radial-gradient(1200px 700px at 85% 15%, rgba(37, 99, 235, 0.06), transparent 55%),
+    radial-gradient(circle at 20% 10%, rgba(96, 165, 250, 0.08), transparent 50%),
+    radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.06), transparent 50%),
     var(--background);
 }
 
@@ -124,9 +127,13 @@ body {
   background-repeat: no-repeat;
   background-position: center;
   background-size: min(920px, 92vw) auto;
-  opacity: 0.08;
+  opacity: 0.03;
   pointer-events: none;
   z-index: 0;
+}
+
+.dark .app-watermark {
+  opacity: 0.02;
 }
 
 .skip-link {
@@ -135,13 +142,15 @@ body {
   top: 16px;
   padding: 8px 14px;
   border-radius: 999px;
-  background: #ffffff;
-  color: #0a1318;
+  background: var(--surface);
+  color: var(--text-primary);
   font-size: 12px;
   font-weight: 600;
   transform: translateY(-200%);
   transition: transform 0.2s ease;
   z-index: 70;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
 }
 
 .skip-link:focus {
@@ -164,18 +173,22 @@ body {
 
 /* Premium UI Utilities */
 .card-premium {
-  background: var(--surface-elevated);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   transition: all var(--transition-base);
-  backdrop-filter: blur(20px);
 }
 
 .card-premium:hover {
   border-color: var(--border-hover);
   box-shadow: var(--shadow-xl);
   transform: translateY(-2px);
+}
+
+.dark .card-premium {
+  background: var(--surface-elevated);
+  border-color: var(--border);
 }
 
 .button-premium {
