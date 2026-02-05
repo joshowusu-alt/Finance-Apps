@@ -93,7 +93,7 @@ function formatVariance(value: number, isPositiveGood: boolean) {
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+    <div className="vn-card p-6">
       <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
       <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
       {hint ? <div className="mt-1 text-xs text-slate-500">{hint}</div> : null}
@@ -196,7 +196,7 @@ export default function IncomePage() {
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
           <section className="space-y-6">
-            <header className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+            <header className="vn-card p-6">
               <div className="text-xs uppercase tracking-wide text-slate-500">Income</div>
               <h1 className="text-2xl font-semibold text-slate-900">Income sources</h1>
               <p className="mt-2 text-sm text-slate-500">
@@ -224,7 +224,7 @@ export default function IncomePage() {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-              <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+              <div className="vn-card p-6">
                 <div className="text-sm font-semibold text-slate-800">Income rules</div>
                 <div className="mt-4 space-y-3 text-sm">
                   {plan.incomeRules
@@ -241,7 +241,7 @@ export default function IncomePage() {
                 </div>
               </div>
 
-              <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+              <div className="vn-card p-6">
                 <div className="text-sm font-semibold text-slate-800">Upcoming income</div>
                 <div className="mt-4 space-y-3 text-sm">
                   {upcoming.length === 0 ? (
@@ -261,7 +261,7 @@ export default function IncomePage() {
               </div>
             </div>
 
-            <details className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+            <details className="vn-card p-6">
               <summary className="cursor-pointer text-sm font-semibold text-slate-800">
                 Budget vs actual by source
               </summary>

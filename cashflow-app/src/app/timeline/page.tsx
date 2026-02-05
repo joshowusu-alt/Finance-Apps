@@ -201,7 +201,7 @@ export default function TimelinePage() {
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
           <section className="space-y-6">
-            <header className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+            <header className="vn-card p-6">
               <div className="text-xs uppercase tracking-wide text-slate-500">Timeline</div>
               <h1 className="text-2xl font-semibold text-slate-900">Cashflow Timeline</h1>
               <p className="mt-2 text-sm text-slate-500">See your balance day by day.</p>
@@ -293,7 +293,7 @@ export default function TimelinePage() {
               </div>
             </div>
 
-            <details className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+            <details className="vn-card p-6">
               <summary className="cursor-pointer text-sm font-semibold text-slate-800">
                 Edit scheduled events
               </summary>

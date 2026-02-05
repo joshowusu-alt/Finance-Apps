@@ -56,10 +56,10 @@ type SummaryItem = {
   tone?: SummaryTone;
 };
 
-function toneClass(tone?: SummaryTone) {
-  if (tone === "good") return "text-emerald-600";
-  if (tone === "bad") return "text-rose-600";
-  return "text-slate-900";
+function toneStyle(tone?: SummaryTone): React.CSSProperties {
+  if (tone === "good") return { color: "var(--vn-success)" };
+  if (tone === "bad") return { color: "var(--vn-error)" };
+  return { color: "var(--vn-text)" };
 }
 
 function SummaryPanel({
@@ -72,15 +72,15 @@ function SummaryPanel({
   items: SummaryItem[];
 }) {
   return (
-    <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
-      <div className="text-sm font-semibold text-slate-800">{title}</div>
-      {subtitle ? <div className="mt-1 text-xs text-slate-500">{subtitle}</div> : null}
+    <div className="vn-card p-6">
+      <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>{title}</div>
+      {subtitle ? <div className="mt-1 text-xs" style={{ color: "var(--vn-muted)" }}>{subtitle}</div> : null}
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {items.map((item) => (
-          <div key={item.label} className="rounded-2xl bg-white/70 p-4 shadow-sm">
-            <div className="text-xs uppercase tracking-wide text-slate-500">{item.label}</div>
-            <div className={`mt-2 text-xl font-semibold ${toneClass(item.tone)}`}>{item.value}</div>
-            {item.hint ? <div className="mt-1 text-xs text-slate-500">{item.hint}</div> : null}
+          <div key={item.label} className="rounded-2xl p-4 shadow-sm" style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}>
+            <div className="text-xs uppercase tracking-wide" style={{ color: "var(--vn-muted)" }}>{item.label}</div>
+            <div className="mt-2 text-xl font-semibold" style={toneStyle(item.tone)}>{item.value}</div>
+            {item.hint ? <div className="mt-1 text-xs" style={{ color: "var(--vn-muted)" }}>{item.hint}</div> : null}
           </div>
         ))}
       </div>
@@ -332,7 +332,7 @@ export default function HomePage() {
                 </div>
                 <Link
                   href="/transactions"
-                  className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white shadow"
+                  className="vn-btn vn-btn-primary text-sm"
                 >
                   Add Transaction
                 </Link>
@@ -363,13 +363,13 @@ export default function HomePage() {
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     onClick={handleStartFresh}
-                    className="rounded-xl bg-[var(--accent)] px-4 py-2 text-xs font-semibold text-white shadow hover:bg-[var(--accent-deep)]"
+                    className="vn-btn vn-btn-primary text-xs"
                   >
                     Start fresh
                   </button>
                   <button
                     onClick={handleLoadSampleData}
-                    className="rounded-xl border border-slate-200 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-white"
+                    className="vn-btn vn-btn-ghost text-xs"
                   >
                     Load sample data
                   </button>
@@ -418,7 +418,7 @@ export default function HomePage() {
                   </div>
                   <button
                     onClick={handleShowOnboarding}
-                    className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                    className="vn-btn vn-btn-ghost text-xs px-3 py-2"
                   >
                     Show
                   </button>

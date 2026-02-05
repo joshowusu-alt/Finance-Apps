@@ -5,7 +5,10 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { loadPlan, savePlan } from "@/lib/storage";
 import { getPeriod, getVarianceByCategory, getSavingsTransferReconciliation } from "@/lib/cashflowEngine";
 import { suggestBillId } from "@/lib/billLinking";
+import { exportToCSV, exportToExcel, exportToPDF } from "@/lib/exportData";
 import SidebarNav from "@/components/SidebarNav";
+import EmptyState from "@/components/EmptyState";
+import { showToast } from "@/components/Toast";
 import type { Transaction, CashflowCategory, CashflowType, Plan } from "@/data/plan";
 
 function gbp(n: number) {
@@ -212,6 +215,11 @@ export default function TransactionsPage() {
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTransaction, setEditTransaction] = useState<TransactionDraft | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<CashflowType | "all">("all");
+  const [filterCategory, setFilterCategory] = useState<CashflowCategory | "all">("all");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkMode, setBulkMode] = useState(false);
 
   useEffect(() => {
     const onFocus = () => setPlan(loadPlan());
@@ -236,10 +244,31 @@ export default function TransactionsPage() {
 
   const periodTransactions = useMemo(() => {
     if (!plan || !period) return [];
-    return plan.transactions
-      .filter((t) => t.date >= period.start && t.date <= period.end)
-      .sort((a, b) => b.date.localeCompare(a.date));
-  }, [plan, period]);
+    let filtered = plan.transactions
+      .filter((t) => t.date >= period.start && t.date <= period.end);
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((t) =>
+        t.label.toLowerCase().includes(query) ||
+        t.notes?.toLowerCase().includes(query) ||
+        t.category.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply type filter
+    if (filterType !== "all") {
+      filtered = filtered.filter((t) => t.type === filterType);
+    }
+
+    // Apply category filter
+    if (filterCategory !== "all") {
+      filtered = filtered.filter((t) => t.category === filterCategory);
+    }
+
+    return filtered.sort((a, b) => b.date.localeCompare(a.date));
+  }, [plan, period, searchQuery, filterType, filterCategory]);
 
   const listRef = useRef<HTMLDivElement | null>(null);
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -422,6 +451,7 @@ export default function TransactionsPage() {
 
     savePlan(updated);
     setPlan(updated);
+    showToast("Transaction added successfully", "success");
 
     setNewTransaction({
       date: today(),
@@ -443,6 +473,7 @@ export default function TransactionsPage() {
     };
     savePlan(updated);
     setPlan(updated);
+    showToast("Transaction deleted", "success");
   }
 
   function handleEditTransaction(txn: Transaction) {
@@ -508,7 +539,48 @@ export default function TransactionsPage() {
 
     savePlan(updated);
     setPlan(updated);
+    showToast("Transaction updated successfully", "success");
     cancelEdit();
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === periodTransactions.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(periodTransactions.map((t) => t.id)));
+    }
+  }
+
+  function toggleSelect(id: string) {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  }
+
+  function handleBulkDelete() {
+    if (!plan || selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} selected transaction(s)?`)) return;
+
+    const updated = {
+      ...plan,
+      transactions: plan.transactions.filter((t) => !selectedIds.has(t.id)),
+    };
+    savePlan(updated);
+    setPlan(updated);
+    showToast(`Deleted ${selectedIds.size} transaction(s)`, "success");
+    setSelectedIds(new Set());
+    setBulkMode(false);
+  }
+
+  function handleBulkExport() {
+    if (!period) return;
+    const selected = periodTransactions.filter((t) => selectedIds.has(t.id));
+    exportToCSV(selected, `${period.label}-selected`);
+    showToast(`Exported ${selected.length} transaction(s) to CSV`, "success");
   }
 
   if (!period) {
@@ -521,14 +593,14 @@ export default function TransactionsPage() {
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
           <section className="space-y-6">
-            <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+            <div className="vn-card p-6">
               <div className="text-xs uppercase tracking-wide text-slate-500">Transactions</div>
               <h1 className="text-2xl font-semibold text-slate-900">Transactions</h1>
               <div className="mt-2 text-sm text-slate-500">Add what really happened.</div>
             </div>
 
       {/* Add Transaction Form */}
-      <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+      <div className="vn-card p-6">
         <div className="text-sm font-semibold text-slate-800 mb-4">Add transaction</div>
         <form onSubmit={handleAddTransaction} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -762,7 +834,8 @@ export default function TransactionsPage() {
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[var(--accent-deep)]"
+            className="w-full vn-btn vn-btn-primary text-sm hover:bg-[var(--accent-deep)]"
+            aria-label="Add new transaction"
           >
             Add transaction
           </button>
@@ -770,7 +843,7 @@ export default function TransactionsPage() {
       </div>
 
       {/* Variance Summary */}
-      <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+      <div className="vn-card p-6">
         <div className="text-sm font-semibold text-slate-800">Variance by category</div>
         <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {Object.values(variance)
@@ -833,7 +906,7 @@ export default function TransactionsPage() {
 
       {/* Savings Transfer Reconciliation */}
       {savingsReconciliation && (
-        <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+        <div className="vn-card p-6">
           <div className="text-sm font-semibold text-slate-800 mb-4">Savings transfer reconciliation</div>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl bg-white/80 p-4 shadow-sm">
@@ -860,14 +933,155 @@ export default function TransactionsPage() {
       )}
 
       {/* Transactions List */}
-      <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
-        <div className="text-sm font-semibold text-slate-800">
-          Transactions ({periodTransactions.length})
+      <div className="vn-card p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-semibold text-slate-800">
+            Transactions ({periodTransactions.length})
+            {bulkMode && selectedIds.size > 0 && (
+              <span className="ml-2 text-xs text-blue-600">
+                ({selectedIds.size} selected)
+              </span>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {!bulkMode ? (
+              <>
+                <button
+                  onClick={() => setBulkMode(true)}
+                  className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={periodTransactions.length === 0}
+                  aria-label="Enable bulk selection mode"
+                >
+                  Select
+                </button>
+                <button
+                  onClick={() => exportToCSV(periodTransactions, period.label)}
+                  className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={periodTransactions.length === 0}
+                  aria-label="Export transactions to CSV"
+                >
+                  CSV
+                </button>
+                <button
+                  onClick={() => exportToExcel(periodTransactions, period.label)}
+                  className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={periodTransactions.length === 0}
+                  aria-label="Export transactions to Excel"
+                >
+                  Excel
+                </button>
+                <button
+                  onClick={() => exportToPDF(periodTransactions, period.label, period.start, period.end)}
+                  className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={periodTransactions.length === 0}
+                  aria-label="Export transactions to PDF"
+                >
+                  PDF
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleBulkExport}
+                  className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={selectedIds.size === 0}
+                >
+                  Export Selected
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="rounded-lg bg-white border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={selectedIds.size === 0}
+                >
+                  Delete Selected
+                </button>
+                <button
+                  onClick={() => {
+                    setBulkMode(false);
+                    setSelectedIds(new Set());
+                  }}
+                  className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="mb-4 space-y-3">
+          {bulkMode && periodTransactions.length > 0 && (
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+              <input
+                type="checkbox"
+                checked={selectedIds.size === periodTransactions.length}
+                onChange={toggleSelectAll}
+                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label className="text-sm text-slate-600">
+                Select all ({periodTransactions.length})
+              </label>
+            </div>
+          )}
+          <div className="grid gap-3 sm:grid-cols-3">
+            <input
+              type="text"
+              placeholder="Search transactions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
+            />
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value as CashflowType | "all")}
+            className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+          >
+            <option value="all">All types</option>
+            <option value="income">Income</option>
+            <option value="outflow">Outflow</option>
+            <option value="transfer">Transfer</option>
+          </select>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value as CashflowCategory | "all")}
+            className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+          >
+            <option value="all">All categories</option>
+            <option value="income">Income</option>
+            <option value="bill">Bill</option>
+            <option value="giving">Giving</option>
+            <option value="allowance">Allowance</option>
+            <option value="buffer">Buffer</option>
+            <option value="savings">Savings</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
         </div>
 
         {periodTransactions.length === 0 ? (
-          <div className="mt-4 rounded-xl bg-white/70 p-4 text-sm text-slate-500">
-            No transactions recorded yet.
+          <div className="mt-4 rounded-xl bg-white/70 p-8">
+            <EmptyState
+              icon={searchQuery || filterType !== "all" || filterCategory !== "all" ? "🔍" : "📝"}
+              title={searchQuery || filterType !== "all" || filterCategory !== "all" ? "No matching transactions" : "No transactions yet"}
+              description={
+                searchQuery || filterType !== "all" || filterCategory !== "all"
+                  ? "Try adjusting your search or filters to find what you're looking for."
+                  : "Start by adding your first transaction above, or sync from your bank account."
+              }
+              action={
+                searchQuery || filterType !== "all" || filterCategory !== "all"
+                  ? {
+                      label: "Clear filters",
+                      onClick: () => {
+                        setSearchQuery("");
+                        setFilterType("all");
+                        setFilterCategory("all");
+                      },
+                    }
+                  : undefined
+              }
+            />
           </div>
         ) : (
           <div className="mt-4">
@@ -891,6 +1105,15 @@ export default function TransactionsPage() {
                       style={{ transform: `translateY(${virtualRow.start}px)` }}
                     >
                       <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 flex flex-wrap items-center justify-between gap-3">
+                        {bulkMode && (
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(txn.id)}
+                            onChange={() => toggleSelect(txn.id)}
+                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        )}
                         {editingId === txn.id && editTransaction ? (
                           <div className="w-full space-y-3">
                             <div className="grid gap-3 md:grid-cols-2">
@@ -1116,7 +1339,7 @@ export default function TransactionsPage() {
                             <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => handleUpdateTransaction(txn.id)}
-                                className="rounded-xl bg-[var(--accent)] px-4 py-2 text-xs font-semibold text-white shadow hover:bg-[var(--accent-deep)]"
+                                className="vn-btn vn-btn-primary text-xs hover:bg-[var(--accent-deep)]"
                               >
                                 Save
                               </button>

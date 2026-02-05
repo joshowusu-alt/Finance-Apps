@@ -200,7 +200,7 @@ function SummaryCard({
   hint?: string;
 }) {
   return (
-    <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+    <div className="vn-card p-6">
       <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
       <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
       {hint ? <div className="mt-1 text-xs text-slate-500">{hint}</div> : null}
@@ -345,7 +345,7 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+    <section className="vn-card p-6">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
@@ -787,7 +787,7 @@ export default function InsightsPage() {
           <SidebarNav periodLabel={basePeriod.label} periodStart={basePeriod.start} periodEnd={basePeriod.end} />
 
           <section className="space-y-6">
-            <header className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+            <header className="vn-card p-6">
               <div className="text-xs uppercase tracking-wide text-slate-500">Insights</div>
               <h1 className="text-2xl font-semibold text-slate-900">Insights</h1>
               <p className="mt-2 text-sm text-slate-500">
