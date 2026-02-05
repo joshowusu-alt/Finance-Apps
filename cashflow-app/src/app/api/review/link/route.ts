@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export async function POST() {
   const cookieStore = await cookies();
   const existingToken = cookieStore.get(REVIEW_COOKIE_NAME)?.value;
-  const { token } = ensureReviewPlan(existingToken);
+  const { token } = await ensureReviewPlan(existingToken);
 
   const response = NextResponse.json({ token });
   response.cookies.set({

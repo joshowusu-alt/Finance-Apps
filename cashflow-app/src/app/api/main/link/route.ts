@@ -67,7 +67,7 @@ async function getNgrokPublicUrl() {
 export async function POST() {
   const cookieStore = await cookies();
   const existingToken = cookieStore.get(MAIN_COOKIE_NAME)?.value;
-  const { token } = ensureMainPlan(existingToken);
+  const { token } = await ensureMainPlan(existingToken);
   const publicUrl = await getNgrokPublicUrl();
   const localUrl = publicUrl ? null : getLanUrl();
 

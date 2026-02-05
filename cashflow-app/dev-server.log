@@ -79,3 +79,25 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
  GET /api/main/plan 200 in 13ms (compile: 3ms, render: 11ms)
  GET /api/main/plan 200 in 15ms (compile: 6ms, render: 9ms)
  GET /api/main/plan 200 in 366ms (compile: 214ms, render: 152ms)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\client-development\0.pack.gz_' -> 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\client-development\0.pack.gz'
+○ Compiling /bills ...
+ GET /bills 200 in 3.6s (compile: 3.4s, render: 211ms)
+ GET /bills 200 in 110ms (compile: 4ms, render: 106ms)
+⚠ Cross origin request detected from saintly-uncoalescent-micah.ngrok-free.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ GET /api/main/plan 200 in 609ms (compile: 550ms, render: 59ms)
+ GET /bills 200 in 60ms (compile: 24ms, render: 36ms)
+ GET /api/main/plan 200 in 27ms (compile: 4ms, render: 23ms)
+ GET /timeline 200 in 1269ms (compile: 1235ms, render: 34ms)
+ GET /timeline 200 in 22ms (compile: 4ms, render: 18ms)
+ GET / 200 in 32ms (compile: 16ms, render: 16ms)
+ GET /api/main/plan 200 in 36ms (compile: 14ms, render: 22ms)
+ GET /api/main/plan 200 in 9ms (compile: 2ms, render: 7ms)
+ GET / 200 in 63ms (compile: 4ms, render: 59ms)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\client-development\0.pack.gz_' -> 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\client-development\0.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\server-development\0.pack.gz_' -> 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\server-development\0.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\client-development\0.pack.gz_' -> 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\client-development\0.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\client-development\0.pack.gz_' -> 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\client-development\0.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\server-development\0.pack.gz_' -> 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\server-development\0.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\client-development\0.pack.gz_' -> 'C:\Users\josho\OneDrive\Documents\Finance-Apps\cashflow-app\.next\dev\cache\webpack\client-development\0.pack.gz'
+  Reload env: .env.local

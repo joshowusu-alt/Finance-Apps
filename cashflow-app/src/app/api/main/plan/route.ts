@@ -16,7 +16,7 @@ export async function GET() {
     return NextResponse.json({ error: "Missing main token." }, { status: 401 });
   }
 
-  const { plan, prevPlan, updatedAt } = ensureMainPlan(token);
+  const { plan, prevPlan, updatedAt } = await ensureMainPlan(token);
   return NextResponse.json({ plan, prevPlan, updatedAt });
 }
 
@@ -52,6 +52,6 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Invalid plan payload." }, { status: 400 });
   }
 
-  const updatedAt = saveMainPlan(token, plan, prevPlan);
+  const updatedAt = await saveMainPlan(token, plan, prevPlan);
   return NextResponse.json({ ok: true, updatedAt });
 }

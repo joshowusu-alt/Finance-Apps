@@ -11,6 +11,6 @@ export async function POST() {
     return NextResponse.json({ error: "Missing review token." }, { status: 401 });
   }
 
-  const plan = resetReviewPlan(token);
+  const plan = await resetReviewPlan(token);
   return NextResponse.json({ plan });
 }

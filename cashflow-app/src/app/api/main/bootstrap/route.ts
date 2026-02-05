@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const cookieStore = await cookies();
   const tokenFromCookie = cookieStore.get(MAIN_COOKIE_NAME)?.value;
 
-  const { token, plan, prevPlan, updatedAt } = ensureMainPlan(tokenFromBody || tokenFromCookie);
+  const { token, plan, prevPlan, updatedAt } = await ensureMainPlan(tokenFromBody || tokenFromCookie);
   const response = NextResponse.json({ plan, prevPlan, updatedAt });
 
   response.cookies.set({

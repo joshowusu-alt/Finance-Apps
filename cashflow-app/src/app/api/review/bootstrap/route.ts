@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const cookieStore = await cookies();
   const tokenFromCookie = cookieStore.get(REVIEW_COOKIE_NAME)?.value;
 
-  const { token, plan } = ensureReviewPlan(tokenFromBody || tokenFromCookie);
+  const { token, plan } = await ensureReviewPlan(tokenFromBody || tokenFromCookie);
   const response = NextResponse.json({ plan });
 
   response.cookies.set({

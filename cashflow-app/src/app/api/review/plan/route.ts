@@ -16,7 +16,7 @@ export async function GET() {
     return NextResponse.json({ error: "Missing review token." }, { status: 401 });
   }
 
-  const { plan } = ensureReviewPlan(token);
+  const { plan } = await ensureReviewPlan(token);
   return NextResponse.json({ plan });
 }
 
@@ -40,6 +40,6 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Invalid plan payload." }, { status: 400 });
   }
 
-  saveReviewPlan(token, plan);
+  await saveReviewPlan(token, plan);
   return NextResponse.json({ ok: true });
 }
