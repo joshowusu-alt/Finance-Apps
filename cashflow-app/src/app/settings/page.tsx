@@ -5,7 +5,15 @@ import SidebarNav from "@/components/SidebarNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelector from "@/components/CurrencySelector";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
-import type { Period } from "@/data/plan";
+import type { Period, PeriodOverride, PeriodRuleOverride, Recurrence } from "@/data/plan";
+
+function gbp(n: number) {
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    maximumFractionDigits: 2,
+  }).format(n || 0);
+}
 
 export default function SettingsPage() {
   const [plan, setPlan] = useState(() => loadPlan());
@@ -82,6 +90,76 @@ export default function SettingsPage() {
     savePlan(updated);
     setPlan(updated);
     setShowPeriodModal(false);
+  }
+
+  function handleToggleBillForPeriod(periodId: number, billId: string) {
+    const override = plan.periodOverrides.find((o) => o.periodId === periodId);
+    const disabledBills = override?.disabledBills || [];
+
+    const newDisabledBills = disabledBills.includes(billId)
+      ? disabledBills.filter((id) => id !== billId)
+      : [...disabledBills, billId];
+
+    const updated = {
+      ...plan,
+      periodOverrides: override
+        ? plan.periodOverrides.map((o) =>
+            o.periodId === periodId ? { ...o, disabledBills: newDisabledBills } : o
+          )
+        : [...plan.periodOverrides, { periodId, disabledBills: newDisabledBills }],
+    };
+
+    savePlan(updated);
+    setPlan(updated);
+  }
+
+  function handleSetStartingBalance(periodId: number, balance: number | undefined) {
+    const override = plan.periodOverrides.find((o) => o.periodId === periodId);
+
+    const updated = {
+      ...plan,
+      periodOverrides: override
+        ? plan.periodOverrides.map((o) =>
+            o.periodId === periodId ? { ...o, startingBalance: balance } : o
+          )
+        : [...plan.periodOverrides, { periodId, startingBalance: balance }],
+    };
+
+    savePlan(updated);
+    setPlan(updated);
+  }
+
+  function handleToggleRuleForPeriod(periodId: number, ruleId: string, type: "income" | "outflow") {
+    const existingOverride = plan.periodRuleOverrides.find(
+      (o) => o.periodId === periodId && o.ruleId === ruleId && o.type === type
+    );
+
+    const updated = {
+      ...plan,
+      periodRuleOverrides: existingOverride
+        ? plan.periodRuleOverrides.map((o) =>
+            o.periodId === periodId && o.ruleId === ruleId && o.type === type
+              ? { ...o, enabled: !(o.enabled ?? true) }
+              : o
+          )
+        : [
+            ...plan.periodRuleOverrides,
+            { periodId, ruleId, type, enabled: false },
+          ],
+    };
+
+    savePlan(updated);
+    setPlan(updated);
+  }
+
+  function getPeriodOverride(periodId: number): PeriodOverride | undefined {
+    return plan.periodOverrides.find((o) => o.periodId === periodId);
+  }
+
+  function getRuleOverride(periodId: number, ruleId: string, type: "income" | "outflow"): PeriodRuleOverride | undefined {
+    return plan.periodRuleOverrides.find(
+      (o) => o.periodId === periodId && o.ruleId === ruleId && o.type === type
+    );
   }
 
   return (
@@ -168,6 +246,166 @@ export default function SettingsPage() {
                   ))
                 )}
               </div>
+            </div>
+
+            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Period Overrides</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                Customize specific periods without affecting base rules
+              </div>
+
+              {plan.periods.length === 0 ? (
+                <div className="text-slate-500 dark:text-slate-400 text-xs">Add periods first to manage overrides.</div>
+              ) : (
+                <div className="space-y-4">
+                  {plan.periods.map((period) => {
+                    const override = getPeriodOverride(period.id);
+                    const disabledBills = override?.disabledBills || [];
+                    const hasOverrides = disabledBills.length > 0 || override?.startingBalance !== undefined ||
+                      plan.periodRuleOverrides.some((o) => o.periodId === period.id);
+
+                    return (
+                      <details key={period.id} className="rounded-2xl border border-slate-200 dark:border-slate-600 bg-white/70 dark:bg-slate-700/70 px-4 py-3">
+                        <summary className="cursor-pointer font-semibold text-slate-900 dark:text-slate-100 flex items-center justify-between">
+                          <span>
+                            {period.label}
+                            {hasOverrides && (
+                              <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">(Has overrides)</span>
+                            )}
+                          </span>
+                        </summary>
+
+                        <div className="mt-4 space-y-4">
+                          {/* Starting Balance Override */}
+                          <div>
+                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                              Starting Balance Override
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number"
+                                value={override?.startingBalance ?? ""}
+                                onChange={(e) =>
+                                  handleSetStartingBalance(
+                                    period.id,
+                                    e.target.value ? Number(e.target.value) : undefined
+                                  )
+                                }
+                                className="vn-input text-sm flex-1"
+                                placeholder="Leave empty to use default"
+                                step="0.01"
+                              />
+                              {override?.startingBalance !== undefined && (
+                                <button
+                                  onClick={() => handleSetStartingBalance(period.id, undefined)}
+                                  className="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                                >
+                                  Clear
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Disabled Bills */}
+                          {plan.bills.length > 0 && (
+                            <div>
+                              <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                Disabled Bills for this Period
+                              </div>
+                              <div className="space-y-2 max-h-48 overflow-y-auto">
+                                {plan.bills.map((bill) => {
+                                  const isDisabled = disabledBills.includes(bill.id);
+                                  return (
+                                    <div key={bill.id} className="flex items-center gap-2 p-2 rounded bg-white/50 dark:bg-slate-600/50">
+                                      <input
+                                        type="checkbox"
+                                        id={`bill-${period.id}-${bill.id}`}
+                                        checked={isDisabled}
+                                        onChange={() => handleToggleBillForPeriod(period.id, bill.id)}
+                                        className="rounded"
+                                      />
+                                      <label
+                                        htmlFor={`bill-${period.id}-${bill.id}`}
+                                        className="text-xs text-slate-700 dark:text-slate-300 flex-1 cursor-pointer"
+                                      >
+                                        {bill.label} ({gbp(bill.amount)})
+                                      </label>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Income Rule Overrides */}
+                          {plan.incomeRules.length > 0 && (
+                            <div>
+                              <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                Disabled Income Rules for this Period
+                              </div>
+                              <div className="space-y-2 max-h-48 overflow-y-auto">
+                                {plan.incomeRules.map((rule) => {
+                                  const ruleOverride = getRuleOverride(period.id, rule.id, "income");
+                                  const isDisabled = ruleOverride?.enabled === false;
+                                  return (
+                                    <div key={rule.id} className="flex items-center gap-2 p-2 rounded bg-white/50 dark:bg-slate-600/50">
+                                      <input
+                                        type="checkbox"
+                                        id={`income-${period.id}-${rule.id}`}
+                                        checked={isDisabled}
+                                        onChange={() => handleToggleRuleForPeriod(period.id, rule.id, "income")}
+                                        className="rounded"
+                                      />
+                                      <label
+                                        htmlFor={`income-${period.id}-${rule.id}`}
+                                        className="text-xs text-slate-700 dark:text-slate-300 flex-1 cursor-pointer"
+                                      >
+                                        {rule.label} ({gbp(rule.amount)} {rule.cadence})
+                                      </label>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Outflow Rule Overrides */}
+                          {plan.outflowRules.length > 0 && (
+                            <div>
+                              <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                Disabled Outflow Rules for this Period
+                              </div>
+                              <div className="space-y-2 max-h-48 overflow-y-auto">
+                                {plan.outflowRules.map((rule) => {
+                                  const ruleOverride = getRuleOverride(period.id, rule.id, "outflow");
+                                  const isDisabled = ruleOverride?.enabled === false;
+                                  return (
+                                    <div key={rule.id} className="flex items-center gap-2 p-2 rounded bg-white/50 dark:bg-slate-600/50">
+                                      <input
+                                        type="checkbox"
+                                        id={`outflow-${period.id}-${rule.id}`}
+                                        checked={isDisabled}
+                                        onChange={() => handleToggleRuleForPeriod(period.id, rule.id, "outflow")}
+                                        className="rounded"
+                                      />
+                                      <label
+                                        htmlFor={`outflow-${period.id}-${rule.id}`}
+                                        className="text-xs text-slate-700 dark:text-slate-300 flex-1 cursor-pointer"
+                                      >
+                                        {rule.label} ({gbp(rule.amount)} {rule.cadence})
+                                      </label>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </details>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
