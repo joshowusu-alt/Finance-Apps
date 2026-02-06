@@ -5,7 +5,7 @@ import { getActiveScenarioUpdatedAt, loadPlan, savePlan, PLAN_UPDATED_EVENT } fr
 import { generateEvents, getPeriod, getUpcomingEvents } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
 import BankingSection from "@/components/BankingSection";
-import type { Transaction, BillTemplate, CashflowCategory } from "@/data/plan";
+import type { Transaction, BillTemplate, OutflowRule, Recurrence, CashflowCategory } from "@/data/plan";
 
 function gbp(n: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -102,12 +102,22 @@ export default function BillsPage() {
   const [plan, setPlan] = useState(() => loadPlan());
   const [lastUpdated, setLastUpdated] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showOutflowModal, setShowOutflowModal] = useState(false);
   const [editingBill, setEditingBill] = useState<BillTemplate | null>(null);
+  const [editingOutflow, setEditingOutflow] = useState<OutflowRule | null>(null);
   const [formData, setFormData] = useState<Partial<BillTemplate>>({
     label: "",
     amount: 0,
     dueDay: 1,
     category: "bill",
+    enabled: true,
+  });
+  const [outflowFormData, setOutflowFormData] = useState<Partial<OutflowRule>>({
+    label: "",
+    amount: 0,
+    cadence: "monthly" as Recurrence,
+    seedDate: new Date().toISOString().slice(0, 10),
+    category: "other",
     enabled: true,
   });
 
@@ -282,6 +292,68 @@ export default function BillsPage() {
     setPlan(updated);
   }
 
+  function handleAddOutflow() {
+    setEditingOutflow(null);
+    setOutflowFormData({
+      label: "",
+      amount: 0,
+      cadence: "monthly",
+      seedDate: new Date().toISOString().slice(0, 10),
+      category: "other",
+      enabled: true,
+    });
+    setShowOutflowModal(true);
+  }
+
+  function handleEditOutflow(rule: OutflowRule) {
+    setEditingOutflow(rule);
+    setOutflowFormData(rule);
+    setShowOutflowModal(true);
+  }
+
+  function handleDeleteOutflow(ruleId: string) {
+    if (!confirm("Are you sure you want to delete this outflow rule?")) return;
+    const updated = { ...plan, outflowRules: plan.outflowRules.filter((r) => r.id !== ruleId) };
+    savePlan(updated);
+    setPlan(updated);
+  }
+
+  function handleSaveOutflow() {
+    if (!outflowFormData.label || !outflowFormData.amount) {
+      alert("Please fill in label and amount");
+      return;
+    }
+
+    const ruleData: OutflowRule = {
+      id: editingOutflow?.id || `outflow_${Date.now()}`,
+      label: outflowFormData.label!,
+      amount: Number(outflowFormData.amount),
+      cadence: outflowFormData.cadence!,
+      seedDate: outflowFormData.seedDate!,
+      category: outflowFormData.category!,
+      enabled: outflowFormData.enabled ?? true,
+    };
+
+    const updated = editingOutflow
+      ? { ...plan, outflowRules: plan.outflowRules.map((r) => (r.id === editingOutflow.id ? ruleData : r)) }
+      : { ...plan, outflowRules: [...plan.outflowRules, ruleData] };
+
+    savePlan(updated);
+    setPlan(updated);
+    setShowOutflowModal(false);
+  }
+
+  function handleToggleOutflowEnabled(ruleId: string) {
+    const updated = {
+      ...plan,
+      outflowRules: plan.outflowRules.map((r) =>
+        r.id === ruleId ? { ...r, enabled: !r.enabled } : r
+      ),
+    };
+    savePlan(updated);
+    setPlan(updated);
+  }
+
   return (
     <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-5 pb-28 pt-6">
@@ -384,19 +456,60 @@ export default function BillsPage() {
               </div>
 
               <div className="vn-card p-6">
-                <div className="text-sm font-semibold text-slate-800">Recurring outflows</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold text-slate-800">Recurring outflows</div>
+                  <button
+                    onClick={handleAddOutflow}
+                    className="vn-btn vn-btn-primary text-xs px-3 py-1.5"
+                  >
+                    + Add Outflow
+                  </button>
+                </div>
                 <div className="mt-4 space-y-3 text-sm">
-                  {plan.outflowRules
-                    .filter((rule) => rule.enabled)
-                    .map((rule) => (
-                      <div key={rule.id} className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
+                  {plan.outflowRules.length === 0 ? (
+                    <div className="text-slate-500 text-xs">No outflow rules yet. Add one to get started.</div>
+                  ) : (
+                    plan.outflowRules.map((rule) => (
+                      <div
+                        key={rule.id}
+                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${
+                          rule.enabled
+                            ? "bg-white/70 border border-slate-200"
+                            : "bg-slate-100 opacity-60"
+                        }`}
+                      >
+                        <div className="flex-1">
                           <div className="font-semibold text-slate-900">{rule.label}</div>
-                          <div className="text-xs text-slate-500">{rule.cadence}</div>
+                          <div className="text-xs text-slate-500">
+                            {rule.cadence} • {rule.category}
+                            {!rule.enabled && " • Disabled"}
+                          </div>
                         </div>
                         <div className="font-semibold text-slate-900">{gbp(rule.amount)}</div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleToggleOutflowEnabled(rule.id)}
+                            className="text-xs text-slate-500 hover:text-slate-700"
+                            title={rule.enabled ? "Disable" : "Enable"}
+                          >
+                            {rule.enabled ? "👁️" : "👁️‍🗨️"}
+                          </button>
+                          <button
+                            onClick={() => handleEditOutflow(rule)}
+                            className="text-xs text-blue-600 hover:text-blue-800"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteOutflow(rule.id)}
+                            className="text-xs text-red-600 hover:text-red-800"
+                          >
+                            Del
+                          </button>
+                        </div>
                       </div>
-                    ))}
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -674,6 +787,123 @@ export default function BillsPage() {
               </button>
               <button
                 onClick={() => setShowModal(false)}
+                className="vn-btn vn-btn-ghost"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showOutflowModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setShowOutflowModal(false)}
+        >
+          <div
+            className="vn-card max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+              {editingOutflow ? "Edit Outflow Rule" : "Add Outflow Rule"}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Label *
+                </label>
+                <input
+                  type="text"
+                  value={outflowFormData.label || ""}
+                  onChange={(e) => setOutflowFormData({ ...outflowFormData, label: e.target.value })}
+                  className="vn-input text-sm"
+                  placeholder="e.g., Gym membership, Subscriptions"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Amount (£) *
+                </label>
+                <input
+                  type="number"
+                  value={outflowFormData.amount || ""}
+                  onChange={(e) => setOutflowFormData({ ...outflowFormData, amount: Number(e.target.value) })}
+                  className="vn-input text-sm"
+                  placeholder="0.00"
+                  step="0.01"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Cadence *
+                </label>
+                <select
+                  value={outflowFormData.cadence || "monthly"}
+                  onChange={(e) => setOutflowFormData({ ...outflowFormData, cadence: e.target.value as Recurrence })}
+                  className="vn-input text-sm"
+                >
+                  <option value="weekly">Weekly</option>
+                  <option value="biweekly">Bi-weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Seed Date *
+                </label>
+                <input
+                  type="date"
+                  value={outflowFormData.seedDate || ""}
+                  onChange={(e) => setOutflowFormData({ ...outflowFormData, seedDate: e.target.value })}
+                  className="vn-input text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Category *
+                </label>
+                <select
+                  value={outflowFormData.category || "other"}
+                  onChange={(e) => setOutflowFormData({ ...outflowFormData, category: e.target.value as CashflowCategory })}
+                  className="vn-input text-sm"
+                >
+                  <option value="bill">Bill</option>
+                  <option value="giving">Giving</option>
+                  <option value="savings">Savings</option>
+                  <option value="allowance">Allowance</option>
+                  <option value="buffer">Buffer</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="outflow-enabled"
+                  checked={outflowFormData.enabled ?? true}
+                  onChange={(e) => setOutflowFormData({ ...outflowFormData, enabled: e.target.checked })}
+                />
+                <label htmlFor="outflow-enabled" className="text-sm text-slate-700">
+                  Enabled
+                </label>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleSaveOutflow}
+                className="vn-btn vn-btn-primary flex-1"
+              >
+                {editingOutflow ? "Save Changes" : "Add Outflow"}
+              </button>
+              <button
+                onClick={() => setShowOutflowModal(false)}
                 className="vn-btn vn-btn-ghost"
               >
                 Cancel
