@@ -1,0 +1,227 @@
+"use client";
+
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Sector } from "recharts";
+import { motion } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
+import { chartColors, formatCurrency, getCategoryColor, getTextColor, getGridColor } from "@/lib/chartConfig";
+
+export type DonutDataPoint = {
+  name: string;
+  value: number;
+  color?: string;
+};
+
+type Props = {
+  data: DonutDataPoint[];
+  height?: number;
+  showLegend?: boolean;
+  onCategoryClick?: (category: string) => void;
+  centerLabel?: string;
+  centerValue?: string;
+};
+
+// Custom active shape for hover effect
+const renderActiveShape = (props: any) => {
+  const {
+    cx, cy, innerRadius, outerRadius, startAngle, endAngle,
+    fill, payload, percent, value
+  } = props;
+
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius - 4}
+        outerRadius={outerRadius + 8}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        style={{
+          filter: "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15))",
+          transition: "all 0.3s ease-out",
+        }}
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        innerRadius={outerRadius + 12}
+        outerRadius={outerRadius + 16}
+        fill={fill}
+        opacity={0.3}
+      />
+    </g>
+  );
+};
+
+export function DonutChart({
+  data,
+  height = 320,
+  showLegend = true,
+  onCategoryClick,
+  centerLabel,
+  centerValue,
+}: Props) {
+  const [isDark, setIsDark] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
+    setIsDark(isDarkMode);
+
+    const observer = new MutationObserver(() => {
+      const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
+      setIsDark(darkMode);
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const onPieEnter = useCallback((_: any, index: number) => {
+    setActiveIndex(index);
+  }, []);
+
+  const onPieLeave = useCallback(() => {
+    setActiveIndex(undefined);
+  }, []);
+
+  // Assign colors to categories
+  const dataWithColors = data.map((item, index) => ({
+    ...item,
+    color: item.color || getCategoryColor(item.name) || chartColors[`chart${(index % 8) + 1}` as keyof typeof chartColors],
+  }));
+
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+
+  // Custom legend with click functionality
+  const renderCustomLegend = (props: any) => {
+    const { payload } = props;
+    return (
+      <div className="flex flex-wrap justify-center gap-3 pt-4">
+        {payload.map((entry: any, index: number) => {
+          const percent = total > 0 ? ((entry.payload.value / total) * 100).toFixed(1) : 0;
+          return (
+            <motion.button
+              key={`legend-${index}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => onCategoryClick?.(entry.value)}
+              className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-all"
+              style={{
+                backgroundColor: activeIndex === index
+                  ? `${entry.color}20`
+                  : isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
+                border: `1px solid ${activeIndex === index ? entry.color : "transparent"}`,
+                color: getTextColor(isDark),
+              }}
+              onMouseEnter={() => setActiveIndex(index)}
+              onMouseLeave={() => setActiveIndex(undefined)}
+            >
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              />
+              <span>{entry.value}</span>
+              <span style={{ color: isDark ? "#a1a1aa" : "#71717a" }}>{percent}%</span>
+            </motion.button>
+          );
+        })}
+      </div>
+    );
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="relative"
+    >
+      <ResponsiveContainer width="100%" height={height}>
+        <PieChart>
+          <Pie
+            data={dataWithColors}
+            cx="50%"
+            cy="50%"
+            innerRadius={60}
+            outerRadius={90}
+            paddingAngle={2}
+            dataKey="value"
+            onMouseEnter={onPieEnter}
+            onMouseLeave={onPieLeave}
+            onClick={(_, index) => onCategoryClick?.(dataWithColors[index].name)}
+            animationDuration={600}
+            animationEasing="ease-out"
+            style={{ cursor: onCategoryClick ? "pointer" : "default" }}
+            {...{ activeIndex, activeShape: renderActiveShape }}
+          >
+            {dataWithColors.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={entry.color as string}
+                stroke={isDark ? "#18181b" : "#ffffff"}
+                strokeWidth={2}
+              />
+            ))}
+          </Pie>
+          <Tooltip
+            contentStyle={{
+              backgroundColor: isDark ? "#27272a" : "#ffffff",
+              border: `1px solid ${getGridColor(isDark)}`,
+              borderRadius: "12px",
+              color: getTextColor(isDark),
+              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+              padding: "12px 16px",
+            }}
+            formatter={(value) => [typeof value === "number" ? formatCurrency(value) : "", "Amount"]}
+            labelStyle={{ fontWeight: 600, marginBottom: 4 }}
+          />
+          {showLegend && (
+            <Legend
+              content={renderCustomLegend}
+              verticalAlign="bottom"
+            />
+          )}
+        </PieChart>
+      </ResponsiveContainer>
+
+      {/* Center label */}
+      {(centerLabel || centerValue) && (
+        <div
+          className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center text-center"
+          style={{ marginTop: showLegend ? "-20px" : "0" }}
+        >
+          {centerValue && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-2xl font-bold"
+              style={{ color: getTextColor(isDark) }}
+            >
+              {centerValue}
+            </motion.div>
+          )}
+          {centerLabel && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-xs uppercase tracking-wide"
+              style={{ color: isDark ? "#a1a1aa" : "#71717a" }}
+            >
+              {centerLabel}
+            </motion.div>
+          )}
+        </div>
+      )}
+    </motion.div>
+  );
+}

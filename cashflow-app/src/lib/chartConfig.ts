@@ -1,45 +1,63 @@
 /**
- * Chart configuration with Gen Z Velanovo colors
- * Theme-aware colors for Recharts components
+ * Chart configuration with Midnight Gold Velanovo colors
+ * Premium navy & gold theme for Recharts components
  */
 
 export const chartColors = {
-  // Primary colors (Gen Z palette)
-  primary: "#6366f1",       // Soft indigo
-  secondary: "#818cf8",     // Bright indigo glow
-  success: "#10b981",       // Emerald
-  warning: "#f59e0b",       // Amber
-  error: "#ef4444",         // Red coral
-  info: "#06b6d4",          // Cyan
-  gold: "#fbbf24",          // Warm amber
+  // Primary colors (Hybrid Palette)
+  primary: "#0ea5e9",       // Sky 500 - Sapphire Blue
+  secondary: "#fbbf24",     // Amber 400 - Gold
+  success: "#10b981",       // Emerald 500
+  warning: "#f59e0b",       // Amber 500
+  error: "#ef4444",         // Red 500
+  info: "#3b82f6",          // Blue 500
+  gold: "#fbbf24",          // Gold
 
-  // Chart-specific colors (varied palette)
-  chart1: "#6366f1",        // Soft indigo
+  // Gradient accent
+  gradient: "linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%)",
+  gradientStart: "#0ea5e9",
+  gradientEnd: "#3b82f6",
+
+  // Chart-specific colors (Sapphire/Gold compatible)
+  chart1: "#0ea5e9",        // Sky Blue (Primary)
   chart2: "#10b981",        // Emerald
-  chart3: "#f59e0b",        // Amber
+  chart3: "#fbbf24",        // Gold
   chart4: "#ef4444",        // Red
-  chart5: "#06b6d4",        // Cyan
-  chart6: "#8b5cf6",        // Purple
-  chart7: "#ec4899",        // Pink
-  chart8: "#14b8a6",        // Teal
+  chart5: "#8b5cf6",        // Violet
+  chart6: "#06b6d4",        // Cyan
+  chart7: "#ec4899",          // Pink
+  chart8: "#14b8a6",          // Teal
 
-  // Neutrals
+  // Finance semantic colors
+  income: "#22c55e",          // Green = money in
+  expense: "#dc2626",         // Red = money out
+  transfer: "#1e293b",        // Navy = transfers
+  savings: "#3b82f6",         // Blue = savings
+
+  // Neutrals (Slate palette)
   text: {
-    light: "#18181b",       // Zinc 900
-    dark: "#fafafa",        // Soft white
+    light: "#0f172a",         // Slate 900
+    dark: "#f8fafc",          // Slate 50
   },
   muted: {
-    light: "#71717a",       // Zinc 500
-    dark: "#a1a1aa",        // Zinc 400
+    light: "#64748b",         // Slate 500
+    dark: "#94a3b8",          // Slate 400
   },
   grid: {
-    light: "#e4e4e7",       // Zinc 200
-    dark: "#3f3f46",        // Zinc 700
+    light: "#e2e8f0",         // Slate 200
+    dark: "#334155",          // Slate 700
   },
 };
 
 // Category-specific colors
 export const categoryColors: Record<string, string> = {
+  // Key Categories (User requested distinction)
+  bills: chartColors.warning,      // Gold/Amber for Bills
+  allowance: chartColors.info,     // Blue for Allowance
+  flexible: chartColors.chart5,    // Purple for Flex
+  savings: chartColors.success,    // Green for Savings
+  buffer: chartColors.chart6,      // Cyan for Buffer
+
   // Income
   salary: chartColors.success,
   income: chartColors.success,
@@ -51,8 +69,8 @@ export const categoryColors: Record<string, string> = {
   utilities: chartColors.warning,
 
   // Food
-  groceries: chartColors.chart6,
-  restaurants: chartColors.chart7,
+  groceries: chartColors.chart6,   // Cyan
+  restaurants: chartColors.chart7, // Pink
   dining: chartColors.chart7,
 
   // Transportation
@@ -61,7 +79,7 @@ export const categoryColors: Record<string, string> = {
   gas: chartColors.warning,
 
   // Entertainment
-  entertainment: chartColors.chart8,
+  entertainment: chartColors.chart8, // Teal
   subscriptions: chartColors.primary,
 
   // Default
