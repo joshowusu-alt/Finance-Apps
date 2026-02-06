@@ -22,6 +22,7 @@ import {
   minPoint,
 } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
+import ThemeToggle from "@/components/ThemeToggle";
 import { CashflowProjectionChart, SpendingTrendChart, DonutChart } from "@/components/charts";
 import type { CashflowDataPoint, SpendingDataPoint, DonutDataPoint } from "@/components/charts";
 import { CategoryDrilldown } from "@/components/CategoryDrilldown";
@@ -385,17 +386,18 @@ export default function HomePage() {
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
           <section className="space-y-5">
-            <header className="flex flex-col gap-4 rounded-3xl bg-[var(--surface)] p-6 text-slate-900 shadow-xl md:flex-row md:items-center md:justify-between">
+            <header className="flex flex-col gap-4 rounded-3xl p-6 shadow-xl md:flex-row md:items-center md:justify-between" style={{ background: "var(--vn-surface)" }}>
               <div>
-                <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Dashboard</div>
-                <h1 className="text-2xl font-semibold">Welcome back</h1>
-                <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                <div className="text-xs uppercase tracking-wide" style={{ color: "var(--vn-muted)" }}>Dashboard</div>
+                <h1 className="text-2xl font-semibold" style={{ color: "var(--vn-text)" }}>Welcome back</h1>
+                <div className="mt-2 text-sm" style={{ color: "var(--vn-muted)" }}>
                   Your money story for this period.
                 </div>
-                <div className="mt-1 text-xs text-slate-400">{period.label}</div>
+                <div className="mt-1 text-xs" style={{ color: "var(--vn-muted)" }}>{period.label}</div>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <div className="rounded-full bg-slate-100 px-4 py-2 text-xs text-slate-600 dark:text-slate-300">
+                <ThemeToggle />
+                <div className="rounded-full px-4 py-2 text-xs font-medium" style={{ background: "var(--vn-border)", color: "var(--vn-text)" }}>
                   Window {windowData.startISO} to {windowData.endISO}
                 </div>
                 <Link
@@ -408,22 +410,23 @@ export default function HomePage() {
             </header>
 
             {!onboarding.dismissed ? (
-              <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+              <div className="vn-card p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <div className="text-sm font-semibold text-slate-800">Getting started</div>
-                    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>Getting started</div>
+                    <div className="mt-1 text-xs" style={{ color: "var(--vn-muted)" }}>
                       {completedCount} of {onboardingTasks.length} steps done
                     </div>
                   </div>
                   <button
                     onClick={handleDismissOnboarding}
-                    className="text-xs font-semibold text-slate-400 hover:text-slate-600 dark:text-slate-300"
+                    className="text-xs font-semibold transition-colors"
+                    style={{ color: "var(--vn-muted)" }}
                   >
                     Dismiss
                   </button>
                 </div>
-                <div className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                <div className="mt-3 text-sm" style={{ color: "var(--vn-text)" }}>
                   {isFirstUse
                     ? "Explore the sample plan, or clear it to build your own."
                     : "Keep momentum with a quick checklist and tips."}
@@ -446,7 +449,8 @@ export default function HomePage() {
                   {onboardingTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="flex flex-wrap items-start justify-between gap-3 rounded-2xl bg-white/70 px-4 py-3"
+                      className="flex flex-wrap items-start justify-between gap-3 rounded-2xl px-4 py-3"
+                      style={{ background: "var(--vn-bg)" }}
                     >
                       <label className="flex flex-1 items-start gap-3">
                         <input
@@ -454,33 +458,34 @@ export default function HomePage() {
                           checked={task.done}
                           onChange={(e) => handleToggleTask(task.id, e.target.checked)}
                           disabled={task.autoDone}
-                          className="mt-1"
+                          className="mt-1 accent-[var(--vn-primary)]"
                         />
                         <span>
-                          <div className="text-sm font-semibold text-slate-900">{task.label}</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">{task.description}</div>
+                          <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>{task.label}</div>
+                          <div className="text-xs" style={{ color: "var(--vn-muted)" }}>{task.description}</div>
                         </span>
                       </label>
                       <Link
                         href={task.href}
-                        className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-deep)]"
+                        className="text-xs font-semibold"
+                        style={{ color: "var(--vn-primary)" }}
                       >
                         Open
                       </Link>
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 rounded-2xl bg-slate-100 px-4 py-3 text-xs text-slate-600 dark:text-slate-300">
+                <div className="mt-4 rounded-2xl px-4 py-3 text-xs" style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
                   Tips: update your period dates, set a safe minimum balance, and log your first
                   real transaction to unlock insights.
                 </div>
               </div>
             ) : (
-              <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+              <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-semibold text-slate-800">Onboarding hidden</div>
-                    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>Onboarding hidden</div>
+                    <div className="mt-1 text-xs" style={{ color: "var(--vn-muted)" }}>
                       Bring back the setup checklist any time.
                     </div>
                   </div>
@@ -603,72 +608,72 @@ export default function HomePage() {
 
             <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
               <div className="space-y-5">
-                <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
-                  <div className="text-sm font-semibold text-slate-800">Story so far</div>
-                  <div className="mt-3 space-y-3 text-sm text-slate-600 dark:text-slate-300">
+                <div className="vn-card p-6">
+                  <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>Story so far</div>
+                  <div className="mt-3 space-y-3 text-sm" style={{ color: "var(--vn-text)" }}>
                     <div className="flex items-center justify-between">
                       <span>Time into period</span>
-                      <span className="font-semibold text-slate-900">
+                      <span className="font-semibold" style={{ color: "var(--vn-text)" }}>
                         Day {daysElapsed} of {periodDays}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-slate-200">
+                    <div className="h-2 rounded-full" style={{ background: "var(--vn-border)" }}>
                       <div
-                        className="h-2 rounded-full bg-[var(--accent)]"
-                        style={{ width: `${timeProgress * 100}%` }}
+                        className="h-2 rounded-full"
+                        style={{ width: `${timeProgress * 100}%`, background: "var(--vn-primary)" }}
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span>Spending used</span>
-                      <span className="font-semibold text-slate-900">
+                      <span className="font-semibold" style={{ color: "var(--vn-text)" }}>
                         {money(actualSpending)} of {money(budgetSpending)}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-slate-200">
+                    <div className="h-2 rounded-full" style={{ background: "var(--vn-border)" }}>
                       <div
-                        className={`h-2 rounded-full ${actualSpending > budgetSpending ? "bg-rose-500" : "bg-[var(--gold)]"}`}
-                        style={{ width: `${spendingProgress * 100}%` }}
+                        className="h-2 rounded-full"
+                        style={{ width: `${spendingProgress * 100}%`, background: actualSpending > budgetSpending ? "var(--vn-error)" : "var(--vn-gold)" }}
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span>Income received</span>
-                      <span className="font-semibold text-slate-900">
+                      <span className="font-semibold" style={{ color: "var(--vn-text)" }}>
                         {money(actualIncome)} of {money(budgetIncome)}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-slate-200">
+                    <div className="h-2 rounded-full" style={{ background: "var(--vn-border)" }}>
                       <div
-                        className={`h-2 rounded-full ${incomePaceGap < -0.08 ? "bg-amber-500" : "bg-[var(--gold)]"}`}
-                        style={{ width: `${incomeProgress * 100}%` }}
+                        className="h-2 rounded-full"
+                        style={{ width: `${incomeProgress * 100}%`, background: incomePaceGap < -0.08 ? "var(--vn-warning)" : "var(--vn-gold)" }}
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span>Savings moved</span>
-                      <span className="font-semibold text-slate-900">
+                      <span className="font-semibold" style={{ color: "var(--vn-text)" }}>
                         {money(actualSavings)} of {money(budgetSavings)}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-slate-200">
+                    <div className="h-2 rounded-full" style={{ background: "var(--vn-border)" }}>
                       <div
-                        className={`h-2 rounded-full ${actualSavings < budgetSavings ? "bg-amber-500" : "bg-[var(--gold)]"}`}
-                        style={{ width: `${savingsProgress * 100}%` }}
+                        className="h-2 rounded-full"
+                        style={{ width: `${savingsProgress * 100}%`, background: actualSavings < budgetSavings ? "var(--vn-warning)" : "var(--vn-gold)" }}
                       />
                     </div>
 
-                    <div className="rounded-2xl bg-slate-100 px-4 py-3 text-xs text-slate-600 dark:text-slate-300">
-                      Projected end balance: <span className="font-semibold text-slate-900">{money(endingBalance)}</span>.{" "}
+                    <div className="rounded-2xl px-4 py-3 text-xs" style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
+                      Projected end balance: <span className="font-semibold">{money(endingBalance)}</span>.{" "}
                       Lowest point {lowest ? `${money(lowest.balance)} on ${prettyDate(lowest.date)}` : "-"}.
                     </div>
 
-                    <div className="border-t border-slate-200 pt-4">
-                      <div className="text-sm font-semibold text-slate-800">Story insights</div>
-                      <div className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                    <div className="pt-4" style={{ borderTop: "1px solid var(--vn-border)" }}>
+                      <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>Story insights</div>
+                      <div className="mt-3 space-y-2 text-sm" style={{ color: "var(--vn-text)" }}>
                         {storyInsights.map((insight, idx) => (
                           <div key={`insight-${idx}`} className="flex gap-2">
-                            <span className="text-slate-400">-</span>
+                            <span style={{ color: "var(--vn-muted)" }}>-</span>
                             <span>{insight}</span>
                           </div>
                         ))}
@@ -680,39 +685,41 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-5">
-                <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+                <div className="vn-card p-6">
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-800">Alerts & notifications</div>
-                    <Link href="/settings" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700">
+                    <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>Alerts & notifications</div>
+                    <Link href="/settings" className="text-xs transition-colors" style={{ color: "var(--vn-muted)" }}>
                       Manage
                     </Link>
                   </div>
-                  <div className="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
+                  <div className="mt-4 space-y-3 text-sm" style={{ color: "var(--vn-text)" }}>
                     {alerts.length === 0 ? (
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                      <div className="text-xs" style={{ color: "var(--vn-muted)" }}>
                         Alerts are disabled. Enable them in Settings to see notices.
                       </div>
                     ) : (
                       alerts.map((alert) => {
-                        const toneClass =
+                        const toneColor =
                           alert.tone === "critical"
-                            ? "text-rose-600"
+                            ? "var(--vn-error)"
                             : alert.tone === "warning"
-                              ? "text-amber-600"
+                              ? "var(--vn-warning)"
                               : alert.tone === "good"
-                                ? "text-green-600"
-                                : "text-slate-700";
+                                ? "var(--vn-success)"
+                                : "var(--vn-text)";
                         return (
                           <div
                             key={alert.id}
-                            className="rounded-2xl border border-slate-200 bg-white/70 px-4 py-3"
+                            className="rounded-2xl px-4 py-3"
+                            style={{ background: "var(--vn-bg)", border: "1px solid var(--vn-border)" }}
                           >
-                            <div className={`text-sm font-semibold ${toneClass}`}>{alert.title}</div>
-                            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{alert.description}</div>
+                            <div className="text-sm font-semibold" style={{ color: toneColor }}>{alert.title}</div>
+                            <div className="mt-1 text-xs" style={{ color: "var(--vn-muted)" }}>{alert.description}</div>
                             {alert.href ? (
                               <Link
                                 href={alert.href}
-                                className="mt-2 inline-flex text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-deep)]"
+                                className="mt-2 inline-flex text-xs font-semibold"
+                                style={{ color: "var(--vn-primary)" }}
                               >
                                 View details
                               </Link>
@@ -723,48 +730,48 @@ export default function HomePage() {
                     )}
                   </div>
                 </div>
-                <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+                <div className="vn-card p-6">
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-800">Upcoming income</div>
-                    <Link href="/income" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700">
+                    <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>Upcoming income</div>
+                    <Link href="/income" className="text-xs transition-colors" style={{ color: "var(--vn-muted)" }}>
                       View all
                     </Link>
                   </div>
                   <div className="mt-4 space-y-3 text-sm">
                     {upcomingIncome.length === 0 ? (
-                      <div className="text-slate-500 dark:text-slate-400">No income in window.</div>
+                      <div style={{ color: "var(--vn-muted)" }}>No income in window.</div>
                     ) : (
                       upcomingIncome.map((item) => (
                         <div key={item.id} className="flex items-center justify-between">
                           <div>
-                            <div className="font-semibold text-slate-900">{item.label}</div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">Due {prettyDate(item.date)}</div>
+                            <div className="font-semibold" style={{ color: "var(--vn-text)" }}>{item.label}</div>
+                            <div className="text-xs" style={{ color: "var(--vn-muted)" }}>Due {prettyDate(item.date)}</div>
                           </div>
-                          <div className="font-semibold text-[var(--accent)]">{money(item.amount)}</div>
+                          <div className="font-semibold" style={{ color: "var(--vn-success)" }}>{money(item.amount)}</div>
                         </div>
                       ))
                     )}
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+                <div className="vn-card p-6">
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-800">Upcoming bills</div>
-                    <Link href="/bills" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700">
+                    <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>Upcoming bills</div>
+                    <Link href="/bills" className="text-xs transition-colors" style={{ color: "var(--vn-muted)" }}>
                       View all
                     </Link>
                   </div>
                   <div className="mt-4 space-y-3 text-sm">
                     {upcomingBills.length === 0 ? (
-                      <div className="text-slate-500 dark:text-slate-400">No bills in window.</div>
+                      <div style={{ color: "var(--vn-muted)" }}>No bills in window.</div>
                     ) : (
                       upcomingBills.map((item) => (
                         <div key={item.id} className="flex items-center justify-between">
                           <div>
-                            <div className="font-semibold text-slate-900">{item.label}</div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">Due {prettyDate(item.date)}</div>
+                            <div className="font-semibold" style={{ color: "var(--vn-text)" }}>{item.label}</div>
+                            <div className="text-xs" style={{ color: "var(--vn-muted)" }}>Due {prettyDate(item.date)}</div>
                           </div>
-                          <div className="font-semibold text-[var(--red-accent)]">{money(item.amount)}</div>
+                          <div className="font-semibold" style={{ color: "var(--vn-error)" }}>{money(item.amount)}</div>
                         </div>
                       ))
                     )}
