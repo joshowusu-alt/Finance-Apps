@@ -1,23 +1,29 @@
 import "./globals.css";
 import "../styles/velanovo.css";
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google"; // The Elite Fonts
 import BottomNav from "@/components/BottomNav";
 import ReviewAccessLink from "@/components/ReviewAccessLink";
-import MainSyncLink from "@/components/MainSyncLink";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ToastContainer from "@/components/Toast";
 import ThemeInitializer from "@/components/ThemeInitializer";
+import AIAssistant from "@/components/AIAssistant";
 
-const manrope = Manrope({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-manrope",
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Velanovo",
-  description: "Cashflow planner with insights",
+  description: "Private Wealth & Cashflow",
 };
 
 export default function RootLayout({
@@ -27,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="transition-colors duration-200">
-      <body className={`${manrope.variable} min-h-screen bg-white dark:bg-slate-900 transition-colors duration-200`}>
+      <body className={`${playfair.variable} ${inter.variable} min-h-screen font-sans bg-white dark:bg-slate-900 transition-colors duration-200`}>
         <ThemeInitializer />
         <a href="#main-content" className="skip-link">
           Skip to content
@@ -43,7 +49,7 @@ export default function RootLayout({
         {/* Persistent bottom navigation */}
         <BottomNav />
         <ReviewAccessLink />
-        <MainSyncLink />
+        <AIAssistant />
         <ToastContainer />
       </body>
     </html>

@@ -1,43 +1,68 @@
 @import "tailwindcss";
 
+@theme {
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
+}
+
 :root {
-  /* Gen Z Color Palette - Light Mode (Soft & Pleasant) */
-  --background: #fafafa;
-  --foreground: #1e293b;
+  /* SAPPHIRE TRUST - Light Mode */
+  --background: #f8fafc;
+  /* Slate 50 - crisp white/grey */
+  --foreground: #0f172a;
+  /* Slate 900 - deep navy text */
   --surface: #ffffff;
-  --surface-elevated: #fafafa;
-  --surface-soft: #f5f5f7;
+  --surface-elevated: #f1f5f9;
+  /* Slate 100 */
+  --surface-soft: #e2e8f0;
+  /* Slate 200 */
   --panel: #ffffff;
-  --border: #e4e4e7;
-  --border-hover: #d4d4d8;
+  --border: #cbd5e1;
+  /* Slate 300 */
+  --border-hover: #94a3b8;
+  /* Slate 400 */
 
-  /* Brand Colors - Gen Z Soft Indigo */
-  --accent: #6366f1;
-  --accent-deep: #4f46e5;
-  --accent-soft: rgba(99, 102, 241, 0.1);
-  --accent-hover: rgba(99, 102, 241, 0.15);
+  /* Brand Colors - Sapphire Blue */
+  --accent: #0f172a;
+  /* Deep Navy Primary */
+  --accent-deep: #020617;
+  /* Darker Navy */
+  --accent-soft: rgba(15, 23, 42, 0.08);
+  --accent-hover: rgba(15, 23, 42, 0.12);
 
-  /* Semantic Colors - Soft & Modern */
-  --success: #10b981;
-  --success-soft: rgba(16, 185, 129, 0.1);
-  --warning: #f59e0b;
-  --warning-soft: rgba(245, 158, 11, 0.1);
-  --error: #ef4444;
-  --error-soft: rgba(239, 68, 68, 0.1);
-  --info: #06b6d4;
-  --info-soft: rgba(6, 182, 212, 0.1);
+  --gold: #0369a1;
+  /* Sky 700 - using Blue as secondary */
+  --gold-soft: rgba(3, 105, 161, 0.1);
 
-  /* Text Colors - Readable & Soft */
-  --text-primary: #18181b;
-  --text-secondary: #52525b;
-  --text-tertiary: #71717a;
-  --text-disabled: #a1a1aa;
+  /* Semantic Colors - Trustworthy & Professional */
+  --success: #059669;
+  /* Emerald 600 */
+  --success-soft: rgba(5, 150, 105, 0.1);
+  --warning: #d97706;
+  /* Amber 600 */
+  --warning-soft: rgba(217, 119, 6, 0.1);
+  --error: #dc2626;
+  /* Red 600 */
+  --error-soft: rgba(220, 38, 38, 0.1);
+  --info: #0284c7;
+  /* Sky 600 */
+  --info-soft: rgba(2, 132, 199, 0.1);
 
-  /* Shadows - Soft & Subtle */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.06);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+  /* Text Colors */
+  --text-primary: #0f172a;
+  /* Slate 900 */
+  --text-secondary: #334155;
+  /* Slate 700 */
+  --text-tertiary: #64748b;
+  /* Slate 500 */
+  --text-disabled: #94a3b8;
+  /* Slate 400 */
+
+  /* Shadows - Crisp & Sharp */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
 
   /* Radii */
   --radius-sm: 8px;
@@ -54,56 +79,96 @@
 }
 
 .dark {
-  /* Gen Z Color Palette - Dark Mode (Soft & Cozy) */
-  --background: #18181b;
-  --foreground: #fafafa;
-  --surface: #27272a;
-  --surface-elevated: #3f3f46;
-  --surface-soft: #27272a;
-  --panel: #18181b;
-  --border: #3f3f46;
-  --border-hover: #52525b;
+  /* ONYX & GOLD - Dark Mode */
+  --background: #020617;
+  /* Slate 950 - Absolute deepest dark */
+  --foreground: #f8fafc;
+  /* Slate 50 */
+  --surface: #0f172a;
+  /* Slate 900 */
+  --surface-elevated: #1e293b;
+  /* Slate 800 */
+  --surface-soft: #0f172a;
+  --panel: #020617;
+  --border: #1e293b;
+  /* Slate 800 */
+  --border-hover: #334155;
+  /* Slate 700 */
 
-  /* Brand Colors - Gen Z Soft Glow */
-  --accent: #818cf8;
-  --accent-deep: #6366f1;
-  --accent-soft: rgba(129, 140, 248, 0.15);
-  --accent-hover: rgba(129, 140, 248, 0.25);
+  /* Brand Colors - Gold Luxury */
+  --accent: #fbbf24;
+  /* Amber 400 - Gold Primary */
+  --accent-deep: #f59e0b;
+  /* Amber 500 */
+  --accent-soft: rgba(251, 191, 36, 0.15);
+  --accent-hover: rgba(251, 191, 36, 0.25);
 
-  /* Semantic Colors - Soft Glow for Dark Mode */
+  --gold: #fbbf24;
+  --gold-soft: rgba(251, 191, 36, 0.2);
+
+  /* Semantic Colors - Rich & Glowing */
   --success: #34d399;
+  /* Emerald 400 */
   --success-soft: rgba(52, 211, 153, 0.15);
   --warning: #fbbf24;
+  /* Amber 400 */
   --warning-soft: rgba(251, 191, 36, 0.15);
   --error: #f87171;
+  /* Red 400 */
   --error-soft: rgba(248, 113, 113, 0.15);
-  --info: #22d3ee;
-  --info-soft: rgba(34, 211, 238, 0.15);
+  --info: #38bdf8;
+  /* Sky 400 */
+  --info-soft: rgba(56, 189, 248, 0.15);
 
-  /* Text Colors - Soft & Readable */
-  --text-primary: #fafafa;
-  --text-secondary: #d4d4d8;
-  --text-tertiary: #a1a1aa;
-  --text-disabled: #71717a;
+  /* Text Colors */
+  --text-primary: #f8fafc;
+  /* Slate 50 */
+  --text-secondary: #cbd5e1;
+  /* Slate 300 */
+  --text-tertiary: #94a3b8;
+  /* Slate 400 */
+  --text-disabled: #64748b;
+  /* Slate 500 */
 
-  /* Shadows - Soft for Dark Mode */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.35);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  /* Shadows - Deep & Ambient */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+}
+
+@layer base {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-playfair), serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  body {
+    font-family: var(--font-inter), sans-serif;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-manrope);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
 }
 
 body {
   background:
-    radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.05), transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.04), transparent 40%),
+    radial-gradient(circle at 15% 15%, rgba(30, 41, 59, 0.04), transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(251, 191, 36, 0.03), transparent 40%),
     var(--background);
   color: var(--text-primary);
   font-family: var(--font-manrope), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
@@ -115,8 +180,8 @@ body {
 
 .dark body {
   background:
-    radial-gradient(circle at 15% 15%, rgba(129, 140, 248, 0.06), transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(52, 211, 153, 0.04), transparent 40%),
+    radial-gradient(circle at 15% 15%, rgba(251, 191, 36, 0.05), transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(59, 130, 246, 0.03), transparent 40%),
     var(--background);
 }
 
@@ -163,7 +228,10 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

@@ -2,5 +2,5 @@
   <circle cx="24" cy="24" r="22" stroke="#4AA8B3" stroke-width="2"/>
   <path d="M14 18L24 32L34 18" stroke="#EAF6F8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="34" cy="14" r="2.4" fill="#4AA8B3"/>
-  <text x="60" y="30" fill="#EAF6F8" font-family="Manrope, Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="0.4">Vero</text>
+  <text x="60" y="30" fill="#EAF6F8" font-family="Manrope, Arial, sans-serif" font-size="20" font-weight="600" letter-spacing="0.4">Velanovo</text>
 </svg>

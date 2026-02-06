@@ -1,34 +1,68 @@
 :root {
-  /* Gen Z Brand Colors */
-  --vn-navy: #18181b;        /* Zinc 900 - soft dark */
-  --vn-teal: #6366f1;        /* Soft indigo - Gen Z favorite */
-  --vn-bg: #f5f5f7;          /* Soft warm gray - Apple-style */
-  --vn-gold: #fbbf24;        /* Warm amber */
-  --vn-mist: #e4e4e7;        /* Zinc 200 */
+  /* SAPPHIRE TRUST - Light Mode */
+  --vn-navy: #0f172a;
+  /* Slate 900 - Primary Text/Accent */
+  --vn-teal: #0284c7;
+  /* Sky 600 - Secondary */
+  --vn-bg: #f8fafc;
+  /* Slate 50 - White/Grey background */
+  --vn-gold: #0369a1;
+  /* Sky 700 - Gold maps to Blue in light mode */
+  --vn-mist: #e2e8f0;
+  /* Slate 200 */
 
-  --vn-text: #18181b;        /* Zinc 900 */
-  --vn-muted: #71717a;       /* Zinc 500 */
+  --vn-text: #0f172a;
+  /* Slate 900 */
+  --vn-muted: #64748b;
+  /* Slate 500 */
 
-  --vn-success: #10b981;     /* Emerald */
-  --vn-warning: #f59e0b;     /* Amber */
-  --vn-error: #ef4444;       /* Red coral */
-  --vn-info: #06b6d4;        /* Cyan */
+  --vn-success: #059669;
+  /* Emerald 600 */
+  --vn-warning: #d97706;
+  /* Amber 600 */
+  --vn-error: #dc2626;
+  /* Red 600 */
+  --vn-info: #0284c7;
+  /* Sky 600 */
 
   /* Semantic tokens */
   --vn-surface: #ffffff;
   --vn-border: var(--vn-mist);
-  --vn-primary: var(--vn-teal);
+  --vn-primary: var(--vn-navy);
   --vn-primary-contrast: #ffffff;
+  --vn-accent: var(--vn-gold);
+
+  /* Sapphire Gradient - Navy to Sky */
+  --vn-gradient: linear-gradient(135deg, #0f172a 0%, #0369a1 100%);
+  --vn-gradient-subtle: linear-gradient(135deg, rgba(15, 23, 42, 0.05) 0%, rgba(3, 105, 161, 0.05) 100%);
+  --vn-gradient-gold: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
 }
 
 html[data-theme="dark"] {
-  --vn-bg: #18181b;          /* Zinc 900 - warm dark */
-  --vn-surface: #27272a;     /* Zinc 800 */
-  --vn-border: #3f3f46;      /* Zinc 700 */
-  --vn-text: #fafafa;        /* Soft white */
-  --vn-muted: #a1a1aa;       /* Zinc 400 */
-  --vn-primary: #818cf8;     /* Bright soft indigo glow */
-  --vn-primary-contrast: #ffffff;
+  /* ONYX & GOLD - Dark Mode */
+  --vn-bg: #020617;
+  /* Slate 950 */
+  --vn-surface: #0f172a;
+  /* Slate 900 */
+  --vn-border: #1e293b;
+  /* Slate 800 */
+  --vn-text: #f8fafc;
+  /* Slate 50 */
+  --vn-muted: #94a3b8;
+  /* Slate 400 */
+
+  --vn-primary: #fbbf24;
+  /* Gold becomes primary */
+  --vn-primary-contrast: #0f172a;
+  --vn-accent: #fcd34d;
+  /* Brighter gold */
+  --vn-gold: #fbbf24;
+  /* Gold is Gold */
+
+  /* Onyx Gradient - Slate to Gold */
+  --vn-gradient: linear-gradient(135deg, #1e293b 0%, #fbbf24 100%);
+  --vn-gradient-subtle: linear-gradient(135deg, rgba(30, 41, 59, 0.3) 0%, rgba(251, 191, 36, 0.15) 100%);
+  --vn-gradient-gold: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
 }
 
 body {

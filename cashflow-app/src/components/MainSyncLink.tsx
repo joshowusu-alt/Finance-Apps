@@ -141,7 +141,7 @@ export default function MainSyncLink() {
     return {
       label: "Up to date.",
       action: "No action needed",
-      tone: "text-emerald-300",
+      tone: "text-amber-400",
     };
   }, [conflict, lastLocalUpdatedAt, lastServerUpdatedAt, scope]);
 
