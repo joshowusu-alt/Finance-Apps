@@ -216,20 +216,23 @@ function ProgressBar({
   total,
   tone,
   hint,
+  barColor,
 }: {
   label: string;
   value: number;
   total: number;
   tone?: "good" | "warn" | "bad";
   hint?: string;
+  barColor?: string;
 }) {
   const pct = total > 0 ? clamp(value / total, 0, 1) : 0;
-  const color =
+  const defaultColor =
     tone === "good"
-      ? "bg-[var(--gold)]"
+      ? "#22c55e"
       : tone === "bad"
-        ? "bg-rose-500"
-        : "bg-slate-400";
+        ? "#ef4444"
+        : "#eab308";
+  const color = barColor || defaultColor;
   return (
     <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
       <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
@@ -237,7 +240,7 @@ function ProgressBar({
         <span className="font-semibold text-slate-700">{formatPercent(pct)}</span>
       </div>
       <div className="mt-2 h-2 rounded-full bg-slate-200">
-        <div className={`h-2 rounded-full ${color}`} style={{ width: `${pct * 100}%` }} />
+        <div className="h-2 rounded-full" style={{ width: `${pct * 100}%`, background: color }} />
       </div>
       {hint ? <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
     </div>
@@ -649,29 +652,29 @@ export default function InsightsPage() {
         key: "income",
         label: "Income",
         values: incomeSeries,
-        stroke: "#22c55e",
+        stroke: "#22c55e",  // Green - money coming in
         fill: "#22c55e",
       },
       {
         key: "spending",
         label: "Spending",
         values: spendingSeries,
-        stroke: "#dc2626",
-        fill: "#dc2626",
+        stroke: "#f97316",  // Orange - distinct from income
+        fill: "#f97316",
       },
       {
         key: "savings",
         label: "Savings",
         values: savingsSeries,
-        stroke: "#3b82f6",
-        fill: "#3b82f6",
+        stroke: "#a855f7",  // Purple - wealth building
+        fill: "#a855f7",
       },
       {
         key: "leftover",
         label: "Leftover",
         values: leftoverSeries,
-        stroke: "#fbbf24",
-        fill: "#fbbf24",
+        stroke: "#3b82f6",  // Blue - balance/neutral
+        fill: "#3b82f6",
       },
     ],
     [incomeSeries, spendingSeries, savingsSeries, leftoverSeries]
@@ -895,28 +898,28 @@ export default function InsightsPage() {
                   label="Time into period"
                   value={daysElapsed}
                   total={periodDays}
-                  tone="good"
+                  barColor="#0f172a"
                   hint={`Day ${daysElapsed} of ${periodDays}`}
                 />
                 <ProgressBar
                   label="Income pace"
                   value={baseStats.actualIncome}
                   total={baseStats.budgetIncome}
-                  tone={incomeProgress >= timeProgress ? "good" : "warn"}
+                  barColor={incomeProgress >= timeProgress ? "#22c55e" : "#eab308"}
                   hint={`Actual ${money(baseStats.actualIncome)} vs budget ${money(baseStats.budgetIncome)}`}
                 />
                 <ProgressBar
                   label="Spending pace"
                   value={baseStats.actualSpending}
                   total={baseStats.budgetSpending}
-                  tone={spendingProgress <= timeProgress ? "good" : "bad"}
+                  barColor={spendingProgress <= timeProgress ? "#f97316" : "#ef4444"}
                   hint={`Actual ${money(baseStats.actualSpending)} vs budget ${money(baseStats.budgetSpending)}`}
                 />
                 <ProgressBar
                   label="Savings pace"
                   value={baseStats.actualSavings}
                   total={baseStats.budgetSavings}
-                  tone={savingsProgress >= timeProgress ? "good" : "warn"}
+                  barColor={savingsProgress >= timeProgress ? "#a855f7" : "#eab308"}
                   hint={`Actual ${money(baseStats.actualSavings)} vs target ${money(baseStats.budgetSavings)}`}
                 />
               </div>

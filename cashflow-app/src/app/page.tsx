@@ -633,7 +633,7 @@ export default function HomePage() {
                     <div className="h-2 rounded-full" style={{ background: "var(--vn-border)" }}>
                       <div
                         className="h-2 rounded-full"
-                        style={{ width: `${spendingProgress * 100}%`, background: actualSpending > budgetSpending ? "var(--vn-error)" : "var(--vn-gold)" }}
+                        style={{ width: `${spendingProgress * 100}%`, background: actualSpending > budgetSpending ? "#ef4444" : "#f97316" }}
                       />
                     </div>
 
@@ -646,7 +646,7 @@ export default function HomePage() {
                     <div className="h-2 rounded-full" style={{ background: "var(--vn-border)" }}>
                       <div
                         className="h-2 rounded-full"
-                        style={{ width: `${incomeProgress * 100}%`, background: incomePaceGap < -0.08 ? "var(--vn-warning)" : "var(--vn-gold)" }}
+                        style={{ width: `${incomeProgress * 100}%`, background: incomePaceGap < -0.08 ? "#eab308" : "#22c55e" }}
                       />
                     </div>
 
@@ -659,7 +659,7 @@ export default function HomePage() {
                     <div className="h-2 rounded-full" style={{ background: "var(--vn-border)" }}>
                       <div
                         className="h-2 rounded-full"
-                        style={{ width: `${savingsProgress * 100}%`, background: actualSavings < budgetSavings ? "var(--vn-warning)" : "var(--vn-gold)" }}
+                        style={{ width: `${savingsProgress * 100}%`, background: actualSavings < budgetSavings ? "#eab308" : "#a855f7" }}
                       />
                     </div>
 

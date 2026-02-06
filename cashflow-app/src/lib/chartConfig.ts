@@ -4,11 +4,11 @@
  */
 
 export const chartColors = {
-  // Primary colors (Hybrid Palette)
+  // Primary colors - Highly Distinct Palette
   primary: "#0ea5e9",       // Sky 500 - Sapphire Blue
   secondary: "#fbbf24",     // Amber 400 - Gold
-  success: "#10b981",       // Emerald 500
-  warning: "#f59e0b",       // Amber 500
+  success: "#22c55e",       // Green 500 - Bright Green
+  warning: "#f97316",       // Orange 500 - Vivid Orange
   error: "#ef4444",         // Red 500
   info: "#3b82f6",          // Blue 500
   gold: "#fbbf24",          // Gold
@@ -18,21 +18,21 @@ export const chartColors = {
   gradientStart: "#0ea5e9",
   gradientEnd: "#3b82f6",
 
-  // Chart-specific colors (Sapphire/Gold compatible)
-  chart1: "#0ea5e9",        // Sky Blue (Primary)
-  chart2: "#10b981",        // Emerald
-  chart3: "#fbbf24",        // Gold
-  chart4: "#ef4444",        // Red
-  chart5: "#8b5cf6",        // Violet
-  chart6: "#06b6d4",        // Cyan
-  chart7: "#ec4899",          // Pink
-  chart8: "#14b8a6",          // Teal
+  // Chart-specific colors - HIGHLY DISTINCT for visual clarity
+  chart1: "#3b82f6",        // Blue - Strong blue
+  chart2: "#22c55e",        // Green - Bright green
+  chart3: "#f97316",        // Orange - Vivid orange
+  chart4: "#ef4444",        // Red - Clear red
+  chart5: "#a855f7",        // Purple - Vibrant purple
+  chart6: "#06b6d4",        // Cyan - Bright cyan
+  chart7: "#ec4899",        // Pink - Hot pink
+  chart8: "#84cc16",        // Lime - Lime green
 
-  // Finance semantic colors
+  // Finance semantic colors - DISTINCT
   income: "#22c55e",          // Green = money in
-  expense: "#dc2626",         // Red = money out
-  transfer: "#1e293b",        // Navy = transfers
-  savings: "#3b82f6",         // Blue = savings
+  expense: "#ef4444",         // Red = money out
+  transfer: "#64748b",        // Slate = transfers
+  savings: "#a855f7",         // Purple = savings (distinct from income)
 
   // Neutrals (Slate palette)
   text: {
@@ -49,41 +49,41 @@ export const chartColors = {
   },
 };
 
-// Category-specific colors
+// Category-specific colors - HIGHLY DISTINCT for easy identification
 export const categoryColors: Record<string, string> = {
-  // Key Categories (User requested distinction)
-  bills: chartColors.warning,      // Gold/Amber for Bills
-  allowance: chartColors.info,     // Blue for Allowance
-  flexible: chartColors.chart5,    // Purple for Flex
-  savings: chartColors.success,    // Green for Savings
-  buffer: chartColors.chart6,      // Cyan for Buffer
+  // Key Spending Categories - Each visually unique
+  bill: "#3b82f6",             // Blue - Bills are a primary concern
+  bills: "#3b82f6",            // Blue
+  allowance: "#22c55e",        // Green - Personal spending money
+  giving: "#f97316",           // Orange - Charitable/gifts (warm, generous)
+  savings: "#a855f7",          // Purple - Savings (wealth building)
+  buffer: "#06b6d4",           // Cyan - Emergency/buffer funds
+  flexible: "#ec4899",         // Pink - Flexible spending
+  other: "#64748b",            // Slate - Miscellaneous
 
-  // Income
-  salary: chartColors.success,
-  income: chartColors.success,
-  freelance: chartColors.info,
+  // Income types
+  salary: "#22c55e",           // Green
+  income: "#22c55e",           // Green
+  freelance: "#84cc16",        // Lime - Side income
 
   // Housing
-  rent: chartColors.error,
-  mortgage: chartColors.error,
-  utilities: chartColors.warning,
+  rent: "#ef4444",             // Red - Major expense
+  mortgage: "#ef4444",         // Red
+  utilities: "#f97316",        // Orange
 
   // Food
-  groceries: chartColors.chart6,   // Cyan
-  restaurants: chartColors.chart7, // Pink
-  dining: chartColors.chart7,
+  groceries: "#06b6d4",        // Cyan
+  restaurants: "#ec4899",      // Pink
+  dining: "#ec4899",           // Pink
 
   // Transportation
-  transport: chartColors.chart5,
-  car: chartColors.chart5,
-  gas: chartColors.warning,
+  transport: "#a855f7",        // Purple
+  car: "#a855f7",              // Purple
+  gas: "#f97316",              // Orange
 
   // Entertainment
-  entertainment: chartColors.chart8, // Teal
-  subscriptions: chartColors.primary,
-
-  // Default
-  other: chartColors.muted.light,
+  entertainment: "#ec4899",    // Pink
+  subscriptions: "#3b82f6",    // Blue
 };
 
 // Get theme-aware text color
