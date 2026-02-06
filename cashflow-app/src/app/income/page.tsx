@@ -76,27 +76,27 @@ function matchRule(txn: Transaction, label: string, id: string) {
 
 function formatVariance(value: number, isPositiveGood: boolean) {
   if (value === 0) {
-    return { label: "0", tone: "text-slate-500" };
+    return { label: "0", tone: "text-slate-500 dark:text-slate-400" };
   }
   const sign = value > 0 ? "+" : "-";
   const abs = Math.abs(value);
   const tone =
     value > 0
       ? isPositiveGood
-        ? "text-emerald-600"
+        ? "text-green-600"
         : "text-rose-600"
       : isPositiveGood
         ? "text-rose-600"
-        : "text-emerald-600";
+        : "text-green-600";
   return { label: `${sign}${gbp(abs)}`, tone };
 }
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="vn-card p-6">
-      <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
       <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-slate-500">{hint}</div> : null}
+      {hint ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
     </div>
   );
 }
@@ -266,9 +266,9 @@ export default function IncomePage() {
 
           <section className="space-y-6">
             <header className="vn-card p-6">
-              <div className="text-xs uppercase tracking-wide text-slate-500">Income</div>
+              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Income</div>
               <h1 className="text-2xl font-semibold text-slate-900">Income sources</h1>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 Plan your pay and compare with real income.
               </p>
               {lastUpdated ? (
@@ -305,7 +305,7 @@ export default function IncomePage() {
                 </div>
                 <div className="mt-4 space-y-3 text-sm">
                   {plan.incomeRules.length === 0 ? (
-                    <div className="text-slate-500 text-xs">No income rules yet. Add one to get started.</div>
+                    <div className="text-slate-500 dark:text-slate-400 text-xs">No income rules yet. Add one to get started.</div>
                   ) : (
                     plan.incomeRules.map((rule) => (
                       <div
@@ -316,7 +316,7 @@ export default function IncomePage() {
                       >
                         <div className="flex-1">
                           <div className="font-semibold text-slate-900">{rule.label}</div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
                             {rule.cadence} • {rule.seedDate}
                             {!rule.enabled && " • Disabled"}
                           </div>
@@ -325,7 +325,7 @@ export default function IncomePage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleToggleEnabled(rule.id)}
-                            className="text-xs text-slate-500 hover:text-slate-700"
+                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700"
                             title={rule.enabled ? "Disable" : "Enable"}
                           >
                             {rule.enabled ? "👁️" : "👁️‍🗨️"}
@@ -353,15 +353,15 @@ export default function IncomePage() {
                 <div className="text-sm font-semibold text-slate-800">Upcoming income</div>
                 <div className="mt-4 space-y-3 text-sm">
                   {upcoming.length === 0 ? (
-                    <div className="text-slate-500">No income in the current window.</div>
+                    <div className="text-slate-500 dark:text-slate-400">No income in the current window.</div>
                   ) : (
                     upcoming.map((item) => (
                       <div key={item.id} className="flex flex-wrap items-center justify-between gap-2">
                         <div>
                           <div className="font-semibold text-slate-900">{item.label}</div>
-                          <div className="text-xs text-slate-500">Due {prettyDate(item.date)}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">Due {prettyDate(item.date)}</div>
                         </div>
-                        <div className="font-semibold text-emerald-600">{gbp(item.amount)}</div>
+                        <div className="font-semibold text-green-600">{gbp(item.amount)}</div>
                       </div>
                     ))
                   )}
@@ -381,7 +381,7 @@ export default function IncomePage() {
                   <div className="text-right">Variance</div>
                 </div>
                 {budgetVsActual.length === 0 ? (
-                  <div className="text-slate-500">No income rules yet.</div>
+                  <div className="text-slate-500 dark:text-slate-400">No income rules yet.</div>
                 ) : (
                   <div ref={varianceListRef} className="mt-3 max-h-[65vh] overflow-auto pr-2">
                     <div
@@ -407,9 +407,9 @@ export default function IncomePage() {
                               <summary className="grid cursor-pointer list-none items-center gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
                                 <div>
                                   <div className="font-semibold text-slate-900">{item.label}</div>
-                                  <div className="text-xs text-slate-500">{countLabel}</div>
+                                  <div className="text-xs text-slate-500 dark:text-slate-400">{countLabel}</div>
                                 </div>
-                                <div className="flex items-center justify-between text-slate-600 sm:block sm:text-right">
+                                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 sm:block sm:text-right">
                                   <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                     Budget
                                   </span>
@@ -430,16 +430,16 @@ export default function IncomePage() {
                                   <span>{variance.label}</span>
                                 </div>
                               </summary>
-                              <div className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-600">
+                              <div className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-600 dark:text-slate-300">
                                 {item.transactions.length === 0 ? (
-                                  <div className="text-slate-500">No income transactions recorded.</div>
+                                  <div className="text-slate-500 dark:text-slate-400">No income transactions recorded.</div>
                                 ) : (
                                   <div className="space-y-2">
                                     {item.transactions.map((txn) => (
                                       <div key={txn.id} className="flex items-start justify-between gap-3">
                                         <div>
                                           <div className="text-slate-700">{txn.label}</div>
-                                          <div className="text-[11px] text-slate-500">
+                                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
                                             {prettyDate(txn.date)}
                                             {txn.notes ? ` - ${txn.notes}` : ""}
                                           </div>

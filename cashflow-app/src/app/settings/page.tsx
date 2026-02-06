@@ -189,9 +189,9 @@ export default function SettingsPage() {
           <SidebarNav />
           <section className="space-y-6">
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
-              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Settings</div>
+              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 dark:text-slate-400">Settings</div>
               <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">App Settings</h1>
-              <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">Customize your Velanovo experience</div>
+              <div className="mt-2 text-sm text-slate-500 dark:text-slate-400 dark:text-slate-400">Customize your Velanovo experience</div>
             </div>
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
@@ -200,7 +200,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Dark Mode</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Toggle between light and dark themes</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400">Toggle between light and dark themes</div>
                   </div>
                   <ThemeToggle />
                 </div>
@@ -214,7 +214,7 @@ export default function SettingsPage() {
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">As of Date</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              <div className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mb-4">
                 Controls the reference date for filtering transactions and calculating time progress
               </div>
 
@@ -266,7 +266,7 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-3">
                 {plan.periods.length === 0 ? (
-                  <div className="text-slate-500 dark:text-slate-400 text-xs">No periods yet. Add one to get started.</div>
+                  <div className="text-slate-500 dark:text-slate-400 dark:text-slate-400 text-xs">No periods yet. Add one to get started.</div>
                 ) : (
                   plan.periods.map((period) => (
                     <div
@@ -284,7 +284,7 @@ export default function SettingsPage() {
                             <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">(Active)</span>
                           )}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400">
                           {period.start} to {period.end}
                         </div>
                       </div>
@@ -312,12 +312,12 @@ export default function SettingsPage() {
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Period Overrides</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              <div className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mb-4">
                 Customize specific periods without affecting base rules
               </div>
 
               {plan.periods.length === 0 ? (
-                <div className="text-slate-500 dark:text-slate-400 text-xs">Add periods first to manage overrides.</div>
+                <div className="text-slate-500 dark:text-slate-400 dark:text-slate-400 text-xs">Add periods first to manage overrides.</div>
               ) : (
                 <div className="space-y-4">
                   {plan.periods.map((period) => {
@@ -474,11 +474,11 @@ export default function SettingsPage() {
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">About</div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-600 dark:text-slate-400">Version</span>
+                  <span className="text-slate-600 dark:text-slate-300 dark:text-slate-400">Version</span>
                   <span className="font-medium text-slate-900 dark:text-slate-100">1.0.0</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600 dark:text-slate-400">App Name</span>
+                  <span className="text-slate-600 dark:text-slate-300 dark:text-slate-400">App Name</span>
                   <span className="font-medium text-slate-900 dark:text-slate-100">Velanovo</span>
                 </div>
               </div>

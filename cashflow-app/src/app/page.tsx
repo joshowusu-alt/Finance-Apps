@@ -22,8 +22,10 @@ import {
   minPoint,
 } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
-import { CashflowProjectionChart, SpendingTrendChart } from "@/components/charts";
-import type { CashflowDataPoint, SpendingDataPoint } from "@/components/charts";
+import { CashflowProjectionChart, SpendingTrendChart, DonutChart } from "@/components/charts";
+import type { CashflowDataPoint, SpendingDataPoint, DonutDataPoint } from "@/components/charts";
+import { CategoryDrilldown } from "@/components/CategoryDrilldown";
+import type { CashflowCategory } from "@/data/plan";
 
 function money(n: number) {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n || 0);
@@ -94,6 +96,7 @@ export default function HomePage() {
   const [plan, setPlan] = useState(() => loadPlan());
   const [isFirstUse, setIsFirstUse] = useState(false);
   const [onboarding, setOnboarding] = useState(() => loadOnboardingState());
+  const [selectedCategory, setSelectedCategory] = useState<CashflowCategory | null>(null);
   const [alertPrefs, setAlertPrefs] = useState(() => loadAlertPreferences());
 
   useEffect(() => {
@@ -316,6 +319,37 @@ export default function HomePage() {
       .slice(0, 15);
   }, [periodTransactions]);
 
+  // Spending by category for donut chart
+  const spendingByCategory: DonutDataPoint[] = useMemo(() => {
+    const categoryTotals = new Map<string, number>();
+
+    periodTransactions
+      .filter((t) => t.type === "outflow")
+      .forEach((t) => {
+        const cat = t.category || "other";
+        categoryTotals.set(cat, (categoryTotals.get(cat) || 0) + t.amount);
+      });
+
+    return Array.from(categoryTotals.entries())
+      .map(([name, value]) => ({ name, value }))
+      .filter((d) => d.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [periodTransactions]);
+
+  // Get transactions for selected category
+  const selectedCategoryTransactions = useMemo(() => {
+    if (!selectedCategory) return [];
+    return periodTransactions.filter((t) => t.category === selectedCategory);
+  }, [periodTransactions, selectedCategory]);
+
+  // Get budgeted amount for selected category
+  const selectedCategoryBudget = useMemo(() => {
+    if (!selectedCategory) return undefined;
+    return events
+      .filter((e) => e.category === selectedCategory && e.type === "outflow")
+      .reduce((sum, e) => sum + e.amount, 0);
+  }, [events, selectedCategory]);
+
   function handleStartFresh() {
     const fresh = createFreshPlan();
     savePlan(fresh);
@@ -353,15 +387,15 @@ export default function HomePage() {
           <section className="space-y-5">
             <header className="flex flex-col gap-4 rounded-3xl bg-[var(--surface)] p-6 text-slate-900 shadow-xl md:flex-row md:items-center md:justify-between">
               <div>
-                <div className="text-xs uppercase tracking-wide text-slate-500">Dashboard</div>
+                <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Dashboard</div>
                 <h1 className="text-2xl font-semibold">Welcome back</h1>
-                <div className="mt-2 text-sm text-slate-500">
+                <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                   Your money story for this period.
                 </div>
                 <div className="mt-1 text-xs text-slate-400">{period.label}</div>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <div className="rounded-full bg-slate-100 px-4 py-2 text-xs text-slate-600">
+                <div className="rounded-full bg-slate-100 px-4 py-2 text-xs text-slate-600 dark:text-slate-300">
                   Window {windowData.startISO} to {windowData.endISO}
                 </div>
                 <Link
@@ -378,18 +412,18 @@ export default function HomePage() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="text-sm font-semibold text-slate-800">Getting started</div>
-                    <div className="mt-1 text-xs text-slate-500">
+                    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                       {completedCount} of {onboardingTasks.length} steps done
                     </div>
                   </div>
                   <button
                     onClick={handleDismissOnboarding}
-                    className="text-xs font-semibold text-slate-400 hover:text-slate-600"
+                    className="text-xs font-semibold text-slate-400 hover:text-slate-600 dark:text-slate-300"
                   >
                     Dismiss
                   </button>
                 </div>
-                <div className="mt-3 text-sm text-slate-600">
+                <div className="mt-3 text-sm text-slate-600 dark:text-slate-300">
                   {isFirstUse
                     ? "Explore the sample plan, or clear it to build your own."
                     : "Keep momentum with a quick checklist and tips."}
@@ -424,7 +458,7 @@ export default function HomePage() {
                         />
                         <span>
                           <div className="text-sm font-semibold text-slate-900">{task.label}</div>
-                          <div className="text-xs text-slate-500">{task.description}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">{task.description}</div>
                         </span>
                       </label>
                       <Link
@@ -436,7 +470,7 @@ export default function HomePage() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 rounded-2xl bg-slate-100 px-4 py-3 text-xs text-slate-600">
+                <div className="mt-4 rounded-2xl bg-slate-100 px-4 py-3 text-xs text-slate-600 dark:text-slate-300">
                   Tips: update your period dates, set a safe minimum balance, and log your first
                   real transaction to unlock insights.
                 </div>
@@ -446,7 +480,7 @@ export default function HomePage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-semibold text-slate-800">Onboarding hidden</div>
-                    <div className="mt-1 text-xs text-slate-500">
+                    <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                       Bring back the setup checklist any time.
                     </div>
                   </div>
@@ -524,11 +558,54 @@ export default function HomePage() {
               )}
             </div>
 
+            {/* Spending by Category - Interactive Donut Chart */}
+            {spendingByCategory.length > 0 && (
+              <div className="vn-card p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>
+                      Spending by Category
+                    </div>
+                    <div className="mt-1 text-xs" style={{ color: "var(--vn-muted)" }}>
+                      Click any category to see details
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xl font-bold" style={{ color: "var(--vn-text)" }}>
+                      {money(actualSpending)}
+                    </div>
+                    <div className="text-xs" style={{ color: "var(--vn-muted)" }}>
+                      total spent
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <DonutChart
+                    data={spendingByCategory}
+                    height={340}
+                    centerValue={money(actualSpending)}
+                    centerLabel="Total Spent"
+                    onCategoryClick={(cat) => setSelectedCategory(cat as CashflowCategory)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Category Drilldown Modal */}
+            <CategoryDrilldown
+              isOpen={selectedCategory !== null}
+              onClose={() => setSelectedCategory(null)}
+              category={selectedCategory || "other"}
+              transactions={selectedCategoryTransactions}
+              budgeted={selectedCategoryBudget}
+              periodLabel={period.label}
+            />
+
             <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
               <div className="space-y-5">
                 <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
                   <div className="text-sm font-semibold text-slate-800">Story so far</div>
-                  <div className="mt-3 space-y-3 text-sm text-slate-600">
+                  <div className="mt-3 space-y-3 text-sm text-slate-600 dark:text-slate-300">
                     <div className="flex items-center justify-between">
                       <span>Time into period</span>
                       <span className="font-semibold text-slate-900">
@@ -550,7 +627,7 @@ export default function HomePage() {
                     </div>
                     <div className="h-2 rounded-full bg-slate-200">
                       <div
-                        className={`h-2 rounded-full ${actualSpending > budgetSpending ? "bg-rose-500" : "bg-emerald-500"}`}
+                        className={`h-2 rounded-full ${actualSpending > budgetSpending ? "bg-rose-500" : "bg-[var(--gold)]"}`}
                         style={{ width: `${spendingProgress * 100}%` }}
                       />
                     </div>
@@ -563,7 +640,7 @@ export default function HomePage() {
                     </div>
                     <div className="h-2 rounded-full bg-slate-200">
                       <div
-                        className={`h-2 rounded-full ${incomePaceGap < -0.08 ? "bg-amber-500" : "bg-emerald-500"}`}
+                        className={`h-2 rounded-full ${incomePaceGap < -0.08 ? "bg-amber-500" : "bg-[var(--gold)]"}`}
                         style={{ width: `${incomeProgress * 100}%` }}
                       />
                     </div>
@@ -576,19 +653,19 @@ export default function HomePage() {
                     </div>
                     <div className="h-2 rounded-full bg-slate-200">
                       <div
-                        className={`h-2 rounded-full ${actualSavings < budgetSavings ? "bg-amber-500" : "bg-emerald-500"}`}
+                        className={`h-2 rounded-full ${actualSavings < budgetSavings ? "bg-amber-500" : "bg-[var(--gold)]"}`}
                         style={{ width: `${savingsProgress * 100}%` }}
                       />
                     </div>
 
-                    <div className="rounded-2xl bg-slate-100 px-4 py-3 text-xs text-slate-600">
+                    <div className="rounded-2xl bg-slate-100 px-4 py-3 text-xs text-slate-600 dark:text-slate-300">
                       Projected end balance: <span className="font-semibold text-slate-900">{money(endingBalance)}</span>.{" "}
                       Lowest point {lowest ? `${money(lowest.balance)} on ${prettyDate(lowest.date)}` : "-"}.
                     </div>
 
                     <div className="border-t border-slate-200 pt-4">
                       <div className="text-sm font-semibold text-slate-800">Story insights</div>
-                      <div className="mt-3 space-y-2 text-sm text-slate-600">
+                      <div className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                         {storyInsights.map((insight, idx) => (
                           <div key={`insight-${idx}`} className="flex gap-2">
                             <span className="text-slate-400">-</span>
@@ -606,13 +683,13 @@ export default function HomePage() {
                 <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-semibold text-slate-800">Alerts & notifications</div>
-                    <Link href="/settings" className="text-xs text-slate-500 hover:text-slate-700">
+                    <Link href="/settings" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700">
                       Manage
                     </Link>
                   </div>
-                  <div className="mt-4 space-y-3 text-sm text-slate-600">
+                  <div className="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
                     {alerts.length === 0 ? (
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
                         Alerts are disabled. Enable them in Settings to see notices.
                       </div>
                     ) : (
@@ -623,7 +700,7 @@ export default function HomePage() {
                             : alert.tone === "warning"
                               ? "text-amber-600"
                               : alert.tone === "good"
-                                ? "text-emerald-600"
+                                ? "text-green-600"
                                 : "text-slate-700";
                         return (
                           <div
@@ -631,7 +708,7 @@ export default function HomePage() {
                             className="rounded-2xl border border-slate-200 bg-white/70 px-4 py-3"
                           >
                             <div className={`text-sm font-semibold ${toneClass}`}>{alert.title}</div>
-                            <div className="mt-1 text-xs text-slate-500">{alert.description}</div>
+                            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{alert.description}</div>
                             {alert.href ? (
                               <Link
                                 href={alert.href}
@@ -649,19 +726,19 @@ export default function HomePage() {
                 <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-semibold text-slate-800">Upcoming income</div>
-                    <Link href="/income" className="text-xs text-slate-500 hover:text-slate-700">
+                    <Link href="/income" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700">
                       View all
                     </Link>
                   </div>
                   <div className="mt-4 space-y-3 text-sm">
                     {upcomingIncome.length === 0 ? (
-                      <div className="text-slate-500">No income in window.</div>
+                      <div className="text-slate-500 dark:text-slate-400">No income in window.</div>
                     ) : (
                       upcomingIncome.map((item) => (
                         <div key={item.id} className="flex items-center justify-between">
                           <div>
                             <div className="font-semibold text-slate-900">{item.label}</div>
-                            <div className="text-xs text-slate-500">Due {prettyDate(item.date)}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Due {prettyDate(item.date)}</div>
                           </div>
                           <div className="font-semibold text-[var(--accent)]">{money(item.amount)}</div>
                         </div>
@@ -673,19 +750,19 @@ export default function HomePage() {
                 <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-semibold text-slate-800">Upcoming bills</div>
-                    <Link href="/bills" className="text-xs text-slate-500 hover:text-slate-700">
+                    <Link href="/bills" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700">
                       View all
                     </Link>
                   </div>
                   <div className="mt-4 space-y-3 text-sm">
                     {upcomingBills.length === 0 ? (
-                      <div className="text-slate-500">No bills in window.</div>
+                      <div className="text-slate-500 dark:text-slate-400">No bills in window.</div>
                     ) : (
                       upcomingBills.map((item) => (
                         <div key={item.id} className="flex items-center justify-between">
                           <div>
                             <div className="font-semibold text-slate-900">{item.label}</div>
-                            <div className="text-xs text-slate-500">Due {prettyDate(item.date)}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Due {prettyDate(item.date)}</div>
                           </div>
                           <div className="font-semibold text-[var(--red-accent)]">{money(item.amount)}</div>
                         </div>

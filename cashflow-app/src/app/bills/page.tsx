@@ -3,9 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { getActiveScenarioUpdatedAt, loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { generateEvents, getPeriod, getUpcomingEvents } from "@/lib/cashflowEngine";
+import { detectRecurringBills } from "@/lib/billDetection";
 import SidebarNav from "@/components/SidebarNav";
 import BankingSection from "@/components/BankingSection";
+import { BillSuggestions } from "@/components/BillSuggestions";
 import type { Transaction, BillTemplate, OutflowRule, Recurrence, CashflowCategory } from "@/data/plan";
+import type { DetectedBill } from "@/lib/billDetection";
 
 function gbp(n: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -73,27 +76,27 @@ function matchBill(txn: Transaction, label: string, id: string) {
 
 function formatVariance(value: number, isPositiveGood: boolean) {
   if (value === 0) {
-    return { label: "0", tone: "text-slate-500" };
+    return { label: "0", tone: "text-slate-500 dark:text-slate-400" };
   }
   const sign = value > 0 ? "+" : "-";
   const abs = Math.abs(value);
   const tone =
     value > 0
       ? isPositiveGood
-        ? "text-emerald-600"
+        ? "text-green-600"
         : "text-rose-600"
       : isPositiveGood
         ? "text-rose-600"
-        : "text-emerald-600";
+        : "text-green-600";
   return { label: `${sign}${gbp(abs)}`, tone };
 }
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="vn-card p-6">
-      <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
       <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-slate-500">{hint}</div> : null}
+      {hint ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
     </div>
   );
 }
@@ -152,6 +155,12 @@ export default function BillsPage() {
   const upcoming = useMemo(
     () => getUpcomingEvents(plan, plan.setup.selectedPeriodId, "outflow").slice(0, 6),
     [plan]
+  );
+
+  // Detect recurring bills from transaction history
+  const detectedBills = useMemo(
+    () => detectRecurringBills(plan.transactions, plan.bills),
+    [plan.transactions, plan.bills]
   );
 
   const budgetedOutflows = useMemo(
@@ -354,6 +363,20 @@ export default function BillsPage() {
     setPlan(updated);
   }
 
+  // Handle accepting a detected bill suggestion
+  function handleAcceptBill(bill: BillTemplate) {
+    const updated = { ...plan, bills: [...plan.bills, bill] };
+    savePlan(updated);
+    setPlan(updated);
+  }
+
+  // Handle dismissing a detected bill (store in local storage to not show again)
+  function handleDismissBill(billId: string) {
+    // For now, we just let the BillSuggestions component handle the UI state
+    // In a production app, you'd store dismissed IDs in localStorage or the plan
+    console.log("Dismissed bill suggestion:", billId);
+  }
+
   return (
     <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-5 pb-28 pt-6">
@@ -362,9 +385,9 @@ export default function BillsPage() {
 
           <section className="space-y-6">
             <header className="vn-card p-6">
-              <div className="text-xs uppercase tracking-wide text-slate-500">Bills</div>
+              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Bills</div>
               <h1 className="text-2xl font-semibold text-slate-900">Bills and outflows</h1>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 Plan your bills and compare with real spending.
               </p>
               {lastUpdated ? (
@@ -395,6 +418,15 @@ export default function BillsPage() {
               }}
             />
 
+            {/* Bill Suggestions from transaction history */}
+            {detectedBills.length > 0 && (
+              <BillSuggestions
+                detectedBills={detectedBills}
+                onAccept={handleAcceptBill}
+                onDismiss={handleDismissBill}
+              />
+            )}
+
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
@@ -408,20 +440,19 @@ export default function BillsPage() {
                 </div>
                 <div className="mt-4 space-y-3 text-sm">
                   {plan.bills.length === 0 ? (
-                    <div className="text-slate-500 text-xs">No bills yet. Add one to get started.</div>
+                    <div className="text-slate-500 dark:text-slate-400 text-xs">No bills yet. Add one to get started.</div>
                   ) : (
                     plan.bills.map((bill) => (
                       <div
                         key={bill.id}
-                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${
-                          bill.enabled && !disabledBills.has(bill.id)
+                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${bill.enabled && !disabledBills.has(bill.id)
                             ? "bg-white/70 border border-slate-200"
                             : "bg-slate-100 opacity-60"
-                        }`}
+                          }`}
                       >
                         <div className="flex-1">
                           <div className="font-semibold text-slate-900">{bill.label}</div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
                             Due day {bill.dueDay} • {bill.category}
                             {!bill.enabled && " • Disabled"}
                             {disabledBills.has(bill.id) && " • Disabled for period"}
@@ -431,7 +462,7 @@ export default function BillsPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleToggleEnabled(bill.id)}
-                            className="text-xs text-slate-500 hover:text-slate-700"
+                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700"
                             title={bill.enabled ? "Disable" : "Enable"}
                           >
                             {bill.enabled ? "👁️" : "👁️‍🗨️"}
@@ -467,20 +498,19 @@ export default function BillsPage() {
                 </div>
                 <div className="mt-4 space-y-3 text-sm">
                   {plan.outflowRules.length === 0 ? (
-                    <div className="text-slate-500 text-xs">No outflow rules yet. Add one to get started.</div>
+                    <div className="text-slate-500 dark:text-slate-400 text-xs">No outflow rules yet. Add one to get started.</div>
                   ) : (
                     plan.outflowRules.map((rule) => (
                       <div
                         key={rule.id}
-                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${
-                          rule.enabled
+                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${rule.enabled
                             ? "bg-white/70 border border-slate-200"
                             : "bg-slate-100 opacity-60"
-                        }`}
+                          }`}
                       >
                         <div className="flex-1">
                           <div className="font-semibold text-slate-900">{rule.label}</div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
                             {rule.cadence} • {rule.category}
                             {!rule.enabled && " • Disabled"}
                           </div>
@@ -489,7 +519,7 @@ export default function BillsPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleToggleOutflowEnabled(rule.id)}
-                            className="text-xs text-slate-500 hover:text-slate-700"
+                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700"
                             title={rule.enabled ? "Disable" : "Enable"}
                           >
                             {rule.enabled ? "👁️" : "👁️‍🗨️"}
@@ -526,7 +556,7 @@ export default function BillsPage() {
                   <div className="text-right">Variance</div>
                 </div>
                 {budgetVsActualBills.length === 0 ? (
-                  <div className="text-slate-500">No active bills for this period.</div>
+                  <div className="text-slate-500 dark:text-slate-400">No active bills for this period.</div>
                 ) : (
                   <div className="mt-3 max-h-[65vh] space-y-3 overflow-auto pr-2">
                     {budgetVsActualBills.map((item) => {
@@ -540,9 +570,9 @@ export default function BillsPage() {
                           <summary className="grid cursor-pointer list-none items-center gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
                             <div>
                               <div className="font-semibold text-slate-900">{item.label}</div>
-                              <div className="text-xs text-slate-500">{countLabel}</div>
+                              <div className="text-xs text-slate-500 dark:text-slate-400">{countLabel}</div>
                             </div>
-                            <div className="flex items-center justify-between text-slate-600 sm:block sm:text-right">
+                            <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 sm:block sm:text-right">
                               <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                 Budget
                               </span>
@@ -563,9 +593,9 @@ export default function BillsPage() {
                               <span>{variance.label}</span>
                             </div>
                           </summary>
-                          <div className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-600">
+                          <div className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-600 dark:text-slate-300">
                             {item.transactions.length === 0 ? (
-                              <div className="text-slate-500">No bill transactions recorded.</div>
+                              <div className="text-slate-500 dark:text-slate-400">No bill transactions recorded.</div>
                             ) : (
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between text-[10px] uppercase tracking-wide text-slate-400">
@@ -586,7 +616,7 @@ export default function BillsPage() {
                                       key={txn.id}
                                       className="grid grid-cols-[96px_1fr_auto] items-start gap-2 rounded-xl bg-white/70 px-3 py-2"
                                     >
-                                      <div className="text-[11px] text-slate-500">{prettyDate(txn.date)}</div>
+                                      <div className="text-[11px] text-slate-500 dark:text-slate-400">{prettyDate(txn.date)}</div>
                                       <div>
                                         <div className="text-sm text-slate-700">{txn.label}</div>
                                         {txn.notes ? (
@@ -622,7 +652,7 @@ export default function BillsPage() {
                   <div className="text-right">Variance</div>
                 </div>
                 {budgetVsActualOutflows.length === 0 ? (
-                  <div className="text-slate-500">No outflow rules yet.</div>
+                  <div className="text-slate-500 dark:text-slate-400">No outflow rules yet.</div>
                 ) : (
                   <div className="mt-3 max-h-[65vh] space-y-3 overflow-auto pr-2">
                     {budgetVsActualOutflows.map((item) => {
@@ -636,9 +666,9 @@ export default function BillsPage() {
                           <summary className="grid cursor-pointer list-none items-center gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
                             <div>
                               <div className="font-semibold text-slate-900">{item.label}</div>
-                              <div className="text-xs text-slate-500">{countLabel}</div>
+                              <div className="text-xs text-slate-500 dark:text-slate-400">{countLabel}</div>
                             </div>
-                            <div className="flex items-center justify-between text-slate-600 sm:block sm:text-right">
+                            <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 sm:block sm:text-right">
                               <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                 Budget
                               </span>
@@ -659,16 +689,16 @@ export default function BillsPage() {
                               <span>{variance.label}</span>
                             </div>
                           </summary>
-                          <div className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-600">
+                          <div className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-600 dark:text-slate-300">
                             {item.transactions.length === 0 ? (
-                              <div className="text-slate-500">No outflow transactions recorded.</div>
+                              <div className="text-slate-500 dark:text-slate-400">No outflow transactions recorded.</div>
                             ) : (
                               <div className="space-y-2">
                                 {item.transactions.map((txn) => (
                                   <div key={txn.id} className="flex items-start justify-between gap-3">
                                     <div>
                                       <div className="text-slate-700">{txn.label}</div>
-                                      <div className="text-[11px] text-slate-500">
+                                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
                                         {prettyDate(txn.date)}
                                         {txn.notes ? ` - ${txn.notes}` : ""}
                                       </div>

@@ -202,9 +202,9 @@ export default function TimelinePage() {
 
           <section className="space-y-6">
             <header className="vn-card p-6">
-              <div className="text-xs uppercase tracking-wide text-slate-500">Timeline</div>
+              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Timeline</div>
               <h1 className="text-2xl font-semibold text-slate-900">Cashflow Timeline</h1>
-              <p className="mt-2 text-sm text-slate-500">See your balance day by day.</p>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">See your balance day by day.</p>
               <p className="mt-1 text-xs text-slate-400">
                 {period.label} ({formatNice(period.start)} - {formatNice(period.end)})
               </p>
@@ -212,12 +212,12 @@ export default function TimelinePage() {
 
             <div className="grid gap-4 md:grid-cols-3">
               <div className="rounded-3xl bg-[var(--surface)] p-5 shadow-xl">
-                <div className="flex items-center justify-between text-sm text-slate-500">
+                <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
                   <span>Starting balance</span>
                   {plan.setup.rollForwardBalance && hasStartingOverride ? (
                     <button
                       onClick={clearStartingBalanceOverride}
-                      className="text-xs text-slate-500 hover:text-slate-700"
+                      className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700"
                     >
                       Use auto
                     </button>
@@ -230,7 +230,7 @@ export default function TimelinePage() {
                   onChange={(e) => updateStartingBalance(Number(e.target.value || 0))}
                   placeholder="0"
                 />
-                <p className="mt-2 text-xs text-slate-500">
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                   {plan.setup.rollForwardBalance
                     ? hasStartingOverride
                       ? "Custom for this period."
@@ -240,30 +240,30 @@ export default function TimelinePage() {
               </div>
 
               <div className="rounded-3xl bg-[var(--surface)] p-5 shadow-xl">
-                <p className="text-sm text-slate-500">Expected minimum balance</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Expected minimum balance</p>
                 <p className="mt-2 text-2xl font-semibold text-slate-900">
                   {gbp(plan.setup.expectedMinBalance)}
                 </p>
-                <p className="mt-2 text-xs text-slate-500">We flag any day that drops below this.</p>
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">We flag any day that drops below this.</p>
               </div>
 
               <div className="rounded-3xl bg-[var(--surface)] p-5 shadow-xl">
-                <p className="text-sm text-slate-500">Lowest point (period)</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Lowest point (period)</p>
                 <p
                   className={`mt-2 text-2xl font-semibold ${
-                    expectedMin < plan.setup.expectedMinBalance ? "text-rose-600" : "text-emerald-600"
+                    expectedMin < plan.setup.expectedMinBalance ? "text-rose-600" : "text-green-600"
                   }`}
                 >
                   {lowestPoint ? gbp(lowestPoint.balance) : "0"}
                 </p>
-                <p className="mt-2 text-xs text-slate-500">
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                   {lowestPoint ? `On ${formatNice(lowestPoint.date)}` : ""}
                 </p>
               </div>
             </div>
 
             <div className="overflow-hidden rounded-3xl bg-[var(--surface)] shadow-xl">
-              <div className="grid grid-cols-5 gap-2 bg-slate-100 px-4 py-3 text-xs text-slate-500">
+              <div className="grid grid-cols-5 gap-2 bg-slate-100 px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
                 <div>Date</div>
                 <div className="col-span-2">Label</div>
                 <div className="text-right">Income</div>
@@ -274,10 +274,10 @@ export default function TimelinePage() {
                 {rows.map((r) => (
                   <div
                     key={r.date}
-                    className="grid grid-cols-5 gap-2 border-t border-slate-200 px-4 py-3 text-sm text-slate-600"
+                    className="grid grid-cols-5 gap-2 border-t border-slate-200 px-4 py-3 text-sm text-slate-600 dark:text-slate-300"
                   >
                     <div className="text-slate-700">{formatNice(r.date)}</div>
-                    <div className="col-span-2 text-slate-500">{r.label || ""}</div>
+                    <div className="col-span-2 text-slate-500 dark:text-slate-400">{r.label || ""}</div>
                     <div className="text-right">{r.income ? gbp(r.income) : "0"}</div>
                     <div className="text-right">{r.outflow ? gbp(r.outflow) : "0"}</div>
 
@@ -299,7 +299,7 @@ export default function TimelinePage() {
               </summary>
               <div className="mt-4 space-y-3 text-sm">
                 {editableEvents.length === 0 ? (
-                  <div className="text-slate-500">No scheduled events to edit.</div>
+                  <div className="text-slate-500 dark:text-slate-400">No scheduled events to edit.</div>
                 ) : (
                   editableEvents.map((event) => (
                     <div
@@ -309,7 +309,7 @@ export default function TimelinePage() {
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div>
                           <div className="text-sm font-semibold text-slate-900">{event.label}</div>
-                          <div className="mt-1 text-xs text-slate-500">
+                          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                             {event.type} • {event.category} • {formatNice(event.date)}
                             {event.overridden ? " • edited" : ""}
                           </div>
@@ -317,14 +317,14 @@ export default function TimelinePage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => startEditEvent(event)}
-                            className="text-xs font-semibold text-slate-500 hover:text-slate-700"
+                            className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700"
                           >
                             Edit
                           </button>
                           {event.overridden ? (
                             <button
                               onClick={() => clearEventEdit(event.id)}
-                              className="text-xs font-semibold text-slate-500 hover:text-rose-600"
+                              className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-rose-600"
                             >
                               Reset
                             </button>
@@ -335,7 +335,7 @@ export default function TimelinePage() {
                       {editingEventId === event.id && eventDraft ? (
                         <div className="mt-4 grid gap-3 md:grid-cols-3">
                           <div>
-                            <label className="text-xs font-semibold text-slate-600">Date</label>
+                            <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Date</label>
                             <input
                               type="date"
                               min={period.start}
@@ -348,7 +348,7 @@ export default function TimelinePage() {
                             />
                           </div>
                           <div>
-                            <label className="text-xs font-semibold text-slate-600">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
                               Amount (GBP)
                             </label>
                             <input
@@ -371,7 +371,7 @@ export default function TimelinePage() {
                             </button>
                             <button
                               onClick={cancelEditEvent}
-                              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100"
                             >
                               Cancel
                             </button>
@@ -384,7 +384,7 @@ export default function TimelinePage() {
               </div>
             </details>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Edit rules and bills in Settings. Timeline recalculates for the selected period.
             </p>
           </section>
