@@ -470,7 +470,20 @@ export function loadPlan(): Plan {
     planCache = { key, raw: rawPlan, plan: normalized };
   }
   const next = parsePlan(window.localStorage.getItem(key));
-  planCache = { key, raw: window.localStorage.getItem(key), plan: next };
+
+  // Auto-update asOfDate to today if enabled (default: true)
+  const shouldAutoUpdate = next.setup.autoUpdateAsOfDate ?? true;
+  const today = todayISO();
+  if (shouldAutoUpdate && next.setup.asOfDate !== today) {
+    next.setup.asOfDate = today;
+    // Update localStorage with new date
+    const updated = JSON.stringify(next);
+    window.localStorage.setItem(key, updated);
+    planCache = { key, raw: updated, plan: next };
+  } else {
+    planCache = { key, raw: window.localStorage.getItem(key), plan: next };
+  }
+
   return next;
 }
 

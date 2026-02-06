@@ -105,6 +105,7 @@ export type Transaction = {
 export type PlanSetup = {
   selectedPeriodId: number;
   asOfDate: string; // YYYY-MM-DD
+  autoUpdateAsOfDate?: boolean; // Auto-update asOfDate to today on load
   windowDays: number;
   startingBalance: number;
   rollForwardBalance: boolean;

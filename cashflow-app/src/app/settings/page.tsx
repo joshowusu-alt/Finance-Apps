@@ -162,6 +162,26 @@ export default function SettingsPage() {
     );
   }
 
+  function handleSetAsOfDate(date: string) {
+    const updated = { ...plan, setup: { ...plan.setup, asOfDate: date } };
+    savePlan(updated);
+    setPlan(updated);
+  }
+
+  function handleSetToToday() {
+    const today = new Date().toISOString().slice(0, 10);
+    handleSetAsOfDate(today);
+  }
+
+  function handleToggleAutoUpdate() {
+    const updated = {
+      ...plan,
+      setup: { ...plan.setup, autoUpdateAsOfDate: !(plan.setup.autoUpdateAsOfDate ?? true) },
+    };
+    savePlan(updated);
+    setPlan(updated);
+  }
+
   return (
     <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-5 pb-28 pt-6">
@@ -190,6 +210,48 @@ export default function SettingsPage() {
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Regional Settings</div>
               <CurrencySelector />
+            </div>
+
+            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">As of Date</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                Controls the reference date for filtering transactions and calculating time progress
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Current As of Date
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={plan.setup.asOfDate}
+                      onChange={(e) => handleSetAsOfDate(e.target.value)}
+                      className="vn-input text-sm flex-1"
+                    />
+                    <button
+                      onClick={handleSetToToday}
+                      className="vn-btn vn-btn-primary text-xs px-3 py-2"
+                    >
+                      Set to Today
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="auto-update-date"
+                    checked={plan.setup.autoUpdateAsOfDate ?? true}
+                    onChange={handleToggleAutoUpdate}
+                    className="rounded"
+                  />
+                  <label htmlFor="auto-update-date" className="text-sm text-slate-700 dark:text-slate-300">
+                    Auto-update to today on app load (recommended)
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
