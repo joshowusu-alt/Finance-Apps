@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getActiveScenarioUpdatedAt, loadPlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { getActiveScenarioUpdatedAt, loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { generateEvents, getPeriod, getUpcomingEvents } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
 import BankingSection from "@/components/BankingSection";
-import type { Transaction } from "@/data/plan";
+import type { Transaction, BillTemplate, CashflowCategory } from "@/data/plan";
 
 function gbp(n: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -101,6 +101,15 @@ function StatCard({ label, value, hint }: { label: string; value: string; hint?:
 export default function BillsPage() {
   const [plan, setPlan] = useState(() => loadPlan());
   const [lastUpdated, setLastUpdated] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [editingBill, setEditingBill] = useState<BillTemplate | null>(null);
+  const [formData, setFormData] = useState<Partial<BillTemplate>>({
+    label: "",
+    amount: 0,
+    dueDay: 1,
+    category: "bill",
+    enabled: true,
+  });
 
   useEffect(() => {
     const refresh = () => {
@@ -215,6 +224,64 @@ export default function BillsPage() {
       });
   }, [events, period, plan]);
 
+  function handleAddBill() {
+    setEditingBill(null);
+    setFormData({
+      label: "",
+      amount: 0,
+      dueDay: 1,
+      category: "bill",
+      enabled: true,
+    });
+    setShowModal(true);
+  }
+
+  function handleEditBill(bill: BillTemplate) {
+    setEditingBill(bill);
+    setFormData(bill);
+    setShowModal(true);
+  }
+
+  function handleDeleteBill(billId: string) {
+    if (!confirm("Are you sure you want to delete this bill?")) return;
+    const updated = { ...plan, bills: plan.bills.filter((b) => b.id !== billId) };
+    savePlan(updated);
+    setPlan(updated);
+  }
+
+  function handleSaveBill() {
+    if (!formData.label || !formData.amount) {
+      alert("Please fill in label and amount");
+      return;
+    }
+
+    const billData: BillTemplate = {
+      id: editingBill?.id || `bill_${Date.now()}`,
+      label: formData.label!,
+      amount: Number(formData.amount),
+      dueDay: Number(formData.dueDay) || 1,
+      category: formData.category!,
+      enabled: formData.enabled ?? true,
+    };
+
+    const updated = editingBill
+      ? { ...plan, bills: plan.bills.map((b) => (b.id === editingBill.id ? billData : b)) }
+      : { ...plan, bills: [...plan.bills, billData] };
+
+    savePlan(updated);
+    setPlan(updated);
+    setShowModal(false);
+  }
+
+  function handleToggleEnabled(billId: string) {
+    const updated = {
+      ...plan,
+      bills: plan.bills.map((b) => (b.id === billId ? { ...b, enabled: !b.enabled } : b)),
+    };
+    savePlan(updated);
+    setPlan(updated);
+  }
+
   return (
     <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-5 pb-28 pt-6">
@@ -258,19 +325,61 @@ export default function BillsPage() {
 
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="vn-card p-6">
-                <div className="text-sm font-semibold text-slate-800">Planned bills</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold text-slate-800">Planned bills</div>
+                  <button
+                    onClick={handleAddBill}
+                    className="vn-btn vn-btn-primary text-xs px-3 py-1.5"
+                  >
+                    + Add Bill
+                  </button>
+                </div>
                 <div className="mt-4 space-y-3 text-sm">
-                  {plan.bills
-                    .filter((b) => b.enabled && !disabledBills.has(b.id))
-                    .map((bill) => (
-                      <div key={bill.id} className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
+                  {plan.bills.length === 0 ? (
+                    <div className="text-slate-500 text-xs">No bills yet. Add one to get started.</div>
+                  ) : (
+                    plan.bills.map((bill) => (
+                      <div
+                        key={bill.id}
+                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${
+                          bill.enabled && !disabledBills.has(bill.id)
+                            ? "bg-white/70 border border-slate-200"
+                            : "bg-slate-100 opacity-60"
+                        }`}
+                      >
+                        <div className="flex-1">
                           <div className="font-semibold text-slate-900">{bill.label}</div>
-                          <div className="text-xs text-slate-500">Due day {bill.dueDay}</div>
+                          <div className="text-xs text-slate-500">
+                            Due day {bill.dueDay} • {bill.category}
+                            {!bill.enabled && " • Disabled"}
+                            {disabledBills.has(bill.id) && " • Disabled for period"}
+                          </div>
                         </div>
                         <div className="font-semibold text-slate-900">{gbp(bill.amount)}</div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleToggleEnabled(bill.id)}
+                            className="text-xs text-slate-500 hover:text-slate-700"
+                            title={bill.enabled ? "Disable" : "Enable"}
+                          >
+                            {bill.enabled ? "👁️" : "👁️‍🗨️"}
+                          </button>
+                          <button
+                            onClick={() => handleEditBill(bill)}
+                            className="text-xs text-blue-600 hover:text-blue-800"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBill(bill.id)}
+                            className="text-xs text-red-600 hover:text-red-800"
+                          >
+                            Del
+                          </button>
+                        </div>
                       </div>
-                    ))}
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -469,6 +578,110 @@ export default function BillsPage() {
         </div>
       </div>
 
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="vn-card max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+              {editingBill ? "Edit Bill" : "Add Bill"}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Label *
+                </label>
+                <input
+                  type="text"
+                  value={formData.label || ""}
+                  onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                  className="vn-input text-sm"
+                  placeholder="e.g., Rent, Utilities"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Amount (£) *
+                </label>
+                <input
+                  type="number"
+                  value={formData.amount || ""}
+                  onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
+                  className="vn-input text-sm"
+                  placeholder="0.00"
+                  step="0.01"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Due Day (1-31) *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="31"
+                  value={formData.dueDay || ""}
+                  onChange={(e) => setFormData({ ...formData, dueDay: Number(e.target.value) })}
+                  className="vn-input text-sm"
+                  placeholder="1"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Category *
+                </label>
+                <select
+                  value={formData.category || "bill"}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value as CashflowCategory })}
+                  className="vn-input text-sm"
+                >
+                  <option value="bill">Bill</option>
+                  <option value="giving">Giving</option>
+                  <option value="savings">Savings</option>
+                  <option value="allowance">Allowance</option>
+                  <option value="buffer">Buffer</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="enabled"
+                  checked={formData.enabled ?? true}
+                  onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
+                />
+                <label htmlFor="enabled" className="text-sm text-slate-700">
+                  Enabled
+                </label>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleSaveBill}
+                className="vn-btn vn-btn-primary flex-1"
+              >
+                {editingBill ? "Save Changes" : "Add Bill"}
+              </button>
+              <button
+                onClick={() => setShowModal(false)}
+                className="vn-btn vn-btn-ghost"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

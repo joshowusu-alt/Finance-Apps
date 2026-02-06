@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { getActiveScenarioUpdatedAt, loadPlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { getActiveScenarioUpdatedAt, loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { generateEvents, getPeriod, getUpcomingEvents } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
-import type { Transaction } from "@/data/plan";
+import type { Transaction, IncomeRule, Recurrence } from "@/data/plan";
 
 function gbp(n: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -104,6 +104,15 @@ function StatCard({ label, value, hint }: { label: string; value: string; hint?:
 export default function IncomePage() {
   const [plan, setPlan] = useState(() => loadPlan());
   const [lastUpdated, setLastUpdated] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [editingRule, setEditingRule] = useState<IncomeRule | null>(null);
+  const [formData, setFormData] = useState<Partial<IncomeRule>>({
+    label: "",
+    amount: 0,
+    cadence: "monthly" as Recurrence,
+    seedDate: new Date().toISOString().slice(0, 10),
+    enabled: true,
+  });
 
   useEffect(() => {
     const refresh = () => {
@@ -189,6 +198,66 @@ export default function IncomePage() {
     overscan: 6,
   });
 
+  function handleAddRule() {
+    setEditingRule(null);
+    setFormData({
+      label: "",
+      amount: 0,
+      cadence: "monthly",
+      seedDate: new Date().toISOString().slice(0, 10),
+      enabled: true,
+    });
+    setShowModal(true);
+  }
+
+  function handleEditRule(rule: IncomeRule) {
+    setEditingRule(rule);
+    setFormData(rule);
+    setShowModal(true);
+  }
+
+  function handleDeleteRule(ruleId: string) {
+    if (!confirm("Are you sure you want to delete this income rule?")) return;
+    const updated = { ...plan, incomeRules: plan.incomeRules.filter((r) => r.id !== ruleId) };
+    savePlan(updated);
+    setPlan(updated);
+  }
+
+  function handleSaveRule() {
+    if (!formData.label || !formData.amount) {
+      alert("Please fill in label and amount");
+      return;
+    }
+
+    const ruleData: IncomeRule = {
+      id: editingRule?.id || `income_${Date.now()}`,
+      label: formData.label!,
+      amount: Number(formData.amount),
+      cadence: formData.cadence!,
+      seedDate: formData.seedDate!,
+      enabled: formData.enabled ?? true,
+    };
+
+    const updated = editingRule
+      ? { ...plan, incomeRules: plan.incomeRules.map((r) => (r.id === editingRule.id ? ruleData : r)) }
+      : { ...plan, incomeRules: [...plan.incomeRules, ruleData] };
+
+    savePlan(updated);
+    setPlan(updated);
+    setShowModal(false);
+  }
+
+  function handleToggleEnabled(ruleId: string) {
+    const updated = {
+      ...plan,
+      incomeRules: plan.incomeRules.map((r) =>
+        r.id === ruleId ? { ...r, enabled: !r.enabled } : r
+      ),
+    };
+    savePlan(updated);
+    setPlan(updated);
+  }
+
   return (
     <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-5 pb-28 pt-6">
@@ -225,19 +294,58 @@ export default function IncomePage() {
 
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="vn-card p-6">
-                <div className="text-sm font-semibold text-slate-800">Income rules</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold text-slate-800">Income rules</div>
+                  <button
+                    onClick={handleAddRule}
+                    className="vn-btn vn-btn-primary text-xs px-3 py-1.5"
+                  >
+                    + Add Rule
+                  </button>
+                </div>
                 <div className="mt-4 space-y-3 text-sm">
-                  {plan.incomeRules
-                    .filter((rule) => rule.enabled)
-                    .map((rule) => (
-                      <div key={rule.id} className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
+                  {plan.incomeRules.length === 0 ? (
+                    <div className="text-slate-500 text-xs">No income rules yet. Add one to get started.</div>
+                  ) : (
+                    plan.incomeRules.map((rule) => (
+                      <div
+                        key={rule.id}
+                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${
+                          rule.enabled ? "bg-white/70 border border-slate-200" : "bg-slate-100 opacity-60"
+                        }`}
+                      >
+                        <div className="flex-1">
                           <div className="font-semibold text-slate-900">{rule.label}</div>
-                          <div className="text-xs text-slate-500">{rule.cadence}</div>
+                          <div className="text-xs text-slate-500">
+                            {rule.cadence} • {rule.seedDate}
+                            {!rule.enabled && " • Disabled"}
+                          </div>
                         </div>
                         <div className="font-semibold text-slate-900">{gbp(rule.amount)}</div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleToggleEnabled(rule.id)}
+                            className="text-xs text-slate-500 hover:text-slate-700"
+                            title={rule.enabled ? "Disable" : "Enable"}
+                          >
+                            {rule.enabled ? "👁️" : "👁️‍🗨️"}
+                          </button>
+                          <button
+                            onClick={() => handleEditRule(rule)}
+                            className="text-xs text-blue-600 hover:text-blue-800"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteRule(rule.id)}
+                            className="text-xs text-red-600 hover:text-red-800"
+                          >
+                            Del
+                          </button>
+                        </div>
                       </div>
-                    ))}
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -356,6 +464,104 @@ export default function IncomePage() {
         </div>
       </div>
 
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="vn-card max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+              {editingRule ? "Edit Income Rule" : "Add Income Rule"}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Label *
+                </label>
+                <input
+                  type="text"
+                  value={formData.label || ""}
+                  onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                  className="vn-input text-sm"
+                  placeholder="e.g., Salary, Freelance"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Amount (£) *
+                </label>
+                <input
+                  type="number"
+                  value={formData.amount || ""}
+                  onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
+                  className="vn-input text-sm"
+                  placeholder="0.00"
+                  step="0.01"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Frequency *
+                </label>
+                <select
+                  value={formData.cadence || "monthly"}
+                  onChange={(e) => setFormData({ ...formData, cadence: e.target.value as Recurrence })}
+                  className="vn-input text-sm"
+                >
+                  <option value="weekly">Weekly</option>
+                  <option value="biweekly">Biweekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Start Date *
+                </label>
+                <input
+                  type="date"
+                  value={formData.seedDate || ""}
+                  onChange={(e) => setFormData({ ...formData, seedDate: e.target.value })}
+                  className="vn-input text-sm"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="enabled"
+                  checked={formData.enabled ?? true}
+                  onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
+                />
+                <label htmlFor="enabled" className="text-sm text-slate-700">
+                  Enabled
+                </label>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleSaveRule}
+                className="vn-btn vn-btn-primary flex-1"
+              >
+                {editingRule ? "Save Changes" : "Add Rule"}
+              </button>
+              <button
+                onClick={() => setShowModal(false)}
+                className="vn-btn vn-btn-ghost"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
