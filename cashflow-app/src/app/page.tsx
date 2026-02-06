@@ -22,6 +22,8 @@ import {
   minPoint,
 } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
+import { CashflowProjectionChart, SpendingTrendChart } from "@/components/charts";
+import type { CashflowDataPoint, SpendingDataPoint } from "@/components/charts";
 
 function money(n: number) {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n || 0);
@@ -282,6 +284,38 @@ export default function HomePage() {
     timeProgress,
   ]);
 
+  const cashflowChartData: CashflowDataPoint[] = useMemo(() => {
+    return rows.slice(0, 30).map((row) => ({
+      date: prettyDate(row.date),
+      balance: row.balance,
+    }));
+  }, [rows]);
+
+  const spendingChartData: SpendingDataPoint[] = useMemo(() => {
+    const grouped = new Map<string, { spending: number; income: number }>();
+
+    periodTransactions.forEach((txn) => {
+      const label = prettyDate(txn.date);
+      const current = grouped.get(label) || { spending: 0, income: 0 };
+
+      if (txn.type === 'outflow') {
+        current.spending += txn.amount;
+      } else if (txn.type === 'income') {
+        current.income += txn.amount;
+      }
+
+      grouped.set(label, current);
+    });
+
+    return Array.from(grouped.entries())
+      .map(([date, data]) => ({
+        date,
+        spending: data.spending,
+        income: data.income,
+      }))
+      .slice(0, 15);
+  }, [periodTransactions]);
+
   function handleStartFresh() {
     const fresh = createFreshPlan();
     savePlan(fresh);
@@ -455,6 +489,39 @@ export default function HomePage() {
                   },
                 ]}
               />
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-2">
+              <div className="vn-card p-6">
+                <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>Balance forecast</div>
+                <div className="mt-1 text-xs" style={{ color: "var(--vn-muted)" }}>
+                  Projected balance over the next 30 days
+                </div>
+                <div className="mt-4">
+                  <CashflowProjectionChart
+                    data={cashflowChartData}
+                    showProjection={false}
+                    height={280}
+                    lowBalanceThreshold={plan.setup.expectedMinBalance}
+                  />
+                </div>
+              </div>
+
+              {spendingChartData.length > 0 && (
+                <div className="vn-card p-6">
+                  <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>Daily activity</div>
+                  <div className="mt-1 text-xs" style={{ color: "var(--vn-muted)" }}>
+                    Income and spending by day
+                  </div>
+                  <div className="mt-4">
+                    <SpendingTrendChart
+                      data={spendingChartData}
+                      showIncome={true}
+                      height={280}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">

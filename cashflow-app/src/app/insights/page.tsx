@@ -13,6 +13,8 @@ import { loadPlan } from "@/lib/storage";
 import { suggestBillId } from "@/lib/billLinking";
 import { downloadPlanPdf } from "@/lib/planIo";
 import SidebarNav from "@/components/SidebarNav";
+import { CategoryBreakdownChart, SpendingTrendChart } from "@/components/charts";
+import type { CategoryData, SpendingDataPoint } from "@/components/charts";
 import type { CashflowCategory, Plan, Transaction } from "@/data/plan";
 
 function money(n: number) {
@@ -754,6 +756,28 @@ export default function InsightsPage() {
     variableDelta,
   ]);
 
+  const categoryChartData: CategoryData[] = useMemo(() => {
+    const categoryMap = mapTotalsByCategory(
+      baseStats.transactions,
+      (t) => t.type === "outflow" && t.category !== "savings"
+    );
+    return Array.from(categoryMap.entries())
+      .map(([category, value]) => ({
+        name: category.charAt(0).toUpperCase() + category.slice(1),
+        value,
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  }, [baseStats.transactions]);
+
+  const periodTrendData: SpendingDataPoint[] = useMemo(() => {
+    return allStats.map((stats, idx) => ({
+      date: sortedPeriods[idx]?.label || `P${idx + 1}`,
+      spending: stats.actualSpending,
+      income: stats.actualIncome,
+    }));
+  }, [allStats, sortedPeriods]);
+
   const basePeriod = baseStats.period;
 
   function handleExportSummary() {
@@ -1058,6 +1082,13 @@ export default function InsightsPage() {
             </CollapsibleSection>
 
             <CollapsibleSection title="3) Where am I overspending?" defaultOpen>
+              {categoryChartData.length > 0 && (
+                <div className="mb-6 rounded-2xl bg-white/70 p-6 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-slate-500 mb-4">Spending by category</div>
+                  <CategoryBreakdownChart data={categoryChartData} height={320} />
+                </div>
+              )}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
                   <div className="text-xs uppercase tracking-wide text-slate-500">Variable cap</div>
@@ -1192,6 +1223,13 @@ export default function InsightsPage() {
             </CollapsibleSection>
 
             <CollapsibleSection title="7) How do periods compare overall?" defaultOpen>
+              {periodTrendData.length > 1 && (
+                <div className="mb-6 rounded-2xl bg-white/70 p-6 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-slate-500 mb-4">Income vs spending trends</div>
+                  <SpendingTrendChart data={periodTrendData} showIncome={true} height={300} />
+                </div>
+              )}
+
               <div className="grid gap-4 md:grid-cols-2">
                 {seriesCards.map((series) => {
                   const last = lastValue(series.values);
