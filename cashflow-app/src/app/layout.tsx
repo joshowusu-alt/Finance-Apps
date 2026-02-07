@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ToastContainer from "@/components/Toast";
 import ThemeInitializer from "@/components/ThemeInitializer";
 import AIAssistant from "@/components/AIAssistant";
+import { ConfirmProvider } from "@/components/ConfirmDialog";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -34,23 +35,25 @@ export default function RootLayout({
   return (
     <html lang="en" className="transition-colors duration-200">
       <body className={`${playfair.variable} ${inter.variable} min-h-screen font-sans bg-white dark:bg-slate-900 transition-colors duration-200`}>
-        <ThemeInitializer />
-        <a href="#main-content" className="skip-link">
-          Skip to content
-        </a>
-        <div className="app-watermark" aria-hidden="true" />
-        {/* Page content */}
-        <ErrorBoundary>
-          <div id="main-content" tabIndex={-1} className="relative z-10 min-h-screen pb-24">
-            {children}
-          </div>
-        </ErrorBoundary>
+        <ConfirmProvider>
+          <ThemeInitializer />
+          <a href="#main-content" className="skip-link">
+            Skip to content
+          </a>
+          <div className="app-watermark" aria-hidden="true" />
+          {/* Page content */}
+          <ErrorBoundary>
+            <div id="main-content" tabIndex={-1} className="relative z-10 min-h-screen pb-24">
+              {children}
+            </div>
+          </ErrorBoundary>
 
-        {/* Persistent bottom navigation */}
-        <BottomNav />
-        <ReviewAccessLink />
-        <AIAssistant />
-        <ToastContainer />
+          {/* Persistent bottom navigation */}
+          <BottomNav />
+          <ReviewAccessLink />
+          <AIAssistant />
+          <ToastContainer />
+        </ConfirmProvider>
       </body>
     </html>
   );

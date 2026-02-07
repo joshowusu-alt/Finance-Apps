@@ -9,11 +9,41 @@ interface Message {
     timestamp: Date;
 }
 
+// Simple markdown parser for chat messages
+function formatMessage(content: string): React.ReactNode[] {
+    const parts: React.ReactNode[] = [];
+    let remaining = content;
+    let key = 0;
+
+    while (remaining.length > 0) {
+        // Find **bold** patterns
+        const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+
+        if (boldMatch && boldMatch.index !== undefined) {
+            // Add text before the match
+            if (boldMatch.index > 0) {
+                parts.push(remaining.slice(0, boldMatch.index));
+            }
+            // Add the bold text
+            parts.push(<strong key={key++} className="font-semibold">{boldMatch[1]}</strong>);
+            // Continue with the rest
+            remaining = remaining.slice(boldMatch.index + boldMatch[0].length);
+        } else {
+            // No more matches, add the rest
+            parts.push(remaining);
+            break;
+        }
+    }
+
+    return parts;
+}
+
 const SUGGESTED_QUESTIONS = [
-    "How much have I spent this month?",
-    "What are my biggest expenses?",
-    "How can I save more money?",
     "Am I on track with my budget?",
+    "What's my end-of-period forecast?",
+    "Which categories am I overspending?",
+    "Show me my subscriptions",
+    "How can I save more money?",
 ];
 
 export default function AIAssistant() {
@@ -22,7 +52,7 @@ export default function AIAssistant() {
         {
             id: "welcome",
             role: "assistant",
-            content: "👋 Hi! I'm your financial assistant. Ask me anything about your spending, budget, or how to save money.",
+            content: "👋 Hi! I'm your financial coach. I have access to your budget, spending patterns, and forecasts. Ask me about your pace, categories, or how to optimize your finances.",
             timestamp: new Date(),
         },
     ]);
@@ -106,8 +136,8 @@ export default function AIAssistant() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 ${isOpen
-                        ? "bg-slate-700 rotate-0"
-                        : "bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
+                    ? "bg-slate-700 rotate-0"
+                    : "bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
                     }`}
                 aria-label={isOpen ? "Close assistant" : "Open AI assistant"}
             >
@@ -134,8 +164,8 @@ export default function AIAssistant() {
                                 <span className="text-lg">🤖</span>
                             </div>
                             <div>
-                                <h3 className="font-semibold text-sm">AI Financial Assistant</h3>
-                                <p className="text-xs text-white/80">Ask me about your finances</p>
+                                <h3 className="font-semibold text-sm">Financial Coach</h3>
+                                <p className="text-xs text-white/80">Powered by your data</p>
                             </div>
                         </div>
                     </div>
@@ -149,11 +179,11 @@ export default function AIAssistant() {
                             >
                                 <div
                                     className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm ${msg.role === "user"
-                                            ? "bg-violet-500 text-white rounded-br-md"
-                                            : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-bl-md"
+                                        ? "bg-violet-500 text-white rounded-br-md"
+                                        : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-bl-md"
                                         }`}
                                 >
-                                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                                    <p className="whitespace-pre-wrap">{formatMessage(msg.content)}</p>
                                 </div>
                             </div>
                         ))}

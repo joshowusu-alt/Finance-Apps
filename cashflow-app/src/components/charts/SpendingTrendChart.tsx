@@ -18,11 +18,17 @@ type Props = {
 
 export function SpendingTrendChart({ data, showIncome = false, height = 300 }: Props) {
   const [isDark, setIsDark] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     // Check if dark mode
     const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
     setIsDark(isDarkMode);
+
+    // Check for mobile
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
 
     // Listen for theme changes
     const observer = new MutationObserver(() => {
@@ -35,12 +41,20 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
       attributeFilter: ["data-theme"],
     });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", checkMobile);
+    };
   }, []);
+
+  // Mobile-optimized margins
+  const margins = isMobile
+    ? { top: 5, right: 10, left: 0, bottom: 5 }
+    : chartConfig.margin;
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={data} margin={chartConfig.margin}>
+      <LineChart data={data} margin={margins}>
         <CartesianGrid
           strokeDasharray="3 3"
           stroke={getGridColor(isDark)}
@@ -49,14 +63,19 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
         <XAxis
           dataKey="date"
           stroke={getMutedColor(isDark)}
-          style={{ fontSize: 12 }}
+          style={{ fontSize: isMobile ? 10 : 12 }}
           tickLine={false}
+          angle={isMobile ? -45 : 0}
+          textAnchor={isMobile ? "end" : "middle"}
+          height={isMobile ? 50 : 30}
+          interval={isMobile ? 1 : 0}
         />
         <YAxis
           stroke={getMutedColor(isDark)}
-          style={{ fontSize: 12 }}
+          style={{ fontSize: isMobile ? 10 : 12 }}
           tickLine={false}
-          tickFormatter={(value) => `£${value >= 1000 ? `${value / 1000}k` : value}`}
+          tickFormatter={(value) => `£${value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value}`}
+          width={isMobile ? 35 : 50}
         />
         <Tooltip
           contentStyle={{
@@ -65,21 +84,26 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
             borderRadius: "12px",
             color: getTextColor(isDark),
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+            fontSize: isMobile ? "12px" : "14px",
           }}
-          formatter={(value: number | undefined) => value !== undefined ? [formatCurrency(value), ""] : ["", ""]}
+          formatter={(value) => value !== undefined ? [formatCurrency(Number(value)), ""] : ["", ""]}
           labelStyle={{ color: getMutedColor(isDark), marginBottom: 4 }}
         />
         <Legend
-          wrapperStyle={{ paddingTop: 16 }}
+          wrapperStyle={{
+            paddingTop: isMobile ? 8 : 16,
+            fontSize: isMobile ? "11px" : "12px",
+          }}
           iconType="circle"
+          iconSize={isMobile ? 8 : 10}
         />
         <Line
           type="monotone"
           dataKey="spending"
           stroke={chartColors.error}
-          strokeWidth={2}
-          dot={{ fill: chartColors.error, strokeWidth: 0, r: 4 }}
-          activeDot={{ r: 6 }}
+          strokeWidth={isMobile ? 1.5 : 2}
+          dot={isMobile ? false : { fill: chartColors.error, strokeWidth: 0, r: 4 }}
+          activeDot={{ r: isMobile ? 4 : 6 }}
           name="Spending"
           animationDuration={chartConfig.animationDuration}
           animationEasing={chartConfig.animationEasing}
@@ -89,9 +113,9 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
             type="monotone"
             dataKey="income"
             stroke={chartColors.success}
-            strokeWidth={2}
-            dot={{ fill: chartColors.success, strokeWidth: 0, r: 4 }}
-            activeDot={{ r: 6 }}
+            strokeWidth={isMobile ? 1.5 : 2}
+            dot={isMobile ? false : { fill: chartColors.success, strokeWidth: 0, r: 4 }}
+            activeDot={{ r: isMobile ? 4 : 6 }}
             name="Income"
             animationDuration={chartConfig.animationDuration}
             animationEasing={chartConfig.animationEasing}
@@ -101,3 +125,4 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
     </ResponsiveContainer>
   );
 }
+

@@ -17,10 +17,16 @@ type Props = {
 
 export function CategoryBreakdownChart({ data, height = 300 }: Props) {
   const [isDark, setIsDark] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
     setIsDark(isDarkMode);
+
+    // Check for mobile
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
 
     const observer = new MutationObserver(() => {
       const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
@@ -32,7 +38,10 @@ export function CategoryBreakdownChart({ data, height = 300 }: Props) {
       attributeFilter: ["data-theme"],
     });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", checkMobile);
+    };
   }, []);
 
   // Assign colors to categories
@@ -41,23 +50,32 @@ export function CategoryBreakdownChart({ data, height = 300 }: Props) {
     color: item.color || getCategoryColor(item.name),
   }));
 
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+
+  // Mobile: smaller radius, no inline labels
+  // Desktop: larger radius with labels
+  const outerRadius = isMobile ? 60 : 80;
+  const innerRadius = isMobile ? 30 : 0; // Donut on mobile for cleaner look
+
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer width="100%" height={isMobile ? height - 40 : height}>
       <PieChart>
         <Pie
           data={dataWithColors}
           cx="50%"
-          cy="50%"
-          labelLine={false}
-          label={(entry) => {
-            const percent = ((entry.value / data.reduce((sum, d) => sum + d.value, 0)) * 100).toFixed(0);
+          cy="45%"
+          labelLine={!isMobile}
+          label={isMobile ? false : (entry) => {
+            const percent = ((entry.value / total) * 100).toFixed(0);
             return `${entry.name} ${percent}%`;
           }}
-          outerRadius={80}
+          outerRadius={outerRadius}
+          innerRadius={innerRadius}
           fill={chartColors.primary}
           dataKey="value"
           animationDuration={400}
           animationEasing="ease-out"
+          paddingAngle={isMobile ? 2 : 0}
         >
           {dataWithColors.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.color} />
@@ -70,14 +88,23 @@ export function CategoryBreakdownChart({ data, height = 300 }: Props) {
             borderRadius: "12px",
             color: getTextColor(isDark),
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+            fontSize: isMobile ? "12px" : "14px",
           }}
-          formatter={(value: number | undefined) => value !== undefined ? formatCurrency(value) : ""}
+          formatter={(value) => value !== undefined ? formatCurrency(Number(value)) : ""}
         />
         <Legend
-          wrapperStyle={{ paddingTop: 16 }}
+          wrapperStyle={{
+            paddingTop: isMobile ? 8 : 16,
+            fontSize: isMobile ? "11px" : "12px",
+          }}
           iconType="circle"
+          iconSize={isMobile ? 8 : 10}
+          layout={isMobile ? "horizontal" : "horizontal"}
+          align="center"
+          verticalAlign="bottom"
         />
       </PieChart>
     </ResponsiveContainer>
   );
 }
+

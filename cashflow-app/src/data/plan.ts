@@ -113,6 +113,17 @@ export type PlanSetup = {
   variableCap: number;
 };
 
+export type SavingsGoal = {
+  id: string;
+  name: string;           // "Holiday Fund", "Emergency Fund"
+  targetAmount: number;   // Target amount to save
+  currentAmount: number;  // Amount saved so far
+  createdAt: string;      // ISO date when goal was created
+  targetDate?: string;    // Optional deadline (ISO date)
+  color?: string;         // For visual distinction (hex color)
+  icon?: string;          // Emoji icon
+};
+
 export type Plan = {
   version?: number;
   setup: PlanSetup;
@@ -125,11 +136,12 @@ export type Plan = {
   eventOverrides: EventOverride[];
   overrides: CashflowOverride[];
   transactions: Transaction[];
+  savingsGoals?: SavingsGoal[];
 };
 
 export const PLAN_VERSION = 2;
 
-export const PLAN: Plan = {
+export const SAMPLE_PLAN: Plan = {
   version: PLAN_VERSION,
   setup: {
     selectedPeriodId: 1,
@@ -320,3 +332,27 @@ export const PLAN: Plan = {
     { id: "txn-130", date: "2026-01-16", label: "Uber to Ch_luxelens appointment", amount: 18.32, type: "outflow", category: "allowance", notes: "House Keep", linkedRuleId: undefined },
   ],
 };
+
+export const EMPTY_PLAN: Plan = {
+  version: PLAN_VERSION,
+  setup: {
+    ...SAMPLE_PLAN.setup,
+    startingBalance: 0,
+    expectedMinBalance: 0,
+    variableCap: 0,
+    asOfDate: new Date().toISOString().split("T")[0],
+  },
+  periods: SAMPLE_PLAN.periods, // Keep default periods so calendar works
+  incomeRules: [],
+  outflowRules: [],
+  periodRuleOverrides: [],
+  bills: [],
+  periodOverrides: [],
+  eventOverrides: [],
+  overrides: [],
+  transactions: [],
+  savingsGoals: [], // Ensure savings goals are empty
+};
+
+// Default entry point is now the empty plan
+export const PLAN = EMPTY_PLAN;

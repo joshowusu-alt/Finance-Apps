@@ -164,3 +164,76 @@ export function ListSkeleton({ items = 3 }: { items?: number }) {
     </div>
   );
 }
+
+export function GoalSkeleton() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="vn-card p-5"
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <Skeleton className="w-10 h-10 rounded-lg" />
+        <div className="flex-1">
+          <Skeleton className="h-4 w-28 mb-2" />
+          <Skeleton className="h-3 w-20" />
+        </div>
+        <Skeleton className="w-6 h-6 rounded" />
+      </div>
+      <Skeleton className="h-3 w-full rounded-full mb-3" />
+      <div className="flex justify-between">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-12" />
+      </div>
+    </motion.div>
+  );
+}
+
+export function GoalsSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="vn-card p-6"
+      >
+        <Skeleton className="h-3 w-16 mb-2" />
+        <Skeleton className="h-6 w-36 mb-2" />
+        <Skeleton className="h-4 w-56" />
+      </motion.div>
+
+      {/* Summary row */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="vn-card p-5"
+      >
+        <div className="grid grid-cols-3 gap-4 text-center">
+          {[0, 1, 2].map((i) => (
+            <div key={i}>
+              <Skeleton className="h-7 w-12 mx-auto mb-2" />
+              <Skeleton className="h-3 w-16 mx-auto" />
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Goals grid */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {[0, 1].map((i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + i * 0.1 }}
+          >
+            <GoalSkeleton />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+

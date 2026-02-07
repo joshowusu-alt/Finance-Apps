@@ -6,11 +6,13 @@ import { createFreshPlan, hasStoredPlan, loadPlan, resetPlan, savePlan } from "@
 import {
   dismissOnboarding,
   loadOnboardingState,
+  loadWizardState,
   ONBOARDING_TASKS,
   resetOnboarding,
   saveOnboardingState,
   setOnboardingTask,
 } from "@/lib/onboarding";
+import OnboardingWizard from "@/components/OnboardingWizard";
 import { ALERT_PREFS_UPDATED_EVENT, getAlerts, loadAlertPreferences } from "@/lib/alerts";
 import {
   buildTimeline,
@@ -99,6 +101,10 @@ export default function HomePage() {
   const [onboarding, setOnboarding] = useState(() => loadOnboardingState());
   const [selectedCategory, setSelectedCategory] = useState<CashflowCategory | null>(null);
   const [alertPrefs, setAlertPrefs] = useState(() => loadAlertPreferences());
+  const [showWizard, setShowWizard] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return !loadWizardState().completed;
+  });
 
   useEffect(() => {
     const refreshPrefs = () => setAlertPrefs(loadAlertPreferences());
@@ -373,6 +379,12 @@ export default function HomePage() {
 
   function handleShowOnboarding() {
     setOnboarding(dismissOnboarding(false));
+  }
+
+  function handleWizardComplete(choice: "fresh" | "sample" | "skip") {
+    setShowWizard(false);
+    if (choice === "fresh") handleStartFresh();
+    else if (choice === "sample") handleLoadSampleData();
   }
 
   function handleToggleTask(id: string, done: boolean) {
@@ -782,6 +794,7 @@ export default function HomePage() {
           </section>
         </div>
       </div>
+      {showWizard && <OnboardingWizard onComplete={handleWizardComplete} />}
     </main>
   );
 }

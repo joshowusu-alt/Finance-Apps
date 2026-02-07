@@ -5,6 +5,7 @@ import SidebarNav from "@/components/SidebarNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelector from "@/components/CurrencySelector";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { resetWizard } from "@/lib/onboarding";
 import type { Period, PeriodOverride, PeriodRuleOverride, Recurrence } from "@/data/plan";
 
 function gbp(n: number) {
@@ -481,6 +482,17 @@ export default function SettingsPage() {
                   <span className="text-slate-600 dark:text-slate-300 dark:text-slate-400">App Name</span>
                   <span className="font-medium text-slate-900 dark:text-slate-100">Velanovo</span>
                 </div>
+              </div>
+              <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--vn-border)" }}>
+                <button
+                  onClick={() => {
+                    resetWizard();
+                    window.location.href = "/";
+                  }}
+                  className="vn-btn vn-btn-ghost text-xs"
+                >
+                  Replay onboarding guide
+                </button>
               </div>
             </div>
           </section>

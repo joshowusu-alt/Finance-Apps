@@ -3,10 +3,17 @@ import { PLAN } from "@/data/plan";
 import { getStorageScope } from "@/lib/storage";
 
 const ONBOARDING_KEY = "cashflow_onboarding_v1";
+const WIZARD_KEY = "cashflow_wizard_v1";
 
 export type OnboardingState = {
   dismissed: boolean;
   completed: Record<string, boolean>;
+};
+
+export type WizardState = {
+  completed: boolean;
+  completedAt?: string;
+  lastStepSeen: number;
 };
 
 export type OnboardingTask = {
@@ -22,9 +29,19 @@ function onboardingKey() {
   return scope === "default" ? ONBOARDING_KEY : `${ONBOARDING_KEY}::${scope}`;
 }
 
+function wizardKey() {
+  const scope = getStorageScope();
+  return scope === "default" ? WIZARD_KEY : `${WIZARD_KEY}::${scope}`;
+}
+
 const DEFAULT_STATE: OnboardingState = {
   dismissed: false,
   completed: {},
+};
+
+const DEFAULT_WIZARD_STATE: WizardState = {
+  completed: false,
+  lastStepSeen: 0,
 };
 
 export const ONBOARDING_TASKS: OnboardingTask[] = [
@@ -105,4 +122,37 @@ export function dismissOnboarding(dismissed: boolean) {
 export function resetOnboarding() {
   saveOnboardingState(DEFAULT_STATE);
   return DEFAULT_STATE;
+}
+
+/* ── Wizard state (educational overlay, separate from checklist) ── */
+
+export function loadWizardState(): WizardState {
+  if (typeof window === "undefined") return DEFAULT_WIZARD_STATE;
+  const raw = window.localStorage.getItem(wizardKey());
+  if (!raw) return DEFAULT_WIZARD_STATE;
+  try {
+    return JSON.parse(raw) as WizardState;
+  } catch {
+    return DEFAULT_WIZARD_STATE;
+  }
+}
+
+export function saveWizardState(state: WizardState) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(wizardKey(), JSON.stringify(state));
+}
+
+export function completeWizard(): WizardState {
+  const next: WizardState = {
+    completed: true,
+    completedAt: new Date().toISOString(),
+    lastStepSeen: 6,
+  };
+  saveWizardState(next);
+  return next;
+}
+
+export function resetWizard(): WizardState {
+  saveWizardState(DEFAULT_WIZARD_STATE);
+  return DEFAULT_WIZARD_STATE;
 }
