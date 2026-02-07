@@ -24,6 +24,7 @@ import {
   minPoint,
 } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
+import { VelanovoLogo } from "@/components/VelanovoLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 import { CashflowProjectionChart, SpendingTrendChart, DonutChart } from "@/components/charts";
 import type { CashflowDataPoint, SpendingDataPoint, DonutDataPoint } from "@/components/charts";
@@ -399,6 +400,9 @@ export default function HomePage() {
 
           <section className="space-y-5">
             <header className="flex flex-col gap-4 rounded-3xl p-6 shadow-xl md:flex-row md:items-center md:justify-between" style={{ background: "var(--vn-surface)" }}>
+              <div className="lg:hidden mb-2">
+                <VelanovoLogo size={28} />
+              </div>
               <div>
                 <div className="text-xs uppercase tracking-wide" style={{ color: "var(--vn-muted)" }}>Dashboard</div>
                 <h1 className="text-2xl font-semibold" style={{ color: "var(--vn-text)" }}>Welcome back</h1>
