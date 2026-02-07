@@ -1,0 +1,6 @@
+{
+    "buildCommand": "cd cashflow-app && npm run build",
+    "outputDirectory": "cashflow-app/.next",
+    "installCommand": "cd cashflow-app && npm install",
+    "framework": "nextjs"
+}
