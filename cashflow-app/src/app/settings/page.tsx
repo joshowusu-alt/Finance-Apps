@@ -105,8 +105,8 @@ export default function SettingsPage() {
       ...plan,
       periodOverrides: override
         ? plan.periodOverrides.map((o) =>
-            o.periodId === periodId ? { ...o, disabledBills: newDisabledBills } : o
-          )
+          o.periodId === periodId ? { ...o, disabledBills: newDisabledBills } : o
+        )
         : [...plan.periodOverrides, { periodId, disabledBills: newDisabledBills }],
     };
 
@@ -121,8 +121,8 @@ export default function SettingsPage() {
       ...plan,
       periodOverrides: override
         ? plan.periodOverrides.map((o) =>
-            o.periodId === periodId ? { ...o, startingBalance: balance } : o
-          )
+          o.periodId === periodId ? { ...o, startingBalance: balance } : o
+        )
         : [...plan.periodOverrides, { periodId, startingBalance: balance }],
     };
 
@@ -139,14 +139,14 @@ export default function SettingsPage() {
       ...plan,
       periodRuleOverrides: existingOverride
         ? plan.periodRuleOverrides.map((o) =>
-            o.periodId === periodId && o.ruleId === ruleId && o.type === type
-              ? { ...o, enabled: !(o.enabled ?? true) }
-              : o
-          )
+          o.periodId === periodId && o.ruleId === ruleId && o.type === type
+            ? { ...o, enabled: !(o.enabled ?? true) }
+            : o
+        )
         : [
-            ...plan.periodRuleOverrides,
-            { periodId, ruleId, type, enabled: false },
-          ],
+          ...plan.periodRuleOverrides,
+          { periodId, ruleId, type, enabled: false },
+        ],
     };
 
     savePlan(updated);
@@ -272,11 +272,10 @@ export default function SettingsPage() {
                   plan.periods.map((period) => (
                     <div
                       key={period.id}
-                      className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${
-                        period.id === plan.setup.selectedPeriodId
+                      className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${period.id === plan.setup.selectedPeriodId
                           ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
                           : "bg-white/70 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-600"
-                      }`}
+                        }`}
                     >
                       <div className="flex-1">
                         <div className="font-semibold text-slate-900 dark:text-slate-100">
@@ -476,7 +475,7 @@ export default function SettingsPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-300 dark:text-slate-400">Version</span>
-                  <span className="font-medium text-slate-900 dark:text-slate-100">1.0.0</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">1.0.1 (Build {new Date().toISOString().slice(0, 16).replace("T", " ")})</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-300 dark:text-slate-400">App Name</span>
