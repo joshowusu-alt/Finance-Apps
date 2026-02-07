@@ -16,6 +16,8 @@ import SidebarNav from "@/components/SidebarNav";
 import { CategoryBreakdownChart, SpendingTrendChart } from "@/components/charts";
 import type { CategoryData, SpendingDataPoint } from "@/components/charts";
 import type { CashflowCategory, Plan, Transaction } from "@/data/plan";
+import InsightsPanel from "@/components/InsightsPanel";
+import SubscriptionDashboard from "@/components/SubscriptionDashboard";
 
 function money(n: number) {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n || 0);
@@ -878,6 +880,9 @@ export default function InsightsPage() {
               </div>
             </header>
 
+            {/* Proactive Insights Panel */}
+            <InsightsPanel />
+
             <div className="grid gap-6 md:grid-cols-2">
               <SummaryCard label="Budget income" value={money(baseStats.budgetIncome)} />
               <SummaryCard label="Budget spending" value={money(baseStats.budgetSpending)} />
@@ -891,6 +896,11 @@ export default function InsightsPage() {
               <SummaryCard label="Actual savings" value={money(baseStats.actualSavings)} />
               <SummaryCard label="Actual leftover" value={money(baseStats.actualLeftover)} />
             </div>
+
+            <SubscriptionDashboard
+              transactions={plan.transactions}
+              asOfDate={plan.setup.asOfDate}
+            />
 
             <CollapsibleSection title="1) Am I on track?" defaultOpen>
               <div className="grid gap-4 sm:grid-cols-2">
