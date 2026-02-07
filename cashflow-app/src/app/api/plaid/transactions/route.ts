@@ -76,7 +76,7 @@ export async function POST(req: Request) {
           const suggestion = suggestCategory(merchantName, tx.name);
 
           // Use ML suggestion if confidence is high enough, otherwise fall back to Plaid category
-          let category = suggestion.confidence >= 0.5
+          let category = suggestion.confidence >= 50
             ? suggestion.category
             : mapCategory(tx.category);
 

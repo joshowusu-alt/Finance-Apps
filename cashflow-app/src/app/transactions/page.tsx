@@ -5,12 +5,15 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { loadPlan, savePlan } from "@/lib/storage";
 import { getPeriod, getVarianceByCategory, getSavingsTransferReconciliation } from "@/lib/cashflowEngine";
 import { suggestBillId } from "@/lib/billLinking";
+import { detectRecurringBills, type DetectedBill } from "@/lib/billDetection";
+import { getConfidenceLabel, suggestCategory } from "@/lib/categorization";
 import { exportToCSV, exportToExcel, exportToPDF } from "@/lib/exportData";
 import SidebarNav from "@/components/SidebarNav";
 import EmptyState from "@/components/EmptyState";
 import { showToast } from "@/components/Toast";
 import { MerchantLogo } from "@/components/MerchantLogo";
-import type { Transaction, CashflowCategory, CashflowType, Plan } from "@/data/plan";
+import { FormError } from "@/components/FormError";
+import type { Transaction, CashflowCategory, CashflowType, Plan, BillTemplate } from "@/data/plan";
 
 function gbp(n: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -135,6 +138,7 @@ const DEFAULT_CATEGORY_FOR_TYPE: Record<CashflowType, CashflowCategory> = {
 };
 const BILL_CATEGORIES = new Set<CashflowCategory>(["bill", "giving"]);
 const FREE_TEXT_CATEGORIES = new Set<CashflowCategory>(["allowance", "buffer", "other"]);
+const AUTO_CATEGORY_CONFIDENCE = 60;
 
 function categoryOptionsForType(type: CashflowType) {
   if (type === "income") return ["income"] as CashflowCategory[];
@@ -157,6 +161,54 @@ function resolveSuggestedId(explicit: string | null | undefined, suggested: stri
 
 function formatCategoryLabel(category: CashflowCategory) {
   return `${category.slice(0, 1).toUpperCase()}${category.slice(1)}`;
+}
+
+function formatFrequencyLabel(frequency: string) {
+  const labels: Record<string, string> = {
+    monthly: "Monthly",
+    biweekly: "Every 2 weeks",
+    weekly: "Weekly",
+  };
+  return labels[frequency] || frequency;
+}
+
+function slugifyBillLabel(label: string) {
+  const slug = normalizeText(label).replace(/\s+/g, "-");
+  return slug || "bill";
+}
+
+function findExistingBillByLabel(label: string, bills: BillTemplate[]) {
+  const normalized = normalizeText(label);
+  if (!normalized) return undefined;
+  return bills.find((bill) => normalizeText(bill.label) === normalized);
+}
+
+function makeUniqueBillId(label: string, bills: BillTemplate[]) {
+  const base = slugifyBillLabel(label);
+  let id = base;
+  let counter = 1;
+  while (bills.some((bill) => bill.id === id)) {
+    counter += 1;
+    id = `${base}-${counter}`;
+  }
+  return id;
+}
+
+function suggestDetectedBill(label: string, notes: string, detectedBills: DetectedBill[]) {
+  if (!label && !notes) return null;
+  const hay = `${label} ${notes ?? ""}`.trim();
+  let best: DetectedBill | null = null;
+  let bestScore = 0;
+  detectedBills.forEach((bill) => {
+    const tokens = splitTokens(bill.merchantName).filter((token) => token.length >= 2);
+    if (tokens.length === 0) return;
+    const score = scoreRuleMatch(hay, tokens);
+    if (score > bestScore) {
+      bestScore = score;
+      best = bill;
+    }
+  });
+  return bestScore >= 2 ? best : null;
 }
 
 type TransactionDraft = {
@@ -221,6 +273,24 @@ export default function TransactionsPage() {
   const [filterCategory, setFilterCategory] = useState<CashflowCategory | "all">("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState(false);
+  const [newCategoryTouched, setNewCategoryTouched] = useState(false);
+
+  const [editCategoryTouched, setEditCategoryTouched] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!newTransaction.date) newErrors.date = "Date is required";
+    if (!newTransaction.label.trim()) newErrors.label = "Label is required";
+
+    const amount = parseFloat(newTransaction.amount);
+    if (!newTransaction.amount || isNaN(amount) || amount <= 0) {
+      newErrors.amount = "Valid amount required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   useEffect(() => {
     const onFocus = () => setPlan(loadPlan());
@@ -349,6 +419,56 @@ export default function TransactionsPage() {
     [transferRuleOptions]
   );
 
+  const detectedRecurringBills: DetectedBill[] = useMemo(
+    () => detectRecurringBills(plan.transactions, plan.bills),
+    [plan.transactions, plan.bills]
+  );
+
+  const categorySuggestion = useMemo(() => {
+    if (!newTransaction.label && !newTransaction.notes) return null;
+    const suggestion = suggestCategory(newTransaction.label, newTransaction.notes);
+    const allowed = categoryOptionsForType(newTransaction.type);
+    if (!allowed.includes(suggestion.category)) return null;
+    return suggestion;
+  }, [newTransaction.label, newTransaction.notes, newTransaction.type]);
+
+  const categoryConfidenceLabel = useMemo(
+    () => (categorySuggestion ? getConfidenceLabel(categorySuggestion.confidence) : ""),
+    [categorySuggestion]
+  );
+
+  const shouldAutoApplyCategory = useMemo(
+    () => Boolean(categorySuggestion && categorySuggestion.confidence >= AUTO_CATEGORY_CONFIDENCE),
+    [categorySuggestion]
+  );
+
+  useEffect(() => {
+    if (!categorySuggestion || !shouldAutoApplyCategory) return;
+    if (newCategoryTouched) return;
+    if (newTransaction.category === categorySuggestion.category) return;
+    setNewTransaction((prev) => ({
+      ...prev,
+      category: categorySuggestion.category,
+      linkedRuleId: prev.type === "outflow" ? undefined : prev.linkedRuleId,
+      linkedBillId: undefined,
+    }));
+  }, [categorySuggestion, newCategoryTouched, newTransaction.category, shouldAutoApplyCategory]);
+
+  const recurringBillSuggestion: DetectedBill | null = useMemo(() => {
+    if (newTransaction.type !== "outflow" || !isBillCategory(newTransaction.category)) return null;
+    if (!newTransaction.label && !newTransaction.notes) return null;
+    if (billSuggestion) return null;
+    const candidates = detectedRecurringBills.filter((bill) => isBillCategory(bill.suggestedCategory));
+    return suggestDetectedBill(newTransaction.label, newTransaction.notes, candidates);
+  }, [
+    billSuggestion,
+    detectedRecurringBills,
+    newTransaction.category,
+    newTransaction.label,
+    newTransaction.notes,
+    newTransaction.type,
+  ]);
+
   const editIncomeSuggestion = useMemo(() => {
     if (!plan || !editTransaction || editTransaction.type !== "income") return "";
     return suggestIncomeRuleId(editTransaction.label, editTransaction.notes, plan.incomeRules);
@@ -381,6 +501,49 @@ export default function TransactionsPage() {
     return editBillOptions.find((bill) => bill.id === editBillSuggestion)?.label ?? "";
   }, [editBillOptions, editBillSuggestion]);
 
+  const editCategorySuggestion = useMemo(() => {
+    if (!editTransaction) return null;
+    if (!editTransaction.label && !editTransaction.notes) return null;
+    const suggestion = suggestCategory(editTransaction.label, editTransaction.notes);
+    const allowed = categoryOptionsForType(editTransaction.type);
+    if (!allowed.includes(suggestion.category)) return null;
+    return suggestion;
+  }, [editTransaction]);
+
+  const editCategoryConfidenceLabel = useMemo(
+    () => (editCategorySuggestion ? getConfidenceLabel(editCategorySuggestion.confidence) : ""),
+    [editCategorySuggestion]
+  );
+
+  const shouldAutoApplyEditCategory = useMemo(
+    () => Boolean(editCategorySuggestion && editCategorySuggestion.confidence >= AUTO_CATEGORY_CONFIDENCE),
+    [editCategorySuggestion]
+  );
+
+  useEffect(() => {
+    if (!editTransaction || !editCategorySuggestion || !shouldAutoApplyEditCategory) return;
+    if (editCategoryTouched) return;
+    if (editTransaction.category === editCategorySuggestion.category) return;
+    setEditTransaction((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        category: editCategorySuggestion.category,
+        linkedRuleId: prev.type === "outflow" ? undefined : prev.linkedRuleId,
+        linkedBillId: undefined,
+      };
+    });
+  }, [editCategorySuggestion, editCategoryTouched, editTransaction, shouldAutoApplyEditCategory]);
+
+  const editRecurringBillSuggestion = useMemo(() => {
+    if (!editTransaction) return null;
+    if (editTransaction.type !== "outflow" || !isBillCategory(editTransaction.category)) return null;
+    if (!editTransaction.label && !editTransaction.notes) return null;
+    if (editBillSuggestion) return null;
+    const candidates = detectedRecurringBills.filter((bill) => isBillCategory(bill.suggestedCategory));
+    return suggestDetectedBill(editTransaction.label, editTransaction.notes, candidates);
+  }, [detectedRecurringBills, editBillSuggestion, editTransaction]);
+
   const editOutflowRuleOptions = useMemo(() => {
     if (!plan || !editTransaction || editTransaction.type !== "outflow" || !isFreeTextCategory(editTransaction.category)) {
       return [];
@@ -407,9 +570,105 @@ export default function TransactionsPage() {
     return editOutflowRuleOptions.find((rule) => rule.id === editOutflowRuleSuggestion)?.label ?? "";
   }, [editOutflowRuleOptions, editOutflowRuleSuggestion]);
 
+  function ensureBillFromDraft(draft: TransactionDraft, detected?: DetectedBill) {
+    if (!plan) return null;
+    if (draft.type !== "outflow" || !isBillCategory(draft.category)) return null;
+    const label = (detected?.merchantName ?? draft.label ?? "").trim();
+    if (!label) {
+      showToast("Add a label to create a bill", "error");
+      return null;
+    }
+
+    const amountValue = detected?.averageAmount ?? parseFloat(draft.amount);
+    if (!Number.isFinite(amountValue) || amountValue <= 0) {
+      showToast("Enter a valid amount to create a bill", "error");
+      return null;
+    }
+
+    const dateParts = draft.date?.split("-") ?? [];
+    const fallbackDueDay = Number(dateParts[2]);
+    const rawDueDay = detected?.suggestedDueDay ?? fallbackDueDay;
+    const safeDueDay = Number.isFinite(rawDueDay)
+      ? Math.min(31, Math.max(1, Math.round(rawDueDay)))
+      : 1;
+
+    const detectedCategory = detected?.suggestedCategory ?? draft.category;
+    const category = isBillCategory(detectedCategory) ? detectedCategory : "bill";
+
+    const existing = findExistingBillByLabel(label, plan.bills);
+    const matched = existing && existing.category === category ? existing : undefined;
+    const bill = matched ?? {
+      id: makeUniqueBillId(label, plan.bills),
+      label,
+      amount: amountValue,
+      dueDay: safeDueDay,
+      category,
+      enabled: true,
+    };
+    const nextPlan = matched ? plan : { ...plan, bills: [...plan.bills, bill] };
+    return { bill, created: !matched, nextPlan };
+  }
+
+  function saveUpdatedTransaction(
+    id: string,
+    draft: TransactionDraft,
+    toastLabel = "Transaction updated successfully",
+    planOverride?: Plan
+  ) {
+    const currentPlan = planOverride ?? plan;
+    if (!currentPlan) return false;
+    if (!draft.label || !draft.amount) return false;
+    const amount = parseFloat(draft.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return false;
+
+    const normalizedDraft = {
+      ...draft,
+      category: normalizeCategoryForType(draft.type, draft.category),
+    };
+
+    const linkedIncomeId = resolveIncomeRuleId(normalizedDraft, currentPlan.incomeRules);
+    const linkedBillId = resolveBillId(normalizedDraft, currentPlan.bills);
+    const linkedOutflowRuleId = resolveOutflowRuleId(normalizedDraft, currentPlan.outflowRules);
+    const linkedTransferRuleId = resolveTransferRuleId(normalizedDraft, currentPlan.outflowRules);
+
+    const updated = {
+      ...currentPlan,
+      transactions: currentPlan.transactions.map((t) => {
+        if (t.id !== id) return t;
+        let linkedRuleId: string | undefined;
+        if (normalizedDraft.type === "income") {
+          linkedRuleId = linkedIncomeId;
+        } else if (normalizedDraft.type === "transfer") {
+          linkedRuleId = linkedTransferRuleId;
+        } else {
+          linkedRuleId = linkedOutflowRuleId;
+        }
+        return {
+          ...t,
+          date: normalizedDraft.date,
+          label: normalizedDraft.label,
+          amount: amount,
+          type: normalizedDraft.type,
+          category: normalizedDraft.category,
+          notes: normalizedDraft.notes || undefined,
+          linkedRuleId,
+          linkedBillId,
+        };
+      }),
+    };
+
+    savePlan(updated);
+    setPlan(updated);
+    showToast(toastLabel, "success");
+    return true;
+  }
+
   function handleAddTransaction(e: React.FormEvent) {
     e.preventDefault();
-    if (!plan || !newTransaction.label || !newTransaction.amount) return;
+    if (!validate()) return;
+
+    const currentPlan = loadPlan();
+    if (!currentPlan) return;
 
     const amount = parseFloat(newTransaction.amount);
     if (!Number.isFinite(amount) || amount <= 0) return;
@@ -419,10 +678,10 @@ export default function TransactionsPage() {
       category: normalizeCategoryForType(newTransaction.type, newTransaction.category),
     };
 
-    const linkedIncomeId = resolveIncomeRuleId(draft, plan.incomeRules);
-    const linkedBillId = resolveBillId(draft, plan.bills);
-    const linkedOutflowRuleId = resolveOutflowRuleId(draft, plan.outflowRules);
-    const linkedTransferRuleId = resolveTransferRuleId(draft, plan.outflowRules);
+    const linkedIncomeId = resolveIncomeRuleId(draft, currentPlan.incomeRules);
+    const linkedBillId = resolveBillId(draft, currentPlan.bills);
+    const linkedOutflowRuleId = resolveOutflowRuleId(draft, currentPlan.outflowRules);
+    const linkedTransferRuleId = resolveTransferRuleId(draft, currentPlan.outflowRules);
 
     let linkedRuleId: string | undefined;
     if (draft.type === "income") {
@@ -446,8 +705,8 @@ export default function TransactionsPage() {
     };
 
     const updated = {
-      ...plan,
-      transactions: [...plan.transactions, transaction],
+      ...currentPlan,
+      transactions: [...currentPlan.transactions, transaction],
     };
 
     savePlan(updated);
@@ -464,6 +723,8 @@ export default function TransactionsPage() {
       linkedRuleId: undefined,
       linkedBillId: undefined,
     });
+    setNewCategoryTouched(false);
+    setErrors({});
   }
 
   function handleDeleteTransaction(id: string) {
@@ -489,59 +750,59 @@ export default function TransactionsPage() {
       linkedRuleId: txn.linkedRuleId,
       linkedBillId: txn.linkedBillId,
     });
+    setEditCategoryTouched(false);
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditTransaction(null);
+    setEditCategoryTouched(false);
+    setErrors({});
   }
 
-  function handleUpdateTransaction(id: string) {
-    if (!plan || !editTransaction) return;
-    if (!editTransaction.label || !editTransaction.amount) return;
-    const amount = parseFloat(editTransaction.amount);
-    if (!Number.isFinite(amount) || amount <= 0) return;
+  function handleUpdateTransaction(id: string, overrideDraft?: TransactionDraft) {
+    const draft = overrideDraft ?? editTransaction;
+    if (!draft) return;
+    const updated = saveUpdatedTransaction(id, draft);
+    if (updated) {
+      cancelEdit();
+    }
+  }
 
-    const draft = {
+  function handleCreateBillForNewTransaction() {
+    const result = ensureBillFromDraft(newTransaction, recurringBillSuggestion ?? undefined);
+    if (!result) return;
+    if (result.created) {
+      savePlan(result.nextPlan);
+      setPlan(result.nextPlan);
+    }
+    const message = result.created
+      ? `Bill created: ${result.bill.label}`
+      : `Bill already exists: ${result.bill.label}`;
+    showToast(message, "success");
+    setNewTransaction((prev) => ({
+      ...prev,
+      category: result.bill.category,
+      linkedBillId: result.bill.id,
+    }));
+  }
+
+  function handleCreateBillForEditTransaction() {
+    if (!editTransaction || !editingId) return;
+    const result = ensureBillFromDraft(editTransaction, editRecurringBillSuggestion ?? undefined);
+    if (!result) return;
+    const nextDraft = {
       ...editTransaction,
-      category: normalizeCategoryForType(editTransaction.type, editTransaction.category),
+      category: result.bill.category,
+      linkedBillId: result.bill.id,
     };
-
-    const linkedIncomeId = resolveIncomeRuleId(draft, plan.incomeRules);
-    const linkedBillId = resolveBillId(draft, plan.bills);
-    const linkedOutflowRuleId = resolveOutflowRuleId(draft, plan.outflowRules);
-    const linkedTransferRuleId = resolveTransferRuleId(draft, plan.outflowRules);
-
-    const updated = {
-      ...plan,
-      transactions: plan.transactions.map((t) => {
-        if (t.id !== id) return t;
-        let linkedRuleId: string | undefined;
-        if (draft.type === "income") {
-          linkedRuleId = linkedIncomeId;
-        } else if (draft.type === "transfer") {
-          linkedRuleId = linkedTransferRuleId;
-        } else {
-          linkedRuleId = linkedOutflowRuleId;
-        }
-        return {
-          ...t,
-          date: draft.date,
-          label: draft.label,
-          amount: amount,
-          type: draft.type,
-          category: draft.category,
-          notes: draft.notes || undefined,
-          linkedRuleId,
-          linkedBillId,
-        };
-      }),
-    };
-
-    savePlan(updated);
-    setPlan(updated);
-    showToast("Transaction updated successfully", "success");
-    cancelEdit();
+    const toastLabel = result.created
+      ? `Bill created and linked: ${result.bill.label}`
+      : `Bill linked: ${result.bill.label}`;
+    const updated = saveUpdatedTransaction(editingId, nextDraft, toastLabel, result.nextPlan);
+    if (updated) {
+      cancelEdit();
+    }
   }
 
   function toggleSelectAll() {
@@ -613,8 +874,10 @@ export default function TransactionsPage() {
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, date: e.target.value })
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                      className={`mt-1 w-full rounded-lg border bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)] ${errors.date ? "border-red-500 ring-1 ring-red-500" : "border-slate-200"
+                        }`}
                     />
+                    <FormError message={errors.date} />
                   </div>
 
                   <div>
@@ -626,8 +889,10 @@ export default function TransactionsPage() {
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, label: e.target.value })
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
+                      className={`mt-1 w-full rounded-lg border bg-white/80 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] ${errors.label ? "border-red-500 ring-1 ring-red-500" : "border-slate-200"
+                        }`}
                     />
+                    <FormError message={errors.label} />
                   </div>
 
                   <div>
@@ -641,8 +906,10 @@ export default function TransactionsPage() {
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, amount: e.target.value })
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
+                      className={`mt-1 w-full rounded-lg border bg-white/80 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] ${errors.amount ? "border-red-500 ring-1 ring-red-500" : "border-slate-200"
+                        }`}
                     />
+                    <FormError message={errors.amount} />
                   </div>
 
                   <div>
@@ -659,6 +926,7 @@ export default function TransactionsPage() {
                           linkedRuleId: undefined,
                           linkedBillId: undefined,
                         });
+                        setNewCategoryTouched(false);
                       }}
                       className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
                     >
@@ -680,6 +948,7 @@ export default function TransactionsPage() {
                           linkedRuleId: newTransaction.type === "outflow" ? undefined : newTransaction.linkedRuleId,
                           linkedBillId: undefined,
                         });
+                        setNewCategoryTouched(true);
                       }}
                       className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
                     >
@@ -689,6 +958,14 @@ export default function TransactionsPage() {
                         </option>
                       ))}
                     </select>
+                    {categorySuggestion ? (
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {shouldAutoApplyCategory ? "Auto-categorized" : "Suggested"}:{" "}
+                        {formatCategoryLabel(categorySuggestion.category)}{" "}
+                        {categoryConfidenceLabel ? `(${categoryConfidenceLabel} confidence)` : ""}
+                        {!newCategoryTouched && shouldAutoApplyCategory ? " (auto-selected)" : ""}
+                      </p>
+                    ) : null}
                   </div>
 
                   {newTransaction.type === "income" ? (
@@ -777,9 +1054,36 @@ export default function TransactionsPage() {
                       </select>
                       {billSuggestionLabel ? (
                         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                          Suggested: {billSuggestionLabel}
+                          This looks like your {billSuggestionLabel}{" "}
+                          {newTransaction.category === "giving" ? "giving" : "payment"}.
                           {newTransaction.linkedBillId === undefined ? " (auto-selected)" : ""}
                         </p>
+                      ) : null}
+                      {!billSuggestionLabel && recurringBillSuggestion ? (
+                        <div className="mt-2 rounded-lg border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-xs text-slate-600">
+                          <div className="font-semibold text-slate-700">Recurring pattern detected</div>
+                          <div className="mt-1 text-slate-500">
+                            {recurringBillSuggestion.merchantName} | {gbp(recurringBillSuggestion.averageAmount)} |{" "}
+                            {formatFrequencyLabel(recurringBillSuggestion.frequency)} | Day{" "}
+                            {recurringBillSuggestion.suggestedDueDay}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleCreateBillForNewTransaction}
+                            className="mt-2 inline-flex items-center rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-600 hover:border-indigo-300 hover:text-indigo-700"
+                          >
+                            Create bill
+                          </button>
+                        </div>
+                      ) : null}
+                      {!billSuggestionLabel && !recurringBillSuggestion ? (
+                        <button
+                          type="button"
+                          onClick={handleCreateBillForNewTransaction}
+                          className="mt-2 inline-flex items-center rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                        >
+                          Create bill from this transaction
+                        </button>
                       ) : null}
                     </div>
                   ) : null}
@@ -1166,6 +1470,7 @@ export default function TransactionsPage() {
                                             linkedRuleId: undefined,
                                             linkedBillId: undefined,
                                           });
+                                          setEditCategoryTouched(false);
                                         }}
                                         className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
                                       >
@@ -1186,6 +1491,7 @@ export default function TransactionsPage() {
                                             linkedRuleId: editTransaction.type === "outflow" ? undefined : editTransaction.linkedRuleId,
                                             linkedBillId: undefined,
                                           });
+                                          setEditCategoryTouched(true);
                                         }}
                                         className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
                                       >
@@ -1195,6 +1501,14 @@ export default function TransactionsPage() {
                                           </option>
                                         ))}
                                       </select>
+                                      {editCategorySuggestion ? (
+                                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                          {shouldAutoApplyEditCategory ? "Auto-categorized" : "Suggested"}:{" "}
+                                          {formatCategoryLabel(editCategorySuggestion.category)}{" "}
+                                          {editCategoryConfidenceLabel ? `(${editCategoryConfidenceLabel} confidence)` : ""}
+                                          {!editCategoryTouched && shouldAutoApplyEditCategory ? " (auto-selected)" : ""}
+                                        </p>
+                                      ) : null}
                                     </div>
                                     {editTransaction.type === "income" ? (
                                       <div>
@@ -1282,9 +1596,36 @@ export default function TransactionsPage() {
                                         </select>
                                         {editBillSuggestionLabel ? (
                                           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                                            Suggested: {editBillSuggestionLabel}
+                                            This looks like your {editBillSuggestionLabel}{" "}
+                                            {editTransaction.category === "giving" ? "giving" : "payment"}.
                                             {editTransaction.linkedBillId === undefined ? " (auto-selected)" : ""}
                                           </p>
+                                        ) : null}
+                                        {!editBillSuggestionLabel && editRecurringBillSuggestion ? (
+                                          <div className="mt-2 rounded-lg border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-xs text-slate-600">
+                                            <div className="font-semibold text-slate-700">Recurring pattern detected</div>
+                                            <div className="mt-1 text-slate-500">
+                                              {editRecurringBillSuggestion.merchantName} | {gbp(editRecurringBillSuggestion.averageAmount)} |{" "}
+                                              {formatFrequencyLabel(editRecurringBillSuggestion.frequency)} | Day{" "}
+                                              {editRecurringBillSuggestion.suggestedDueDay}
+                                            </div>
+                                            <button
+                                              type="button"
+                                              onClick={handleCreateBillForEditTransaction}
+                                              className="mt-2 inline-flex items-center rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-600 hover:border-indigo-300 hover:text-indigo-700"
+                                            >
+                                              Create bill
+                                            </button>
+                                          </div>
+                                        ) : null}
+                                        {!editBillSuggestionLabel && !editRecurringBillSuggestion ? (
+                                          <button
+                                            type="button"
+                                            onClick={handleCreateBillForEditTransaction}
+                                            className="mt-2 inline-flex items-center rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                                          >
+                                            Create bill from this transaction
+                                          </button>
                                         ) : null}
                                       </div>
                                     ) : null}
