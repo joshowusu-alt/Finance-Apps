@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { VelanovoLogo } from "./VelanovoLogo";
 
+// Sidebar navigation component
+
 type SidebarNavProps = {
   periodLabel?: string;
   periodStart?: string;

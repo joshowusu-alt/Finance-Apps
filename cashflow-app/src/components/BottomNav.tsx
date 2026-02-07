@@ -158,6 +158,23 @@ function IconInsights(active: boolean) {
   );
 }
 
+
+function IconGoals(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  );
+}
+
 const items: NavItem[] = [
   { href: "/", label: "Home", icon: IconHome },
   { href: "/timeline", label: "Timeline", icon: IconTimeline },
@@ -165,6 +182,7 @@ const items: NavItem[] = [
   { href: "/transactions", label: "Transactions", icon: IconTransactions },
   { href: "/bills", label: "Bills", icon: IconBills },
   { href: "/income", label: "Income", icon: IconIncome },
+  { href: "/goals", label: "Goals", icon: IconGoals },
   { href: "/settings", label: "Settings", icon: IconSettings },
 ];
 
@@ -225,11 +243,10 @@ export default function BottomNav() {
 
                   {/* Label */}
                   <motion.span
-                    className={`relative text-[10px] ${
-                      active
-                        ? "text-accent font-bold"
-                        : "text-(--text-tertiary) font-medium"
-                    }`}
+                    className={`relative text-[10px] ${active
+                      ? "text-accent font-bold"
+                      : "text-(--text-tertiary) font-medium"
+                      }`}
                     animate={{
                       opacity: active ? 1 : 0.85,
                     }}
