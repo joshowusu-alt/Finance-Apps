@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { generateEvents, getSavingsTransferReconciliation } from "../cashflowEngine";
-import { PLAN, PLAN_VERSION, Plan } from "@/data/plan";
+import { PLAN, SAMPLE_PLAN, PLAN_VERSION, Plan } from "@/data/plan";
 
 function buildPlan(partial: Partial<Plan>): Plan {
   return {
-    ...PLAN,
+    ...SAMPLE_PLAN,
     ...partial,
     version: PLAN_VERSION,
-    setup: { ...PLAN.setup, ...partial.setup },
-    periods: partial.periods ?? PLAN.periods,
+    setup: { ...SAMPLE_PLAN.setup, ...partial.setup },
+    periods: partial.periods ?? SAMPLE_PLAN.periods,
     incomeRules: partial.incomeRules ?? [],
     outflowRules: partial.outflowRules ?? [],
     bills: partial.bills ?? [],
