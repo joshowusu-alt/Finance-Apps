@@ -1063,12 +1063,16 @@ export default function TransactionsPage() {
                         <div className="mt-2 rounded-lg border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-xs text-slate-600">
                           <div className="font-semibold text-slate-700">Recurring pattern detected</div>
                           <div className="mt-1 text-slate-500">
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {(recurringBillSuggestion as any).merchantName} | {gbp((recurringBillSuggestion as any).averageAmount)} |{" "}
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {formatFrequencyLabel((recurringBillSuggestion as any).frequency)} | Day{" "}
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {(recurringBillSuggestion as any).suggestedDueDay}
                           </div>
                           <button
                             type="button"
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onClick={handleCreateBillForNewTransaction as any}
                             className="mt-2 inline-flex items-center rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-600 hover:border-indigo-300 hover:text-indigo-700"
                           >
@@ -1605,12 +1609,16 @@ export default function TransactionsPage() {
                                           <div className="mt-2 rounded-lg border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-xs text-slate-600">
                                             <div className="font-semibold text-slate-700">Recurring pattern detected</div>
                                             <div className="mt-1 text-slate-500">
+                                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                               {(editRecurringBillSuggestion as any).merchantName} | {gbp((editRecurringBillSuggestion as any).averageAmount)} |{" "}
+                                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                               {formatFrequencyLabel((editRecurringBillSuggestion as any).frequency)} | Day{" "}
+                                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                               {(editRecurringBillSuggestion as any).suggestedDueDay}
                                             </div>
                                             <button
                                               type="button"
+                                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                               onClick={handleCreateBillForEditTransaction as any}
                                               className="mt-2 inline-flex items-center rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-600 hover:border-indigo-300 hover:text-indigo-700"
                                             >
