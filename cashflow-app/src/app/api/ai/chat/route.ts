@@ -110,14 +110,12 @@ function analyzePlan(plan: Plan): string {
 export async function POST(req: Request) {
     try {
         const supabase = await createClient();
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
+        const user = supabase ? (await supabase.auth.getUser()).data.user : null;
 
         let plan: Plan | null = null;
         let rateIdentifier = "";
 
-        if (user) {
+        if (user && supabase) {
             const { data: scenarioRow } = await supabase
                 .from("user_scenarios")
                 .select("scenario_id")

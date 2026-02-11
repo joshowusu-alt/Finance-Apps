@@ -43,16 +43,14 @@ export async function POST(req: Request) {
   try {
     const { startDate, endDate } = await req.json();
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = supabase ? (await supabase.auth.getUser()).data.user : null;
 
     let plan: Plan;
     let prevPlan: Plan | null = null;
     let scenarioId = "default";
     let effectiveUserId: string | null = user?.id ?? null;
 
-    if (user) {
+    if (user && supabase) {
       const { data: scenarioRow } = await supabase
         .from("user_scenarios")
         .select("scenario_id")
@@ -90,7 +88,7 @@ export async function POST(req: Request) {
     }
 
     let connections: Array<{ access_token: string; item_id: string }> = [];
-    if (user && effectiveUserId) {
+    if (user && supabase && effectiveUserId) {
       const { data } = await supabase
         .from("plaid_connections")
         .select("access_token, item_id")
@@ -154,7 +152,7 @@ export async function POST(req: Request) {
 
     let updatedAt: number | null = null;
 
-    if (user && effectiveUserId) {
+    if (user && supabase && effectiveUserId) {
       const nowIso = new Date().toISOString();
       await supabase.from("user_plans").upsert(
         {

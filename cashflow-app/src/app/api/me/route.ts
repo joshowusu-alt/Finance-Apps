@@ -7,9 +7,7 @@ export const runtime = "nodejs";
 
 export async function GET() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
 
   if (user) {
     return NextResponse.json({ userId: user.id, mode: "supabase" });

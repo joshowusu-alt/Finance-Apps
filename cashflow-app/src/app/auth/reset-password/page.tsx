@@ -24,6 +24,7 @@ export default function ResetPasswordPage() {
   async function handleRequestReset(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!supabase) { setError("Authentication is not configured."); return; }
     setLoading(true);
 
     try {
@@ -42,6 +43,7 @@ export default function ResetPasswordPage() {
   async function handleUpdatePassword(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!supabase) { setError("Authentication is not configured."); return; }
     setLoading(true);
 
     try {

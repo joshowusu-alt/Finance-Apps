@@ -22,6 +22,10 @@ export default function AuthPage() {
     e.preventDefault();
     setError(null);
     setMessage(null);
+    if (!supabase) {
+      setError("Authentication is not configured.");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -63,6 +67,7 @@ export default function AuthPage() {
 
   async function handleOAuth(provider: "google" | "apple") {
     setError(null);
+    if (!supabase) { setError("Authentication is not configured."); return; }
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${location.origin}/auth/callback` },

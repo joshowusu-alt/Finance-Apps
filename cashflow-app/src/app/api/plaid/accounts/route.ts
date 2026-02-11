@@ -39,9 +39,7 @@ export async function POST(req: Request) {
   try {
     const { userId } = await req.json();
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = supabase ? (await supabase.auth.getUser()).data.user : null;
     const effectiveUserId = user?.id ?? userId;
 
     if (!effectiveUserId) {
@@ -50,7 +48,7 @@ export async function POST(req: Request) {
 
     let connections: Array<{ access_token: string; item_id: string }> = [];
 
-    if (user) {
+    if (user && supabase) {
       const { data } = await supabase
         .from("plaid_connections")
         .select("access_token, item_id")

@@ -40,9 +40,7 @@ export async function POST(req: Request) {
     const { public_token, userId } = await req.json();
 
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = supabase ? (await supabase.auth.getUser()).data.user : null;
     const effectiveUserId = user?.id ?? userId;
 
     if (!public_token || !effectiveUserId) {
@@ -71,7 +69,7 @@ export async function POST(req: Request) {
 
     const nowIso = new Date().toISOString();
 
-    if (user) {
+    if (user && supabase) {
       await supabase.from("plaid_connections").upsert(
         {
           user_id: effectiveUserId,

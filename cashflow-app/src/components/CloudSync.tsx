@@ -182,7 +182,7 @@ export default function CloudSync() {
   const syncQueued = useRef(false);
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || !supabase) return;
     const currentScope = getStorageScope();
 
     if (!user) {
@@ -204,7 +204,7 @@ export default function CloudSync() {
   }, [loading, user]);
 
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading || !user || !supabase) return;
 
     const queueSync = () => {
       if (syncInFlight.current) {
@@ -235,7 +235,7 @@ export default function CloudSync() {
   }, [loading, user?.id]);
 
   async function runSync() {
-    if (loading || !user) return;
+    if (loading || !user || !supabase) return;
     if (syncInFlight.current) {
       syncQueued.current = true;
       return;
@@ -262,7 +262,7 @@ export default function CloudSync() {
   }
 
   async function syncScenarios() {
-    if (!user) return;
+    if (!user || !supabase) return;
     const scenarioState = loadScenarioState();
     if (!scenarioState.scenarios.length) return;
 
@@ -281,7 +281,7 @@ export default function CloudSync() {
   }
 
   async function syncPlan() {
-    if (!user) return;
+    if (!user || !supabase) return;
     const scenarioState = loadScenarioState();
     const scenarioId = scenarioState.activeId || "default";
     const localPlan = loadPlan();
@@ -343,7 +343,7 @@ export default function CloudSync() {
   }
 
   async function pushPlan(plan: Plan, prev: Plan | null, scenarioId: string) {
-    if (!user) return;
+    if (!user || !supabase) return;
     const nowIso = new Date().toISOString();
     await supabase.from("user_plans").upsert(
       {
@@ -375,7 +375,7 @@ export default function CloudSync() {
   }
 
   async function syncPreferences() {
-    if (!user) return;
+    if (!user || !supabase) return;
     const localPrefs = getLocalPreferences();
     const localHash = hashValue(localPrefs);
     const localUpdatedMs = parseStamp(getPreferencesUpdatedAt());
@@ -432,7 +432,7 @@ export default function CloudSync() {
   }
 
   async function pushPreferences(prefs: ReturnType<typeof getLocalPreferences>) {
-    if (!user) return;
+    if (!user || !supabase) return;
     const nowIso = new Date().toISOString();
     await supabase.from("user_preferences").upsert(
       {

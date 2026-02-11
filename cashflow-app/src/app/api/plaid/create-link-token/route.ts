@@ -33,9 +33,7 @@ export async function POST(req: Request) {
 
     if (!effectiveUserId) {
       const supabase = await createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = supabase ? (await supabase.auth.getUser()).data.user : null;
       if (user) effectiveUserId = user.id;
     }
 
