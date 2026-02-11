@@ -446,8 +446,8 @@ export default function BillsPage() {
                       <div
                         key={bill.id}
                         className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${bill.enabled && !disabledBills.has(bill.id)
-                            ? "bg-white/70 border border-slate-200"
-                            : "bg-slate-100 opacity-60"
+                          ? "bg-white/70 border border-slate-200"
+                          : "bg-slate-100 opacity-60"
                           }`}
                       >
                         <div className="flex-1">
@@ -504,8 +504,8 @@ export default function BillsPage() {
                       <div
                         key={rule.id}
                         className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${rule.enabled
-                            ? "bg-white/70 border border-slate-200"
-                            : "bg-slate-100 opacity-60"
+                          ? "bg-white/70 border border-slate-200"
+                          : "bg-slate-100 opacity-60"
                           }`}
                       >
                         <div className="flex-1">

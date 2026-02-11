@@ -273,8 +273,8 @@ export default function SettingsPage() {
                     <div
                       key={period.id}
                       className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${period.id === plan.setup.selectedPeriodId
-                          ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
-                          : "bg-white/70 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-600"
+                        ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                        : "bg-white/70 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-600"
                         }`}
                     >
                       <div className="flex-1">
@@ -350,7 +350,7 @@ export default function SettingsPage() {
                                 onChange={(e) =>
                                   handleSetStartingBalance(
                                     period.id,
-                                    e.target.value ? Number(e.target.value) : undefined
+                                    e.target.value !== "" ? Number(e.target.value) : undefined
                                   )
                                 }
                                 className="vn-input text-sm flex-1"

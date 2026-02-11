@@ -242,17 +242,14 @@ export default function BottomNav() {
                   </motion.span>
 
                   {/* Label */}
-                  <motion.span
-                    className={`relative text-[10px] ${active
+                  <span
+                    className={`relative text-[11px] ${active
                       ? "text-accent font-bold"
                       : "text-(--text-tertiary) font-medium"
                       }`}
-                    animate={{
-                      opacity: active ? 1 : 0.85,
-                    }}
                   >
                     {it.label}
-                  </motion.span>
+                  </span>
                 </motion.div>
               </Link>
             );

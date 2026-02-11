@@ -88,10 +88,11 @@ export function CashflowProjectionChart({
           stroke={chartColors.warning}
           strokeDasharray="3 3"
           label={{
-            value: "Low Balance Alert",
-            position: "insideTopLeft",
+            value: "Min Balance",
+            position: "top",
             fill: chartColors.warning,
-            fontSize: 12,
+            fontSize: 10,
+            dy: -10,
           }}
         />
         <Area

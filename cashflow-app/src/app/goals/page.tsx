@@ -154,7 +154,7 @@ function GoalCard({ goal, onUpdate, onDelete }: {
                         <label className="block text-xs font-medium text-slate-500 mb-1">Current</label>
                         <input
                             type="number"
-                            value={editCurrent}
+                            value={editCurrent === "0" ? "" : editCurrent}
                             onChange={(e) => {
                                 setEditCurrent(e.target.value);
                                 if (errors.current) setErrors({ ...errors, current: "" });
@@ -325,7 +325,7 @@ function NewGoalForm({ onSave, onCancel }: {
 }) {
     const [name, setName] = useState("");
     const [targetAmount, setTargetAmount] = useState("");
-    const [currentAmount, setCurrentAmount] = useState("0");
+    const [currentAmount, setCurrentAmount] = useState("");
     const [targetDate, setTargetDate] = useState("");
     const [selectedColor, setSelectedColor] = useState(GOAL_COLORS[0]);
     const [selectedIcon, setSelectedIcon] = useState("🎯");

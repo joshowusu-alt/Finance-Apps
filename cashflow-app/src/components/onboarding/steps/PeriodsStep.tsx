@@ -83,7 +83,7 @@ export function PeriodsStep() {
             >
               {p.active && (
                 <motion.div
-                  animate={{ opacity: [0.4, 0.8, 0.4] }}
+                  animate={{ opacity: [0.75, 1, 0.75] }}
                   transition={{ duration: 2, repeat: Infinity }}
                   className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
                   style={{
