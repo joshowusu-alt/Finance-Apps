@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 import { neon } from "@neondatabase/serverless";
+import { createClient } from "@/lib/supabase/server";
 import { suggestCategory } from "@/lib/categorization";
 
 export const runtime = "nodejs";
@@ -38,18 +39,32 @@ function getSQL() {
 export async function POST(req: Request) {
   try {
     const { userId, startDate, endDate } = await req.json();
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const effectiveUserId = user?.id ?? userId;
 
-    if (!userId) {
+    if (!effectiveUserId) {
       return NextResponse.json({ error: "Missing userId" }, { status: 400 });
     }
 
-    // Get all access tokens for this user
-    const sql = getSQL();
-    const connections = await sql`
-      SELECT access_token, item_id
-      FROM plaid_connections
-      WHERE user_id = ${userId}
-    `;
+    let connections: Array<{ access_token: string; item_id: string }> = [];
+    if (user) {
+      const { data } = await supabase
+        .from("plaid_connections")
+        .select("access_token, item_id")
+        .eq("user_id", effectiveUserId);
+      connections = (data ?? []) as Array<{ access_token: string; item_id: string }>;
+    } else {
+      // Get all access tokens for this user (fallback: main token / Neon)
+      const sql = getSQL();
+      connections = (await sql`
+        SELECT access_token, item_id
+        FROM plaid_connections
+        WHERE user_id = ${effectiveUserId}
+      `) as Array<{ access_token: string; item_id: string }>;
+    }
 
     if (connections.length === 0) {
       return NextResponse.json({ transactions: [] });

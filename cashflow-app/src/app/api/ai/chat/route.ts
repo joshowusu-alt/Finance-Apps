@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { MAIN_COOKIE_NAME, ensureMainPlan } from "@/lib/mainStore";
 import { buildAIContext, formatContextForPrompt, type AIFinancialContext, type CategoryVariance } from "@/lib/aiContext";
 import type { Plan } from "@/data/plan";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -108,15 +109,53 @@ function analyzePlan(plan: Plan): string {
 
 export async function POST(req: Request) {
     try {
-        const cookieStore = await cookies();
-        const token = cookieStore.get(MAIN_COOKIE_NAME)?.value;
+        const supabase = await createClient();
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
 
-        if (!token) {
-            return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+        let plan: Plan | null = null;
+        let rateIdentifier = "";
+
+        if (user) {
+            const { data: scenarioRow } = await supabase
+                .from("user_scenarios")
+                .select("scenario_id")
+                .eq("user_id", user.id)
+                .eq("active", true)
+                .maybeSingle();
+            const scenarioId = scenarioRow?.scenario_id ?? "default";
+
+            const { data: planRow } = await supabase
+                .from("user_plans")
+                .select("plan_json")
+                .eq("user_id", user.id)
+                .eq("scenario_id", scenarioId)
+                .maybeSingle();
+
+            if (planRow?.plan_json) {
+                plan = typeof planRow.plan_json === "string"
+                    ? (JSON.parse(planRow.plan_json) as Plan)
+                    : (planRow.plan_json as Plan);
+            }
+            rateIdentifier = user.id;
+        }
+
+        if (!plan) {
+            const cookieStore = await cookies();
+            const token = cookieStore.get(MAIN_COOKIE_NAME)?.value;
+
+            if (!token) {
+                return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+            }
+
+            if (!rateIdentifier) rateIdentifier = token;
+            const main = await ensureMainPlan(token);
+            plan = main.plan;
         }
 
         // Rate limiting
-        if (!checkRateLimit(token)) {
+        if (!checkRateLimit(rateIdentifier)) {
             return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
         }
 
@@ -127,7 +166,6 @@ export async function POST(req: Request) {
         }
 
         // Get user's financial data with rich context
-        const { plan } = await ensureMainPlan(token);
         const aiContext = buildAIContext(plan);
         const financialContext = formatContextForPrompt(aiContext);
 

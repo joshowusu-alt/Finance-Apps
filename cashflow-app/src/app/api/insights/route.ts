@@ -7,6 +7,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ensureMainPlan, MAIN_COOKIE_NAME } from "@/lib/mainStore";
 import { buildAIContext, type ProactiveInsight } from "@/lib/aiContext";
+import { createClient } from "@/lib/supabase/server";
+import type { Plan } from "@/data/plan";
 
 export interface InsightsResponse {
     insights: ProactiveInsight[];
@@ -20,14 +22,48 @@ export interface InsightsResponse {
 
 export async function GET(): Promise<NextResponse<InsightsResponse | { error: string }>> {
     try {
-        const cookieStore = await cookies();
-        const token = cookieStore.get(MAIN_COOKIE_NAME)?.value;
+        const supabase = await createClient();
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
 
-        if (!token) {
-            return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+        let plan: Plan | null = null;
+
+        if (user) {
+            const { data: scenarioRow } = await supabase
+                .from("user_scenarios")
+                .select("scenario_id")
+                .eq("user_id", user.id)
+                .eq("active", true)
+                .maybeSingle();
+            const scenarioId = scenarioRow?.scenario_id ?? "default";
+
+            const { data: planRow } = await supabase
+                .from("user_plans")
+                .select("plan_json")
+                .eq("user_id", user.id)
+                .eq("scenario_id", scenarioId)
+                .maybeSingle();
+
+            if (planRow?.plan_json) {
+                plan = typeof planRow.plan_json === "string"
+                    ? (JSON.parse(planRow.plan_json) as Plan)
+                    : (planRow.plan_json as Plan);
+            }
         }
 
-        const { plan } = await ensureMainPlan(token);
+        if (!plan) {
+            const cookieStore = await cookies();
+            const token = cookieStore.get(MAIN_COOKIE_NAME)?.value;
+
+            if (!token) {
+                return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+            }
+
+            const main = await ensureMainPlan(token);
+            plan = main.plan;
+        }
+
         const ctx = buildAIContext(plan);
 
         // Calculate daily budget for remaining days

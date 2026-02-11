@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 import { neon } from "@neondatabase/serverless";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -38,7 +39,13 @@ export async function POST(req: Request) {
   try {
     const { public_token, userId } = await req.json();
 
-    if (!public_token || !userId) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const effectiveUserId = user?.id ?? userId;
+
+    if (!public_token || !effectiveUserId) {
       return NextResponse.json(
         { error: "Missing public_token or userId" },
         { status: 400 }
@@ -62,38 +69,69 @@ export async function POST(req: Request) {
 
     const accounts = accountsResponse.data.accounts;
 
-    // Store the connection in the database
-    const sql = getSQL();
-    const now = new Date();
+    const nowIso = new Date().toISOString();
 
-    await sql`
-      INSERT INTO plaid_connections
-      (user_id, item_id, access_token, created_at, updated_at)
-      VALUES (${userId}, ${itemId}, ${accessToken}, ${now}, ${now})
-      ON CONFLICT (item_id) DO UPDATE SET
-        access_token = EXCLUDED.access_token,
-        updated_at = EXCLUDED.updated_at
-    `;
+    if (user) {
+      await supabase.from("plaid_connections").upsert(
+        {
+          user_id: effectiveUserId,
+          item_id: itemId,
+          access_token: accessToken,
+          updated_at: nowIso,
+        },
+        { onConflict: "item_id" }
+      );
 
-    // Store accounts
-    for (const account of accounts) {
+      const accountRows = accounts.map((account) => ({
+        user_id: effectiveUserId,
+        item_id: itemId,
+        account_id: account.account_id,
+        name: account.name,
+        official_name: account.official_name || null,
+        type: account.type,
+        subtype: account.subtype || null,
+        created_at: nowIso,
+      }));
+
+      if (accountRows.length) {
+        await supabase.from("plaid_accounts").upsert(accountRows, {
+          onConflict: "account_id",
+        });
+      }
+    } else {
+      // Store the connection in the database (fallback: main token / Neon)
+      const sql = getSQL();
+      const now = new Date();
+
       await sql`
-        INSERT INTO plaid_accounts
-        (user_id, item_id, account_id, name, official_name, type, subtype, created_at)
-        VALUES (
-          ${userId},
-          ${itemId},
-          ${account.account_id},
-          ${account.name},
-          ${account.official_name || null},
-          ${account.type},
-          ${account.subtype || null},
-          ${now}
-        )
-        ON CONFLICT (account_id) DO UPDATE SET
-          name = EXCLUDED.name,
-          official_name = EXCLUDED.official_name
+        INSERT INTO plaid_connections
+        (user_id, item_id, access_token, created_at, updated_at)
+        VALUES (${effectiveUserId}, ${itemId}, ${accessToken}, ${now}, ${now})
+        ON CONFLICT (item_id) DO UPDATE SET
+          access_token = EXCLUDED.access_token,
+          updated_at = EXCLUDED.updated_at
       `;
+
+      // Store accounts
+      for (const account of accounts) {
+        await sql`
+          INSERT INTO plaid_accounts
+          (user_id, item_id, account_id, name, official_name, type, subtype, created_at)
+          VALUES (
+            ${effectiveUserId},
+            ${itemId},
+            ${account.account_id},
+            ${account.name},
+            ${account.official_name || null},
+            ${account.type},
+            ${account.subtype || null},
+            ${now}
+          )
+          ON CONFLICT (account_id) DO UPDATE SET
+            name = EXCLUDED.name,
+            official_name = EXCLUDED.official_name
+        `;
+      }
     }
 
     return NextResponse.json({

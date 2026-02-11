@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Configuration, PlaidApi, PlaidEnvironments, Products, CountryCode } from "plaid";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -28,8 +29,17 @@ function getPlaidClient() {
 export async function POST(req: Request) {
   try {
     const { userId } = await req.json();
+    let effectiveUserId = userId as string | undefined;
 
-    if (!userId) {
+    if (!effectiveUserId) {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) effectiveUserId = user.id;
+    }
+
+    if (!effectiveUserId) {
       return NextResponse.json({ error: "Missing userId" }, { status: 400 });
     }
 
@@ -37,7 +47,7 @@ export async function POST(req: Request) {
 
     const response = await client.linkTokenCreate({
       user: {
-        client_user_id: userId,
+        client_user_id: effectiveUserId,
       },
       client_name: "Velanovo",
       products: [Products.Transactions, Products.Auth],

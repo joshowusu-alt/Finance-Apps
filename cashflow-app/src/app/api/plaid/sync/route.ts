@@ -4,7 +4,8 @@ import { ensureMainPlan, saveMainPlan } from "@/lib/mainStore";
 import { MAIN_COOKIE_NAME } from "@/lib/mainStore";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 import { neon } from "@neondatabase/serverless";
-import type { Transaction, CashflowType, CashflowCategory } from "@/data/plan";
+import { createClient } from "@/lib/supabase/server";
+import { PLAN, type Plan, type Transaction, type CashflowType, type CashflowCategory } from "@/data/plan";
 
 export const runtime = "nodejs";
 
@@ -40,25 +41,70 @@ function getSQL() {
 
 export async function POST(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(MAIN_COOKIE_NAME)?.value;
+    const { startDate, endDate } = await req.json();
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!token) {
-      return NextResponse.json({ error: "Missing main token" }, { status: 401 });
+    let plan: Plan;
+    let prevPlan: Plan | null = null;
+    let scenarioId = "default";
+    let effectiveUserId: string | null = user?.id ?? null;
+
+    if (user) {
+      const { data: scenarioRow } = await supabase
+        .from("user_scenarios")
+        .select("scenario_id")
+        .eq("user_id", user.id)
+        .eq("active", true)
+        .maybeSingle();
+      scenarioId = scenarioRow?.scenario_id ?? "default";
+
+      const { data: planRow } = await supabase
+        .from("user_plans")
+        .select("plan_json")
+        .eq("user_id", user.id)
+        .eq("scenario_id", scenarioId)
+        .maybeSingle();
+
+      if (planRow?.plan_json) {
+        plan = typeof planRow.plan_json === "string"
+          ? (JSON.parse(planRow.plan_json) as Plan)
+          : (planRow.plan_json as Plan);
+      } else {
+        plan = PLAN;
+      }
+    } else {
+      const cookieStore = await cookies();
+      const token = cookieStore.get(MAIN_COOKIE_NAME)?.value;
+
+      if (!token) {
+        return NextResponse.json({ error: "Missing main token" }, { status: 401 });
+      }
+
+      effectiveUserId = token;
+      const main = await ensureMainPlan(token);
+      plan = main.plan;
+      prevPlan = main.prevPlan ?? null;
     }
 
-    const { startDate, endDate } = await req.json();
-
-    // Get user's current plan
-    const { plan, prevPlan } = await ensureMainPlan(token);
-
-    // Get all access tokens for this user (using token as userId)
-    const sql = getSQL();
-    const connections = await sql`
-      SELECT access_token, item_id
-      FROM plaid_connections
-      WHERE user_id = ${token}
-    `;
+    let connections: Array<{ access_token: string; item_id: string }> = [];
+    if (user && effectiveUserId) {
+      const { data } = await supabase
+        .from("plaid_connections")
+        .select("access_token, item_id")
+        .eq("user_id", effectiveUserId);
+      connections = (data ?? []) as Array<{ access_token: string; item_id: string }>;
+    } else if (effectiveUserId) {
+      // Get all access tokens for this user (using token as userId)
+      const sql = getSQL();
+      connections = (await sql`
+        SELECT access_token, item_id
+        FROM plaid_connections
+        WHERE user_id = ${effectiveUserId}
+      `) as Array<{ access_token: string; item_id: string }>;
+    }
 
     if (connections.length === 0) {
       return NextResponse.json({
@@ -99,22 +145,44 @@ export async function POST(req: Request) {
     const existingIds = new Set(plan.transactions.map((t) => t.id));
     const transactionsToAdd = newTransactions.filter((t) => !existingIds.has(t.id));
 
-    const updatedPlan = {
+    const updatedPlan: Plan = {
       ...plan,
       transactions: [...plan.transactions, ...transactionsToAdd].sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       ),
     };
 
-    // Save updated plan
-    const updatedAt = await saveMainPlan(token, updatedPlan, prevPlan);
+    let updatedAt: number | null = null;
 
-    // Update last synced timestamp
-    await sql`
-      UPDATE plaid_connections
-      SET last_synced_at = ${new Date()}
-      WHERE user_id = ${token}
-    `;
+    if (user && effectiveUserId) {
+      const nowIso = new Date().toISOString();
+      await supabase.from("user_plans").upsert(
+        {
+          user_id: effectiveUserId,
+          scenario_id: scenarioId,
+          plan_json: updatedPlan,
+          prev_plan_json: plan,
+          updated_at: nowIso,
+        },
+        { onConflict: "user_id,scenario_id" }
+      );
+      updatedAt = new Date(nowIso).getTime();
+
+      await supabase
+        .from("plaid_connections")
+        .update({ last_synced_at: nowIso })
+        .eq("user_id", effectiveUserId);
+    } else if (effectiveUserId) {
+      const updated = await saveMainPlan(effectiveUserId, updatedPlan, prevPlan);
+      updatedAt = updated;
+
+      const sql = getSQL();
+      await sql`
+        UPDATE plaid_connections
+        SET last_synced_at = ${new Date()}
+        WHERE user_id = ${effectiveUserId}
+      `;
+    }
 
     return NextResponse.json({
       success: true,
