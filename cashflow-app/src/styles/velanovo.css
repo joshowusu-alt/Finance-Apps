@@ -13,15 +13,15 @@
 
   --vn-text: #0f172a;
   /* Slate 900 */
-  --vn-muted: #64748b;
-  /* Slate 500 */
+  --vn-muted: #475569;
+  /* Slate 600 — WCAG AA compliant */
 
   --vn-success: #059669;
   /* Emerald 600 */
-  --vn-warning: #d97706;
-  /* Amber 600 */
-  --vn-error: #dc2626;
-  /* Red 600 */
+  --vn-warning: #92400e;
+  /* Amber 800 — WCAG AA compliant */
+  --vn-error: #b91c1c;
+  /* Red 700 — WCAG AA compliant */
   --vn-info: #0284c7;
   /* Sky 600 */
 
@@ -48,8 +48,8 @@ html[data-theme="dark"] {
   /* Slate 800 */
   --vn-text: #f8fafc;
   /* Slate 50 */
-  --vn-muted: #94a3b8;
-  /* Slate 400 */
+  --vn-muted: #cbd5e1;
+  /* Slate 300 — WCAG AA compliant */
 
   --vn-primary: #fbbf24;
   /* Gold becomes primary */

@@ -38,12 +38,12 @@
   --success: #059669;
   /* Emerald 600 */
   --success-soft: rgba(5, 150, 105, 0.1);
-  --warning: #d97706;
-  /* Amber 600 */
-  --warning-soft: rgba(217, 119, 6, 0.1);
-  --error: #dc2626;
-  /* Red 600 */
-  --error-soft: rgba(220, 38, 38, 0.1);
+  --warning: #92400e;
+  /* Amber 800 — WCAG AA compliant */
+  --warning-soft: rgba(146, 64, 14, 0.1);
+  --error: #b91c1c;
+  /* Red 700 — WCAG AA compliant */
+  --error-soft: rgba(185, 28, 28, 0.1);
   --info: #0284c7;
   /* Sky 600 */
   --info-soft: rgba(2, 132, 199, 0.1);
@@ -53,8 +53,8 @@
   /* Slate 900 */
   --text-secondary: #334155;
   /* Slate 700 */
-  --text-tertiary: #64748b;
-  /* Slate 500 */
+  --text-tertiary: #475569;
+  /* Slate 600 — WCAG AA compliant */
   --text-disabled: #94a3b8;
   /* Slate 400 */
 
@@ -125,8 +125,8 @@
   /* Slate 50 */
   --text-secondary: #cbd5e1;
   /* Slate 300 */
-  --text-tertiary: #94a3b8;
-  /* Slate 400 */
+  --text-tertiary: #cbd5e1;
+  /* Slate 300 — WCAG AA compliant */
   --text-disabled: #64748b;
   /* Slate 500 */
 
@@ -188,17 +188,18 @@ body {
 .app-watermark {
   position: fixed;
   inset: 0;
-  background-image: url("/logo-wordmark.svg");
+  background-image: url("/logo-watermark.svg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: min(920px, 92vw) auto;
-  opacity: 0.03;
+  opacity: 0.04;
   pointer-events: none;
   z-index: 0;
 }
 
 .dark .app-watermark {
-  opacity: 0.02;
+  opacity: 0.06;
+  filter: invert(1);
 }
 
 .skip-link {

@@ -1,0 +1,6 @@
+<svg width="220" height="48" viewBox="0 0 220 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="2" width="44" height="44" rx="12" stroke="#142732" stroke-width="1.5" fill="none"/>
+  <path d="M14 12L24 32L34 12" stroke="#142732" stroke-width="3" stroke-linecap="square"/>
+  <path d="M4 4h40" stroke="#142732" stroke-width="1.5" stroke-opacity="0.4"/>
+  <text x="58" y="32" fill="#142732" font-family="'Playfair Display', Georgia, serif" font-size="24" font-weight="700" letter-spacing="-0.02em">Velanovo</text>
+</svg>

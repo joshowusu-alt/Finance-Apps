@@ -374,7 +374,7 @@ export function downloadPlanXlsx(plan: Plan) {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
   const stamp = new Date().toISOString().slice(0, 10);
-  downloadBlob(blob, `vero-plan-${stamp}.xlsx`);
+  downloadBlob(blob, `velanovo-plan-${stamp}.xlsx`);
 }
 
 export function downloadPlanTemplate() {
@@ -383,7 +383,7 @@ export function downloadPlanTemplate() {
   const blob = new Blob([data], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
-  downloadBlob(blob, "vero-import-template.xlsx");
+  downloadBlob(blob, "velanovo-import-template.xlsx");
 }
 
 function addSectionTitle(doc: jsPDF, text: string, y: number) {
@@ -405,7 +405,7 @@ export function downloadPlanPdf(plan: Plan, periodId: number) {
   let y = 50;
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
-  doc.text("Vero Plan Report", 40, y);
+  doc.text("Velanovo Plan Report", 40, y);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   y += 18;
@@ -528,7 +528,7 @@ export function downloadPlanPdf(plan: Plan, periodId: number) {
   });
 
   const filenameSafe = period.label.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
-  doc.save(`vero-report-${filenameSafe || "period"}.pdf`);
+  doc.save(`velanovo-report-${filenameSafe || "period"}.pdf`);
 }
 
 export async function importPlanFromFile(file: File, currentPlan: Plan): Promise<ImportResult> {

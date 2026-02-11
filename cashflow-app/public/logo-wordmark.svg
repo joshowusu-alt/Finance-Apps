@@ -1,6 +1,7 @@
-<svg width="180" height="48" viewBox="0 0 180 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="24" cy="24" r="22" stroke="#4AA8B3" stroke-width="2"/>
-  <path d="M14 18L24 32L34 18" stroke="#EAF6F8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="34" cy="14" r="2.4" fill="#4AA8B3"/>
-  <text x="60" y="30" fill="#EAF6F8" font-family="Manrope, Arial, sans-serif" font-size="20" font-weight="600" letter-spacing="0.4">Velanovo</text>
+<svg width="220" height="48" viewBox="0 0 220 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="#0f172a" stroke="rgba(251,191,36,0.2)" stroke-width="1"/>
+  <path d="M24 4L4 44h40L24 4z" fill="#0369a1" opacity="0.15"/>
+  <path d="M14 12L24 32L34 12" stroke="#0369a1" stroke-width="3" stroke-linecap="square"/>
+  <path d="M4 4h40" stroke="#0369a1" stroke-width="1.5" stroke-opacity="0.4"/>
+  <text x="58" y="32" fill="#0f172a" font-family="'Playfair Display', Georgia, serif" font-size="24" font-weight="700" letter-spacing="-0.02em">Velanovo</text>
 </svg>

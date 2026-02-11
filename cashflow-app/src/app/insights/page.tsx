@@ -806,7 +806,7 @@ export default function InsightsPage() {
       .map((row) => row.map((cell) => csvEscape(String(cell))).join(","))
       .join("\n");
     const stamp = new Date().toISOString().slice(0, 10);
-    downloadTextFile(csv, `vero-insights-${stamp}.csv`, "text/csv");
+    downloadTextFile(csv, `velanovo-insights-${stamp}.csv`, "text/csv");
   }
 
   return (
