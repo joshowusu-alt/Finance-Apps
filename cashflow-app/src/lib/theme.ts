@@ -1,13 +1,21 @@
 "use client";
 
+import { touchPreferencesUpdatedAt } from "@/lib/preferencesSync";
+import { getStorageScope } from "@/lib/storage";
+
 export type Theme = "light" | "dark";
 
 const THEME_KEY = "velanovo-theme";
 
+function themeKey() {
+  const scope = getStorageScope();
+  return scope === "default" ? THEME_KEY : `${THEME_KEY}::${scope}`;
+}
+
 export function getTheme(): Theme {
   if (typeof window === "undefined") return "light";
 
-  const stored = localStorage.getItem(THEME_KEY);
+  const stored = localStorage.getItem(themeKey()) || localStorage.getItem(THEME_KEY);
   if (stored === "dark" || stored === "light") return stored;
 
   // Check system preference
@@ -19,8 +27,9 @@ export function getTheme(): Theme {
 }
 
 export function setTheme(theme: Theme) {
-  localStorage.setItem(THEME_KEY, theme);
+  localStorage.setItem(themeKey(), theme);
   applyTheme(theme);
+  touchPreferencesUpdatedAt();
 }
 
 export function applyTheme(theme: Theme) {

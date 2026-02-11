@@ -1,6 +1,7 @@
 import type { Plan } from "@/data/plan";
 import { PLAN } from "@/data/plan";
 import { getStorageScope } from "@/lib/storage";
+import { touchPreferencesUpdatedAt } from "@/lib/preferencesSync";
 
 const ONBOARDING_KEY = "cashflow_onboarding_v1";
 const WIZARD_KEY = "cashflow_wizard_v1";
@@ -34,12 +35,12 @@ function wizardKey() {
   return scope === "default" ? WIZARD_KEY : `${WIZARD_KEY}::${scope}`;
 }
 
-const DEFAULT_STATE: OnboardingState = {
+export const DEFAULT_ONBOARDING_STATE: OnboardingState = {
   dismissed: false,
   completed: {},
 };
 
-const DEFAULT_WIZARD_STATE: WizardState = {
+export const DEFAULT_WIZARD_STATE: WizardState = {
   completed: false,
   lastStepSeen: 0,
 };
@@ -83,9 +84,9 @@ export const ONBOARDING_TASKS: OnboardingTask[] = [
 ];
 
 export function loadOnboardingState(): OnboardingState {
-  if (typeof window === "undefined") return DEFAULT_STATE;
+  if (typeof window === "undefined") return DEFAULT_ONBOARDING_STATE;
   const raw = window.localStorage.getItem(onboardingKey());
-  if (!raw) return DEFAULT_STATE;
+  if (!raw) return DEFAULT_ONBOARDING_STATE;
   try {
     const parsed = JSON.parse(raw) as OnboardingState;
     return {
@@ -93,13 +94,14 @@ export function loadOnboardingState(): OnboardingState {
       completed: parsed.completed ?? {},
     };
   } catch {
-    return DEFAULT_STATE;
+    return DEFAULT_ONBOARDING_STATE;
   }
 }
 
 export function saveOnboardingState(state: OnboardingState) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(onboardingKey(), JSON.stringify(state));
+  touchPreferencesUpdatedAt();
 }
 
 export function setOnboardingTask(id: string, completed: boolean) {
@@ -120,8 +122,8 @@ export function dismissOnboarding(dismissed: boolean) {
 }
 
 export function resetOnboarding() {
-  saveOnboardingState(DEFAULT_STATE);
-  return DEFAULT_STATE;
+  saveOnboardingState(DEFAULT_ONBOARDING_STATE);
+  return DEFAULT_ONBOARDING_STATE;
 }
 
 /* ── Wizard state (educational overlay, separate from checklist) ── */
@@ -140,6 +142,7 @@ export function loadWizardState(): WizardState {
 export function saveWizardState(state: WizardState) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(wizardKey(), JSON.stringify(state));
+  touchPreferencesUpdatedAt();
 }
 
 export function completeWizard(): WizardState {

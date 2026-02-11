@@ -1,8 +1,16 @@
 "use client";
 
+import { touchPreferencesUpdatedAt } from "@/lib/preferencesSync";
+import { getStorageScope } from "@/lib/storage";
+
 export type Currency = "GBP" | "USD" | "EUR" | "JPY" | "CAD" | "AUD" | "CHF" | "CNY" | "INR" | "GHS" | "NGN";
 
 const CURRENCY_KEY = "velanovo-currency";
+
+function currencyKey() {
+  const scope = getStorageScope();
+  return scope === "default" ? CURRENCY_KEY : `${CURRENCY_KEY}::${scope}`;
+}
 
 export const CURRENCIES: Record<Currency, { symbol: string; name: string; locale: string }> = {
   GBP: { symbol: "£", name: "British Pound", locale: "en-GB" },
@@ -21,14 +29,15 @@ export const CURRENCIES: Record<Currency, { symbol: string; name: string; locale
 export function getCurrency(): Currency {
   if (typeof window === "undefined") return "GBP";
 
-  const stored = localStorage.getItem(CURRENCY_KEY);
+  const stored = localStorage.getItem(currencyKey()) || localStorage.getItem(CURRENCY_KEY);
   if (stored && stored in CURRENCIES) return stored as Currency;
 
   return "GBP";
 }
 
 export function setCurrency(currency: Currency) {
-  localStorage.setItem(CURRENCY_KEY, currency);
+  localStorage.setItem(currencyKey(), currency);
+  touchPreferencesUpdatedAt();
 }
 
 export function formatMoney(amount: number, currency?: Currency): string {

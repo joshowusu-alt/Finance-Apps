@@ -9,6 +9,8 @@ import ToastContainer from "@/components/Toast";
 import ThemeInitializer from "@/components/ThemeInitializer";
 import AIAssistant from "@/components/AIAssistant";
 import { ConfirmProvider } from "@/components/ConfirmDialog";
+import { AuthProvider } from "@/contexts/AuthContext";
+import CloudSync from "@/components/CloudSync";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -35,7 +37,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="transition-colors duration-200">
       <body className={`${playfair.variable} ${inter.variable} min-h-screen font-sans bg-white dark:bg-slate-900 transition-colors duration-200`}>
-        <ConfirmProvider>
+        <AuthProvider>
+          <ConfirmProvider>
+          <CloudSync />
           <ThemeInitializer />
           <a href="#main-content" className="skip-link">
             Skip to content
@@ -53,7 +57,8 @@ export default function RootLayout({
           <ReviewAccessLink />
           <AIAssistant />
           <ToastContainer />
-        </ConfirmProvider>
+          </ConfirmProvider>
+        </AuthProvider>
       </body>
     </html>
   );

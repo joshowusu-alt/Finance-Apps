@@ -1,6 +1,7 @@
 import type { Plan, CashflowEvent, Transaction } from "@/data/plan";
 import { buildTimeline, generateEvents, getPeriod, getStartingBalance } from "@/lib/cashflowEngine";
 import { getStorageScope } from "@/lib/storage";
+import { touchPreferencesUpdatedAt } from "@/lib/preferencesSync";
 
 export const ALERT_PREFS_UPDATED_EVENT = "cashflow:alerts-updated";
 
@@ -25,7 +26,7 @@ export type AlertItem = {
   href?: string;
 };
 
-const DEFAULT_PREFS: AlertPreferences = {
+export const DEFAULT_ALERT_PREFS: AlertPreferences = {
   enabled: true,
   lowBalance: true,
   lowBalanceWindowDays: 30,
@@ -89,14 +90,14 @@ function matchesIncomeEvent(event: CashflowEvent, txn: Transaction, graceDays: n
 }
 
 export function loadAlertPreferences(): AlertPreferences {
-  if (typeof window === "undefined") return DEFAULT_PREFS;
+  if (typeof window === "undefined") return DEFAULT_ALERT_PREFS;
   const raw = window.localStorage.getItem(prefsKey());
-  if (!raw) return DEFAULT_PREFS;
+  if (!raw) return DEFAULT_ALERT_PREFS;
   try {
     const parsed = JSON.parse(raw) as Partial<AlertPreferences>;
-    return { ...DEFAULT_PREFS, ...parsed };
+    return { ...DEFAULT_ALERT_PREFS, ...parsed };
   } catch {
-    return DEFAULT_PREFS;
+    return DEFAULT_ALERT_PREFS;
   }
 }
 
@@ -104,6 +105,7 @@ export function saveAlertPreferences(prefs: AlertPreferences) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(prefsKey(), JSON.stringify(prefs));
   dispatchBrowserEvent(ALERT_PREFS_UPDATED_EVENT);
+  touchPreferencesUpdatedAt();
 }
 
 export function updateAlertPreferences(patch: Partial<AlertPreferences>) {

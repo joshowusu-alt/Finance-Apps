@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.95.3",
     "@tanstack/react-virtual": "^3.13.1",
     "better-sqlite3": "^12.6.2",
     "framer-motion": "^12.33.0",
