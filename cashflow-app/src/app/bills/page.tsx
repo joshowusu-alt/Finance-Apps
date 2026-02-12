@@ -95,7 +95,7 @@ function StatCard({ label, value, hint }: { label: string; value: string; hint?:
   return (
     <div className="vn-card p-6">
       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
+      <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{value}</div>
       {hint ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
     </div>
   );
@@ -386,7 +386,7 @@ export default function BillsPage() {
           <section className="space-y-6">
             <header className="vn-card p-6">
               <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Bills</div>
-              <h1 className="text-2xl font-semibold text-slate-900">Bills and outflows</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Bills and outflows</h1>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 Plan your bills and compare with real spending.
               </p>
@@ -430,10 +430,10 @@ export default function BillsPage() {
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold text-slate-800">Planned bills</div>
+                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Planned bills</div>
                   <button
                     onClick={handleAddBill}
-                    className="vn-btn vn-btn-primary text-xs px-3 py-1.5"
+                    className="vn-btn vn-btn-primary text-xs px-4 py-2.5"
                   >
                     + Add Bill
                   </button>
@@ -446,36 +446,36 @@ export default function BillsPage() {
                       <div
                         key={bill.id}
                         className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${bill.enabled && !disabledBills.has(bill.id)
-                          ? "bg-white/70 border border-slate-200"
-                          : "bg-slate-100 opacity-60"
+                          ? "bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700"
+                          : "bg-slate-100 dark:bg-slate-700/60 opacity-60"
                           }`}
                       >
                         <div className="flex-1">
-                          <div className="font-semibold text-slate-900">{bill.label}</div>
+                          <div className="font-semibold text-slate-900 dark:text-white">{bill.label}</div>
                           <div className="text-xs text-slate-500 dark:text-slate-400">
                             Due day {bill.dueDay} • {bill.category}
                             {!bill.enabled && " • Disabled"}
                             {disabledBills.has(bill.id) && " • Disabled for period"}
                           </div>
                         </div>
-                        <div className="font-semibold text-slate-900">{gbp(bill.amount)}</div>
-                        <div className="flex items-center gap-2">
+                        <div className="font-semibold text-slate-900 dark:text-white">{gbp(bill.amount)}</div>
+                        <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleToggleEnabled(bill.id)}
-                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700"
+                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 p-2 min-w-10 min-h-10 flex items-center justify-center"
                             title={bill.enabled ? "Disable" : "Enable"}
                           >
                             {bill.enabled ? "👁️" : "👁️‍🗨️"}
                           </button>
                           <button
                             onClick={() => handleEditBill(bill)}
-                            className="text-xs text-blue-600 hover:text-blue-800"
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-2 min-h-10 flex items-center"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDeleteBill(bill.id)}
-                            className="text-xs text-red-600 hover:text-red-800"
+                            className="text-xs text-red-600 hover:text-red-800 p-2 min-h-10 flex items-center"
                           >
                             Del
                           </button>
@@ -488,10 +488,10 @@ export default function BillsPage() {
 
               <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold text-slate-800">Recurring outflows</div>
+                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Recurring outflows</div>
                   <button
                     onClick={handleAddOutflow}
-                    className="vn-btn vn-btn-primary text-xs px-3 py-1.5"
+                    className="vn-btn vn-btn-primary text-xs px-4 py-2.5"
                   >
                     + Add Outflow
                   </button>
@@ -504,35 +504,35 @@ export default function BillsPage() {
                       <div
                         key={rule.id}
                         className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${rule.enabled
-                          ? "bg-white/70 border border-slate-200"
-                          : "bg-slate-100 opacity-60"
+                          ? "bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700"
+                          : "bg-slate-100 dark:bg-slate-700/60 opacity-60"
                           }`}
                       >
                         <div className="flex-1">
-                          <div className="font-semibold text-slate-900">{rule.label}</div>
+                          <div className="font-semibold text-slate-900 dark:text-white">{rule.label}</div>
                           <div className="text-xs text-slate-500 dark:text-slate-400">
                             {rule.cadence} • {rule.category}
                             {!rule.enabled && " • Disabled"}
                           </div>
                         </div>
-                        <div className="font-semibold text-slate-900">{gbp(rule.amount)}</div>
-                        <div className="flex items-center gap-2">
+                        <div className="font-semibold text-slate-900 dark:text-white">{gbp(rule.amount)}</div>
+                        <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleToggleOutflowEnabled(rule.id)}
-                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700"
+                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 p-2 min-w-10 min-h-10 flex items-center justify-center"
                             title={rule.enabled ? "Disable" : "Enable"}
                           >
                             {rule.enabled ? "👁️" : "👁️‍🗨️"}
                           </button>
                           <button
                             onClick={() => handleEditOutflow(rule)}
-                            className="text-xs text-blue-600 hover:text-blue-800"
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-2 min-h-10 flex items-center"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDeleteOutflow(rule.id)}
-                            className="text-xs text-red-600 hover:text-red-800"
+                            className="text-xs text-red-600 hover:text-red-800 p-2 min-h-10 flex items-center"
                           >
                             Del
                           </button>
@@ -545,7 +545,7 @@ export default function BillsPage() {
             </div>
 
             <details className="vn-card p-6">
-              <summary className="cursor-pointer text-sm font-semibold text-slate-800">
+              <summary className="cursor-pointer text-sm font-semibold text-slate-800 dark:text-slate-100">
                 Budget vs actual by bill
               </summary>
               <div className="mt-4 text-sm">
@@ -566,10 +566,10 @@ export default function BillsPage() {
                           ? "1 item"
                           : `${item.transactions.length} items`;
                       return (
-                        <details key={item.id} className="rounded-2xl border border-slate-200 bg-white/70 px-4 py-3">
+                        <details key={item.id} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-4 py-3">
                           <summary className="grid cursor-pointer list-none items-center gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
                             <div>
-                              <div className="font-semibold text-slate-900">{item.label}</div>
+                              <div className="font-semibold text-slate-900 dark:text-white">{item.label}</div>
                               <div className="text-xs text-slate-500 dark:text-slate-400">{countLabel}</div>
                             </div>
                             <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 sm:block sm:text-right">
@@ -578,7 +578,7 @@ export default function BillsPage() {
                               </span>
                               <span>{gbp(item.budgeted)}</span>
                             </div>
-                            <div className="flex items-center justify-between text-slate-900 sm:block sm:text-right">
+                            <div className="flex items-center justify-between text-slate-900 dark:text-white sm:block sm:text-right">
                               <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                 Actual
                               </span>
@@ -593,7 +593,7 @@ export default function BillsPage() {
                               <span>{variance.label}</span>
                             </div>
                           </summary>
-                          <div className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-600 dark:text-slate-300">
+                          <div className="mt-3 border-t border-slate-200 dark:border-slate-700 pt-3 text-xs text-slate-600 dark:text-slate-300">
                             {item.transactions.length === 0 ? (
                               <div className="text-slate-500 dark:text-slate-400">No bill transactions recorded.</div>
                             ) : (
@@ -614,16 +614,16 @@ export default function BillsPage() {
                                   {item.transactions.map((txn) => (
                                     <div
                                       key={txn.id}
-                                      className="grid grid-cols-[96px_1fr_auto] items-start gap-2 rounded-xl bg-white/70 px-3 py-2"
+                                      className="grid grid-cols-[96px_1fr_auto] items-start gap-2 rounded-xl bg-white/70 dark:bg-slate-800/70 px-3 py-2"
                                     >
                                       <div className="text-[11px] text-slate-500 dark:text-slate-400">{prettyDate(txn.date)}</div>
                                       <div>
-                                        <div className="text-sm text-slate-700">{txn.label}</div>
+                                        <div className="text-sm text-slate-700 dark:text-slate-200">{txn.label}</div>
                                         {txn.notes ? (
                                           <div className="text-[11px] text-slate-400">{txn.notes}</div>
                                         ) : null}
                                       </div>
-                                      <div className="text-right text-sm font-semibold text-slate-900">
+                                      <div className="text-right text-sm font-semibold text-slate-900 dark:text-white">
                                         {gbp(txn.amount)}
                                       </div>
                                     </div>
@@ -641,7 +641,7 @@ export default function BillsPage() {
             </details>
 
             <details className="vn-card p-6">
-              <summary className="cursor-pointer text-sm font-semibold text-slate-800">
+              <summary className="cursor-pointer text-sm font-semibold text-slate-800 dark:text-slate-100">
                 Budget vs actual by outflow
               </summary>
               <div className="mt-4 text-sm">
@@ -662,10 +662,10 @@ export default function BillsPage() {
                           ? "1 item"
                           : `${item.transactions.length} items`;
                       return (
-                        <details key={item.id} className="rounded-2xl border border-slate-200 bg-white/70 px-4 py-3">
+                        <details key={item.id} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-4 py-3">
                           <summary className="grid cursor-pointer list-none items-center gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
                             <div>
-                              <div className="font-semibold text-slate-900">{item.label}</div>
+                              <div className="font-semibold text-slate-900 dark:text-white">{item.label}</div>
                               <div className="text-xs text-slate-500 dark:text-slate-400">{countLabel}</div>
                             </div>
                             <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 sm:block sm:text-right">
@@ -674,7 +674,7 @@ export default function BillsPage() {
                               </span>
                               <span>{gbp(item.budgeted)}</span>
                             </div>
-                            <div className="flex items-center justify-between text-slate-900 sm:block sm:text-right">
+                            <div className="flex items-center justify-between text-slate-900 dark:text-white sm:block sm:text-right">
                               <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                 Actual
                               </span>
@@ -689,7 +689,7 @@ export default function BillsPage() {
                               <span>{variance.label}</span>
                             </div>
                           </summary>
-                          <div className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-600 dark:text-slate-300">
+                          <div className="mt-3 border-t border-slate-200 dark:border-slate-700 pt-3 text-xs text-slate-600 dark:text-slate-300">
                             {item.transactions.length === 0 ? (
                               <div className="text-slate-500 dark:text-slate-400">No outflow transactions recorded.</div>
                             ) : (
@@ -697,13 +697,13 @@ export default function BillsPage() {
                                 {item.transactions.map((txn) => (
                                   <div key={txn.id} className="flex items-start justify-between gap-3">
                                     <div>
-                                      <div className="text-slate-700">{txn.label}</div>
+                                      <div className="text-slate-700 dark:text-slate-200">{txn.label}</div>
                                       <div className="text-[11px] text-slate-500 dark:text-slate-400">
                                         {prettyDate(txn.date)}
                                         {txn.notes ? ` - ${txn.notes}` : ""}
                                       </div>
                                     </div>
-                                    <div className="font-semibold text-slate-900">{gbp(txn.amount)}</div>
+                                    <div className="font-semibold text-slate-900 dark:text-white">{gbp(txn.amount)}</div>
                                   </div>
                                 ))}
                               </div>
@@ -730,13 +730,13 @@ export default function BillsPage() {
             className="vn-card max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
               {editingBill ? "Edit Bill" : "Add Bill"}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Label *
                 </label>
                 <input
@@ -749,7 +749,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Amount (£) *
                 </label>
                 <input
@@ -763,7 +763,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Due Day (1-31) *
                 </label>
                 <input
@@ -778,7 +778,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Category *
                 </label>
                 <select
@@ -802,7 +802,7 @@ export default function BillsPage() {
                   checked={formData.enabled ?? true}
                   onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
                 />
-                <label htmlFor="enabled" className="text-sm text-slate-700">
+                <label htmlFor="enabled" className="text-sm text-slate-700 dark:text-slate-200">
                   Enabled
                 </label>
               </div>
@@ -835,13 +835,13 @@ export default function BillsPage() {
             className="vn-card max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
               {editingOutflow ? "Edit Outflow Rule" : "Add Outflow Rule"}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Label *
                 </label>
                 <input
@@ -854,7 +854,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Amount (£) *
                 </label>
                 <input
@@ -868,7 +868,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Cadence *
                 </label>
                 <select
@@ -883,7 +883,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Seed Date *
                 </label>
                 <input
@@ -895,7 +895,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Category *
                 </label>
                 <select
@@ -919,7 +919,7 @@ export default function BillsPage() {
                   checked={outflowFormData.enabled ?? true}
                   onChange={(e) => setOutflowFormData({ ...outflowFormData, enabled: e.target.checked })}
                 />
-                <label htmlFor="outflow-enabled" className="text-sm text-slate-700">
+                <label htmlFor="outflow-enabled" className="text-sm text-slate-700 dark:text-slate-200">
                   Enabled
                 </label>
               </div>
@@ -945,3 +945,6 @@ export default function BillsPage() {
     </main>
   );
 }
+
+
+

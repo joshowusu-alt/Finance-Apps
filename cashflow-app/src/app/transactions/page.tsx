@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { loadPlan, savePlan } from "@/lib/storage";
-import { getPeriod, getVarianceByCategory, getSavingsTransferReconciliation } from "@/lib/cashflowEngine";
+import { getPeriod, generateEvents } from "@/lib/cashflowEngine";
+import { formatMoney } from "@/lib/currency";
 import { suggestBillId } from "@/lib/billLinking";
 import { detectRecurringBills, type DetectedBill } from "@/lib/billDetection";
 import { getConfidenceLabel, suggestCategory } from "@/lib/categorization";
@@ -15,13 +16,6 @@ import { MerchantLogo } from "@/components/MerchantLogo";
 import { FormError } from "@/components/FormError";
 import type { Transaction, CashflowCategory, CashflowType, Plan, BillTemplate } from "@/data/plan";
 
-function gbp(n: number) {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    maximumFractionDigits: 2,
-  }).format(n || 0);
-}
 
 function formatNice(iso: string) {
   const d = new Date(iso + "T00:00:00");
@@ -303,15 +297,23 @@ export default function TransactionsPage() {
     return getPeriod(plan, plan.setup.selectedPeriodId);
   }, [plan]);
 
-  const variance = useMemo(() => {
-    if (!plan) return {};
-    return getVarianceByCategory(plan, plan.setup.selectedPeriodId);
-  }, [plan]);
-
-  const savingsReconciliation = useMemo(() => {
-    if (!plan) return null;
-    return getSavingsTransferReconciliation(plan, plan.setup.selectedPeriodId);
-  }, [plan]);
+  const budgetVsActual = useMemo(() => {
+    if (!plan || !period) return null;
+    const events = generateEvents(plan, plan.setup.selectedPeriodId);
+    const txns = plan.transactions.filter(
+      (t) => t.date >= period.start && t.date <= period.end
+    );
+    const budgetIncome = events.filter((e) => e.type === "income").reduce((s, e) => s + e.amount, 0);
+    const budgetOutflows = events.filter((e) => e.type === "outflow").reduce((s, e) => s + e.amount, 0);
+    const budgetSavings = events.filter((e) => e.type === "outflow" && e.category === "savings").reduce((s, e) => s + e.amount, 0);
+    const budgetSpending = budgetOutflows - budgetSavings;
+    const budgetLeftover = budgetIncome - budgetOutflows;
+    const actualIncome = txns.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    const actualSavings = txns.filter((t) => t.category === "savings").reduce((s, t) => s + t.amount, 0);
+    const actualSpending = txns.filter((t) => t.type === "outflow" && t.category !== "savings").reduce((s, t) => s + t.amount, 0);
+    const actualLeftover = actualIncome - actualSpending - actualSavings;
+    return { budgetIncome, budgetSpending, budgetSavings, budgetLeftover, actualIncome, actualSpending, actualSavings, actualLeftover };
+  }, [plan, period]);
 
   const periodTransactions = useMemo(() => {
     if (!plan || !period) return [];
@@ -857,13 +859,13 @@ export default function TransactionsPage() {
           <section className="space-y-6">
             <div className="vn-card p-6">
               <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Transactions</div>
-              <h1 className="text-2xl font-semibold text-slate-900">Transactions</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Transactions</h1>
               <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">Add what really happened.</div>
             </div>
 
             {/* Add Transaction Form */}
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-slate-800 mb-4">Add transaction</div>
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4">Add transaction</div>
               <form onSubmit={handleAddTransaction} className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
@@ -874,7 +876,7 @@ export default function TransactionsPage() {
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, date: e.target.value })
                       }
-                      className={`mt-1 w-full rounded-lg border bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)] ${errors.date ? "border-red-500 ring-1 ring-red-500" : "border-slate-200"
+                      className={`mt-1 w-full rounded-lg border bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)] ${errors.date ? "border-red-500 ring-1 ring-red-500" : "border-slate-200 dark:border-slate-700"
                         }`}
                     />
                     <FormError message={errors.date} />
@@ -889,7 +891,7 @@ export default function TransactionsPage() {
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, label: e.target.value })
                       }
-                      className={`mt-1 w-full rounded-lg border bg-white/80 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] ${errors.label ? "border-red-500 ring-1 ring-red-500" : "border-slate-200"
+                      className={`mt-1 w-full rounded-lg border bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] ${errors.label ? "border-red-500 ring-1 ring-red-500" : "border-slate-200 dark:border-slate-700"
                         }`}
                     />
                     <FormError message={errors.label} />
@@ -906,7 +908,7 @@ export default function TransactionsPage() {
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, amount: e.target.value })
                       }
-                      className={`mt-1 w-full rounded-lg border bg-white/80 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] ${errors.amount ? "border-red-500 ring-1 ring-red-500" : "border-slate-200"
+                      className={`mt-1 w-full rounded-lg border bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] ${errors.amount ? "border-red-500 ring-1 ring-red-500" : "border-slate-200 dark:border-slate-700"
                         }`}
                     />
                     <FormError message={errors.amount} />
@@ -928,7 +930,7 @@ export default function TransactionsPage() {
                         });
                         setNewCategoryTouched(false);
                       }}
-                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                      className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                     >
                       <option value="income">Income</option>
                       <option value="outflow">Outflow</option>
@@ -950,7 +952,7 @@ export default function TransactionsPage() {
                         });
                         setNewCategoryTouched(true);
                       }}
-                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                      className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                     >
                       {categoryOptionsForType(newTransaction.type).map((category) => (
                         <option key={category} value={category}>
@@ -979,7 +981,7 @@ export default function TransactionsPage() {
                             linkedRuleId: e.target.value ? e.target.value : null,
                           })
                         }
-                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                        className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                       >
                         <option value="">Unassigned</option>
                         {plan.incomeRules
@@ -1010,7 +1012,7 @@ export default function TransactionsPage() {
                             linkedRuleId: e.target.value ? e.target.value : null,
                           })
                         }
-                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                        className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                       >
                         <option value="">Unassigned</option>
                         {transferRuleOptions.length === 0 ? (
@@ -1043,7 +1045,7 @@ export default function TransactionsPage() {
                             linkedBillId: e.target.value ? e.target.value : null,
                           })
                         }
-                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                        className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                       >
                         <option value="">Unassigned</option>
                         {billOptions.map((bill) => (
@@ -1060,11 +1062,11 @@ export default function TransactionsPage() {
                         </p>
                       ) : null}
                       {!billSuggestionLabel && recurringBillSuggestion ? (
-                        <div className="mt-2 rounded-lg border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-xs text-slate-600">
-                          <div className="font-semibold text-slate-700">Recurring pattern detected</div>
-                          <div className="mt-1 text-slate-500">
+                        <div className="mt-2 rounded-lg border border-indigo-100 dark:border-indigo-400/40 bg-indigo-50/70 dark:bg-indigo-900/20 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+                          <div className="font-semibold text-slate-700 dark:text-slate-200">Recurring pattern detected</div>
+                          <div className="mt-1 text-slate-500 dark:text-slate-400">
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                            {(recurringBillSuggestion as any).merchantName} | {gbp((recurringBillSuggestion as any).averageAmount)} |{" "}
+                            {(recurringBillSuggestion as any).merchantName} | {formatMoney((recurringBillSuggestion as any).averageAmount)} |{" "}
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {formatFrequencyLabel((recurringBillSuggestion as any).frequency)} | Day{" "}
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -1074,7 +1076,7 @@ export default function TransactionsPage() {
                             type="button"
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onClick={handleCreateBillForNewTransaction as any}
-                            className="mt-2 inline-flex items-center rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-600 hover:border-indigo-300 hover:text-indigo-700"
+                            className="mt-2 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-400/40 bg-white dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-300 hover:border-indigo-300 hover:text-indigo-700 dark:hover:border-indigo-300"
                           >
                             Create bill
                           </button>
@@ -1084,7 +1086,7 @@ export default function TransactionsPage() {
                         <button
                           type="button"
                           onClick={handleCreateBillForNewTransaction}
-                          className="mt-2 inline-flex items-center rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                          className="mt-2 inline-flex items-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:border-[var(--accent)] hover:text-[var(--accent)]"
                         >
                           Create bill from this transaction
                         </button>
@@ -1105,7 +1107,7 @@ export default function TransactionsPage() {
                             linkedRuleId: e.target.value ? e.target.value : null,
                           })
                         }
-                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                        className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                       >
                         <option value="">Unassigned</option>
                         {outflowRuleOptions.map((rule) => (
@@ -1136,7 +1138,7 @@ export default function TransactionsPage() {
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, notes: e.target.value })
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
+                      className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
                     />
                   </div>
                 </div>
@@ -1151,112 +1153,50 @@ export default function TransactionsPage() {
               </form>
             </div>
 
-            {/* Variance Summary */}
-            <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-slate-800">Variance by category</div>
-              <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                {Object.values(variance)
-                  .filter((v) => v)
-                  .map((v) => {
-                    if (!v) return null;
-                    const isIncome = v.category === "income";
-                    const overBudget = v.actual > v.budgeted;
-                    const statusColor =
-                      v.status === "over"
-                        ? "border-rose-200 bg-rose-50"
-                        : v.status === "under"
-                          ? "border-amber-200 bg-amber-50"
-                          : "border-slate-200 bg-white/70";
-
-                    return (
-                      <div
-                        key={v.category}
-                        className={`rounded-2xl border ${statusColor} p-4`}
-                      >
-                        <div className="text-sm text-slate-600 dark:text-slate-300 capitalize">{v.category}</div>
-                        <div className="mt-2 flex items-end justify-between">
-                          <div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">Budget</div>
-                            <div className="text-lg font-semibold text-slate-900">
-                              {gbp(v.budgeted)}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-xs text-slate-500 dark:text-slate-400">Actual</div>
-                            <div className="text-lg font-semibold text-slate-900">
-                              {gbp(v.actual)}
-                            </div>
-                          </div>
+            {/* Budget vs Actual Summary */}
+            {budgetVsActual && (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {([
+                  { label: "Income", budget: budgetVsActual.budgetIncome, actual: budgetVsActual.actualIncome, favorableWhenOver: true },
+                  { label: "Spending", budget: budgetVsActual.budgetSpending, actual: budgetVsActual.actualSpending, favorableWhenOver: false },
+                  { label: "Savings", budget: budgetVsActual.budgetSavings, actual: budgetVsActual.actualSavings, favorableWhenOver: true },
+                  { label: "Leftover", budget: budgetVsActual.budgetLeftover, actual: budgetVsActual.actualLeftover, favorableWhenOver: true },
+                ] as const).map((card) => {
+                  const delta = card.actual - card.budget;
+                  const favorable = card.favorableWhenOver ? delta >= 0 : delta <= 0;
+                  return (
+                    <div key={card.label} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{card.label}</div>
+                      <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">Budget {formatMoney(card.budget)}</div>
+                      <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">{formatMoney(card.actual)}</div>
+                      {delta !== 0 && (
+                        <div className={`mt-1 text-xs font-semibold ${favorable ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                          {delta > 0 ? "+" : ""}{formatMoney(delta)}
                         </div>
-                        <div className="mt-3 flex items-center justify-between">
-                          <span
-                            className={`text-xs font-semibold ${overBudget
-                              ? isIncome
-                                ? "text-green-600"
-                                : "text-rose-600"
-                              : isIncome
-                                ? "text-rose-600"
-                                : "text-green-600"
-                              }`}
-                          >
-                            {overBudget ? "+" : "-"}
-                            {gbp(Math.abs(v.variance))}
-                          </span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
-                            {Math.abs(v.variancePercent).toFixed(1)}%
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-
-            {/* Savings Transfer Reconciliation */}
-            {savingsReconciliation && (
-              <div className="vn-card p-6">
-                <div className="text-sm font-semibold text-slate-800 mb-4">Savings transfer reconciliation</div>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="rounded-2xl bg-white/80 p-4 shadow-sm">
-                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Budgeted transfer</div>
-                    <div className="mt-2 text-2xl font-semibold text-slate-900">
-                      {gbp(savingsReconciliation.budgeted)}
+                      )}
                     </div>
-                  </div>
-                  <div className="rounded-2xl bg-white/80 p-4 shadow-sm">
-                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Actual transfer</div>
-                    <div className="mt-2 text-2xl font-semibold text-slate-900">
-                      {gbp(savingsReconciliation.actual)}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl bg-white/80 p-4 shadow-sm">
-                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Variance</div>
-                    <div className="mt-2 text-2xl font-semibold text-slate-900">
-                      {savingsReconciliation.status === "over" ? "+" : savingsReconciliation.status === "under" ? "-" : ""}
-                      {gbp(Math.abs(savingsReconciliation.variance))}
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
             )}
 
             {/* Transactions List */}
             <div className="vn-card p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="text-sm font-semibold text-slate-800">
+                <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                   Transactions ({periodTransactions.length})
-                  {bulkMode && selectedIds.size > 0 && (
-                    <span className="ml-2 text-xs text-blue-600">
-                      ({selectedIds.size} selected)
-                    </span>
-                  )}
+                    {bulkMode && selectedIds.size > 0 && (
+                      <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                        ({selectedIds.size} selected)
+                      </span>
+                    )}
                 </div>
                 <div className="flex gap-2">
                   {!bulkMode ? (
                     <>
                       <button
                         onClick={() => setBulkMode(true)}
-                        className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Enable bulk selection mode"
                       >
@@ -1264,7 +1204,7 @@ export default function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToCSV(periodTransactions, period.label)}
-                        className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to CSV"
                       >
@@ -1272,7 +1212,7 @@ export default function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToExcel(periodTransactions, period.label)}
-                        className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to Excel"
                       >
@@ -1280,7 +1220,7 @@ export default function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToPDF(periodTransactions, period.label, period.start, period.end)}
-                        className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to PDF"
                       >
@@ -1291,14 +1231,14 @@ export default function TransactionsPage() {
                     <>
                       <button
                         onClick={handleBulkExport}
-                        className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={selectedIds.size === 0}
                       >
                         Export Selected
                       </button>
                       <button
                         onClick={handleBulkDelete}
-                        className="rounded-lg bg-white border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-500/40 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-200 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={selectedIds.size === 0}
                       >
                         Delete Selected
@@ -1308,7 +1248,7 @@ export default function TransactionsPage() {
                           setBulkMode(false);
                           setSelectedIds(new Set());
                         }}
-                        className="rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors"
                       >
                         Cancel
                       </button>
@@ -1320,12 +1260,12 @@ export default function TransactionsPage() {
               {/* Search and Filters */}
               <div className="mb-4 space-y-3">
                 {bulkMode && periodTransactions.length > 0 && (
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-700">
                     <input
                       type="checkbox"
                       checked={selectedIds.size === periodTransactions.length}
                       onChange={toggleSelectAll}
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                     />
                     <label className="text-sm text-slate-600 dark:text-slate-300">
                       Select all ({periodTransactions.length})
@@ -1338,12 +1278,12 @@ export default function TransactionsPage() {
                     placeholder="Search transactions..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
                   />
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value as CashflowType | "all")}
-                    className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                   >
                     <option value="all">All types</option>
                     <option value="income">Income</option>
@@ -1353,7 +1293,7 @@ export default function TransactionsPage() {
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value as CashflowCategory | "all")}
-                    className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                   >
                     <option value="all">All categories</option>
                     <option value="income">Income</option>
@@ -1368,7 +1308,7 @@ export default function TransactionsPage() {
               </div>
 
               {periodTransactions.length === 0 ? (
-                <div className="mt-4 rounded-xl bg-white/70 p-8">
+                <div className="mt-4 rounded-xl bg-white/70 dark:bg-slate-800/70 p-8">
                   <EmptyState
                     icon={searchQuery || filterType !== "all" || filterCategory !== "all" ? "🔍" : "📝"}
                     title={searchQuery || filterType !== "all" || filterCategory !== "all" ? "No matching transactions" : "No transactions yet"}
@@ -1412,13 +1352,13 @@ export default function TransactionsPage() {
                             className="absolute left-0 top-0 w-full"
                             style={{ transform: `translateY(${virtualRow.start}px)` }}
                           >
-                            <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 flex flex-wrap items-center justify-between gap-3">
+                            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 flex flex-wrap items-center justify-between gap-3">
                               {bulkMode && (
                                 <input
                                   type="checkbox"
                                   checked={selectedIds.has(txn.id)}
                                   onChange={() => toggleSelect(txn.id)}
-                                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                  className="h-4 w-4 rounded border-slate-300 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                                   onClick={(e) => e.stopPropagation()}
                                 />
                               )}
@@ -1433,7 +1373,7 @@ export default function TransactionsPage() {
                                         onChange={(e) =>
                                           setEditTransaction({ ...editTransaction, date: e.target.value })
                                         }
-                                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                                       />
                                     </div>
                                     <div>
@@ -1444,7 +1384,7 @@ export default function TransactionsPage() {
                                         onChange={(e) =>
                                           setEditTransaction({ ...editTransaction, label: e.target.value })
                                         }
-                                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                                       />
                                     </div>
                                     <div>
@@ -1457,7 +1397,7 @@ export default function TransactionsPage() {
                                         onChange={(e) =>
                                           setEditTransaction({ ...editTransaction, amount: e.target.value })
                                         }
-                                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                                       />
                                     </div>
                                     <div>
@@ -1476,7 +1416,7 @@ export default function TransactionsPage() {
                                           });
                                           setEditCategoryTouched(false);
                                         }}
-                                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                                       >
                                         <option value="income">Income</option>
                                         <option value="outflow">Outflow</option>
@@ -1497,7 +1437,7 @@ export default function TransactionsPage() {
                                           });
                                           setEditCategoryTouched(true);
                                         }}
-                                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                                       >
                                         {categoryOptionsForType(editTransaction.type).map((category) => (
                                           <option key={category} value={category}>
@@ -1525,7 +1465,7 @@ export default function TransactionsPage() {
                                               linkedRuleId: e.target.value ? e.target.value : null,
                                             })
                                           }
-                                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                                         >
                                           <option value="">Unassigned</option>
                                           {plan.incomeRules
@@ -1556,7 +1496,7 @@ export default function TransactionsPage() {
                                               linkedRuleId: e.target.value ? e.target.value : null,
                                             })
                                           }
-                                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                                         >
                                           <option value="">Unassigned</option>
                                           {transferRuleOptions.length === 0 ? (
@@ -1589,7 +1529,7 @@ export default function TransactionsPage() {
                                               linkedBillId: e.target.value ? e.target.value : null,
                                             })
                                           }
-                                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                                         >
                                           <option value="">Unassigned</option>
                                           {editBillOptions.map((bill) => (
@@ -1606,11 +1546,11 @@ export default function TransactionsPage() {
                                           </p>
                                         ) : null}
                                         {!editBillSuggestionLabel && editRecurringBillSuggestion ? (
-                                          <div className="mt-2 rounded-lg border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-xs text-slate-600">
-                                            <div className="font-semibold text-slate-700">Recurring pattern detected</div>
-                                            <div className="mt-1 text-slate-500">
+                                          <div className="mt-2 rounded-lg border border-indigo-100 dark:border-indigo-400/40 bg-indigo-50/70 dark:bg-indigo-900/20 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+                                            <div className="font-semibold text-slate-700 dark:text-slate-200">Recurring pattern detected</div>
+                                            <div className="mt-1 text-slate-500 dark:text-slate-400">
                                               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                              {(editRecurringBillSuggestion as any).merchantName} | {gbp((editRecurringBillSuggestion as any).averageAmount)} |{" "}
+                                              {(editRecurringBillSuggestion as any).merchantName} | {formatMoney((editRecurringBillSuggestion as any).averageAmount)} |{" "}
                                               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                               {formatFrequencyLabel((editRecurringBillSuggestion as any).frequency)} | Day{" "}
                                               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -1620,7 +1560,7 @@ export default function TransactionsPage() {
                                               type="button"
                                               // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                               onClick={handleCreateBillForEditTransaction as any}
-                                              className="mt-2 inline-flex items-center rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-600 hover:border-indigo-300 hover:text-indigo-700"
+                                              className="mt-2 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-400/40 bg-white dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-300 hover:border-indigo-300 hover:text-indigo-700 dark:hover:border-indigo-300"
                                             >
                                               Create bill
                                             </button>
@@ -1630,7 +1570,7 @@ export default function TransactionsPage() {
                                           <button
                                             type="button"
                                             onClick={handleCreateBillForEditTransaction}
-                                            className="mt-2 inline-flex items-center rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                                            className="mt-2 inline-flex items-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:border-[var(--accent)] hover:text-[var(--accent)]"
                                           >
                                             Create bill from this transaction
                                           </button>
@@ -1651,7 +1591,7 @@ export default function TransactionsPage() {
                                               linkedRuleId: e.target.value ? e.target.value : null,
                                             })
                                           }
-                                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                                         >
                                           <option value="">Unassigned</option>
                                           {editOutflowRuleOptions.map((rule) => (
@@ -1681,7 +1621,7 @@ export default function TransactionsPage() {
                                         onChange={(e) =>
                                           setEditTransaction({ ...editTransaction, notes: e.target.value })
                                         }
-                                        className="mt-1 w-full rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[var(--accent)]"
                                       />
                                     </div>
                                   </div>
@@ -1694,7 +1634,7 @@ export default function TransactionsPage() {
                                     </button>
                                     <button
                                       onClick={cancelEdit}
-                                      className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100"
+                                      className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60"
                                     >
                                       Cancel
                                     </button>
@@ -1705,7 +1645,7 @@ export default function TransactionsPage() {
                                   <div className="flex items-center gap-3 flex-1 min-w-[220px]">
                                     <MerchantLogo merchantName={txn.label} size="sm" />
                                     <div>
-                                      <div className="text-sm font-semibold text-slate-900">{txn.label}</div>
+                                      <div className="text-sm font-semibold text-slate-900 dark:text-white">{txn.label}</div>
                                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                                         <span>{formatNice(txn.date)}</span>
                                         <span className="text-slate-300">|</span>
@@ -1730,12 +1670,12 @@ export default function TransactionsPage() {
                                     >
                                       <div className="text-sm font-semibold">
                                         {txn.type === "income" ? "+" : txn.type === "transfer" ? "T" : "-"}
-                                        {gbp(txn.amount)}
+                                        {formatMoney(txn.amount)}
                                       </div>
                                     </div>
                                     <button
                                       onClick={() => handleEditTransaction(txn)}
-                                      className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 transition-colors"
+                                      className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 transition-colors"
                                     >
                                       Edit
                                     </button>
@@ -1764,3 +1704,5 @@ export default function TransactionsPage() {
     </main>
   );
 }
+
+

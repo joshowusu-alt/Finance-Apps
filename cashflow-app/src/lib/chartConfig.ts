@@ -108,15 +108,8 @@ export const chartConfig = {
   animationEasing: "ease-out" as const,
 };
 
-// Format currency for tooltips
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+// Re-export formatMoney for chart tooltips
+export { formatMoney as formatCurrency } from "@/lib/currency";
 
 // Format percentage
 export function formatPercentage(value: number): string {

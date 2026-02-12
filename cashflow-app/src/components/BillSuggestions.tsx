@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { MerchantLogo } from "@/components/MerchantLogo";
 import type { DetectedBill } from "@/lib/billDetection";
 import { getBillConfidenceLabel, toBillTemplate } from "@/lib/billDetection";
+import { formatMoney } from "@/lib/currency";
 import type { BillTemplate } from "@/data/plan";
 
 type Props = {
@@ -13,14 +14,6 @@ type Props = {
     onDismiss: (billId: string) => void;
     className?: string;
 };
-
-function formatCurrency(amount: number): string {
-    return new Intl.NumberFormat("en-GB", {
-        style: "currency",
-        currency: "GBP",
-        minimumFractionDigits: 2,
-    }).format(amount);
-}
 
 function getFrequencyLabel(frequency: string): string {
     const labels: Record<string, string> = {
@@ -160,7 +153,7 @@ export function BillSuggestions({ detectedBills, onAccept, onDismiss, className 
                                             className="mt-0.5 text-sm"
                                             style={{ color: isDark ? "#a1a1aa" : "#71717a" }}
                                         >
-                                            {formatCurrency(bill.averageAmount)} • {getFrequencyLabel(bill.frequency)} • Day {bill.suggestedDueDay}
+                                            {formatMoney(bill.averageAmount)} • {getFrequencyLabel(bill.frequency)} • Day {bill.suggestedDueDay}
                                         </div>
                                         <div
                                             className="mt-1 text-xs"

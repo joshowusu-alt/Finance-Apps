@@ -10,6 +10,7 @@ import {
   minPoint,
 } from "@/lib/cashflowEngine";
 import { loadPlan } from "@/lib/storage";
+import { formatMoney } from "@/lib/currency";
 import { suggestBillId } from "@/lib/billLinking";
 import { downloadPlanPdf } from "@/lib/planIo";
 import SidebarNav from "@/components/SidebarNav";
@@ -18,15 +19,12 @@ import type { CategoryData, SpendingDataPoint } from "@/components/charts";
 import type { CashflowCategory, Plan, Transaction } from "@/data/plan";
 import InsightsPanel from "@/components/InsightsPanel";
 import SubscriptionDashboard from "@/components/SubscriptionDashboard";
-
-function money(n: number) {
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n || 0);
-}
+import InfoTooltip from "@/components/InfoTooltip";
 
 function formatDelta(value: number) {
   if (value === 0) return "0";
   const sign = value > 0 ? "+" : "-";
-  return `${sign}${money(Math.abs(value))}`;
+  return `${sign}${formatMoney(Math.abs(value))}`;
 }
 
 function formatPercent(value: number) {
@@ -206,7 +204,7 @@ function SummaryCard({
   return (
     <div className="vn-card p-6">
       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
+      <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{value}</div>
       {hint ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
     </div>
   );
@@ -236,10 +234,10 @@ function ProgressBar({
         : "#eab308";
   const color = barColor || defaultColor;
   return (
-    <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
+    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
       <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
         <span>{label}</span>
-        <span className="font-semibold text-slate-700">{formatPercent(pct)}</span>
+        <span className="font-semibold text-slate-700 dark:text-slate-200">{formatPercent(pct)}</span>
       </div>
       <div className="mt-2 h-2 rounded-full bg-slate-200">
         <div className="h-2 rounded-full" style={{ width: `${pct * 100}%`, background: color }} />
@@ -343,7 +341,7 @@ function csvEscape(value: string) {
 
 function CollapsibleSection({
   title,
-  defaultOpen = true,
+  defaultOpen = false,
   children,
 }: {
   title: string;
@@ -359,7 +357,7 @@ function CollapsibleSection({
         className="flex w-full items-center justify-between gap-4 text-left"
         aria-expanded={open}
       >
-        <span className="text-sm font-semibold text-slate-800">{title}</span>
+        <span className="text-sm font-semibold text-slate-800 dark:text-white">{title}</span>
         <span className="text-xs text-slate-500 dark:text-slate-400">{open ? "Hide" : "Show"}</span>
       </button>
       {open ? <div className="mt-4">{children}</div> : null}
@@ -690,7 +688,8 @@ export default function InsightsPage() {
   const incomeAverage = average(incomeSeries);
   const incomeVolatility = stdDev(incomeSeries);
   const incomeCv = incomeAverage > 0 ? incomeVolatility / incomeAverage : 0;
-  const stabilityScore = Math.max(0, Math.round(100 - incomeCv * 100));
+  const hasIncomeData = incomeSeries.some((v) => v > 0);
+  const stabilityScore = hasIncomeData ? Math.max(0, Math.round(100 - incomeCv * 100)) : null;
 
   const savingsStreak = useMemo(() => {
     let streak = 0;
@@ -730,13 +729,13 @@ export default function InsightsPage() {
   const recommendations = useMemo(() => {
     const items: string[] = [];
     if (baseStats.actualSpending > baseStats.budgetSpending + 1) {
-      items.push(`Reduce spending by ${money(baseStats.actualSpending - baseStats.budgetSpending)} to meet budget.`);
+      items.push(`Reduce spending by ${formatMoney(baseStats.actualSpending - baseStats.budgetSpending)} to meet budget.`);
     }
     if (baseStats.actualSavings + 1 < baseStats.budgetSavings) {
-      items.push(`Increase savings transfers by ${money(baseStats.budgetSavings - baseStats.actualSavings)} to hit target.`);
+      items.push(`Increase savings transfers by ${formatMoney(baseStats.budgetSavings - baseStats.actualSavings)} to hit target.`);
     }
     if (variableDelta > 0) {
-      items.push(`Trim variable spend by ${money(variableDelta)} to stay within the cap.`);
+      items.push(`Trim variable spend by ${formatMoney(variableDelta)} to stay within the cap.`);
     }
     if (timeProgress > 0.1 && baseStats.actualIncome < baseStats.budgetIncome * timeProgress) {
       items.push("Income is behind pace. Consider updating expected income or adding a supplemental stream.");
@@ -789,16 +788,16 @@ export default function InsightsPage() {
     const rows = [
       ["Period", basePeriod.label],
       ["Period range", `${basePeriod.start} to ${basePeriod.end}`],
-      ["Budget income", money(baseStats.budgetIncome)],
-      ["Budget spending", money(baseStats.budgetSpending)],
-      ["Budget savings", money(baseStats.budgetSavings)],
-      ["Budget leftover", money(baseStats.budgetLeftover)],
-      ["Actual income", money(baseStats.actualIncome)],
-      ["Actual spending", money(baseStats.actualSpending)],
-      ["Actual savings", money(baseStats.actualSavings)],
-      ["Actual leftover", money(baseStats.actualLeftover)],
-      ["Projected end balance", money(endBalance)],
-      ["Lowest balance", lowestPoint ? money(lowestPoint.balance) : "0"],
+      ["Budget income", formatMoney(baseStats.budgetIncome)],
+      ["Budget spending", formatMoney(baseStats.budgetSpending)],
+      ["Budget savings", formatMoney(baseStats.budgetSavings)],
+      ["Budget leftover", formatMoney(baseStats.budgetLeftover)],
+      ["Actual income", formatMoney(baseStats.actualIncome)],
+      ["Actual spending", formatMoney(baseStats.actualSpending)],
+      ["Actual savings", formatMoney(baseStats.actualSavings)],
+      ["Actual leftover", formatMoney(baseStats.actualLeftover)],
+      ["Projected end balance", formatMoney(endBalance)],
+      ["Lowest balance", lowestPoint ? formatMoney(lowestPoint.balance) : "0"],
       ["Risk days", String(riskDays)],
     ];
 
@@ -818,7 +817,7 @@ export default function InsightsPage() {
           <section className="space-y-6">
             <header className="vn-card p-6">
               <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Insights</div>
-              <h1 className="text-2xl font-semibold text-slate-900">Insights</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Insights</h1>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 Answers to the questions you normally ask about the period.
               </p>
@@ -828,7 +827,7 @@ export default function InsightsPage() {
                   <select
                     value={basePeriodId}
                     onChange={(e) => setBasePeriodId(Number(e.target.value))}
-                    className="rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-xs text-slate-700"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-2 py-1 text-xs text-slate-700 dark:text-slate-200"
                   >
                     {sortedPeriods.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -850,7 +849,7 @@ export default function InsightsPage() {
                             : null
                       )
                     }
-                    className="rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-xs text-slate-700"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-2 py-1 text-xs text-slate-700 dark:text-slate-200"
                   >
                     <option value="auto">Auto (previous)</option>
                     <option value="">None</option>
@@ -866,13 +865,13 @@ export default function InsightsPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={handleExportSummary}
-                    className="rounded-lg border border-slate-200 bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-white"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700"
                   >
                     Export summary (CSV)
                   </button>
                   <button
                     onClick={() => downloadPlanPdf(plan, baseStats.period.id)}
-                    className="rounded-lg border border-slate-200 bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-white"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700"
                   >
                     Download PDF report
                   </button>
@@ -883,26 +882,68 @@ export default function InsightsPage() {
             {/* Proactive Insights Panel */}
             <InsightsPanel />
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <SummaryCard label="Budget income" value={money(baseStats.budgetIncome)} />
-              <SummaryCard label="Budget spending" value={money(baseStats.budgetSpending)} />
-              <SummaryCard label="Savings target" value={money(baseStats.budgetSavings)} />
-              <SummaryCard label="Planned leftover" value={money(baseStats.budgetLeftover)} />
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <SummaryCard label="Actual income" value={money(baseStats.actualIncome)} />
-              <SummaryCard label="Actual spending" value={money(baseStats.actualSpending)} />
-              <SummaryCard label="Actual savings" value={money(baseStats.actualSavings)} />
-              <SummaryCard label="Actual leftover" value={money(baseStats.actualLeftover)} />
-            </div>
-
             <SubscriptionDashboard
               transactions={plan.transactions}
               asOfDate={plan.setup.asOfDate}
             />
 
             <CollapsibleSection title="1) Am I on track?" defaultOpen>
+              {/* Budget vs Actual Summary */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                {([
+                  { label: "Income", budget: baseStats.budgetIncome, actual: baseStats.actualIncome, favorableWhenOver: true },
+                  { label: "Spending", budget: baseStats.budgetSpending, actual: baseStats.actualSpending, favorableWhenOver: false },
+                  { label: "Savings", budget: baseStats.budgetSavings, actual: baseStats.actualSavings, favorableWhenOver: true },
+                  { label: "Leftover", budget: baseStats.budgetLeftover, actual: baseStats.actualLeftover, favorableWhenOver: true },
+                ] as const).map((card) => {
+                  const delta = card.actual - card.budget;
+                  const favorable = card.favorableWhenOver ? delta >= 0 : delta <= 0;
+                  return (
+                    <div key={card.label} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{card.label}</div>
+                      <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">Budget {formatMoney(card.budget)}</div>
+                      <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">{formatMoney(card.actual)}</div>
+                      {delta !== 0 && (
+                        <div className={`mt-1 text-xs font-semibold ${favorable ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                          {delta > 0 ? "+" : ""}{formatMoney(delta)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Category Variance Breakdown */}
+              {Object.values(varianceByCategory).filter(Boolean).length > 0 && (
+                <div className="mb-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">Variance by category</div>
+                  <div className="space-y-2">
+                    {Object.values(varianceByCategory)
+                      .filter(Boolean)
+                      .sort((a, b) => Math.abs(b!.variance) - Math.abs(a!.variance))
+                      .map((v) => {
+                        if (!v) return null;
+                        const isIncome = v.category === "income";
+                        const overBudget = v.actual > v.budgeted;
+                        const favorable = isIncome ? overBudget : !overBudget;
+                        return (
+                          <div key={v.category} className="flex items-center justify-between text-sm">
+                            <span className="capitalize text-slate-700 dark:text-slate-300">{v.category}</span>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-slate-400 dark:text-slate-500">
+                                {formatMoney(v.budgeted)} &rarr; {formatMoney(v.actual)}
+                              </span>
+                              <span className={`text-xs font-semibold min-w-16 text-right ${favorable ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                                {overBudget ? "+" : "-"}{formatMoney(Math.abs(v.variance))}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <ProgressBar
                   label="Time into period"
@@ -916,53 +957,56 @@ export default function InsightsPage() {
                   value={baseStats.actualIncome}
                   total={baseStats.budgetIncome}
                   barColor={incomeProgress >= timeProgress ? "#22c55e" : "#eab308"}
-                  hint={`Actual ${money(baseStats.actualIncome)} vs budget ${money(baseStats.budgetIncome)}`}
+                  hint={`Actual ${formatMoney(baseStats.actualIncome)} vs budget ${formatMoney(baseStats.budgetIncome)}`}
                 />
                 <ProgressBar
                   label="Spending pace"
                   value={baseStats.actualSpending}
                   total={baseStats.budgetSpending}
                   barColor={spendingProgress <= timeProgress ? "#f97316" : "#ef4444"}
-                  hint={`Actual ${money(baseStats.actualSpending)} vs budget ${money(baseStats.budgetSpending)}`}
+                  hint={`Actual ${formatMoney(baseStats.actualSpending)} vs budget ${formatMoney(baseStats.budgetSpending)}`}
                 />
                 <ProgressBar
                   label="Savings pace"
                   value={baseStats.actualSavings}
                   total={baseStats.budgetSavings}
                   barColor={savingsProgress >= timeProgress ? "#a855f7" : "#eab308"}
-                  hint={`Actual ${money(baseStats.actualSavings)} vs target ${money(baseStats.budgetSavings)}`}
+                  hint={`Actual ${formatMoney(baseStats.actualSavings)} vs target ${formatMoney(baseStats.budgetSavings)}`}
                 />
               </div>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
+                <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Forecast end balance</div>
-                  <div className="mt-2 text-xl font-semibold text-slate-900">{money(endBalance)}</div>
+                  <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">{formatMoney(endBalance)}</div>
                   <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Lowest point {lowestPoint ? money(lowestPoint.balance) : "0"}
+                    Lowest point {lowestPoint ? formatMoney(lowestPoint.balance) : "0"}
                   </div>
                 </div>
-                <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
+                <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Risk days</div>
-                  <div className="mt-2 text-xl font-semibold text-slate-900">
+                  <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
                     {riskDays === 0 ? "None" : `${riskDays} day(s)`}
                   </div>
                   <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {firstRisk ? `First risk on ${firstRisk.date}` : "Above safe minimum"}
                   </div>
                 </div>
-                <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
+                <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Projected leftover</div>
-                  <div className="mt-2 text-xl font-semibold text-slate-900">
+                  <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
                     {formatDelta(projectedLeftover)}
                   </div>
                   <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     Based on current pace
                   </div>
                 </div>
-                <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Safe minimum</div>
-                  <div className="mt-2 text-xl font-semibold text-slate-900">
-                    {money(plan.setup.expectedMinBalance)}
+                <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 flex items-center">
+                    Safe minimum
+                    <InfoTooltip text="Your minimum safe balance. Any day the forecast dips below this is flagged as risk." />
+                  </div>
+                  <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
+                    {formatMoney(plan.setup.expectedMinBalance)}
                   </div>
                   <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {lowestPoint && lowestPoint.balance < plan.setup.expectedMinBalance
@@ -982,17 +1026,17 @@ export default function InsightsPage() {
                     return (
                       <div
                         key={scenario.id}
-                        className="rounded-2xl border border-slate-200 bg-white/70 p-4"
+                        className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4"
                       >
-                        <div className="text-sm font-semibold text-slate-900">{scenario.label}</div>
+                        <div className="text-sm font-semibold text-slate-900 dark:text-white">{scenario.label}</div>
                         <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">{scenario.note}</div>
                         <div className="mt-3 text-xs uppercase tracking-wide text-slate-400">Projected leftover</div>
-                        <div className="mt-1 text-lg font-semibold text-slate-900">
-                          {money(scenario.leftover)}
+                        <div className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+                          {formatMoney(scenario.leftover)}
                         </div>
                         <div className="mt-2 text-xs uppercase tracking-wide text-slate-400">End balance</div>
                         <div className={`mt-1 text-sm font-semibold ${tone}`}>
-                          {money(scenario.endBalance)}
+                          {formatMoney(scenario.endBalance)}
                         </div>
                       </div>
                     );
@@ -1001,38 +1045,38 @@ export default function InsightsPage() {
               </div>
             </CollapsibleSection>
 
-            <CollapsibleSection title="2) What changed vs last period?" defaultOpen>
+            <CollapsibleSection title="2) What changed vs last period?">
               {compareStats ? (
                 <>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
+                    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Income change</div>
-                      <div className="mt-2 text-xl font-semibold text-slate-900">
+                      <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
                         {formatDelta(baseStats.actualIncome - compareStats.actualIncome)}
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
+                    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Spending change</div>
-                      <div className="mt-2 text-xl font-semibold text-slate-900">
+                      <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
                         {formatDelta(baseStats.actualSpending - compareStats.actualSpending)}
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
+                    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Savings change</div>
-                      <div className="mt-2 text-xl font-semibold text-slate-900">
+                      <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
                         {formatDelta(baseStats.actualSavings - compareStats.actualSavings)}
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
+                    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Leftover change</div>
-                      <div className="mt-2 text-xl font-semibold text-slate-900">
+                      <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
                         {formatDelta(baseStats.actualLeftover - compareStats.actualLeftover)}
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                    <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Top category changes</div>
                       <div className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                         {categoryChanges.length === 0 ? (
@@ -1041,13 +1085,13 @@ export default function InsightsPage() {
                           categoryChanges.map((item) => (
                             <div key={item.category} className="flex items-center justify-between">
                               <span className="capitalize">{item.category}</span>
-                              <span className="font-semibold text-slate-900">{formatDelta(item.delta)}</span>
+                              <span className="font-semibold text-slate-900 dark:text-white">{formatDelta(item.delta)}</span>
                             </div>
                           ))
                         )}
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                    <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Top merchant changes</div>
                       <div className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                         {labelChanges.length === 0 ? (
@@ -1056,7 +1100,7 @@ export default function InsightsPage() {
                           labelChanges.map((item) => (
                             <div key={item.label} className="flex items-center justify-between">
                               <span>{item.label}</span>
-                              <span className="font-semibold text-slate-900">{formatDelta(item.delta)}</span>
+                              <span className="font-semibold text-slate-900 dark:text-white">{formatDelta(item.delta)}</span>
                             </div>
                           ))
                         )}
@@ -1066,7 +1110,7 @@ export default function InsightsPage() {
 
                   {incomeSourceChanges ? (
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
-                      <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
                         <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">New income sources</div>
                         <div className="mt-2 space-y-1 text-sm text-slate-600 dark:text-slate-300">
                           {incomeSourceChanges.newSources.length === 0
@@ -1076,7 +1120,7 @@ export default function InsightsPage() {
                             ))}
                         </div>
                       </div>
-                      <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
                         <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Missing income sources</div>
                         <div className="mt-2 space-y-1 text-sm text-slate-600 dark:text-slate-300">
                           {incomeSourceChanges.missingSources.length === 0
@@ -1094,25 +1138,25 @@ export default function InsightsPage() {
               )}
             </CollapsibleSection>
 
-            <CollapsibleSection title="3) Where am I overspending?" defaultOpen>
+            <CollapsibleSection title="3) Where am I overspending?">
               {categoryChartData.length > 0 && (
-                <div className="mb-6 rounded-2xl bg-white/70 p-6 shadow-sm">
+                <div className="mb-6 rounded-2xl bg-white/70 dark:bg-slate-800/70 p-6 shadow-sm">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-4">Spending by category</div>
                   <CategoryBreakdownChart data={categoryChartData} height={320} />
                 </div>
               )}
 
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Variable cap</div>
-                  <div className="mt-2 text-xl font-semibold text-slate-900">
-                    {money(plan.setup.variableCap)}
+                <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 flex items-center">Variable cap<InfoTooltip text="Your budgeted limit for flexible spending each period. Anything above this means you're overspending on non-fixed expenses." /></div>
+                  <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
+                    {formatMoney(plan.setup.variableCap)}
                   </div>
                   <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Actual {money(variableSpend)} ({formatDelta(variableDelta)})
+                    Actual {formatMoney(variableSpend)} ({formatDelta(variableDelta)})
                   </div>
                 </div>
-                <div className="rounded-2xl bg-white/70 p-4 shadow-sm">
+                <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Top overspent categories</div>
                   <div className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                     {overspentCategories.length === 0 ? (
@@ -1121,14 +1165,14 @@ export default function InsightsPage() {
                       overspentCategories.slice(0, 4).map((cat) => (
                         <div key={cat.category} className="flex items-center justify-between">
                           <span className="capitalize">{cat.category}</span>
-                          <span className="font-semibold text-slate-900">{formatDelta(cat.variance)}</span>
+                          <span className="font-semibold text-slate-900 dark:text-white">{formatDelta(cat.variance)}</span>
                         </div>
                       ))
                     )}
                   </div>
                 </div>
               </div>
-              <div className="mt-4 rounded-2xl border border-slate-200 bg-white/70 p-4">
+              <div className="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
                 <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Biggest overspend items</div>
                 <div className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                   {overspendItems.length === 0 ? (
@@ -1137,14 +1181,14 @@ export default function InsightsPage() {
                     overspendItems.map((item) => (
                       <div key={item.id} className="flex items-center justify-between">
                         <span>{item.label}</span>
-                        <span className="font-semibold text-slate-900">{money(item.amount)}</span>
+                        <span className="font-semibold text-slate-900 dark:text-white">{formatMoney(item.amount)}</span>
                       </div>
                     ))
                   )}
                 </div>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Budget variance by bill</div>
                   <div className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                     {billVariance.length === 0 ? (
@@ -1162,7 +1206,7 @@ export default function InsightsPage() {
                     )}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Top merchants</div>
                   <div className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                     {merchantRows.length === 0 ? (
@@ -1171,8 +1215,8 @@ export default function InsightsPage() {
                       merchantRows.map((row) => (
                         <div key={row.label} className="flex items-center justify-between gap-3">
                           <span className="truncate">{row.label}</span>
-                          <span className="font-semibold text-slate-900">
-                            {money(row.total)}
+                          <span className="font-semibold text-slate-900 dark:text-white">
+                            {formatMoney(row.total)}
                             {compareStats ? (
                               <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">
                                 ({formatDelta(row.delta)} vs last)
@@ -1187,20 +1231,26 @@ export default function InsightsPage() {
               </div>
             </CollapsibleSection>
 
-            <CollapsibleSection title="4) How stable is my income?" defaultOpen>
-              <div className="grid gap-4 md:grid-cols-2">
-                <SummaryCard label="Average income" value={money(incomeAverage)} />
-                <SummaryCard label="Income volatility" value={money(incomeVolatility)} hint="Std dev across periods" />
-                <SummaryCard label="Stability score" value={`${stabilityScore}/100`} hint="Higher is more stable" />
-                <SummaryCard
-                  label="Reliable vs irregular"
-                  value={`${money(incomeSplit.reliable)} | ${money(incomeSplit.irregular)}`}
-                  hint="Reliable (rules) | Irregular (unmatched)"
-                />
-              </div>
+            <CollapsibleSection title="4) How stable is my income?">
+              {!hasIncomeData ? (
+                <div className="text-sm text-slate-500 dark:text-slate-400">
+                  No income data recorded yet. Add income transactions to see stability metrics.
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <SummaryCard label="Average income" value={formatMoney(incomeAverage)} />
+                  <SummaryCard label="Income volatility" value={formatMoney(incomeVolatility)} hint="Std dev across periods" />
+                  <SummaryCard label="Stability score" value={`${stabilityScore ?? 0}/100`} hint="Higher is more stable" />
+                  <SummaryCard
+                    label="Reliable vs irregular"
+                    value={`${formatMoney(incomeSplit.reliable)} | ${formatMoney(incomeSplit.irregular)}`}
+                    hint="Reliable (rules) | Irregular (unmatched)"
+                  />
+                </div>
+              )}
             </CollapsibleSection>
 
-            <CollapsibleSection title="5) How healthy are my savings?" defaultOpen>
+            <CollapsibleSection title="5) How healthy are my savings?">
               <div className="grid gap-4 md:grid-cols-2">
                 <SummaryCard
                   label="Savings rate"
@@ -1225,19 +1275,19 @@ export default function InsightsPage() {
               </div>
             </CollapsibleSection>
 
-            <CollapsibleSection title="6) What should I do next?" defaultOpen>
+            <CollapsibleSection title="6) What should I do next?">
               <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                 {recommendations.map((rec) => (
-                  <div key={rec} className="rounded-2xl border border-slate-200 bg-white/70 px-4 py-3">
+                  <div key={rec} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-4 py-3">
                     {rec}
                   </div>
                 ))}
               </div>
             </CollapsibleSection>
 
-            <CollapsibleSection title="7) How do periods compare overall?" defaultOpen>
+            <CollapsibleSection title="7) How do periods compare overall?">
               {periodTrendData.length > 1 && (
-                <div className="mb-6 rounded-2xl bg-white/70 p-6 shadow-sm">
+                <div className="mb-6 rounded-2xl bg-white/70 dark:bg-slate-800/70 p-6 shadow-sm">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-4">Income vs spending trends</div>
                   <SpendingTrendChart data={periodTrendData} showIncome={true} height={300} />
                 </div>
@@ -1249,11 +1299,11 @@ export default function InsightsPage() {
                   const delta = deltaValue(series.values);
                   const deltaTone = delta >= 0 ? "text-green-600" : "text-rose-600";
                   return (
-                    <div key={series.key} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                    <div key={series.key} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{series.label}</div>
-                          <div className="mt-1 text-lg font-semibold text-slate-900">{money(last)}</div>
+                          <div className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">{formatMoney(last)}</div>
                           <div className={`mt-1 text-xs ${deltaTone}`}>
                             {delta >= 0 ? "Up" : "Down"} {formatDelta(delta)} vs last period
                           </div>
@@ -1268,31 +1318,31 @@ export default function InsightsPage() {
                 })}
               </div>
 
-              <div className="mt-4 rounded-2xl border border-slate-200 bg-white/70 p-4">
+              <div className="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
                 <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Period highlights</div>
                 <div className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                   <div className="flex items-center justify-between">
                     <span>Highest income</span>
-                    <span className="font-semibold text-slate-900">
-                      {money(incomePeak.value)} ({periodLabelAt(sortedPeriods, incomePeak.index)})
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {formatMoney(incomePeak.value)} ({periodLabelAt(sortedPeriods, incomePeak.index)})
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Highest spending</span>
-                    <span className="font-semibold text-slate-900">
-                      {money(spendingPeak.value)} ({periodLabelAt(sortedPeriods, spendingPeak.index)})
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {formatMoney(spendingPeak.value)} ({periodLabelAt(sortedPeriods, spendingPeak.index)})
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Best leftover</span>
-                    <span className="font-semibold text-slate-900">
-                      {money(bestLeftover.value)} ({periodLabelAt(sortedPeriods, bestLeftover.index)})
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {formatMoney(bestLeftover.value)} ({periodLabelAt(sortedPeriods, bestLeftover.index)})
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Lowest leftover</span>
-                    <span className="font-semibold text-slate-900">
-                      {money(worstLeftover.value)} ({periodLabelAt(sortedPeriods, worstLeftover.index)})
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {formatMoney(worstLeftover.value)} ({periodLabelAt(sortedPeriods, worstLeftover.index)})
                     </span>
                   </div>
                 </div>
@@ -1309,14 +1359,14 @@ export default function InsightsPage() {
                   return (
                     <div
                       key={card.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-4 py-3"
                     >
-                      <div className="font-semibold text-slate-900">{card.label}</div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{card.label}</div>
                       <div className="flex items-center gap-2 text-xs">
                         <span className={`rounded-full px-2 py-1 font-semibold ${badge}`}>
                           {card.status.toUpperCase()}
                         </span>
-                        <span className="text-slate-500 dark:text-slate-400">Leftover {money(card.leftover)}</span>
+                        <span className="text-slate-500 dark:text-slate-400">Leftover {formatMoney(card.leftover)}</span>
                       </div>
                     </div>
                   );

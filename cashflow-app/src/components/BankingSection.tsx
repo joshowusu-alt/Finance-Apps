@@ -17,6 +17,7 @@ interface BankingSectionProps {
 
 export default function BankingSection({ onSyncComplete }: BankingSectionProps) {
   const [userId, setUserId] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
   const [syncing, setSyncing] = useState(false);
   const [lastSynced, setLastSynced] = useState<string | null>(null);
@@ -50,6 +51,8 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
         }
       } catch (err) {
         console.error("Error fetching user ID:", err);
+      } finally {
+        setReady(true);
       }
     }
     fetchUserId();
@@ -124,26 +127,37 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
     showToast("Bank account connected successfully", "success");
   };
 
+  if (!ready) {
+    return (
+      <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+        <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Bank Sync</div>
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Loading...</p>
+      </div>
+    );
+  }
+
   if (!userId) {
     return (
       <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
-        <div className="text-sm font-semibold text-slate-800">Bank Sync</div>
-        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Loading...</p>
+        <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Bank Sync</div>
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+          Sign in to connect your bank and sync transactions automatically.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
-      <div className="text-sm font-semibold text-slate-800">Bank Sync</div>
+      <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Bank Sync</div>
       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
         Connect your bank to automatically import transactions
       </p>
 
       <div className="mt-4 space-y-4">
         {accounts.length === 0 ? (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm text-slate-600 dark:text-slate-400">No bank accounts connected</p>
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-4">
+            <p className="text-sm text-slate-600 dark:text-slate-300">No bank accounts connected</p>
             <div className="mt-3">
               <PlaidLink userId={userId} onSuccess={handleBankConnected} />
             </div>
@@ -154,10 +168,10 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
               {accounts.map((account) => (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3"
+                  className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3"
                 >
                   <div>
-                    <div className="text-sm font-medium text-slate-900">{account.name}</div>
+                    <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{account.name}</div>
                     <div className="text-xs text-slate-500 dark:text-slate-400">
                       {account.type}
                       {account.mask ? ` •••• ${account.mask}` : ""}
@@ -171,15 +185,15 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="vn-btn vn-btn-primary w-full text-sm disabled:opacity-60 disabled:cursor-not-allowed"
               aria-label={syncing ? "Syncing transactions" : "Sync transactions from bank"}
             >
               {syncing ? "Syncing..." : "Sync Transactions"}
             </button>
 
             {importCount !== null && (
-              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                <p className="text-sm text-slate-800">
+              <div className="rounded-lg bg-amber-50 border border-amber-200 dark:border-amber-400/30 dark:bg-amber-900/20 p-3">
+                <p className="text-sm text-slate-800 dark:text-amber-100">
                   ✓ Imported {importCount} new transaction{importCount !== 1 ? "s" : ""}
                 </p>
               </div>
@@ -189,15 +203,15 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
               <div className="text-xs text-slate-500 dark:text-slate-400">Last synced: {lastSynced}</div>
             )}
 
-            <div className="pt-2 border-t border-slate-200">
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
               <PlaidLink userId={userId} onSuccess={handleBankConnected} />
             </div>
           </>
         )}
 
         {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="rounded-lg border border-red-200 dark:border-red-400/40 bg-red-50 dark:bg-red-900/20 p-3">
+            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
             {error.includes("No bank accounts connected") && (
               <div className="mt-2">
                 <PlaidLink userId={userId} onSuccess={handleBankConnected} />

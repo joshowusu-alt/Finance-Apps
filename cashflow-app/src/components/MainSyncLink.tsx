@@ -659,10 +659,10 @@ export default function MainSyncLink() {
               {lastLocalLabel ? (
                 <div className="mt-1 text-slate-400">Last change {lastLocalLabel}</div>
               ) : (
-                <div className="mt-1 text-slate-500">No local changes yet.</div>
+                <div className="mt-1 text-slate-500 dark:text-slate-400">No local changes yet.</div>
               )}
               {lastServerLabel ? (
-                <div className="text-slate-500">Server change {lastServerLabel}</div>
+                <div className="text-slate-500 dark:text-slate-400">Server change {lastServerLabel}</div>
               ) : null}
             </div>
           ) : null}

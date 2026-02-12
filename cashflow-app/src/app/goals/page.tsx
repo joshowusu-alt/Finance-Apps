@@ -1,21 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { loadPlan, savePlan } from "@/lib/storage";
+import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
 import type { Plan, SavingsGoal } from "@/data/plan";
 import { getPeriod } from "@/lib/cashflowEngine";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { toast } from "@/components/Toast";
-import { GoalsSkeleton } from "@/components/Skeleton";
 import { FormError } from "@/components/FormError";
 
 function generateId() {
     return Math.random().toString(36).substring(2, 15);
-}
-
-function formatCurrency(n: number) {
-    return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n);
 }
 
 const GOAL_COLORS = [
@@ -117,11 +113,11 @@ function GoalCard({ goal, onUpdate, onDelete }: {
             <div className="vn-card p-5 space-y-4">
                 <div className="flex justify-between items-center">
                     <h3 className="font-semibold text-slate-800 dark:text-white">Edit Goal</h3>
-                    <button onClick={handleCancelEdit} className="text-slate-400 hover:text-slate-600">✕</button>
+                    <button onClick={handleCancelEdit} className="text-slate-400 hover:text-slate-600 p-2 -m-2">✕</button>
                 </div>
 
                 <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Name</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Name</label>
                     <input
                         type="text"
                         value={editName}
@@ -135,9 +131,9 @@ function GoalCard({ goal, onUpdate, onDelete }: {
                     <FormError message={errors.name} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Target</label>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Target</label>
                         <input
                             type="number"
                             value={editTarget}
@@ -151,7 +147,7 @@ function GoalCard({ goal, onUpdate, onDelete }: {
                         <FormError message={errors.target} />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Current</label>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Current</label>
                         <input
                             type="number"
                             value={editCurrent === "0" ? "" : editCurrent}
@@ -167,7 +163,7 @@ function GoalCard({ goal, onUpdate, onDelete }: {
                 </div>
 
                 <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Target Date</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Target Date</label>
                     <input
                         type="date"
                         value={editDate}
@@ -182,14 +178,14 @@ function GoalCard({ goal, onUpdate, onDelete }: {
                 </div>
 
                 <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Icon</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Icon</label>
                     <div className="flex gap-1 flex-wrap">
                         {GOAL_ICONS.map((icon) => (
                             <button
                                 key={icon}
                                 type="button"
                                 onClick={() => setEditIcon(icon)}
-                                className={`w-8 h-8 rounded text-lg flex items-center justify-center ${editIcon === icon ? "bg-violet-100 ring-2 ring-violet-500" : "bg-slate-100 hover:bg-slate-200"
+                                className={`w-11 h-11 sm:w-8 sm:h-8 rounded text-xl sm:text-lg flex items-center justify-center ${editIcon === icon ? "bg-violet-100 dark:bg-violet-900 ring-2 ring-violet-500" : "bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600"
                                     }`}
                             >
                                 {icon}
@@ -199,14 +195,14 @@ function GoalCard({ goal, onUpdate, onDelete }: {
                 </div>
 
                 <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Color</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Color</label>
                     <div className="flex gap-2">
                         {GOAL_COLORS.map((color) => (
                             <button
                                 key={color}
                                 type="button"
                                 onClick={() => setEditColor(color)}
-                                className={`w-6 h-6 rounded-full ${editColor === color ? "ring-2 ring-offset-2 ring-slate-400" : ""}`}
+                                className={`w-9 h-9 sm:w-6 sm:h-6 rounded-full ${editColor === color ? "ring-2 ring-offset-2 ring-slate-400" : ""}`}
                                 style={{ backgroundColor: color }}
                             />
                         ))}
@@ -216,7 +212,7 @@ function GoalCard({ goal, onUpdate, onDelete }: {
                 <div className="flex gap-2 pt-2">
                     <button
                         onClick={handleCancelEdit}
-                        className="flex-1 px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg"
+                        className="flex-1 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg"
                     >
                         Cancel
                     </button>
@@ -239,22 +235,22 @@ function GoalCard({ goal, onUpdate, onDelete }: {
                     <span className="text-2xl">{goal.icon || "🎯"}</span>
                     <div>
                         <h3 className="font-semibold text-slate-800 dark:text-white">{goal.name}</h3>
-                        <p className="text-sm text-slate-500">
-                            {isComplete ? "🎉 Goal reached!" : `${formatCurrency(remaining)} to go`}
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {isComplete ? "🎉 Goal reached!" : `${formatMoney(remaining)} to go`}
                         </p>
                     </div>
                 </div>
                 <div className="flex gap-2">
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="text-slate-400 hover:text-violet-500 text-sm"
+                        className="text-slate-400 hover:text-violet-500 text-sm p-2 -m-2"
                         title="Edit goal"
                     >
                         ✏️
                     </button>
                     <button
                         onClick={() => onDelete(goal.id)}
-                        className="text-slate-400 hover:text-red-500 text-sm"
+                        className="text-slate-400 hover:text-red-500 text-sm p-2 -m-2"
                         title="Delete goal"
                     >
                         ✕
@@ -275,18 +271,18 @@ function GoalCard({ goal, onUpdate, onDelete }: {
 
             <div className="flex items-center justify-between text-sm mb-4">
                 <span className="font-medium text-slate-800 dark:text-white">
-                    {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}
+                    {formatMoney(goal.currentAmount)} / {formatMoney(goal.targetAmount)}
                 </span>
-                <span className="text-slate-500">{Math.round(progress)}%</span>
+                <span className="text-slate-500 dark:text-slate-400">{Math.round(progress)}%</span>
             </div>
 
             {/* Target date info */}
             {daysUntilTarget !== null && !isComplete && (
-                <div className="text-xs text-slate-500 mb-4 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="text-xs text-slate-500 dark:text-slate-400 mb-4 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
                     {daysUntilTarget > 0 ? (
                         <>
                             📅 {daysUntilTarget} days until target
-                            {weeklyNeeded && <span className="block mt-1">💡 Save {formatCurrency(weeklyNeeded)}/week to reach it</span>}
+                            {weeklyNeeded && <span className="block mt-1">💡 Save {formatMoney(weeklyNeeded)}/week to reach it</span>}
                         </>
                     ) : (
                         "⏰ Target date passed"
@@ -387,7 +383,7 @@ function NewGoalForm({ onSave, onCancel }: {
                 <FormError message={errors.name} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Target Amount</label>
                     <input
@@ -443,7 +439,7 @@ function NewGoalForm({ onSave, onCancel }: {
                             key={icon}
                             type="button"
                             onClick={() => setSelectedIcon(icon)}
-                            className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center transition-all ${selectedIcon === icon
+                            className={`w-11 h-11 sm:w-10 sm:h-10 rounded-lg text-2xl sm:text-xl flex items-center justify-center transition-all ${selectedIcon === icon
                                 ? "bg-violet-100 dark:bg-violet-900 ring-2 ring-violet-500"
                                 : "bg-slate-100 dark:bg-slate-700 hover:bg-slate-200"
                                 }`}
@@ -462,7 +458,7 @@ function NewGoalForm({ onSave, onCancel }: {
                             key={color}
                             type="button"
                             onClick={() => setSelectedColor(color)}
-                            className={`w-8 h-8 rounded-full transition-all ${selectedColor === color ? "ring-2 ring-offset-2 ring-slate-400" : ""
+                            className={`w-9 h-9 sm:w-8 sm:h-8 rounded-full transition-all ${selectedColor === color ? "ring-2 ring-offset-2 ring-slate-400" : ""
                                 }`}
                             style={{ backgroundColor: color }}
                         />
@@ -474,7 +470,7 @@ function NewGoalForm({ onSave, onCancel }: {
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg"
                 >
                     Cancel
                 </button>
@@ -490,35 +486,9 @@ function NewGoalForm({ onSave, onCancel }: {
 }
 
 export default function GoalsPage() {
-    const [plan, setPlan] = useState<Plan | null>(null);
+    const [plan, setPlan] = useState(() => loadPlan());
     const [showNewGoalForm, setShowNewGoalForm] = useState(false);
     const { confirm } = useConfirm();
-
-    useEffect(() => {
-        setPlan(loadPlan());
-    }, []);
-
-    if (!plan) {
-        return (
-            <main className="min-h-screen">
-                <div className="mx-auto max-w-7xl px-5 pb-24 pt-6">
-                    <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
-                        <div className="hidden lg:block">
-                            <div className="vn-card p-6 space-y-4">
-                                <div className="h-8 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-                                <div className="space-y-2">
-                                    {[1, 2, 3, 4].map(i => (
-                                        <div key={i} className="h-10 bg-slate-100 dark:bg-slate-800 rounded" />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        <GoalsSkeleton />
-                    </div>
-                </div>
-            </main>
-        );
-    }
 
     const period = getPeriod(plan, plan.setup.selectedPeriodId);
     const goals = plan.savingsGoals || [];
@@ -577,7 +547,7 @@ export default function GoalsPage() {
                     <section className="space-y-6">
                         <header className="vn-card p-6">
                             <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Goals</div>
-                            <h1 className="text-2xl font-semibold text-slate-900">Savings Goals</h1>
+                            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Savings Goals</h1>
                             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                                 Track progress towards your savings targets
                             </p>
@@ -586,18 +556,18 @@ export default function GoalsPage() {
                         {/* Summary */}
                         {goals.length > 0 && (
                             <div className="vn-card p-5">
-                                <div className="grid grid-cols-3 gap-4 text-center">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                                     <div>
-                                        <p className="text-2xl font-bold text-violet-600">{goals.length}</p>
-                                        <p className="text-xs text-slate-500">Active Goals</p>
+                                        <p className="text-xl sm:text-2xl font-bold text-violet-600">{goals.length}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Active Goals</p>
                                     </div>
                                     <div>
-                                        <p className="text-2xl font-bold text-emerald-600">{formatCurrency(totalSaved)}</p>
-                                        <p className="text-xs text-slate-500">Total Saved</p>
+                                        <p className="text-xl sm:text-2xl font-bold text-emerald-600">{formatMoney(totalSaved)}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Total Saved</p>
                                     </div>
                                     <div>
-                                        <p className="text-2xl font-bold text-slate-600">{formatCurrency(totalTarget)}</p>
-                                        <p className="text-xs text-slate-500">Total Target</p>
+                                        <p className="text-xl sm:text-2xl font-bold text-slate-600 dark:text-slate-300">{formatMoney(totalTarget)}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Total Target</p>
                                     </div>
                                 </div>
                             </div>
@@ -624,7 +594,7 @@ export default function GoalsPage() {
                         ) : (
                             <button
                                 onClick={() => setShowNewGoalForm(true)}
-                                className="w-full p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl text-slate-500 hover:text-violet-600 hover:border-violet-300 transition-colors"
+                                className="w-full p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl text-slate-500 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-300 transition-colors"
                             >
                                 <span className="text-2xl block mb-1">+</span>
                                 <span className="text-sm font-medium">Add New Goal</span>

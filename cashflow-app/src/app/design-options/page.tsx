@@ -63,10 +63,10 @@ export default function DesignOptionsPage() {
     const [activeTheme, setActiveTheme] = useState("onyx");
 
     return (
-        <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
+        <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 text-slate-900 dark:text-slate-100">
             <div className="mx-auto max-w-5xl">
                 <h1 className="mb-2 text-3xl font-bold">Design Studio</h1>
-                <p className="mb-8 text-slate-500">Select a theme to preview the premium feel.</p>
+                <p className="mb-8 text-slate-500 dark:text-slate-400">Select a theme to preview the premium feel.</p>
 
                 <div className="grid gap-6 md:grid-cols-3">
                     {/* Option 1: Onyx & Gold */}

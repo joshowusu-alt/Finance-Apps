@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { detectSubscriptions, type DetectedSubscription } from "@/lib/subscriptionDetection";
+import { formatMoney } from "@/lib/currency";
 import type { Transaction } from "@/data/plan";
 
 type Props = {
@@ -9,10 +10,6 @@ type Props = {
   asOfDate?: string;
   className?: string;
 };
-
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(value || 0);
-}
 
 function formatFrequency(frequency: string) {
   const labels: Record<string, string> = {
@@ -24,9 +21,13 @@ function formatFrequency(frequency: string) {
 }
 
 function getRecommendationTone(recommendation: DetectedSubscription["recommendation"]) {
-  if (recommendation === "keep") return "bg-emerald-50 text-emerald-700 border-emerald-200";
-  if (recommendation === "cancel") return "bg-rose-50 text-rose-700 border-rose-200";
-  return "bg-amber-50 text-amber-700 border-amber-200";
+  if (recommendation === "keep") {
+    return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200 dark:border-emerald-500/30";
+  }
+  if (recommendation === "cancel") {
+    return "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-200 dark:border-rose-500/30";
+  }
+  return "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-500/30";
 }
 
 export default function SubscriptionDashboard({ transactions, asOfDate, className = "" }: Props) {
@@ -46,33 +47,33 @@ export default function SubscriptionDashboard({ transactions, asOfDate, classNam
           <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Subscription Detection
           </div>
-          <h2 className="text-lg font-semibold text-slate-900">Subscriptions dashboard</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Subscriptions dashboard</h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
             You&apos;re paying {formatMoney(totalMonthly)}/month in subscriptions.
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Annual projection</div>
-          <div className="mt-1 text-xl font-semibold text-slate-900">{formatMoney(totalAnnual)}</div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-4 py-3">
+          <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Annual projection</div>
+          <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">{formatMoney(totalAnnual)}</div>
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Active subscriptions</div>
-          <div className="mt-2 text-2xl font-semibold text-slate-900">{subscriptions.length}</div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 p-4">
+          <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Active subscriptions</div>
+          <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{subscriptions.length}</div>
           <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Detected from recurring charges</div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Monthly cost</div>
-          <div className="mt-2 text-2xl font-semibold text-slate-900">{formatMoney(totalMonthly)}</div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 p-4">
+          <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Monthly cost</div>
+          <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{formatMoney(totalMonthly)}</div>
           <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {formatMoney(totalMonthly / 4.33)} per week average
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Top subscription</div>
-          <div className="mt-2 text-lg font-semibold text-slate-900">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 p-4">
+          <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Top subscription</div>
+          <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
             {topSubscription ? topSubscription.merchantName : "None yet"}
           </div>
           <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -82,7 +83,7 @@ export default function SubscriptionDashboard({ transactions, asOfDate, classNam
       </div>
 
       {subscriptions.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-white/70 p-6 text-sm text-slate-500">
+        <div className="mt-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-6 text-sm text-slate-500 dark:text-slate-400">
           No subscriptions detected yet. Add more transactions or sync your bank to surface recurring charges.
         </div>
       ) : (
@@ -97,23 +98,23 @@ export default function SubscriptionDashboard({ transactions, asOfDate, classNam
           {subscriptions.map((sub) => (
             <div
               key={sub.id}
-              className="grid gap-3 rounded-2xl border border-slate-200 bg-white/80 p-4 md:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]"
+              className="grid gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 p-4 md:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]"
             >
               <div>
-                <div className="text-sm font-semibold text-slate-900">{sub.merchantName}</div>
-                <div className="mt-1 text-xs text-slate-500">
+                <div className="text-sm font-semibold text-slate-900 dark:text-white">{sub.merchantName}</div>
+                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {formatFrequency(sub.frequency)} | Last charge {sub.lastChargeDate || "N/A"}
                 </div>
               </div>
-              <div className="text-sm text-slate-700 md:text-right">
+              <div className="text-sm text-slate-700 dark:text-slate-200 md:text-right">
                 <span className="text-[11px] uppercase tracking-wide text-slate-400 md:hidden">Avg charge</span>
                 <div>{formatMoney(sub.averageAmount)}</div>
               </div>
-              <div className="text-sm font-semibold text-slate-900 md:text-right">
+              <div className="text-sm font-semibold text-slate-900 dark:text-white md:text-right">
                 <span className="text-[11px] uppercase tracking-wide text-slate-400 md:hidden">Monthly</span>
                 <div>{formatMoney(sub.monthlyCost)}</div>
               </div>
-              <div className="text-sm text-slate-700 md:text-right">
+              <div className="text-sm text-slate-700 dark:text-slate-200 md:text-right">
                 <span className="text-[11px] uppercase tracking-wide text-slate-400 md:hidden">Annual</span>
                 <div>{formatMoney(sub.annualCost)}</div>
               </div>
@@ -126,7 +127,7 @@ export default function SubscriptionDashboard({ transactions, asOfDate, classNam
                 >
                   {sub.recommendation}
                 </span>
-                <div className="mt-1 text-[11px] text-slate-500">{sub.recommendationReason}</div>
+                <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{sub.recommendationReason}</div>
               </div>
             </div>
           ))}
