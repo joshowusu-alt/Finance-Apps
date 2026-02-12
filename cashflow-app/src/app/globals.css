@@ -188,18 +188,26 @@ body {
 .app-watermark {
   position: fixed;
   inset: 0;
-  background-image: url("/logo-watermark.svg");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: min(920px, 92vw) auto;
-  opacity: 0.04;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #142732;
   pointer-events: none;
   z-index: 0;
 }
 
+.app-watermark svg {
+  width: min(920px, 92vw);
+  height: auto;
+  opacity: 0.04;
+}
+
 .dark .app-watermark {
+  color: #e2e8f0;
+}
+
+.dark .app-watermark svg {
   opacity: 0.06;
-  filter: invert(1);
 }
 
 .skip-link {

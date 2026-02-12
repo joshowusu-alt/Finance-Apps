@@ -11,6 +11,7 @@ import AIAssistant from "@/components/AIAssistant";
 import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { AuthProvider } from "@/contexts/AuthContext";
 import CloudSync from "@/components/CloudSync";
+import AppWatermark from "@/components/AppWatermark";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -44,7 +45,7 @@ export default function RootLayout({
           <a href="#main-content" className="skip-link">
             Skip to content
           </a>
-          <div className="app-watermark" aria-hidden="true" />
+          <AppWatermark />
           {/* Page content */}
           <ErrorBoundary>
             <div id="main-content" tabIndex={-1} className="relative z-10 min-h-screen pb-24">
