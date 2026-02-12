@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { createFreshPlan, hasStoredPlan, loadPlan, resetPlan, savePlan } from "@/lib/storage";
+import { createFreshPlan, loadPlan, savePlan } from "@/lib/storage";
+import { createSamplePlan } from "@/data/plan";
 import {
   dismissOnboarding,
   loadOnboardingState,
@@ -21,6 +22,7 @@ import {
   minPoint,
 } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
+import { formatMoney } from "@/lib/currency";
 import { VelanovoLogo } from "@/components/VelanovoLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 import { CashflowProjectionChart } from "@/components/charts";
@@ -28,10 +30,7 @@ import type { CashflowDataPoint } from "@/components/charts";
 import { InsightWidget } from "@/components/dashboard/InsightWidget";
 import { TransactionsWidget } from "@/components/dashboard/TransactionsWidget";
 import { BillsWidget } from "@/components/dashboard/BillsWidget";
-
-function money(n: number) {
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n || 0);
-}
+import InfoTooltip from "@/components/InfoTooltip";
 
 function prettyDate(iso: string) {
   const d = new Date(iso + "T00:00:00");
@@ -238,11 +237,10 @@ export default function HomePage() {
   }
 
   function handleLoadSampleData() {
-    resetPlan();
-    const next = loadPlan();
-    setPlan(next);
+    const sample = createSamplePlan();
+    savePlan(sample, { action: "reset" });
+    setPlan(sample);
     setOnboarding(resetOnboarding());
-
   }
 
   function handleDismissOnboarding() {
@@ -290,8 +288,8 @@ export default function HomePage() {
 
               {/* Hero Metric */}
               <div className="p-5 rounded-2xl bg-[var(--vn-bg)] border border-[var(--vn-border)] mt-6">
-                <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-1">Safe to Spend</div>
-                <div className="text-4xl font-bold text-[var(--vn-success)]">{money(actualLeftover > 0 ? actualLeftover : 0)}</div>
+                <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-1 flex items-center">Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
+                <div className="text-4xl font-bold text-[var(--vn-success)]">{formatMoney(actualLeftover > 0 ? actualLeftover : 0)}</div>
                 <div className="text-xs text-[var(--vn-muted)] mt-1">Leftover from income this period</div>
               </div>
             </header>
@@ -315,8 +313,8 @@ export default function HomePage() {
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <button onClick={handleStartFresh} className="vn-btn vn-btn-primary text-xs h-8 px-3">Start fresh</button>
-                  <button onClick={handleLoadSampleData} className="vn-btn vn-btn-ghost text-xs h-8 px-3">Load sample data</button>
+                  <button onClick={handleStartFresh} className="vn-btn vn-btn-primary text-sm sm:text-xs h-11 sm:h-8 px-4 sm:px-3">Start fresh</button>
+                  <button onClick={handleLoadSampleData} className="vn-btn vn-btn-ghost text-sm sm:text-xs h-11 sm:h-8 px-4 sm:px-3">Load sample data</button>
                 </div>
 
                 <div className="mt-4 space-y-2">
@@ -342,7 +340,7 @@ export default function HomePage() {
                     <div className="text-xs text-center text-[var(--vn-muted)] mt-2">...and {onboardingTasks.filter(t => !t.done).length - 3} more</div>
                   )}
                   {onboardingTasks.every(t => t.done) && (
-                    <div className="text-sm text-[var(--vn-success)] font-medium text-center py-2">🎉 You're all set! Dismiss this card to clear space.</div>
+                    <div className="text-sm text-[var(--vn-success)] font-medium text-center py-2">🎉 You&apos;re all set! Dismiss this card to clear space.</div>
                   )}
                 </div>
               </div>
@@ -356,7 +354,7 @@ export default function HomePage() {
                   <div className="text-xs text-[var(--vn-muted)]">Projected balance for next 30 days</div>
                 </div>
                 <div className="text-xs font-bold px-2 py-1 rounded bg-[var(--vn-bg)] text-[var(--vn-text)]">
-                  End: {money(endingBalance)}
+                  End: {formatMoney(endingBalance)}
                 </div>
               </div>
 
