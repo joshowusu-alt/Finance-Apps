@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { formatMoney } from "@/lib/currency";
+import { loadPlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { buildAIContext } from "@/lib/aiContext";
 
 interface ProactiveInsight {
     type: "warning" | "success" | "info";
@@ -18,10 +21,6 @@ interface InsightsSummary {
 interface InsightsData {
     insights: ProactiveInsight[];
     summary: InsightsSummary;
-}
-
-function formatCurrency(value: number): string {
-    return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(value);
 }
 
 function getInsightIcon(type: ProactiveInsight["type"]): string {
@@ -48,21 +47,67 @@ export default function InsightsPanel() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        async function fetchInsights() {
-            try {
-                const res = await fetch("/api/insights");
-                if (!res.ok) throw new Error("Failed to fetch insights");
+    const buildLocalInsights = useCallback((): InsightsData | null => {
+        try {
+            const plan = loadPlan();
+            const ctx = buildAIContext(plan);
+            const daysRemaining = ctx.period.daysTotal - ctx.period.daysElapsed;
+            const dailyBudget = daysRemaining > 0 ? ctx.actuals.leftover / daysRemaining : 0;
+            return {
+                insights: ctx.insights.slice(0, 5),
+                summary: {
+                    spendingStatus: ctx.smartPace.spending.status,
+                    daysRemaining,
+                    dailyBudget,
+                    leftover: ctx.actuals.leftover,
+                },
+            };
+        } catch {
+            return null;
+        }
+    }, []);
+
+    const fetchInsights = useCallback(async () => {
+        try {
+            setLoading(true);
+            const res = await fetch("/api/insights");
+            if (res.ok) {
                 const json = await res.json();
                 setData(json);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : "Failed to load insights");
-            } finally {
-                setLoading(false);
+                setError(null);
+                return;
             }
+
+            const local = buildLocalInsights();
+            if (local) {
+                setData(local);
+                setError(null);
+                return;
+            }
+
+            throw new Error("Failed to fetch insights");
+        } catch (err) {
+            const local = buildLocalInsights();
+            if (local) {
+                setData(local);
+                setError(null);
+                return;
+            }
+            setError(err instanceof Error ? err.message : "Failed to load insights");
+        } finally {
+            setLoading(false);
         }
+    }, [buildLocalInsights]);
+
+    useEffect(() => {
         fetchInsights();
-    }, []);
+        window.addEventListener(PLAN_UPDATED_EVENT, fetchInsights);
+        window.addEventListener("focus", fetchInsights);
+        return () => {
+            window.removeEventListener(PLAN_UPDATED_EVENT, fetchInsights);
+            window.removeEventListener("focus", fetchInsights);
+        };
+    }, [fetchInsights]);
 
     if (loading) {
         return (
@@ -83,9 +128,9 @@ export default function InsightsPanel() {
 
     if (error || !data) {
         return (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
-                <p className="text-slate-500 text-sm">Unable to load insights</p>
-            </div>
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Unable to load insights</p>
+        </div>
         );
     }
 
@@ -110,7 +155,7 @@ export default function InsightsPanel() {
             <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                 <div>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Daily budget</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">{formatCurrency(data.summary.dailyBudget)}</p>
+                    <p className="font-semibold text-slate-800 dark:text-white">{formatMoney(data.summary.dailyBudget)}</p>
                 </div>
                 <div>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Days remaining</p>
@@ -136,7 +181,7 @@ export default function InsightsPanel() {
             {/* Footer */}
             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
                 <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-                    {formatCurrency(data.summary.leftover)} remaining this period
+                    {formatMoney(data.summary.leftover)} remaining this period
                 </p>
             </div>
         </div>
