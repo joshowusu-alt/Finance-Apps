@@ -15,6 +15,7 @@ const DEFAULT_SCOPE = "default";
 export const PLAN_UPDATED_EVENT = "cashflow:plan-updated";
 export const MAIN_SYNC_EVENT = "cashflow:main-sync";
 export const AUDIT_UPDATED_EVENT = "cashflow:audit-updated";
+export const SCOPE_UPDATED_EVENT = "cashflow:scope-updated";
 
 type ScenarioCache = {
   key: string;
@@ -304,6 +305,7 @@ export function setStorageScope(scope: string) {
   if (typeof window === "undefined") return DEFAULT_SCOPE;
   const next = scope && scope.trim() ? scope.trim() : DEFAULT_SCOPE;
   window.localStorage.setItem(SCOPE_KEY, next);
+  dispatchBrowserEvent(SCOPE_UPDATED_EVENT);
   return next;
 }
 

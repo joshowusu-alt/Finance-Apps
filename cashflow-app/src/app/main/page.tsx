@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { Plan } from "@/data/plan";
+import { setStorageScope } from "@/lib/storage";
 
 type SyncStatus = "loading" | "success" | "error";
 
@@ -35,8 +36,8 @@ function MainPageContent() {
         }
         keysToRemove.forEach(key => localStorage.removeItem(key));
 
-        // Set scope to main
-        localStorage.setItem("cashflow_scope_v1", "main");
+        // Set scope to main (and notify listeners)
+        setStorageScope("main");
 
         setMessage("Connecting to cloud...");
 

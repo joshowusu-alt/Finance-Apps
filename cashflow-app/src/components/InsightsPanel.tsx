@@ -67,47 +67,27 @@ export default function InsightsPanel() {
         }
     }, []);
 
-    const fetchInsights = useCallback(async () => {
-        try {
-            setLoading(true);
-            const res = await fetch("/api/insights");
-            if (res.ok) {
-                const json = await res.json();
-                setData(json);
-                setError(null);
-                return;
-            }
-
-            const local = buildLocalInsights();
-            if (local) {
-                setData(local);
-                setError(null);
-                return;
-            }
-
-            throw new Error("Failed to fetch insights");
-        } catch (err) {
-            const local = buildLocalInsights();
-            if (local) {
-                setData(local);
-                setError(null);
-                return;
-            }
-            setError(err instanceof Error ? err.message : "Failed to load insights");
-        } finally {
-            setLoading(false);
+    const refreshInsights = useCallback(() => {
+        const local = buildLocalInsights();
+        if (local) {
+            setData(local);
+            setError(null);
+        } else {
+            setError("Failed to load insights");
         }
+        setLoading(false);
     }, [buildLocalInsights]);
 
     useEffect(() => {
-        fetchInsights();
-        window.addEventListener(PLAN_UPDATED_EVENT, fetchInsights);
-        window.addEventListener("focus", fetchInsights);
+        setLoading(true);
+        refreshInsights();
+        window.addEventListener(PLAN_UPDATED_EVENT, refreshInsights);
+        window.addEventListener("focus", refreshInsights);
         return () => {
-            window.removeEventListener(PLAN_UPDATED_EVENT, fetchInsights);
-            window.removeEventListener("focus", fetchInsights);
+            window.removeEventListener(PLAN_UPDATED_EVENT, refreshInsights);
+            window.removeEventListener("focus", refreshInsights);
         };
-    }, [fetchInsights]);
+    }, [refreshInsights]);
 
     if (loading) {
         return (
