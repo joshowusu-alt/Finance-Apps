@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
+import { showToast } from "./Toast";
 
 type NavItem = {
   href: string;
@@ -99,7 +100,7 @@ function IconMore(active: boolean) {
 
 const primaryItems: NavItem[] = [
   { href: "/", label: "Home", icon: IconHome },
-  { href: "/bills", label: "Plan", icon: IconPlan },
+  { href: "/plan", label: "Plan", icon: IconPlan },
   { href: "/timeline", label: "Timeline", icon: IconTimeline },
   { href: "/insights", label: "Insights", icon: IconInsights },
 ];
@@ -159,9 +160,22 @@ export default function BottomNav() {
                     </Link>
                   ))}
                 </div>
-                <div className="mt-4 flex items-center justify-between rounded-2xl px-4 py-3 bg-[var(--vn-bg)]">
-                  <span className="text-sm font-medium text-[var(--vn-text)]">Theme</span>
-                  <ThemeToggle />
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between rounded-2xl px-4 py-3 bg-(--vn-bg)">
+                    <span className="text-sm font-medium text-(--vn-text)">Theme</span>
+                    <ThemeToggle />
+                  </div>
+                  <button
+                    onClick={() => { showToast("Export coming soon", "info"); setShowMore(false); }}
+                    className="flex w-full items-center justify-between rounded-2xl px-4 py-3 bg-(--vn-bg) hover:bg-(--vn-border) transition-colors"
+                  >
+                    <span className="text-sm font-medium text-(--vn-text)">Export (PDF / CSV)</span>
+                    <span className="text-xs text-(--vn-muted)">Soon</span>
+                  </button>
+                  <div className="flex items-center justify-between rounded-2xl px-4 py-3 bg-(--vn-bg) opacity-50">
+                    <span className="text-sm font-medium text-(--vn-text)">Connected Accounts</span>
+                    <span className="text-xs text-(--vn-muted)">Coming soon</span>
+                  </div>
                 </div>
               </div>
             </motion.div>
