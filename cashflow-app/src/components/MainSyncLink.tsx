@@ -625,7 +625,7 @@ export default function MainSyncLink() {
             </div>
             <button
               onClick={() => setExpanded(false)}
-              className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-semibold text-white/80 hover:bg-white/10"
+              className="rounded-full border border-white/20 px-3 py-1 text-[11px] min-h-9 font-semibold text-white/80 hover:bg-white/10"
             >
               Hide
             </button>
@@ -675,13 +675,13 @@ export default function MainSyncLink() {
               <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={handleResolveKeepLocal}
-                  className="rounded-lg bg-rose-500/80 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-rose-500"
+                  className="rounded-lg bg-rose-500/80 px-3 py-1.5 text-[11px] min-h-9 font-semibold text-white hover:bg-rose-500"
                 >
                   Keep local
                 </button>
                 <button
                   onClick={handleResolveUseServer}
-                  className="rounded-lg border border-white/30 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-white/10"
+                  className="rounded-lg border border-white/30 px-3 py-1.5 text-[11px] min-h-9 font-semibold text-white hover:bg-white/10"
                 >
                   Use server
                 </button>

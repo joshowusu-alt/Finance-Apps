@@ -144,7 +144,7 @@ export function CategoryDrilldown({
                             {/* Close button */}
                             <button
                                 onClick={onClose}
-                                className="absolute right-4 top-4 rounded-full p-2 transition-colors hover:bg-black/10"
+                                className="absolute right-4 top-4 h-10 w-10 rounded-full flex items-center justify-center transition-colors hover:bg-black/10"
                                 style={{ color: mutedColor }}
                             >
                                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

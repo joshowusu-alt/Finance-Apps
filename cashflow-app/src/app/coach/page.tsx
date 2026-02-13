@@ -362,7 +362,7 @@ export default function CoachPage() {
             if (window.history.length > 1) router.back();
             else router.push("/");
           }}
-          className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+          className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
           aria-label="Close coach"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -370,7 +370,7 @@ export default function CoachPage() {
           </svg>
         </button>
         <div className="flex items-center gap-2 flex-1">
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
             <span className="text-lg">🤖</span>
           </div>
           <div>
@@ -388,7 +388,7 @@ export default function CoachPage() {
               },
             ])
           }
-          className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+          className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
           aria-label="New conversation"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

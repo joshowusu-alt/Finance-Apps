@@ -1076,7 +1076,7 @@ export default function TransactionsPage() {
                             type="button"
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onClick={handleCreateBillForNewTransaction as any}
-                            className="mt-2 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-400/40 bg-white dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-300 hover:border-indigo-300 hover:text-indigo-700 dark:hover:border-indigo-300"
+                            className="mt-2 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-400/40 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs min-h-9 font-semibold text-indigo-600 dark:text-indigo-300 hover:border-indigo-300 hover:text-indigo-700 dark:hover:border-indigo-300"
                           >
                             Create bill
                           </button>
@@ -1086,7 +1086,7 @@ export default function TransactionsPage() {
                         <button
                           type="button"
                           onClick={handleCreateBillForNewTransaction}
-                          className="mt-2 inline-flex items-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                          className="mt-2 inline-flex items-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs min-h-9 font-semibold text-slate-600 dark:text-slate-300 hover:border-[var(--accent)] hover:text-[var(--accent)]"
                         >
                           Create bill from this transaction
                         </button>
@@ -1560,7 +1560,7 @@ export default function TransactionsPage() {
                                               type="button"
                                               // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                               onClick={handleCreateBillForEditTransaction as any}
-                                              className="mt-2 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-400/40 bg-white dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-300 hover:border-indigo-300 hover:text-indigo-700 dark:hover:border-indigo-300"
+                                              className="mt-2 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-400/40 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs min-h-9 font-semibold text-indigo-600 dark:text-indigo-300 hover:border-indigo-300 hover:text-indigo-700 dark:hover:border-indigo-300"
                                             >
                                               Create bill
                                             </button>
@@ -1570,7 +1570,7 @@ export default function TransactionsPage() {
                                           <button
                                             type="button"
                                             onClick={handleCreateBillForEditTransaction}
-                                            className="mt-2 inline-flex items-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                                            className="mt-2 inline-flex items-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs min-h-9 font-semibold text-slate-600 dark:text-slate-300 hover:border-[var(--accent)] hover:text-[var(--accent)]"
                                           >
                                             Create bill from this transaction
                                           </button>

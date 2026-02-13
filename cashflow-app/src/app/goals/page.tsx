@@ -113,7 +113,12 @@ function GoalCard({ goal, onUpdate, onDelete }: {
             <div className="vn-card p-5 space-y-4">
                 <div className="flex justify-between items-center">
                     <h3 className="font-semibold text-slate-800 dark:text-white">Edit Goal</h3>
-                    <button onClick={handleCancelEdit} className="text-slate-400 hover:text-slate-600 p-2 -m-2">✕</button>
+                    <button
+                        onClick={handleCancelEdit}
+                        className="text-slate-400 hover:text-slate-600 h-10 w-10 flex items-center justify-center rounded-full"
+                    >
+                        ✕
+                    </button>
                 </div>
 
                 <div>
@@ -243,14 +248,14 @@ function GoalCard({ goal, onUpdate, onDelete }: {
                 <div className="flex gap-2">
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="text-slate-400 hover:text-violet-500 text-sm p-2 -m-2"
+                        className="text-slate-400 hover:text-violet-500 text-sm h-10 w-10 flex items-center justify-center rounded-full"
                         title="Edit goal"
                     >
                         ✏️
                     </button>
                     <button
                         onClick={() => onDelete(goal.id)}
-                        className="text-slate-400 hover:text-red-500 text-sm p-2 -m-2"
+                        className="text-slate-400 hover:text-red-500 text-sm h-10 w-10 flex items-center justify-center rounded-full"
                         title="Delete goal"
                     >
                         ✕

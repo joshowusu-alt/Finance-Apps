@@ -155,7 +155,7 @@ export default function ToastContainer() {
               whileHover={{ opacity: 1, scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => dismissToast(toast.id)}
-              className="shrink-0 hover:bg-black/5 dark:hover:bg-white/10 rounded-full p-1 transition-colors"
+              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
               aria-label="Dismiss notification"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
