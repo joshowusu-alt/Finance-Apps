@@ -32,7 +32,7 @@ export default function InfoTooltip({ text }: InfoTooltipProps) {
         onClick={() => setOpen(!open)}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
-        className="inline-flex items-center justify-center w-6 h-6 sm:w-4 sm:h-4 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-300 text-[11px] sm:text-[10px] font-bold leading-none hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors"
+        className="inline-flex items-center justify-center w-8 h-8 sm:w-6 sm:h-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-300 text-xs sm:text-[11px] font-bold leading-none hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors"
         aria-label="More info"
       >
         i

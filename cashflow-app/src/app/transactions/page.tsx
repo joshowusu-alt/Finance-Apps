@@ -1196,7 +1196,7 @@ export default function TransactionsPage() {
                     <>
                       <button
                         onClick={() => setBulkMode(true)}
-                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs min-h-10 font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Enable bulk selection mode"
                       >
@@ -1204,7 +1204,7 @@ export default function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToCSV(periodTransactions, period.label)}
-                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs min-h-10 font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to CSV"
                       >
@@ -1212,7 +1212,7 @@ export default function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToExcel(periodTransactions, period.label)}
-                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs min-h-10 font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to Excel"
                       >
@@ -1220,7 +1220,7 @@ export default function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToPDF(periodTransactions, period.label, period.start, period.end)}
-                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs min-h-10 font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to PDF"
                       >
@@ -1231,14 +1231,14 @@ export default function TransactionsPage() {
                     <>
                       <button
                         onClick={handleBulkExport}
-                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs min-h-10 font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={selectedIds.size === 0}
                       >
                         Export Selected
                       </button>
                       <button
                         onClick={handleBulkDelete}
-                        className="rounded-lg bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-500/40 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-200 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-500/40 px-3 py-1.5 text-xs min-h-10 font-semibold text-rose-700 dark:text-rose-200 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={selectedIds.size === 0}
                       >
                         Delete Selected
@@ -1248,7 +1248,7 @@ export default function TransactionsPage() {
                           setBulkMode(false);
                           setSelectedIds(new Set());
                         }}
-                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors"
+                        className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs min-h-10 font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors"
                       >
                         Cancel
                       </button>

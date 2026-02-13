@@ -22,7 +22,7 @@ export default function UserMenu() {
   if (loading) {
     return (
       <div
-        className="h-8 w-8 animate-pulse rounded-full"
+        className="h-10 w-10 animate-pulse rounded-full"
         style={{ background: "var(--vn-border)" }}
       />
     );
@@ -49,7 +49,7 @@ export default function UserMenu() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-transform hover:scale-105"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold transition-transform hover:scale-105"
         style={{
           background: "var(--vn-primary)",
           color: "var(--vn-primary-contrast)",

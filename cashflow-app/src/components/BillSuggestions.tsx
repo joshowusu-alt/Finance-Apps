@@ -170,7 +170,7 @@ export function BillSuggestions({ detectedBills, onAccept, onDismiss, className 
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => handleDismiss(bill.id)}
-                                        className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+                                        className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-medium transition-colors"
                                         style={{
                                             backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
                                             color: isDark ? "#a1a1aa" : "#71717a",
@@ -182,7 +182,7 @@ export function BillSuggestions({ detectedBills, onAccept, onDismiss, className 
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => handleAccept(bill)}
-                                        className="rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-colors"
+                                        className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-medium text-white transition-colors"
                                         style={{
                                             backgroundColor: "#6366f1",
                                         }}
