@@ -19,6 +19,11 @@ function prettyDate(iso: string) {
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 }
 
+function prettyDateWithYear(iso: string) {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 function cadenceLabel(cadence: string) {
   if (cadence === "weekly") return "Weekly";
   if (cadence === "biweekly") return "Bi-weekly";
@@ -81,6 +86,11 @@ export default function PlanPage() {
   // Risk assessment
   const lowestBalance = lowest?.balance ?? startingBalance;
   const expectedMin = plan.setup.expectedMinBalance;
+  const expectedMinIsSet = expectedMin > 0;
+  const periodStartYear = period.start.slice(0, 4);
+  const periodEndYear = period.end.slice(0, 4);
+  const periodRange = `${periodStartYear === periodEndYear ? prettyDate(period.start) : prettyDateWithYear(period.start)} - ${prettyDateWithYear(period.end)}`;
+  const periodHeader = `P${period.id}: ${periodRange}`;
   const risk =
     lowestBalance >= expectedMin ? "healthy" :
     lowestBalance >= 0 ? "watch" : "atrisk";
@@ -100,18 +110,16 @@ export default function PlanPage() {
 
             {/* A) Period Header */}
             <div className="vn-card p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <h1 className="text-2xl font-bold text-[var(--vn-text)]">Plan</h1>
-                  <div className="mt-1 text-sm text-[var(--vn-muted)]">
-                    {period.label} &middot; {prettyDate(period.start)} &ndash; {prettyDate(period.end)}
-                  </div>
+                  <div className="mt-1 text-sm text-[var(--vn-muted)] break-words">{periodHeader}</div>
                 </div>
-                <Link href="/settings" className="vn-btn vn-btn-ghost text-xs">
+                <Link href="/settings" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
                   Edit period dates
                 </Link>
               </div>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   onClick={() => setPlanMode("manual")}
                   className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all border ${
@@ -142,12 +150,12 @@ export default function PlanPage() {
 
             {/* B) Income Card */}
             <div className="vn-card p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
                   <div className="text-sm font-bold text-[var(--vn-text)]">Plan Income</div>
                   <div className="text-xs text-[var(--vn-muted)]">Expected income this period</div>
                 </div>
-                <Link href="/income" className="vn-btn vn-btn-ghost text-xs">
+                <Link href="/income" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
                   Edit income
                 </Link>
               </div>
@@ -158,12 +166,12 @@ export default function PlanPage() {
               ) : (
                 <div className="space-y-2">
                   {plan.incomeRules.filter((r) => r.enabled).map((rule) => (
-                    <div key={rule.id} className="flex items-center justify-between rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
-                      <div>
-                        <div className="text-sm font-medium text-[var(--vn-text)]">{rule.label}</div>
+                    <div key={rule.id} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-[var(--vn-text)] truncate">{rule.label}</div>
                         <div className="text-xs text-[var(--vn-muted)]">{cadenceLabel(rule.cadence)}</div>
                       </div>
-                      <div className="text-sm font-semibold text-[var(--vn-text)]">{formatMoney(rule.amount)}</div>
+                      <div className="text-sm font-semibold text-[var(--vn-text)] shrink-0">{formatMoney(rule.amount)}</div>
                     </div>
                   ))}
                 </div>
@@ -172,12 +180,12 @@ export default function PlanPage() {
 
             {/* C) Bills Card */}
             <div className="vn-card p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
                   <div className="text-sm font-bold text-[var(--vn-text)]">Committed Bills</div>
                   <div className="text-xs text-[var(--vn-muted)]">Fixed obligations this period</div>
                 </div>
-                <Link href="/bills" className="vn-btn vn-btn-ghost text-xs">
+                <Link href="/bills" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
                   Edit bills
                 </Link>
               </div>
@@ -188,12 +196,12 @@ export default function PlanPage() {
               ) : (
                 <div className="space-y-2">
                   {upcomingOutflows.map((bill) => (
-                    <div key={bill.id} className="flex items-center justify-between rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
-                      <div>
-                        <div className="text-sm font-medium text-[var(--vn-text)]">{bill.label}</div>
+                    <div key={bill.id} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-[var(--vn-text)] truncate">{bill.label}</div>
                         <div className="text-xs text-[var(--vn-muted)]">Due {prettyDate(bill.date)}</div>
                       </div>
-                      <div className="text-sm font-semibold text-[var(--vn-text)]">{formatMoney(bill.amount)}</div>
+                      <div className="text-sm font-semibold text-[var(--vn-text)] shrink-0">{formatMoney(bill.amount)}</div>
                     </div>
                   ))}
                 </div>
@@ -202,12 +210,12 @@ export default function PlanPage() {
 
             {/* D) Allocations Card */}
             <div className="vn-card p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
                   <div className="text-sm font-bold text-[var(--vn-text)]">Allocations</div>
                   <div className="text-xs text-[var(--vn-muted)]">Flexible and protected spending (monthly)</div>
                 </div>
-                <Link href="/settings" className="vn-btn vn-btn-ghost text-xs">
+                <Link href="/settings" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
                   Edit allocations
                 </Link>
               </div>
@@ -219,14 +227,21 @@ export default function PlanPage() {
                   { label: "Buffer Top-up", value: allocations.buffer },
                   { label: "Other Outflows", value: allocations.other },
                 ].filter((row) => row.value > 0).map((row) => (
-                  <div key={row.label} className="flex items-center justify-between rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
-                    <div className="text-sm font-medium text-[var(--vn-text)]">{row.label}</div>
-                    <div className="text-sm font-semibold text-[var(--vn-text)]">{formatMoney(row.value)}</div>
+                  <div key={row.label} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
+                    <div className="text-sm font-medium text-[var(--vn-text)] min-w-0 truncate">{row.label}</div>
+                    <div className="text-sm font-semibold text-[var(--vn-text)] shrink-0">{formatMoney(row.value)}</div>
                   </div>
                 ))}
-                <div className="flex items-center justify-between rounded-xl px-4 py-3 bg-[var(--vn-bg)] border border-[var(--vn-border)]">
-                  <div className="text-sm font-medium text-[var(--vn-muted)]">Expected Min Balance</div>
-                  <div className="text-sm font-semibold text-[var(--vn-text)]">{formatMoney(expectedMin)}</div>
+                <div className="flex items-start justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)] border border-[var(--vn-border)]">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-[var(--vn-muted)]">Expected Min Balance</div>
+                    {!expectedMinIsSet && (
+                      <div className="text-xs text-[var(--vn-muted)]">Set a minimum to flag risky days</div>
+                    )}
+                  </div>
+                  <div className={`text-sm font-semibold shrink-0 ${expectedMinIsSet ? "text-[var(--vn-text)]" : "text-[var(--vn-muted)]"}`}>
+                    {expectedMinIsSet ? formatMoney(expectedMin) : "Not set"}
+                  </div>
                 </div>
               </div>
               {Object.values(allocations).every((v) => v === 0) && (
@@ -236,12 +251,12 @@ export default function PlanPage() {
 
             {/* E) Period Outlook */}
             <div className={`vn-card p-6 border ${riskConfig.bg}`}>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
                   <div className="text-sm font-bold text-[var(--vn-text)]">Period Outlook</div>
                   <div className="text-xs text-[var(--vn-muted)]">Where you&apos;ll land this period</div>
                 </div>
-                <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${riskConfig.color} ${riskConfig.bg}`}>
+                <span className={`text-xs font-bold px-3 py-1.5 rounded-full self-end sm:self-auto ${riskConfig.color} ${riskConfig.bg}`}>
                   {riskConfig.label}
                 </span>
               </div>
@@ -276,7 +291,9 @@ export default function PlanPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[var(--vn-muted)]">Expected minimum</span>
-                  <span className="font-semibold text-[var(--vn-text)]">{formatMoney(expectedMin)}</span>
+                  <span className={`font-semibold ${expectedMinIsSet ? "text-[var(--vn-text)]" : "text-[var(--vn-muted)]"}`}>
+                    {expectedMinIsSet ? formatMoney(expectedMin) : "Not set"}
+                  </span>
                 </div>
               </div>
             </div>

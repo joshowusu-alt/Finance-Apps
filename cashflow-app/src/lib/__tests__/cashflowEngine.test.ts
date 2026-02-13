@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import { generateEvents, getSavingsTransferReconciliation } from "../cashflowEngine";
 import { PLAN, SAMPLE_PLAN, PLAN_VERSION, Plan } from "@/data/plan";
 
-function buildPlan(partial: Partial<Plan>): Plan {
+type PlanPatch = Omit<Partial<Plan>, "setup"> & { setup?: Partial<Plan["setup"]> };
+
+function buildPlan(partial: PlanPatch): Plan {
   return {
     ...SAMPLE_PLAN,
     ...partial,
