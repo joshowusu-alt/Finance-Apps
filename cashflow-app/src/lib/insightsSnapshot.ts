@@ -621,7 +621,8 @@ export function buildInsightsSnapshot(
     const savingsOk = stats.budgetSavings === 0 ? true : stats.actualSavings >= stats.budgetSavings;
     const leftoverOk = stats.actualLeftover >= 0;
     const issues = [!minOk, !savingsOk, !leftoverOk].filter(Boolean).length;
-    const status = issues >= 2 || !leftoverOk ? "red" : issues === 1 ? "amber" : "green";
+    const status: Scorecard["status"] =
+      issues >= 2 || !leftoverOk ? "red" : issues === 1 ? "amber" : "green";
     return {
       id: p.id,
       label: p.label,
