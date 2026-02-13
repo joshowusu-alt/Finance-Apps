@@ -144,7 +144,7 @@ export const PLAN_VERSION = 2;
 // ---------------------------------------------------------------------------
 // Default periods — shared between sample and empty plans
 // ---------------------------------------------------------------------------
-const DEFAULT_PERIODS: Period[] = [
+export const DEFAULT_PERIODS: Period[] = [
   { id: 1, label: "P1: 22 Dec 2025-25 Jan 2026", start: "2025-12-22", end: "2026-01-25" },
   { id: 2, label: "P2: 26 Jan 2026-25 Feb 2026", start: "2026-01-26", end: "2026-02-25" },
   { id: 3, label: "P3: 26 Feb 2026-25 Mar 2026", start: "2026-02-26", end: "2026-03-25" },

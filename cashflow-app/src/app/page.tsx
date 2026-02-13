@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { createFreshPlan, hasStoredPlan, loadPlan, savePlan } from "@/lib/storage";
+import { hasStoredPlan, loadPlan, savePlan } from "@/lib/storage";
 import { createSamplePlan } from "@/data/plan";
+import { loadWizardState } from "@/lib/onboarding";
+import OnboardingWizard from "@/components/OnboardingWizard";
+import type { Plan } from "@/data/plan";
 import {
   dismissOnboarding,
   loadOnboardingState,
@@ -62,6 +65,7 @@ export default function HomePage() {
   const [plan, setPlan] = useState(() => loadPlan());
   const [onboarding, setOnboarding] = useState(() => loadOnboardingState());
   const [isFirstVisit, setIsFirstVisit] = useState(() => !hasStoredPlan());
+  const [showSetup, setShowSetup] = useState(() => !hasStoredPlan() && !loadWizardState().completed);
 
   useEffect(() => {
     const refresh = () => {
@@ -230,13 +234,12 @@ export default function HomePage() {
     }));
   }, [rows]);
 
-  function handleStartFresh() {
-    const fresh = createFreshPlan();
-    savePlan(fresh);
-    setPlan(fresh);
+  function handleQuickSetupComplete(builtPlan: Plan) {
+    savePlan(builtPlan);
+    setPlan(builtPlan);
     setOnboarding(resetOnboarding());
     setIsFirstVisit(false);
-
+    setShowSetup(false);
   }
 
   function handleLoadSampleData() {
@@ -323,8 +326,8 @@ export default function HomePage() {
                       <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wide">Recommended</span>
                     ) : null}
                   </button>
-                  <button onClick={handleStartFresh} className="vn-btn vn-btn-ghost text-sm sm:text-xs h-11 sm:h-8 px-4 sm:px-3">
-                    Start fresh
+                  <button onClick={() => setShowSetup(true)} className="vn-btn vn-btn-ghost text-sm sm:text-xs h-11 sm:h-8 px-4 sm:px-3">
+                    Quick setup
                   </button>
                 </div>
                 <div className="mt-2 text-xs text-[var(--vn-muted)]">
@@ -406,6 +409,10 @@ export default function HomePage() {
           </section>
         </div>
       </div>
+
+      {showSetup && (
+        <OnboardingWizard onComplete={handleQuickSetupComplete} />
+      )}
     </main>
   );
 }
