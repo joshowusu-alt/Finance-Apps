@@ -12,6 +12,7 @@ import type {
 } from "@/data/plan";
 import { PLAN_VERSION } from "@/data/plan";
 import { generateEvents, getPeriod } from "@/lib/cashflowEngine";
+import { getReportBranding } from "@/lib/branding";
 
 type ImportResult = {
   plan: Plan;
@@ -374,7 +375,8 @@ export function downloadPlanXlsx(plan: Plan) {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
   const stamp = new Date().toISOString().slice(0, 10);
-  downloadBlob(blob, `velanovo-plan-${stamp}.xlsx`);
+  const { filenamePrefix } = getReportBranding();
+  downloadBlob(blob, `${filenamePrefix}-plan-${stamp}.xlsx`);
 }
 
 export function downloadPlanTemplate() {
@@ -383,7 +385,8 @@ export function downloadPlanTemplate() {
   const blob = new Blob([data], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
-  downloadBlob(blob, "velanovo-import-template.xlsx");
+  const { filenamePrefix } = getReportBranding();
+  downloadBlob(blob, `${filenamePrefix}-import-template.xlsx`);
 }
 
 function addSectionTitle(doc: jsPDF, text: string, y: number) {
@@ -402,15 +405,21 @@ function nextTableY(doc: jsPDF, fallback: number) {
 
 export function downloadPlanPdf(plan: Plan, periodId: number) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const { brand, accentRgb, filenamePrefix } = getReportBranding();
+  const headStyles = { fillColor: accentRgb };
   let y = 50;
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
-  doc.text("Velanovo Plan Report", 40, y);
+  doc.text(`${brand.name} Plan Report`, 40, y);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  y += 18;
+  y += 16;
+  if (brand.tagline) {
+    doc.text(brand.tagline, 40, y);
+    y += 14;
+  }
   doc.text(`Generated ${new Date().toLocaleString("en-GB")}`, 40, y);
-  y += 20;
+  y += 18;
 
   const period = getPeriod(plan, periodId);
   const events = generateEvents(plan, periodId);
@@ -445,7 +454,7 @@ export function downloadPlanPdf(plan: Plan, periodId: number) {
     ],
     theme: "grid",
     styles: { fontSize: 9 },
-    headStyles: { fillColor: [20, 39, 50] },
+    headStyles,
   });
 
   y = nextTableY(doc, y + 20);
@@ -456,7 +465,7 @@ export function downloadPlanPdf(plan: Plan, periodId: number) {
     body: [[period.label, period.start, period.end]],
     theme: "grid",
     styles: { fontSize: 9 },
-    headStyles: { fillColor: [20, 39, 50] },
+    headStyles,
   });
 
   y = nextTableY(doc, y + 20);
@@ -472,7 +481,7 @@ export function downloadPlanPdf(plan: Plan, periodId: number) {
     ],
     theme: "grid",
     styles: { fontSize: 9 },
-    headStyles: { fillColor: [20, 39, 50] },
+    headStyles,
   });
 
   y = nextTableY(doc, y + 20);
@@ -489,7 +498,7 @@ export function downloadPlanPdf(plan: Plan, periodId: number) {
     ]),
     theme: "grid",
     styles: { fontSize: 9 },
-    headStyles: { fillColor: [20, 39, 50] },
+    headStyles,
   });
 
   y = nextTableY(doc, y + 20);
@@ -507,7 +516,7 @@ export function downloadPlanPdf(plan: Plan, periodId: number) {
     ]),
     theme: "grid",
     styles: { fontSize: 9 },
-    headStyles: { fillColor: [20, 39, 50] },
+    headStyles,
   });
 
   y = nextTableY(doc, y + 20);
@@ -524,11 +533,21 @@ export function downloadPlanPdf(plan: Plan, periodId: number) {
     ]),
     theme: "grid",
     styles: { fontSize: 9 },
-    headStyles: { fillColor: [20, 39, 50] },
+    headStyles,
   });
 
+  if (brand.reportFooter) {
+    const pageCount = doc.getNumberOfPages();
+    doc.setPage(pageCount);
+    const pageHeight = doc.internal.pageSize.getHeight();
+    doc.setFontSize(9);
+    doc.setTextColor(120);
+    doc.text(brand.reportFooter, 40, pageHeight - 30);
+    doc.setTextColor(0);
+  }
+
   const filenameSafe = period.label.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
-  doc.save(`velanovo-report-${filenameSafe || "period"}.pdf`);
+  doc.save(`${filenamePrefix}-report-${filenameSafe || "period"}.pdf`);
 }
 
 export async function importPlanFromFile(file: File, currentPlan: Plan): Promise<ImportResult> {
