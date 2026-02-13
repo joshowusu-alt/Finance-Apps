@@ -14,6 +14,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import CloudSync from "@/components/CloudSync";
 import AppWatermark from "@/components/AppWatermark";
 import InstallPrompt from "@/components/InstallPrompt";
+import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -58,6 +59,7 @@ export default function RootLayout({
             Skip to content
           </a>
           <AppWatermark />
+          <ServiceWorkerRegistrar />
           {/* Page content */}
           <ErrorBoundary>
             <div id="main-content" tabIndex={-1} className="relative z-10 min-h-screen pb-24">
