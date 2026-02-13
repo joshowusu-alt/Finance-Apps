@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
 
 type NavItem = {
@@ -28,6 +28,23 @@ function IconHome(active: boolean) {
   );
 }
 
+function IconPlan(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+      <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M9 12h6M9 16h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function IconTimeline(active: boolean) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -43,94 +60,6 @@ function IconTimeline(active: boolean) {
         strokeWidth="1.8"
         fill={active ? "currentColor" : "none"}
         fillOpacity={active ? 0.15 : 0}
-      />
-    </svg>
-  );
-}
-
-function IconSettings(active: boolean) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        fill={active ? "currentColor" : "none"}
-        fillOpacity={active ? 0.15 : 0}
-      />
-      <path
-        d="M19.4 15a8.7 8.7 0 0 0 .05-1l1.6-1.2-1.6-2.8-1.9.5a7.6 7.6 0 0 0-.86-.5l-.3-2H9.6l-.3 2c-.3.14-.58.31-.86.5l-1.9-.5-1.6 2.8L6.6 14a8.7 8.7 0 0 0 0 1l-1.6 1.2 1.6 2.8 1.9-.5c.27.2.56.36.86.5l.3 2h4.8l.3-2c.3-.14.58-.31.86-.5l1.9.5 1.6-2.8L19.4 15Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconTransactions(active: boolean) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <rect
-        x="3"
-        y="3"
-        width="18"
-        height="18"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        fill={active ? "currentColor" : "none"}
-        fillOpacity={active ? 0.15 : 0}
-      />
-      <path
-        d="M8 10h8M8 14h6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function IconBills(active: boolean) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M6 3h12a2 2 0 0 1 2 2v14l-3-1.5-3 1.5-3-1.5-3 1.5-3-1.5V5a2 2 0 0 1 2-2Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-        fill={active ? "currentColor" : "none"}
-        fillOpacity={active ? 0.15 : 0}
-      />
-      <path
-        d="M8 7h8M8 11h8M8 15h5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function IconIncome(active: boolean) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <circle
-        cx="12"
-        cy="12"
-        r="9"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        fill={active ? "currentColor" : "none"}
-        fillOpacity={active ? 0.15 : 0}
-      />
-      <path
-        d="M12 8v8M8 12l4-4 4 4"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
       />
     </svg>
   );
@@ -158,112 +87,169 @@ function IconInsights(active: boolean) {
   );
 }
 
-
-function IconGoals(active: boolean) {
+function IconMore(active: boolean) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill={active ? "currentColor" : "none"}
-        fillOpacity={active ? 0.15 : 0}
-      />
+      <circle cx="12" cy="5" r="1.5" fill="currentColor" opacity={active ? 1 : 0.7} />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity={active ? 1 : 0.7} />
+      <circle cx="12" cy="19" r="1.5" fill="currentColor" opacity={active ? 1 : 0.7} />
     </svg>
   );
 }
 
-const items: NavItem[] = [
+const primaryItems: NavItem[] = [
   { href: "/", label: "Home", icon: IconHome },
+  { href: "/bills", label: "Plan", icon: IconPlan },
   { href: "/timeline", label: "Timeline", icon: IconTimeline },
   { href: "/insights", label: "Insights", icon: IconInsights },
-  { href: "/transactions", label: "Transactions", icon: IconTransactions },
-  { href: "/bills", label: "Bills", icon: IconBills },
-  { href: "/income", label: "Income", icon: IconIncome },
-  { href: "/goals", label: "Goals", icon: IconGoals },
-  { href: "/settings", label: "Settings", icon: IconSettings },
+];
+
+const moreItems: NavItem[] = [
+  { href: "/transactions", label: "Transactions", icon: () => <span className="text-lg">💳</span> },
+  { href: "/income", label: "Income", icon: () => <span className="text-lg">💰</span> },
+  { href: "/goals", label: "Goals", icon: () => <span className="text-lg">🎯</span> },
+  { href: "/settings", label: "Settings", icon: () => <span className="text-lg">⚙️</span> },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const [showMore, setShowMore] = useState(false);
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname?.startsWith(href));
+  const isMoreActive = moreItems.some((it) => isActive(it.href));
 
   return (
-    <motion.nav
-      initial={{ y: 100 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-(--border) bg-surface-elevated/95 backdrop-blur-xl md:hidden"
-      style={{
-        boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.05)",
-      }}
-      aria-label="Primary"
-    >
-      <div className="mx-auto max-w-5xl px-2">
-        <div className="flex items-center justify-around py-1">
-          {items.map((it) => {
-            const active = isActive(it.href);
-            return (
-              <Link
-                key={it.href}
-                href={it.href}
-                aria-current={active ? "page" : undefined}
-                className="relative"
-              >
-                <motion.div
-                  whileTap={{ scale: 0.9 }}
-                  className="relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 text-xs"
+    <>
+      {/* More sheet */}
+      <AnimatePresence>
+        {showMore && (
+          <>
+            <motion.div
+              key="more-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/40 md:hidden"
+              onClick={() => setShowMore(false)}
+            />
+            <motion.div
+              key="more-sheet"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="fixed bottom-0 left-0 right-0 z-40 rounded-t-3xl pb-28 md:hidden"
+              style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}
+            >
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="h-1 w-10 rounded-full bg-[var(--vn-border)]" />
+              </div>
+              <div className="px-6 py-2">
+                <div className="grid grid-cols-4 gap-4">
+                  {moreItems.map((it) => (
+                    <Link
+                      key={it.href}
+                      href={it.href}
+                      onClick={() => setShowMore(false)}
+                      className="flex flex-col items-center gap-2 rounded-2xl py-4 transition-colors hover:bg-[var(--vn-bg)]"
+                    >
+                      {it.icon(isActive(it.href))}
+                      <span className={`text-xs font-medium ${isActive(it.href) ? "text-[var(--vn-primary)]" : "text-[var(--vn-muted)]"}`}>
+                        {it.label}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+                <div className="mt-4 flex items-center justify-between rounded-2xl px-4 py-3 bg-[var(--vn-bg)]">
+                  <span className="text-sm font-medium text-[var(--vn-text)]">Theme</span>
+                  <ThemeToggle />
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom tab bar */}
+      <motion.nav
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-(--border) bg-surface-elevated/95 backdrop-blur-xl md:hidden"
+        style={{ boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.05)" }}
+        aria-label="Primary"
+      >
+        <div className="mx-auto max-w-5xl px-2">
+          <div className="flex items-center justify-around py-1">
+            {primaryItems.map((it) => {
+              const active = isActive(it.href);
+              return (
+                <Link
+                  key={it.href}
+                  href={it.href}
+                  aria-current={active ? "page" : undefined}
+                  className="relative"
+                  onClick={() => setShowMore(false)}
                 >
-                  {/* Active indicator background */}
-                  {active && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute inset-0 rounded-2xl bg-accent/15"
-                      transition={{
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-
-                  {/* Icon with animation */}
-                  <motion.span
-                    className={`relative ${active ? "text-accent" : "text-(--text-secondary)"}`}
-                    animate={{
-                      scale: active ? 1.05 : 1,
-                      y: active ? -1 : 0,
-                    }}
-                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  <motion.div
+                    whileTap={{ scale: 0.9 }}
+                    className="relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 text-xs"
                   >
-                    {it.icon(active)}
-                  </motion.span>
+                    {active && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-0 rounded-2xl bg-accent/15"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    <motion.span
+                      className={`relative ${active ? "text-accent" : "text-(--text-secondary)"}`}
+                      animate={{ scale: active ? 1.05 : 1, y: active ? -1 : 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    >
+                      {it.icon(active)}
+                    </motion.span>
+                    <span className={`relative text-[11px] ${active ? "text-accent font-bold" : "text-(--text-tertiary) font-medium"}`}>
+                      {it.label}
+                    </span>
+                  </motion.div>
+                </Link>
+              );
+            })}
 
-                  {/* Label */}
-                  <span
-                    className={`relative text-[11px] ${active
-                      ? "text-accent font-bold"
-                      : "text-(--text-tertiary) font-medium"
-                      }`}
-                  >
-                    {it.label}
-                  </span>
-                </motion.div>
-              </Link>
-            );
-          })}
-
-          {/* Theme Toggle */}
-          <div className="px-1">
-            <ThemeToggle />
+            {/* More button */}
+            <button
+              onClick={() => setShowMore((v) => !v)}
+              className="relative"
+            >
+              <motion.div
+                whileTap={{ scale: 0.9 }}
+                className="relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 text-xs"
+              >
+                {(showMore || isMoreActive) && (
+                  <motion.div
+                    layoutId={showMore ? undefined : "activeTab"}
+                    className="absolute inset-0 rounded-2xl bg-accent/15"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <motion.span
+                  className={`relative ${showMore || isMoreActive ? "text-accent" : "text-(--text-secondary)"}`}
+                  animate={{ scale: showMore ? 1.05 : 1, y: showMore ? -1 : 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                >
+                  {IconMore(showMore || isMoreActive)}
+                </motion.span>
+                <span className={`relative text-[11px] ${showMore || isMoreActive ? "text-accent font-bold" : "text-(--text-tertiary) font-medium"}`}>
+                  More
+                </span>
+              </motion.div>
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Bottom safe area for notched devices */}
-      <div className="h-[env(safe-area-inset-bottom)] bg-surface-elevated/95" />
-    </motion.nav>
+        {/* Bottom safe area for notched devices */}
+        <div className="h-[env(safe-area-inset-bottom)] bg-surface-elevated/95" />
+      </motion.nav>
+    </>
   );
 }
