@@ -407,7 +407,7 @@ export default function BillsPage() {
               <StatCard
                 label="Upcoming outflows"
                 value={String(upcoming.length)}
-                hint={`Window ${plan.setup.windowDays} days`}
+                hint={`Next ${plan.setup.windowDays} days`}
               />
             </div>
 

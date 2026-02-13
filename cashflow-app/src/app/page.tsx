@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { createFreshPlan, loadPlan, savePlan } from "@/lib/storage";
+import { createFreshPlan, hasStoredPlan, loadPlan, savePlan } from "@/lib/storage";
 import { createSamplePlan } from "@/data/plan";
 import {
   dismissOnboarding,
@@ -61,11 +61,13 @@ function formatPeriodLabel(label: string) {
 export default function HomePage() {
   const [plan, setPlan] = useState(() => loadPlan());
   const [onboarding, setOnboarding] = useState(() => loadOnboardingState());
+  const [isFirstVisit, setIsFirstVisit] = useState(() => !hasStoredPlan());
 
   useEffect(() => {
     const refresh = () => {
       setPlan(loadPlan());
       setOnboarding(loadOnboardingState());
+      setIsFirstVisit(!hasStoredPlan());
     };
     refresh();
     window.addEventListener("focus", refresh);
@@ -233,6 +235,7 @@ export default function HomePage() {
     savePlan(fresh);
     setPlan(fresh);
     setOnboarding(resetOnboarding());
+    setIsFirstVisit(false);
 
   }
 
@@ -241,6 +244,7 @@ export default function HomePage() {
     savePlan(sample, { action: "reset" });
     setPlan(sample);
     setOnboarding(resetOnboarding());
+    setIsFirstVisit(false);
   }
 
   function handleDismissOnboarding() {
@@ -313,8 +317,18 @@ export default function HomePage() {
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <button onClick={handleStartFresh} className="vn-btn vn-btn-primary text-sm sm:text-xs h-11 sm:h-8 px-4 sm:px-3">Start fresh</button>
-                  <button onClick={handleLoadSampleData} className="vn-btn vn-btn-ghost text-sm sm:text-xs h-11 sm:h-8 px-4 sm:px-3">Load sample data</button>
+                  <button onClick={handleLoadSampleData} className="vn-btn vn-btn-primary text-sm sm:text-xs h-11 sm:h-8 px-4 sm:px-3">
+                    Try demo data
+                    {isFirstVisit ? (
+                      <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wide">Recommended</span>
+                    ) : null}
+                  </button>
+                  <button onClick={handleStartFresh} className="vn-btn vn-btn-ghost text-sm sm:text-xs h-11 sm:h-8 px-4 sm:px-3">
+                    Start fresh
+                  </button>
+                </div>
+                <div className="mt-2 text-xs text-[var(--vn-muted)]">
+                  Explore a prefilled plan to see insights immediately. You can reset to a blank plan anytime.
                 </div>
 
                 <div className="mt-4 space-y-2">

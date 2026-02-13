@@ -199,7 +199,7 @@ function summarizePlanChange(prev: Plan | null, next: Plan) {
       changes.push(`As of date: ${prev.setup.asOfDate} -> ${next.setup.asOfDate}`);
     }
     if (prev.setup.windowDays !== next.setup.windowDays) {
-      changes.push(`Window days: ${prev.setup.windowDays} -> ${next.setup.windowDays}`);
+      changes.push(`Forecast range (days): ${prev.setup.windowDays} -> ${next.setup.windowDays}`);
     }
     if (prev.setup.startingBalance !== next.setup.startingBalance) {
       changes.push(`Starting balance: ${formatCurrency(prev.setup.startingBalance)} -> ${formatCurrency(next.setup.startingBalance)}`);

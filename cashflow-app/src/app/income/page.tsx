@@ -288,7 +288,7 @@ export default function IncomePage() {
               <StatCard
                 label="Upcoming income"
                 value={String(upcoming.length)}
-                hint={`Window ${plan.setup.windowDays} days`}
+                hint={`Next ${plan.setup.windowDays} days`}
               />
             </div>
 

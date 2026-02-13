@@ -446,7 +446,7 @@ export function downloadPlanPdf(plan: Plan, periodId: number) {
     head: [["Key", "Value"]],
     body: [
       ["As of date", plan.setup.asOfDate],
-      ["Window days", String(plan.setup.windowDays)],
+      ["Forecast range (days)", String(plan.setup.windowDays)],
       ["Starting balance", formatMoney(plan.setup.startingBalance)],
       ["Roll forward balance", plan.setup.rollForwardBalance ? "Yes" : "No"],
       ["Expected minimum", formatMoney(plan.setup.expectedMinBalance)],
