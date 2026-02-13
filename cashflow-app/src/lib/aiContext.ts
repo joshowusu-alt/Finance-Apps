@@ -16,6 +16,7 @@ import {
     minPoint,
 } from "@/lib/cashflowEngine";
 import { detectSubscriptions } from "@/lib/subscriptionDetection";
+import { formatMoney } from "@/lib/currency";
 
 // ============================================================================
 // Types
@@ -127,10 +128,6 @@ export interface AIFinancialContext {
 // Utility Functions
 // ============================================================================
 
-function formatCurrency(value: number): string {
-    return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(value);
-}
-
 function toUtcDay(iso: string): number {
     const [y, m, d] = iso.split("-").map(Number);
     return Date.UTC(y, (m ?? 1) - 1, d ?? 1);
@@ -203,13 +200,13 @@ export function generateProactiveInsights(
             if (smartPace.spendingPattern === "front-loaded" && timeProgress < 0.5) {
                 insights.push({
                     type: "success",
-                    message: `Your bills are front-loaded, so spending looks high but you're right on schedule. ${formatCurrency(dailyBudgetAmount)}/day available.`,
+                    message: `Your bills are front-loaded, so spending looks high but you're right on schedule. ${formatMoney(dailyBudgetAmount)}/day available.`,
                     priority: 9,
                 });
             } else {
                 insights.push({
                     type: "success",
-                    message: `On track! You can comfortably spend ${formatCurrency(dailyBudgetAmount)}/day for the next ${daysLeft} days.`,
+                    message: `On track! You can comfortably spend ${formatMoney(dailyBudgetAmount)}/day for the next ${daysLeft} days.`,
                     priority: 9,
                 });
             }
@@ -217,14 +214,14 @@ export function generateProactiveInsights(
             // Truly ahead of schedule - gentle guidance
             insights.push({
                 type: "info",
-                message: `Running ${formatCurrency(Math.abs(smartPace.spending.variance))} ahead of your usual pace. Aim for ${formatCurrency(Math.max(0, dailyBudgetAmount))}/day to stay balanced.`,
+                message: `Running ${formatMoney(Math.abs(smartPace.spending.variance))} ahead of your usual pace. Aim for ${formatMoney(Math.max(0, dailyBudgetAmount))}/day to stay balanced.`,
                 priority: 8,
             });
         } else if (smartPace.spending.status === "behind") {
             // Under budget - positive reinforcement
             insights.push({
                 type: "success",
-                message: `Nice work! ${formatCurrency(Math.abs(smartPace.spending.variance))} under your typical pace — extra cushion to save or enjoy.`,
+                message: `Nice work! ${formatMoney(Math.abs(smartPace.spending.variance))} under your typical pace — extra cushion to save or enjoy.`,
                 priority: 9,
             });
         }
@@ -235,7 +232,7 @@ export function generateProactiveInsights(
             if (spendingPace < timeProgress - 0.1) {
                 insights.push({
                     type: "success",
-                    message: `Spending nicely under pace. ${formatCurrency(dailyBudgetAmount)}/day available.`,
+                    message: `Spending nicely under pace. ${formatMoney(dailyBudgetAmount)}/day available.`,
                     priority: 7,
                 });
             }
@@ -254,7 +251,7 @@ export function generateProactiveInsights(
         const percentOver = top.budgeted > 0 ? Math.round((top.variance / top.budgeted) * 100) : 0;
         insights.push({
             type: "info",
-            message: `${top.category} is ${percentOver}% over (${formatCurrency(top.variance)}) — worth reviewing if this continues.`,
+            message: `${top.category} is ${percentOver}% over (${formatMoney(top.variance)}) — worth reviewing if this continues.`,
             priority: 7,
         });
     }
@@ -263,7 +260,7 @@ export function generateProactiveInsights(
         const top = underspent.sort((a, b) => Math.abs(b.variance) - Math.abs(a.variance))[0];
         insights.push({
             type: "success",
-            message: `${formatCurrency(Math.abs(top.variance))} unused in ${top.category} — could redirect to savings.`,
+            message: `${formatMoney(Math.abs(top.variance))} unused in ${top.category} — could redirect to savings.`,
             priority: 5,
         });
     }
@@ -289,7 +286,7 @@ export function generateProactiveInsights(
             const catchUpAmount = (budgetSavings - actualSavings) / Math.max(1, daysLeft / 7);
             insights.push({
                 type: "info",
-                message: `Savings slightly behind. ${formatCurrency(catchUpAmount)}/week would catch you up.`,
+                message: `Savings slightly behind. ${formatMoney(catchUpAmount)}/week would catch you up.`,
                 priority: 6,
             });
         }
@@ -303,7 +300,7 @@ export function generateProactiveInsights(
         const riskDate = new Date(lowestBalance.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
         insights.push({
             type: "info",
-            message: `Heads up: balance may dip ${formatCurrency(shortfall)} below your buffer around ${riskDate}.`,
+            message: `Heads up: balance may dip ${formatMoney(shortfall)} below your buffer around ${riskDate}.`,
             priority: 8,
         });
     } else if (lowestBalance && insights.length < 4) {
@@ -505,7 +502,7 @@ export function buildAIContext(plan: Plan): AIFinancialContext {
                 status: "ahead",
                 variance,
                 isNormal: false,
-                reason: `£${Math.abs(variance).toFixed(0)} more than scheduled by today`
+                reason: `${formatMoney(Math.abs(variance))} more than scheduled by today`
             };
         } else {
             // Spending less than expected
@@ -513,7 +510,7 @@ export function buildAIContext(plan: Plan): AIFinancialContext {
                 status: "behind",
                 variance,
                 isNormal: true,
-                reason: `£${Math.abs(variance).toFixed(0)} less spent than scheduled`
+                reason: `${formatMoney(Math.abs(variance))} less spent than scheduled`
             };
         }
     }
@@ -606,9 +603,6 @@ export function buildAIContext(plan: Plan): AIFinancialContext {
 // ============================================================================
 
 export function formatContextForPrompt(ctx: AIFinancialContext): string {
-    const formatCurrency = (n: number) =>
-        new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n);
-
     let prompt = `=== FINANCIAL CONTEXT: ${ctx.period.label} ===\n\n`;
 
     // Period info
@@ -617,10 +611,10 @@ export function formatContextForPrompt(ctx: AIFinancialContext): string {
 
     // Budget vs Actuals
     prompt += `BUDGET VS ACTUALS:\n`;
-    prompt += `• Income: ${formatCurrency(ctx.actuals.income.amount)} of ${formatCurrency(ctx.budget.income)} (${ctx.actuals.income.pace.status})\n`;
-    prompt += `• Spending: ${formatCurrency(ctx.actuals.spending.amount)} of ${formatCurrency(ctx.budget.spending)} (${ctx.actuals.spending.pace.status})\n`;
-    prompt += `• Savings: ${formatCurrency(ctx.actuals.savings.amount)} of ${formatCurrency(ctx.budget.savings)} (${ctx.actuals.savings.pace.status})\n`;
-    prompt += `• Current Leftover: ${formatCurrency(ctx.actuals.leftover)}\n\n`;
+    prompt += `• Income: ${formatMoney(ctx.actuals.income.amount)} of ${formatMoney(ctx.budget.income)} (${ctx.actuals.income.pace.status})\n`;
+    prompt += `• Spending: ${formatMoney(ctx.actuals.spending.amount)} of ${formatMoney(ctx.budget.spending)} (${ctx.actuals.spending.pace.status})\n`;
+    prompt += `• Savings: ${formatMoney(ctx.actuals.savings.amount)} of ${formatMoney(ctx.budget.savings)} (${ctx.actuals.savings.pace.status})\n`;
+    prompt += `• Current Leftover: ${formatMoney(ctx.actuals.leftover)}\n\n`;
 
     // Variance summary
     if (ctx.variance.overspentCategories.length > 0) {
@@ -639,15 +633,15 @@ export function formatContextForPrompt(ctx: AIFinancialContext): string {
         .slice(0, 6)
         .forEach(v => {
             const statusIcon = v.status === "over" ? "⚠️" : v.status === "under" ? "✅" : "";
-            prompt += `• ${v.category}: ${formatCurrency(v.actual)} / ${formatCurrency(v.budgeted)} ${statusIcon}\n`;
+            prompt += `• ${v.category}: ${formatMoney(v.actual)} / ${formatMoney(v.budgeted)} ${statusIcon}\n`;
         });
     prompt += `\n`;
 
     // Forecast
     prompt += `FORECAST:\n`;
-    prompt += `• Projected End Balance: ${formatCurrency(ctx.forecast.projectedEndBalance)}\n`;
+    prompt += `• Projected End Balance: ${formatMoney(ctx.forecast.projectedEndBalance)}\n`;
     if (ctx.forecast.lowestBalance) {
-        prompt += `• Lowest Point: ${formatCurrency(ctx.forecast.lowestBalance.amount)} on ${ctx.forecast.lowestBalance.date}\n`;
+        prompt += `• Lowest Point: ${formatMoney(ctx.forecast.lowestBalance.amount)} on ${ctx.forecast.lowestBalance.date}\n`;
     }
     if (ctx.forecast.riskDays > 0) {
         prompt += `• ⚠️ ${ctx.forecast.riskDays} days below safe minimum\n`;
@@ -656,9 +650,9 @@ export function formatContextForPrompt(ctx: AIFinancialContext): string {
 
     // Subscriptions
     if (ctx.subscriptions.detected.length > 0) {
-        prompt += `DETECTED SUBSCRIPTIONS (${formatCurrency(ctx.subscriptions.totalMonthly)}/month total):\n`;
+        prompt += `DETECTED SUBSCRIPTIONS (${formatMoney(ctx.subscriptions.totalMonthly)}/month total):\n`;
         ctx.subscriptions.detected.slice(0, 5).forEach(s => {
-            prompt += `• ${s.name}: ${formatCurrency(s.amount)} (${s.frequency})\n`;
+            prompt += `• ${s.name}: ${formatMoney(s.amount)} (${s.frequency})\n`;
         });
         prompt += `\n`;
     }
@@ -678,7 +672,7 @@ export function formatContextForPrompt(ctx: AIFinancialContext): string {
         prompt += `RECENT TRANSACTIONS:\n`;
         ctx.recentTransactions.slice(0, 5).forEach(t => {
             const typeLabel = t.type === "income" ? "+" : "-";
-            prompt += `• ${t.date}: ${t.label} ${typeLabel}${formatCurrency(t.amount)} (${t.category})\n`;
+            prompt += `• ${t.date}: ${t.label} ${typeLabel}${formatMoney(t.amount)} (${t.category})\n`;
         });
     }
 
