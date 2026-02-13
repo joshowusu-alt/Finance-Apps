@@ -1,14 +1,45 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useState } from "react";
+import { useBranding } from "@/hooks/useBranding";
 
 type Props = { size?: number; showWordmark?: boolean };
 
 export function VelanovoLogo({ size = 36, showWordmark = true }: Props) {
+  const brand = useBranding();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const update = () => {
+      const theme = document.documentElement.getAttribute("data-theme");
+      setIsDark(theme === "dark");
+    };
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+
   const iconSize = size;
+  const logoSrc = isDark ? brand.logoUrlDark || brand.logoUrl : brand.logoUrl;
+
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-      <VelanovoIcon size={iconSize} />
+      {logoSrc ? (
+        <img
+          src={logoSrc}
+          alt={`${brand.name} logo`}
+          style={{
+            width: iconSize,
+            height: iconSize,
+            objectFit: "contain",
+            borderRadius: iconSize * 0.2,
+          }}
+        />
+      ) : (
+        <VelanovoIcon size={iconSize} />
+      )}
       {showWordmark && (
         <div style={{ lineHeight: 1 }}>
           <div
@@ -17,23 +48,25 @@ export function VelanovoLogo({ size = 36, showWordmark = true }: Props) {
               fontWeight: 700,
               letterSpacing: "-0.02em",
               color: "var(--vn-text)",
-              fontFamily: "var(--font-playfair), serif", // Elite Font
+              fontFamily: "var(--font-playfair), serif",
             }}
           >
-            Velanovo
+            {brand.name}
           </div>
-          <div
-            style={{
-              fontSize: Math.round(size * 0.35),
-              color: "var(--vn-muted)",
-              marginTop: 2,
-              fontFamily: "var(--font-inter), sans-serif",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-            }}
-          >
-            Private Wealth
-          </div>
+          {brand.tagline ? (
+            <div
+              style={{
+                fontSize: Math.round(size * 0.35),
+                color: "var(--vn-muted)",
+                marginTop: 2,
+                fontFamily: "var(--font-inter), sans-serif",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
+            >
+              {brand.tagline}
+            </div>
+          ) : null}
         </div>
       )}
     </div>

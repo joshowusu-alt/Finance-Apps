@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useBranding } from "@/hooks/useBranding";
 
 const periods = [
   { label: "Period 1", dates: "29 Nov - 25 Dec", active: false },
@@ -9,6 +10,7 @@ const periods = [
 ];
 
 export function PeriodsStep() {
+  const brand = useBranding();
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -42,7 +44,7 @@ export function PeriodsStep() {
           Your Budget Cycles
         </h2>
         <p className="mt-2 text-sm leading-relaxed max-w-md mx-auto" style={{ color: "var(--vn-muted)" }}>
-          Velanovo organises your finances into <strong style={{ color: "var(--vn-text)" }}>periods</strong> &mdash;
+          {brand.name} organises your finances into <strong style={{ color: "var(--vn-text)" }}>periods</strong> &mdash;
           budget cycles that match your pay schedule. Each period has its own start date, end date, and balance tracking.
         </p>
       </motion.div>

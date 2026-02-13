@@ -4,9 +4,17 @@ import { useEffect, useState } from "react";
 import SidebarNav from "@/components/SidebarNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelector from "@/components/CurrencySelector";
+import { toast } from "@/components/Toast";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import { resetWizard } from "@/lib/onboarding";
+import {
+  BRAND_UPDATED_EVENT,
+  loadBranding,
+  resetBranding,
+  saveBranding,
+  type BrandingSettings,
+} from "@/lib/branding";
 import type { Period, PeriodOverride, PeriodRuleOverride } from "@/data/plan";
 
 export default function SettingsPage() {
@@ -18,6 +26,7 @@ export default function SettingsPage() {
     start: "",
     end: "",
   });
+  const [branding, setBranding] = useState<BrandingSettings>(() => loadBranding());
 
   useEffect(() => {
     const refresh = () => setPlan(loadPlan());
@@ -26,6 +35,16 @@ export default function SettingsPage() {
     return () => {
       window.removeEventListener("focus", refresh);
       window.removeEventListener(PLAN_UPDATED_EVENT, refresh);
+    };
+  }, []);
+
+  useEffect(() => {
+    const refreshBranding = () => setBranding(loadBranding());
+    window.addEventListener("focus", refreshBranding);
+    window.addEventListener(BRAND_UPDATED_EVENT, refreshBranding);
+    return () => {
+      window.removeEventListener("focus", refreshBranding);
+      window.removeEventListener(BRAND_UPDATED_EVENT, refreshBranding);
     };
   }, []);
 
@@ -176,6 +195,17 @@ export default function SettingsPage() {
     setPlan(updated);
   }
 
+  function handleSaveBranding() {
+    saveBranding(branding);
+    toast.success("Branding saved");
+  }
+
+  function handleResetBranding() {
+    const reset = resetBranding();
+    setBranding(reset);
+    toast.info("Branding reset");
+  }
+
   return (
     <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-5 pb-28 pt-6">
@@ -185,7 +215,9 @@ export default function SettingsPage() {
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
               <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Settings</div>
               <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">App Settings</h1>
-              <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">Customize your Velanovo experience</div>
+              <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Customize your {branding.name} experience
+              </div>
             </div>
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
@@ -198,6 +230,103 @@ export default function SettingsPage() {
                   </div>
                   <ThemeToggle />
                 </div>
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Branding & Reports</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                Customize the app name, logo, and report styling for white-label use.
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Brand name
+                  </label>
+                  <input
+                    type="text"
+                    value={branding.name}
+                    onChange={(e) => setBranding({ ...branding, name: e.target.value })}
+                    className="vn-input text-sm"
+                    placeholder="Company name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Tagline
+                  </label>
+                  <input
+                    type="text"
+                    value={branding.tagline ?? ""}
+                    onChange={(e) => setBranding({ ...branding, tagline: e.target.value })}
+                    className="vn-input text-sm"
+                    placeholder="Optional tagline"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Logo URL (light)
+                  </label>
+                  <input
+                    type="url"
+                    value={branding.logoUrl ?? ""}
+                    onChange={(e) => setBranding({ ...branding, logoUrl: e.target.value })}
+                    className="vn-input text-sm"
+                    placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Logo URL (dark)
+                  </label>
+                  <input
+                    type="url"
+                    value={branding.logoUrlDark ?? ""}
+                    onChange={(e) => setBranding({ ...branding, logoUrlDark: e.target.value })}
+                    className="vn-input text-sm"
+                    placeholder="Optional dark variant"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Report accent color
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={branding.reportAccent || "#142732"}
+                      onChange={(e) => setBranding({ ...branding, reportAccent: e.target.value })}
+                      className="h-10 w-12 rounded border border-slate-200 dark:border-slate-700 bg-white"
+                    />
+                    <input
+                      type="text"
+                      value={branding.reportAccent ?? ""}
+                      onChange={(e) => setBranding({ ...branding, reportAccent: e.target.value })}
+                      className="vn-input text-sm flex-1"
+                      placeholder="#142732"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Report footer
+                  </label>
+                  <input
+                    type="text"
+                    value={branding.reportFooter ?? ""}
+                    onChange={(e) => setBranding({ ...branding, reportFooter: e.target.value })}
+                    className="vn-input text-sm"
+                    placeholder="e.g., Prepared for client use"
+                  />
+                </div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button onClick={handleSaveBranding} className="vn-btn vn-btn-primary text-xs px-4 py-2">
+                  Save branding
+                </button>
+                <button onClick={handleResetBranding} className="vn-btn vn-btn-ghost text-xs px-4 py-2">
+                  Reset to default
+                </button>
               </div>
             </div>
 
@@ -472,7 +601,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-300">App Name</span>
-                  <span className="font-medium text-slate-900 dark:text-slate-100">Velanovo</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">{branding.name}</span>
                 </div>
               </div>
               <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--vn-border)" }}>

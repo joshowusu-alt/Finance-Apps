@@ -7,6 +7,7 @@ import ReviewAccessLink from "@/components/ReviewAccessLink";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ToastContainer from "@/components/Toast";
 import ThemeInitializer from "@/components/ThemeInitializer";
+import BrandInitializer from "@/components/BrandInitializer";
 import AIAssistant from "@/components/AIAssistant";
 import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -42,6 +43,7 @@ export default function RootLayout({
           <ConfirmProvider>
           <CloudSync />
           <ThemeInitializer />
+          <BrandInitializer />
           <a href="#main-content" className="skip-link">
             Skip to content
           </a>

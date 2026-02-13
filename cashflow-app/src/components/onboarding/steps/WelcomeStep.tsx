@@ -1,10 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useBranding } from "@/hooks/useBranding";
 
 const SPRING_BOUNCY = { type: "spring" as const, stiffness: 200, damping: 15 };
 
 export function WelcomeStep() {
+  const brand = useBranding();
+  const initial = (brand.name || "V").trim()[0]?.toUpperCase() || "V";
   return (
     <div className="flex flex-col items-center text-center space-y-6 py-4">
       {/* Animated logo mark */}
@@ -18,7 +21,7 @@ export function WelcomeStep() {
         }}
       >
         <span className="text-3xl font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
-          V
+          {initial}
         </span>
       </motion.div>
 
@@ -32,14 +35,16 @@ export function WelcomeStep() {
           className="text-2xl md:text-3xl font-bold"
           style={{ color: "var(--vn-text)", fontFamily: "var(--font-playfair), serif" }}
         >
-          Welcome to Velanovo
+          Welcome to {brand.name}
         </h2>
-        <p
-          className="mt-1 text-xs uppercase tracking-widest font-medium"
-          style={{ color: "var(--vn-muted)" }}
-        >
-          Private Wealth &amp; Cashflow
-        </p>
+        {brand.tagline ? (
+          <p
+            className="mt-1 text-xs uppercase tracking-widest font-medium"
+            style={{ color: "var(--vn-muted)" }}
+          >
+            {brand.tagline}
+          </p>
+        ) : null}
       </motion.div>
 
       {/* Value proposition */}

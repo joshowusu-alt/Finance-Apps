@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { VelanovoLogo } from "@/components/VelanovoLogo";
+import { useBranding } from "@/hooks/useBranding";
 
 type Mode = "signin" | "signup" | "magic";
 
@@ -17,6 +18,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const brand = useBranding();
 
   async function handleEmailAuth(e: React.FormEvent) {
     e.preventDefault();
@@ -107,7 +109,7 @@ export default function AuthPage() {
                 ? "Start tracking your cashflow"
                 : mode === "magic"
                   ? "We'll email you a link to sign in"
-                  : "Sign in to your Velanovo account"}
+                  : `Sign in to your ${brand.name} account`}
             </p>
           </div>
 

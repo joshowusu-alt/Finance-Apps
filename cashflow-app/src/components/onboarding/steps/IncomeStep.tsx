@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useBranding } from "@/hooks/useBranding";
 
 const incomeExamples = [
   { label: "Salary", amount: "3,500", cadence: "Monthly on 26th", delay: 0.3 },
@@ -9,6 +10,7 @@ const incomeExamples = [
 ];
 
 export function IncomeStep() {
+  const brand = useBranding();
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -42,7 +44,7 @@ export function IncomeStep() {
           Money Coming In
         </h2>
         <p className="mt-2 text-sm leading-relaxed max-w-md mx-auto" style={{ color: "var(--vn-muted)" }}>
-          Set up <strong style={{ color: "var(--vn-text)" }}>income rules</strong> to tell Velanovo when you get paid.
+          Set up <strong style={{ color: "var(--vn-text)" }}>income rules</strong> to tell {brand.name} when you get paid.
           Rules can be weekly, biweekly, or monthly.
         </p>
       </motion.div>
@@ -108,7 +110,7 @@ export function IncomeStep() {
         className="rounded-2xl px-4 py-3 text-center text-xs leading-relaxed"
         style={{ background: "var(--vn-bg)", color: "var(--vn-muted)" }}
       >
-        Velanovo uses these rules to forecast your income across every period automatically.
+        {brand.name} uses these rules to forecast your income across every period automatically.
       </motion.div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useBranding } from "@/hooks/useBranding";
 
 const transactions = [
   { label: "Tesco Weekly Shop", amount: "45.60", category: "Allowance", categoryColor: "var(--vn-warning)" },
@@ -9,6 +10,7 @@ const transactions = [
 ];
 
 export function TransactionsStep() {
+  const brand = useBranding();
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -42,7 +44,7 @@ export function TransactionsStep() {
           Track What Actually Happens
         </h2>
         <p className="mt-2 text-sm leading-relaxed max-w-md mx-auto" style={{ color: "var(--vn-muted)" }}>
-          Log real transactions as they occur. Velanovo compares your{" "}
+          Log real transactions as they occur. {brand.name} compares your{" "}
           <strong style={{ color: "var(--vn-text)" }}>actuals against your plan</strong> to show where you really stand.
         </p>
       </motion.div>

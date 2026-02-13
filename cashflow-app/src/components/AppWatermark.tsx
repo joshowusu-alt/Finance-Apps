@@ -1,4 +1,9 @@
+﻿"use client";
+
+import { useBranding } from "@/hooks/useBranding";
+
 export default function AppWatermark() {
+  const brand = useBranding();
   return (
     <div className="app-watermark" aria-hidden="true">
       <svg
@@ -38,7 +43,7 @@ export default function AppWatermark() {
           fontWeight="700"
           letterSpacing="-0.02em"
         >
-          Velanovo
+          {brand.name}
         </text>
       </svg>
     </div>

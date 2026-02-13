@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useBranding } from "@/hooks/useBranding";
 
 export function InsightsStep() {
+  const brand = useBranding();
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -36,7 +38,7 @@ export function InsightsStep() {
           See Your Financial Future
         </h2>
         <p className="mt-2 text-sm leading-relaxed max-w-md mx-auto" style={{ color: "var(--vn-muted)" }}>
-          Velanovo forecasts your balance day by day. See where you might dip below your safe minimum,
+          {brand.name} forecasts your balance day by day. See where you might dip below your safe minimum,
           track spending pace, and get smart alerts.
         </p>
       </motion.div>
