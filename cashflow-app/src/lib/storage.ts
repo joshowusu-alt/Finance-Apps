@@ -739,6 +739,34 @@ export function setMainServerSyncedAt(value: number | null) {
   return value;
 }
 
+// --------------- Data Transfer (clipboard export / import) ---------------
+
+const TRANSFER_EXCLUDE = /_sync_at_|_hash_|_server_|install_prompt_dismissed/;
+
+export function exportAllData(): string {
+  if (typeof window === "undefined") return "{}";
+  const data: Record<string, string> = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key) continue;
+    if (!(key.startsWith("cashflow_") || key.startsWith("velanovo-"))) continue;
+    if (TRANSFER_EXCLUDE.test(key)) continue;
+    data[key] = localStorage.getItem(key) ?? "";
+  }
+  return JSON.stringify(data);
+}
+
+export function importAllData(json: string): number {
+  const data: Record<string, string> = JSON.parse(json);
+  let count = 0;
+  for (const [key, value] of Object.entries(data)) {
+    if (!(key.startsWith("cashflow_") || key.startsWith("velanovo-"))) continue;
+    localStorage.setItem(key, value);
+    count++;
+  }
+  return count;
+}
+
 export function getMainPlanHash() {
   if (typeof window === "undefined") return "";
   return window.localStorage.getItem(scopedKey(MAIN_PLAN_HASH_KEY)) ?? "";

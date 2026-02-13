@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import SidebarNav from "@/components/SidebarNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelector from "@/components/CurrencySelector";
-import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { loadPlan, savePlan, PLAN_UPDATED_EVENT, exportAllData, importAllData } from "@/lib/storage";
+import { showToast } from "@/components/Toast";
 import { formatMoney } from "@/lib/currency";
 import { resetWizard } from "@/lib/onboarding";
 import { loadBranding } from "@/lib/branding";
@@ -465,6 +466,44 @@ export default function SettingsPage() {
                   })}
                 </div>
               )}
+            </div>
+
+            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">Data Transfer</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                Move your data between Safari and the installed app.
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    try {
+                      const json = exportAllData();
+                      await navigator.clipboard.writeText(json);
+                      showToast("Data copied to clipboard", "success");
+                    } catch {
+                      showToast("Failed to copy — check clipboard permissions", "error");
+                    }
+                  }}
+                  className="vn-btn vn-btn-primary text-xs flex-1"
+                >
+                  Copy All Data
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const json = await navigator.clipboard.readText();
+                      const count = importAllData(json);
+                      showToast(`Restored ${count} items — reloading…`, "success");
+                      setTimeout(() => window.location.reload(), 800);
+                    } catch {
+                      showToast("Nothing to paste — copy data first", "error");
+                    }
+                  }}
+                  className="vn-btn vn-btn-ghost text-xs flex-1"
+                >
+                  Paste Data
+                </button>
+              </div>
             </div>
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
