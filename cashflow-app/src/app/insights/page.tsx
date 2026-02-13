@@ -23,6 +23,13 @@ function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`;
 }
 
+function prettyDate(iso?: string | null) {
+  if (!iso) return "";
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+}
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
@@ -159,6 +166,7 @@ export default function InsightsPage() {
   const [plan, setPlan] = useState(() => loadPlan());
   const [basePeriodId, setBasePeriodId] = useState<number>(() => loadPlan().setup.selectedPeriodId);
   const [comparePeriodId, setComparePeriodId] = useState<"auto" | number | null>("auto");
+  const [showFullInsights, setShowFullInsights] = useState(false);
 
   useEffect(() => {
     const refresh = () => setPlan(loadPlan());
@@ -218,6 +226,12 @@ export default function InsightsPage() {
   const spendingPeak = periodHighlights.spendingPeak;
   const bestLeftover = periodHighlights.bestLeftover;
   const worstLeftover = periodHighlights.worstLeftover;
+
+  const paceDelta = spendingProgress - timeProgress;
+  const paceStatus =
+    paceDelta > 0.08 ? "Spending high" : paceDelta < -0.08 ? "Under budget" : "On track";
+  const paceTone =
+    paceDelta > 0.08 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400";
 
   function handleExportInsightsCsv() {
     downloadInsightsCsv(snapshot);
@@ -304,15 +318,61 @@ export default function InsightsPage() {
               </div>
             </header>
 
-            {/* Proactive Insights Panel */}
-            <InsightsPanel />
+            <section className="vn-card p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Quick pulse</div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">Key insights at a glance</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFullInsights((prev) => !prev)}
+                  className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-1.5 text-xs min-h-10 font-semibold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700"
+                  aria-expanded={showFullInsights}
+                >
+                  {showFullInsights ? "Hide details" : "See more"}
+                </button>
+              </div>
+              <div className="mt-4 grid gap-4 md:grid-cols-3">
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">On track</div>
+                  <div className={`mt-2 text-lg font-semibold ${paceTone}`}>{paceStatus}</div>
+                  <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {formatPercent(spendingProgress)} of budget vs {formatPercent(timeProgress)} time
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Lowest point</div>
+                  <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                    {lowestPoint ? formatMoney(lowestPoint.balance) : "N/A"}
+                  </div>
+                  <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {lowestPoint ? `on ${prettyDate(lowestPoint.date)}` : "No forecast yet"}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Risk days</div>
+                  <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                    {riskDays === 0 ? "None" : `${riskDays} day${riskDays === 1 ? "" : "s"}`}
+                  </div>
+                  <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {riskDays === 0 ? "Balance stays above minimum" : `First risk ${prettyDate(firstRisk?.date)}`}
+                  </div>
+                </div>
+              </div>
+            </section>
 
-            <SubscriptionDashboard
-              transactions={plan.transactions}
-              asOfDate={plan.setup.asOfDate}
-            />
+            {showFullInsights && (
+              <>
+                {/* Proactive Insights Panel */}
+                <InsightsPanel />
 
-            <CollapsibleSection title="1) Am I on track?" defaultOpen>
+                <SubscriptionDashboard
+                  transactions={plan.transactions}
+                  asOfDate={plan.setup.asOfDate}
+                />
+
+                <CollapsibleSection title="1) Am I on track?" defaultOpen>
               {/* Budget vs Actual Summary */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                 {([
@@ -798,6 +858,8 @@ export default function InsightsPage() {
                 })}
               </div>
             </CollapsibleSection>
+              </>
+            )}
           </section>
         </div>
       </div>
