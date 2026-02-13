@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, supabaseConfigured } from "@/lib/supabase/client";
 import { VelanovoLogo } from "@/components/VelanovoLogo";
 import { useBranding } from "@/hooks/useBranding";
 
@@ -16,9 +16,19 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [origin, setOrigin] = useState("");
   const router = useRouter();
   const supabase = createClient();
   const brand = useBranding();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setOrigin(window.location.origin);
+  }, []);
+
+  const callbackUrl = origin ? `${origin}/auth/callback` : "/auth/callback";
+  const resetUrl = origin ? `${origin}/auth/reset-password` : "/auth/reset-password";
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 
   async function handleEmailAuth(e: React.FormEvent) {
     e.preventDefault();
@@ -112,6 +122,31 @@ export default function AuthPage() {
                   : `Sign in to your ${brand.name} account`}
             </p>
           </div>
+
+          {!supabaseConfigured ? (
+            <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700">
+              <div className="font-semibold uppercase tracking-wide">Authentication not configured</div>
+              <div className="mt-1 text-rose-700">
+                Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel.
+              </div>
+            </div>
+          ) : (
+            <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600">
+              <div className="font-semibold uppercase tracking-wide text-slate-500">Auth configured</div>
+              <div className="mt-1">
+                Ensure OAuth providers are enabled in Supabase and the redirect URLs include:
+              </div>
+              <div className="mt-2 space-y-1 font-mono text-[11px] text-slate-500">
+                <div>{callbackUrl}</div>
+                <div>{resetUrl}</div>
+              </div>
+              {supabaseUrl ? (
+                <div className="mt-2 text-slate-500">
+                  Provider callback base: {supabaseUrl}/auth/v1/callback
+                </div>
+              ) : null}
+            </div>
+          )}
 
           {/* OAuth buttons */}
           <div className="space-y-3">
