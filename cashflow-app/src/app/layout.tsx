@@ -1,6 +1,6 @@
 import "./globals.css";
 import "../styles/velanovo.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter } from "next/font/google"; // The Elite Fonts
 import BottomNav from "@/components/BottomNav";
 import ReviewAccessLink from "@/components/ReviewAccessLink";
@@ -31,11 +31,14 @@ export const metadata: Metadata = {
   title: "Velanovo",
   description: "Private Wealth & Cashflow",
   manifest: "/manifest.json",
-  themeColor: "#0f172a",
   icons: {
     icon: "/icon-192.png",
     apple: "/apple-touch-icon.png",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({
