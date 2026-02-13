@@ -13,6 +13,7 @@ import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { AuthProvider } from "@/contexts/AuthContext";
 import CloudSync from "@/components/CloudSync";
 import AppWatermark from "@/components/AppWatermark";
+import InstallPrompt from "@/components/InstallPrompt";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -29,6 +30,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Velanovo",
   description: "Private Wealth & Cashflow",
+  manifest: "/manifest.json",
+  themeColor: "#0f172a",
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -57,6 +64,7 @@ export default function RootLayout({
 
           {/* Persistent bottom navigation */}
           <BottomNav />
+          <InstallPrompt />
           <ReviewAccessLink />
           <AIAssistant />
           <ToastContainer />
