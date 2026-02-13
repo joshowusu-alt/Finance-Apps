@@ -33,8 +33,10 @@ export default function InstallPrompt() {
   if (!promptEvent || dismissed) return null;
 
   async function handleInstall() {
-    await promptEvent.prompt();
-    await promptEvent.userChoice;
+    const evt = promptEvent;
+    if (!evt) return;
+    await evt.prompt();
+    await evt.userChoice;
     setPromptEvent(null);
     setDismissed(true);
   }
