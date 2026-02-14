@@ -1,69 +1,24 @@
 import { NextResponse } from "next/server";
-import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
-import { neon } from "@neondatabase/serverless";
-import { createClient } from "@/lib/supabase/server";
+import { getPlaidClient } from "@/lib/plaid";
+import {
+  resolveAuth,
+  fetchPlaidConnections,
+  badRequest,
+  serverError,
+} from "@/lib/apiHelpers";
 
 export const runtime = "nodejs";
-
-function getPlaidClient() {
-  const clientId = process.env.PLAID_CLIENT_ID;
-  const secret = process.env.PLAID_SECRET;
-  const env = process.env.PLAID_ENV || "sandbox";
-
-  if (!clientId || !secret) {
-    throw new Error("Missing Plaid credentials");
-  }
-
-  const configuration = new Configuration({
-    basePath: PlaidEnvironments[env],
-    baseOptions: {
-      headers: {
-        "PLAID-CLIENT-ID": clientId,
-        "PLAID-SECRET": secret,
-      },
-    },
-  });
-
-  return new PlaidApi(configuration);
-}
-
-function getSQL() {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL environment variable is not set");
-  }
-  return neon(databaseUrl);
-}
 
 export async function POST(req: Request) {
   try {
     const { userId } = await req.json();
-    const supabase = await createClient();
-    const user = supabase ? (await supabase.auth.getUser()).data.user : null;
-    const effectiveUserId = user?.id ?? userId;
+    const auth = await resolveAuth(userId);
 
-    if (!effectiveUserId) {
-      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+    if (!auth) {
+      return badRequest("Missing userId");
     }
 
-    let connections: Array<{ access_token: string; item_id: string }> = [];
-
-    if (user && supabase) {
-      const { data } = await supabase
-        .from("plaid_connections")
-        .select("access_token, item_id")
-        .eq("user_id", effectiveUserId);
-      connections = (data ?? []) as Array<{ access_token: string; item_id: string }>;
-    } else {
-      // Get all access tokens for this user (fallback: main token / Neon)
-      const sql = getSQL();
-      connections = (await sql`
-        SELECT access_token, item_id
-        FROM plaid_connections
-        WHERE user_id = ${effectiveUserId}
-      `) as Array<{ access_token: string; item_id: string }>;
-    }
-
+    const connections = await fetchPlaidConnections(auth);
     if (connections.length === 0) {
       return NextResponse.json({ accounts: [] });
     }
@@ -71,7 +26,6 @@ export async function POST(req: Request) {
     const client = getPlaidClient();
     const allAccounts = [];
 
-    // Fetch accounts for each connected item
     for (const connection of connections) {
       try {
         const response = await client.accountsBalanceGet({
@@ -91,7 +45,7 @@ export async function POST(req: Request) {
             limit: account.balances.limit,
             currency: account.balances.iso_currency_code || "GBP",
           },
-          mask: account.mask, // Last 4 digits
+          mask: account.mask,
         }));
 
         allAccounts.push(...accounts);
@@ -103,9 +57,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ accounts: allAccounts });
   } catch (error: any) {
     console.error("Error fetching accounts:", error.response?.data || error.message);
-    return NextResponse.json(
-      { error: "Failed to fetch accounts", details: error.message },
-      { status: 500 }
-    );
+    return serverError("Failed to fetch accounts", error.message);
   }
 }

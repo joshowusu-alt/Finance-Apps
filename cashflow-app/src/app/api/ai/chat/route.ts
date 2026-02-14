@@ -1,113 +1,77 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { MAIN_COOKIE_NAME, ensureMainPlan } from "@/lib/mainStore";
+import {
+  resolveAuthWithCookie,
+  loadActivePlan,
+  badRequest,
+  unauthorized,
+  serverError,
+} from "@/lib/apiHelpers";
 import { buildAIContext, formatContextForPrompt } from "@/lib/aiContext";
-import type { Plan } from "@/data/plan";
-import { createClient } from "@/lib/supabase/server";
+import { PLAN } from "@/data/plan";
 
 export const runtime = "nodejs";
 
 // Simple in-memory rate limiting
 const rateLimits = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 20; // requests per window
-const RATE_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT = 20;
+const RATE_WINDOW = 60 * 1000;
 
 function checkRateLimit(identifier: string): boolean {
-    const now = Date.now();
-    const limit = rateLimits.get(identifier);
+  const now = Date.now();
+  const limit = rateLimits.get(identifier);
 
-    if (!limit || now > limit.resetTime) {
-        rateLimits.set(identifier, { count: 1, resetTime: now + RATE_WINDOW });
-        return true;
-    }
-
-    if (limit.count >= RATE_LIMIT) {
-        return false;
-    }
-
-    limit.count++;
+  if (!limit || now > limit.resetTime) {
+    rateLimits.set(identifier, { count: 1, resetTime: now + RATE_WINDOW });
     return true;
+  }
+
+  if (limit.count >= RATE_LIMIT) return false;
+  limit.count++;
+  return true;
 }
 
 export async function POST(req: Request) {
-    try {
-        const { message, financialContext } = await req.json();
+  try {
+    const { message, financialContext } = await req.json();
 
-        if (!message || typeof message !== "string") {
-            return NextResponse.json({ error: "Message is required" }, { status: 400 });
-        }
+    if (!message || typeof message !== "string") {
+      return badRequest("Message is required");
+    }
 
-        // Determine rate-limit identifier from auth or IP
-        let rateIdentifier = "";
-        let contextString = typeof financialContext === "string" ? financialContext : "";
+    let contextString =
+      typeof financialContext === "string" ? financialContext : "";
+    let rateIdentifier = "";
 
-        // If client didn't send context, fall back to server-side plan fetch
-        if (!contextString) {
-            const supabase = await createClient();
-            const user = supabase ? (await supabase.auth.getUser()).data.user : null;
-            let plan: Plan | null = null;
+    // If client didn't send context, load plan server-side
+    if (!contextString) {
+      const auth = await resolveAuthWithCookie();
+      if (!auth) return unauthorized();
 
-            if (user && supabase) {
-                const { data: scenarioRow } = await supabase
-                    .from("user_scenarios")
-                    .select("scenario_id")
-                    .eq("user_id", user.id)
-                    .eq("active", true)
-                    .maybeSingle();
-                const scenarioId = scenarioRow?.scenario_id ?? "default";
+      rateIdentifier = auth.userId;
+      const { plan } = await loadActivePlan(auth, PLAN);
+      const aiContext = buildAIContext(plan);
+      contextString = formatContextForPrompt(aiContext);
+    }
 
-                const { data: planRow } = await supabase
-                    .from("user_plans")
-                    .select("plan_json")
-                    .eq("user_id", user.id)
-                    .eq("scenario_id", scenarioId)
-                    .maybeSingle();
+    // Fallback rate identifier from IP
+    if (!rateIdentifier) {
+      const forwarded = req.headers.get("x-forwarded-for");
+      rateIdentifier = forwarded?.split(",")[0]?.trim() || "anonymous";
+    }
 
-                if (planRow?.plan_json) {
-                    plan = typeof planRow.plan_json === "string"
-                        ? (JSON.parse(planRow.plan_json) as Plan)
-                        : (planRow.plan_json as Plan);
-                }
-                rateIdentifier = user.id;
-            }
+    if (!checkRateLimit(rateIdentifier)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a moment." },
+        { status: 429 },
+      );
+    }
 
-            if (!plan) {
-                const cookieStore = await cookies();
-                const token = cookieStore.get(MAIN_COOKIE_NAME)?.value;
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ noApiKey: true, source: "local" });
+    }
 
-                if (!token) {
-                    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-                }
-
-                if (!rateIdentifier) rateIdentifier = token;
-                const main = await ensureMainPlan(token);
-                plan = main.plan;
-            }
-
-            const aiContext = buildAIContext(plan);
-            contextString = formatContextForPrompt(aiContext);
-        }
-
-        // Fallback rate identifier from IP
-        if (!rateIdentifier) {
-            const forwarded = req.headers.get("x-forwarded-for");
-            rateIdentifier = forwarded?.split(",")[0]?.trim() || "anonymous";
-        }
-
-        if (!checkRateLimit(rateIdentifier)) {
-            return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
-        }
-
-        // Check for OpenAI API key
-        const apiKey = process.env.OPENAI_API_KEY;
-
-        if (!apiKey) {
-            // Tell client to generate its own fallback locally
-            return NextResponse.json({ noApiKey: true, source: "local" });
-        }
-
-        // Enhanced system prompt — conversational, warm, data-driven
-        const systemPrompt = `You are a sharp, friendly financial coach inside Velanovo, a personal cashflow app. You speak like a knowledgeable friend — warm but honest, encouraging but real.
+    const systemPrompt = `You are a sharp, friendly financial coach inside Velanovo, a personal cashflow app. You speak like a knowledgeable friend — warm but honest, encouraging but real.
 
 VOICE & TONE:
 - Conversational and warm, never robotic or clinical
@@ -136,42 +100,39 @@ FORMATTING:
 USER'S FINANCIAL DATA:
 ${contextString}`;
 
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: message }
-                ],
-                max_tokens: 500,
-                temperature: 0.7,
-            }),
-        });
+    const response = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: message },
+          ],
+          max_tokens: 500,
+          temperature: 0.7,
+        }),
+      },
+    );
 
-        if (!response.ok) {
-            console.error("OpenAI API error:", await response.json());
-            // Tell client to generate fallback locally
-            return NextResponse.json({ noApiKey: true, source: "local" });
-        }
-
-        const data = await response.json();
-        const aiResponse = data.choices?.[0]?.message?.content || "I couldn't generate a response. Please try again.";
-
-        return NextResponse.json({
-            response: aiResponse,
-            source: "openai"
-        });
-
-    } catch (error) {
-        console.error("AI Assistant error:", error);
-        return NextResponse.json(
-            { error: "Failed to process request" },
-            { status: 500 }
-        );
+    if (!response.ok) {
+      console.error("OpenAI API error:", await response.json());
+      return NextResponse.json({ noApiKey: true, source: "local" });
     }
+
+    const data = await response.json();
+    const aiResponse =
+      data.choices?.[0]?.message?.content ||
+      "I couldn't generate a response. Please try again.";
+
+    return NextResponse.json({ response: aiResponse, source: "openai" });
+  } catch (error) {
+    console.error("AI Assistant error:", error);
+    return serverError("Failed to process request");
+  }
 }

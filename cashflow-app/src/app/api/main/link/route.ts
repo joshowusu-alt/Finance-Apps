@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import os from "os";
 import { ensureMainPlan, MAIN_COOKIE_MAX_AGE, MAIN_COOKIE_NAME } from "@/lib/mainStore";
+import { setAuthCookie } from "@/lib/apiHelpers";
 
 export const runtime = "nodejs";
 
@@ -72,14 +73,6 @@ export async function POST() {
   const localUrl = publicUrl ? null : getLanUrl();
 
   const response = NextResponse.json({ token, publicUrl, localUrl });
-  response.cookies.set({
-    name: MAIN_COOKIE_NAME,
-    value: token,
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: MAIN_COOKIE_MAX_AGE,
-    path: "/",
-  });
+  setAuthCookie(response, MAIN_COOKIE_NAME, token, MAIN_COOKIE_MAX_AGE);
   return response;
 }
