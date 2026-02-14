@@ -2,6 +2,9 @@ import type { Plan, CashflowEvent, Transaction } from "@/data/plan";
 import { buildTimeline, generateEvents, getPeriod, getStartingBalance } from "@/lib/cashflowEngine";
 import { getStorageScope } from "@/lib/storage";
 import { touchPreferencesUpdatedAt } from "@/lib/preferencesSync";
+import { normalizeText } from "@/lib/textUtils";
+import { formatMoney } from "@/lib/currency";
+import { toUtcDay, addDaysISO, dayDiff } from "@/lib/dateUtils";
 
 export const ALERT_PREFS_UPDATED_EVENT = "cashflow:alerts-updated";
 
@@ -50,31 +53,7 @@ function dispatchBrowserEvent(name: string) {
   window.dispatchEvent(new Event(name));
 }
 
-function toUtcDay(iso: string) {
-  const [y, m, d] = iso.split("-").map(Number);
-  return Date.UTC(y, (m ?? 1) - 1, d ?? 1);
-}
 
-function addDaysISO(iso: string, days: number) {
-  const date = new Date(toUtcDay(iso));
-  date.setUTCDate(date.getUTCDate() + days);
-  const yyyy = date.getUTCFullYear();
-  const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(date.getUTCDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function dayDiff(a: string, b: string) {
-  return Math.round((toUtcDay(b) - toUtcDay(a)) / (1000 * 60 * 60 * 24));
-}
-
-function normalizeText(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(value || 0);
-}
 
 function matchesIncomeEvent(event: CashflowEvent, txn: Transaction, graceDays: number) {
   if (txn.type !== "income") return false;
@@ -139,7 +118,7 @@ export function getAlerts(plan: Plan, periodId: number, prefs: AlertPreferences)
       alerts.push({
         id: "low-balance",
         title: "Low balance risk",
-        description: `${riskRows.length} day(s) fall below ${formatCurrency(
+        description: `${riskRows.length} day(s) fall below ${formatMoney(
           plan.setup.expectedMinBalance
         )}, first on ${first.date}.`,
         tone: "warning",
@@ -163,7 +142,7 @@ export function getAlerts(plan: Plan, periodId: number, prefs: AlertPreferences)
       .slice(0, 3);
 
     if (upcoming.length) {
-      const list = upcoming.map((event) => `${event.label} ${formatCurrency(event.amount)}`);
+      const list = upcoming.map((event) => `${event.label} ${formatMoney(event.amount)}`);
       alerts.push({
         id: "large-bills",
         title: "Upcoming large bills",

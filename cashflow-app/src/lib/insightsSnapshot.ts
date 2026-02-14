@@ -11,7 +11,9 @@ import {
 } from "@/lib/cashflowEngine";
 import { suggestBillId } from "@/lib/billLinking";
 import { formatMoney } from "@/lib/currency";
+import { normalizeText, splitTokens } from "@/lib/textUtils";
 import type { CashflowCategory, Plan, Transaction } from "@/data/plan";
+import { toUtcDay, dayDiff, clamp, average, stdDev } from "@/lib/dateUtils";
 
 export type PeriodStats = {
   period: ReturnType<typeof getPeriod>;
@@ -131,45 +133,6 @@ export type InsightsSnapshot = {
   periodTrendData: SpendingDataPoint[];
   periodHighlights: PeriodHighlights;
 };
-
-function toUtcDay(iso: string) {
-  const [y, m, d] = iso.split("-").map(Number);
-  return Date.UTC(y, (m ?? 1) - 1, d ?? 1);
-}
-
-function dayDiff(startISO: string, endISO: string) {
-  const ms = toUtcDay(endISO) - toUtcDay(startISO);
-  return Math.floor(ms / (1000 * 60 * 60 * 24));
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
-}
-
-function average(values: number[]) {
-  if (values.length === 0) return 0;
-  const total = values.reduce((sum, v) => sum + v, 0);
-  return total / values.length;
-}
-
-function stdDev(values: number[]) {
-  if (values.length <= 1) return 0;
-  const mean = average(values);
-  const variance =
-    values.reduce((sum, v) => sum + (v - mean) * (v - mean), 0) / values.length;
-  return Math.sqrt(variance);
-}
-
-function normalizeText(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-}
-
-function splitTokens(value: string) {
-  return normalizeText(value)
-    .split(" ")
-    .map((token) => token.trim())
-    .filter((token) => token.length > 0);
-}
 
 const incomeStopWords = new Set(["income", "salary", "pay", "payment", "wage"]);
 
@@ -448,9 +411,9 @@ export function buildInsightsSnapshot(
     );
     const compareMap = compareStats
       ? mapTotalsByLabel(
-          compareStats.transactions,
-          (t) => t.type === "outflow" && t.category !== "savings"
-        )
+        compareStats.transactions,
+        (t) => t.type === "outflow" && t.category !== "savings"
+      )
       : new Map<string, number>();
 
     return Array.from(baseMap.entries())

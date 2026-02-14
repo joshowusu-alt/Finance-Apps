@@ -1,74 +1,22 @@
-import { createHash, randomBytes } from "crypto";
-import { neon } from "@neondatabase/serverless";
-import { PLAN, Plan } from "@/data/plan";
+import { getSQL } from "@/lib/db";
+import { Plan } from "@/data/plan";
+import {
+  hashToken,
+  generateToken,
+  createBlankPlan,
+  parsePlan,
+  pruneExpired,
+} from "@/lib/tokenPlanBase";
 
-const TOKEN_BYTES = 32;
 const RETENTION_MS = 1000 * 60 * 60 * 24 * 365;
 
 export const MAIN_COOKIE_NAME = "cf_main_token";
 export const MAIN_COOKIE_MAX_AGE = Math.floor(RETENTION_MS / 1000);
 
-// Get SQL client
-function getSQL() {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL environment variable is not set");
-  }
-  return neon(databaseUrl);
-}
-
-function todayISO() {
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function createMainPlan(): Plan {
-  return {
-    ...PLAN,
-    setup: { ...PLAN.setup, asOfDate: todayISO() },
-    incomeRules: [],
-    outflowRules: [],
-    bills: [],
-    periodOverrides: [],
-    eventOverrides: [],
-    overrides: [],
-    transactions: [],
-  };
-}
-
-function hashToken(token: string) {
-  return createHash("sha256").update(token).digest("hex");
-}
-
-function generateToken() {
-  return randomBytes(TOKEN_BYTES).toString("base64url");
-}
-
-async function pruneExpired(now = new Date()) {
-  const sql = getSQL();
-  const cutoff = new Date(now.getTime() - RETENTION_MS);
-  await sql`DELETE FROM main_plans WHERE last_seen_at < ${cutoff}`;
-}
-
-function parsePlan(raw: any): Plan {
-  try {
-    // Handle both JSONB (object) and TEXT (string) from Postgres
-    if (typeof raw === "string") {
-      return JSON.parse(raw) as Plan;
-    }
-    return raw as Plan;
-  } catch {
-    return createMainPlan();
-  }
-}
-
 export async function ensureMainPlan(token?: string) {
   const sql = getSQL();
   const now = new Date();
-  await pruneExpired(now);
+  await pruneExpired("main_plans", RETENTION_MS, now);
 
   let activeToken = token?.trim();
   if (!activeToken) activeToken = generateToken();
@@ -82,7 +30,7 @@ export async function ensureMainPlan(token?: string) {
   `;
 
   if (result.length === 0) {
-    const plan = createMainPlan();
+    const plan = createBlankPlan();
     await sql`
       INSERT INTO main_plans
       (token_hash, plan_json, prev_plan_json, created_at, updated_at, last_seen_at)
@@ -177,7 +125,7 @@ export async function saveMainPlan(token: string, plan: Plan, prevPlan?: Plan | 
 }
 
 export async function resetMainPlan(token: string) {
-  const plan = createMainPlan();
+  const plan = createBlankPlan();
   await saveMainPlan(token, plan);
   return plan;
 }

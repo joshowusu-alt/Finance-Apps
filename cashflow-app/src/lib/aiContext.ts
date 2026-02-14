@@ -17,6 +17,7 @@ import {
 } from "@/lib/cashflowEngine";
 import { detectSubscriptions } from "@/lib/subscriptionDetection";
 import { formatMoney } from "@/lib/currency";
+import { toUtcDay, dayDiff, clamp } from "@/lib/dateUtils";
 
 // ============================================================================
 // Types
@@ -122,24 +123,6 @@ export interface AIFinancialContext {
         category: string;
         type: string;
     }>;
-}
-
-// ============================================================================
-// Utility Functions
-// ============================================================================
-
-function toUtcDay(iso: string): number {
-    const [y, m, d] = iso.split("-").map(Number);
-    return Date.UTC(y, (m ?? 1) - 1, d ?? 1);
-}
-
-function dayDiff(startISO: string, endISO: string): number {
-    const ms = toUtcDay(endISO) - toUtcDay(startISO);
-    return Math.floor(ms / (1000 * 60 * 60 * 24));
-}
-
-function clamp(value: number, min: number, max: number): number {
-    return Math.min(max, Math.max(min, value));
 }
 
 // ============================================================================
