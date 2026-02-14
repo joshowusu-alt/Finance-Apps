@@ -4,8 +4,15 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { StepIndicator } from "./onboarding/StepIndicator";
 import { completeWizard } from "@/lib/onboarding";
-import { DEFAULT_PERIODS, PLAN_VERSION } from "@/data/plan";
-import type { Plan, BillTemplate, IncomeRule } from "@/data/plan";
+import { PLAN_VERSION, generatePeriods, fmtLabel } from "@/data/plan";
+import type { Plan, BillTemplate, IncomeRule, PeriodCadence } from "@/data/plan";
+import {
+  COUNTRIES,
+  CURRENCIES,
+  getCountry,
+  setCountry as persistCountry,
+  type CountryCode,
+} from "@/lib/currency";
 
 type QuickSetupProps = {
   onComplete: (plan: Plan) => void;
@@ -26,31 +33,46 @@ const DEFAULT_BILLS: BillTemplate[] = [
   { id: "internet", label: "Internet", amount: 35, dueDay: 15, category: "bill", enabled: true },
 ];
 
+const POPULAR_COUNTRIES: CountryCode[] = ["US", "GB", "CA", "AU", "IN", "DE", "NG", "GH", "ZA", "FR", "NZ", "KE"];
+
 export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  // Q1: Income
+  // Q0: Country
+  const [country, setCountry] = useState<CountryCode>(() => getCountry());
+  const [showAllCountries, setShowAllCountries] = useState(false);
+  const currencySymbol = CURRENCIES[COUNTRIES[country]?.currency ?? "USD"]?.symbol ?? "$";
+
+  // Q1: Pay cycle
+  const [periodCadence, setPeriodCadence] = useState<PeriodCadence>("monthly");
+  const [periodStartDay, setPeriodStartDay] = useState<number>(1);
+
+  // Q2: Income
   const [income, setIncome] = useState("");
   const incomeRef = useRef<HTMLInputElement>(null);
 
-  // Q2: Bills
+  // Q3: Bills
   const [hasBills, setHasBills] = useState<boolean | null>(null);
 
-  // Q3: Mode
+  // Q4: Mode
   const [mode, setMode] = useState<"forecast" | "track" | null>(null);
 
-  // Auto-focus income input on step 0
+  // Auto-focus income input on step 2
   useEffect(() => {
-    if (step === 0) {
+    if (step === 2) {
       setTimeout(() => incomeRef.current?.focus(), 400);
     }
   }, [step]);
 
   const goNext = useCallback(() => {
+    // When leaving country step, persist the choice
+    if (step === 0) {
+      persistCountry(country); // also sets currency
+    }
     setDirection(1);
-    setStep((s) => Math.min(s + 1, 2));
-  }, []);
+    setStep((s) => Math.min(s + 1, 4));
+  }, [step, country]);
 
   const goBack = useCallback(() => {
     setDirection(-1);
@@ -58,9 +80,11 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
   }, []);
 
   const canAdvance =
-    (step === 0 && Number(income) > 0) ||
-    (step === 1 && hasBills !== null) ||
-    (step === 2 && mode !== null);
+    (step === 0 && country in COUNTRIES) ||
+    (step === 1) || // pay cycle always valid (has defaults)
+    (step === 2 && Number(income) > 0) ||
+    (step === 3 && hasBills !== null) ||
+    (step === 4 && mode !== null);
 
   function handleFinish() {
     const today = new Date().toISOString().split("T")[0];
@@ -77,6 +101,14 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
 
     const bills: BillTemplate[] = hasBills ? DEFAULT_BILLS : [];
 
+    // Build periods from the user's chosen start day and cadence
+    const now = new Date();
+    const periodStart = new Date(now.getFullYear(), now.getMonth(), periodStartDay);
+    // If the chosen day already passed this month, use it — it's still this month's period
+    const periodStartStr = periodStart.toISOString().split("T")[0];
+    const periodCount = periodCadence === "weekly" ? 26 : periodCadence === "biweekly" ? 13 : 12;
+    const periods = generatePeriods(periodStartStr, periodCadence, periodCount);
+
     const plan: Plan = {
       version: PLAN_VERSION,
       setup: {
@@ -89,7 +121,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
         expectedMinBalance: 0,
         variableCap: 0,
       },
-      periods: DEFAULT_PERIODS,
+      periods,
       incomeRules: [incomeRule],
       outflowRules: [],
       periodRuleOverrides: [],
@@ -136,7 +168,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
             className="flex items-center justify-between px-6 py-4 shrink-0"
             style={{ borderBottom: "1px solid var(--vn-border)" }}
           >
-            <StepIndicator totalSteps={3} currentStep={step} />
+            <StepIndicator totalSteps={5} currentStep={step} />
             <span className="text-xs text-[var(--vn-muted)]">Quick Setup</span>
           </div>
 
@@ -145,15 +177,163 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div key={step} custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit">
 
-                {/* Step 1: Income */}
+                {/* Step 0: Country */}
                 {step === 0 && (
+                  <div className="space-y-5">
+                    <div>
+                      <h2 className="text-xl font-bold text-[var(--vn-text)]">Where are you based?</h2>
+                      <p className="mt-2 text-sm text-[var(--vn-muted)]">This sets your currency and number format automatically.</p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {POPULAR_COUNTRIES.map((code) => {
+                        const c = COUNTRIES[code];
+                        return (
+                          <button
+                            key={code}
+                            onClick={() => setCountry(code)}
+                            className={`rounded-xl px-3 py-3 text-left transition-all border-2 ${
+                              country === code
+                                ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10"
+                                : "border-[var(--vn-border)] hover:border-[var(--vn-primary)]/50"
+                            }`}
+                          >
+                            <span className="text-xl">{c.flag}</span>
+                            <div className="text-xs font-medium text-[var(--vn-text)] mt-1 truncate">{c.name}</div>
+                            <div className="text-[10px] text-[var(--vn-muted)]">{CURRENCIES[c.currency].symbol} {c.currency}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!showAllCountries ? (
+                      <button
+                        onClick={() => setShowAllCountries(true)}
+                        className="text-xs text-[var(--vn-primary)] hover:underline"
+                      >
+                        Show all countries
+                      </button>
+                    ) : (
+                      <select
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                        className="w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-primary)]"
+                      >
+                        {Object.entries(COUNTRIES).map(([code, c]) => (
+                          <option key={code} value={code}>
+                            {c.flag} {c.name} ({CURRENCIES[c.currency].symbol} {c.currency})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    {country in COUNTRIES && (
+                      <div className="flex items-center gap-2 rounded-lg bg-[var(--vn-primary)]/5 px-3 py-2 text-sm">
+                        <span className="text-lg">{COUNTRIES[country].flag}</span>
+                        <span className="font-medium text-[var(--vn-text)]">
+                          {CURRENCIES[COUNTRIES[country].currency].symbol} {CURRENCIES[COUNTRIES[country].currency].name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Step 1: Pay cycle */}
+                {step === 1 && (
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-[var(--vn-text)]">When does your pay cycle start?</h2>
+                      <p className="mt-2 text-sm text-[var(--vn-muted)]">We&apos;ll build budget periods around your pay dates.</p>
+                    </div>
+
+                    {/* Cadence picker */}
+                    <div>
+                      <label className="block text-xs font-semibold text-[var(--vn-muted)] mb-2 uppercase tracking-wider">How often are you paid?</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {(["monthly", "biweekly", "weekly"] as PeriodCadence[]).map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => setPeriodCadence(c)}
+                            className={`rounded-xl px-3 py-3 text-sm font-medium transition-all border-2 ${
+                              periodCadence === c
+                                ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10"
+                                : "border-[var(--vn-border)] hover:border-[var(--vn-primary)]/50"
+                            }`}
+                          >
+                            {c === "monthly" ? "Monthly" : c === "biweekly" ? "Every 2 weeks" : "Weekly"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Start day picker */}
+                    <div>
+                      <label className="block text-xs font-semibold text-[var(--vn-muted)] mb-2 uppercase tracking-wider">
+                        {periodCadence === "monthly" ? "What day of the month do you get paid?" : "What date did your last pay land?"}
+                      </label>
+                      {periodCadence === "monthly" ? (
+                        <div className="grid grid-cols-7 gap-1">
+                          {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                            <button
+                              key={day}
+                              onClick={() => setPeriodStartDay(day)}
+                              className={`rounded-lg py-2 text-sm font-medium transition-all ${
+                                periodStartDay === day
+                                  ? "bg-[var(--vn-primary)] text-white shadow-sm"
+                                  : "hover:bg-[var(--vn-primary)]/10 text-[var(--vn-text)]"
+                              }`}
+                            >
+                              {day}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          type="date"
+                          value={(() => {
+                            const now = new Date();
+                            const d = new Date(now.getFullYear(), now.getMonth(), periodStartDay);
+                            return d.toISOString().split("T")[0];
+                          })()}
+                          onChange={(e) => {
+                            const d = new Date(e.target.value + "T00:00:00");
+                            if (!isNaN(d.getTime())) setPeriodStartDay(d.getDate());
+                          }}
+                          className="vn-input text-sm"
+                        />
+                      )}
+                    </div>
+
+                    {/* Preview */}
+                    <div className="rounded-lg bg-[var(--vn-primary)]/5 px-4 py-3">
+                      <div className="text-xs font-semibold text-[var(--vn-muted)] mb-1">Your first period will be</div>
+                      <div className="text-sm font-bold text-[var(--vn-text)]">
+                        {(() => {
+                          const now = new Date();
+                          const start = new Date(now.getFullYear(), now.getMonth(), periodStartDay);
+                          const startStr = start.toISOString().split("T")[0];
+                          const preview = generatePeriods(startStr, periodCadence, 1)[0];
+                          if (!preview) return "—";
+                          const s = new Date(preview.start + "T00:00:00");
+                          const e = new Date(preview.end + "T00:00:00");
+                          return `${fmtLabel(s)} → ${fmtLabel(e)}`;
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Income */}
+                {step === 2 && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-xl font-bold text-[var(--vn-text)]">What&apos;s your monthly take-home pay?</h2>
                       <p className="mt-2 text-sm text-[var(--vn-muted)]">After tax, what lands in your account each month?</p>
                     </div>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-[var(--vn-muted)]">&pound;</span>
+                      <span
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold pointer-events-none"
+                        style={{ zIndex: 1, color: "var(--vn-text)" }}
+                      >
+                        {currencySymbol}
+                      </span>
                       <input
                         ref={incomeRef}
                         type="number"
@@ -162,14 +342,15 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                         onChange={(e) => setIncome(e.target.value)}
                         onKeyDown={(e) => { if (e.key === "Enter" && Number(income) > 0) goNext(); }}
                         placeholder="0"
-                        className="vn-input text-2xl font-bold pl-10 h-16"
+                        className="vn-input text-2xl font-bold"
+                        style={{ paddingLeft: "3rem", height: "4rem" }}
                       />
                     </div>
                   </div>
                 )}
 
-                {/* Step 2: Bills */}
-                {step === 1 && (
+                {/* Step 3: Bills */}
+                {step === 3 && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-xl font-bold text-[var(--vn-text)]">Do you have fixed monthly bills?</h2>
@@ -202,8 +383,8 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                   </div>
                 )}
 
-                {/* Step 3: Mode */}
-                {step === 2 && (
+                {/* Step 4: Mode */}
+                {step === 4 && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-xl font-bold text-[var(--vn-text)]">How do you want to use the app?</h2>
@@ -253,7 +434,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
               Back
             </button>
 
-            {step < 2 ? (
+            {step < 4 ? (
               <motion.button
                 onClick={goNext}
                 disabled={!canAdvance}
