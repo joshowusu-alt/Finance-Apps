@@ -5,59 +5,11 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { getActiveScenarioUpdatedAt, loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { generateEvents, getPeriod, getUpcomingEvents } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
+import { formatMoney } from "@/lib/currency";
+import { prettyDate, formatUpdatedAt, formatVariance } from "@/lib/formatUtils";
+import { splitTokens, matchesTokens } from "@/lib/textUtils";
+import { SimpleStatCard as StatCard } from "@/components/Card";
 import type { Transaction, IncomeRule, Recurrence } from "@/data/plan";
-
-function gbp(n: number) {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    maximumFractionDigits: 2,
-  }).format(n || 0);
-}
-
-function prettyDate(iso: string) {
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
-}
-
-function formatUpdatedAt(value: string) {
-  if (!value) return "";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function normalizeText(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-}
-
-function splitTokens(value: string) {
-  return normalizeText(value)
-    .split(" ")
-    .map((token) => token.trim())
-    .filter((token) => token.length > 0);
-}
-
-function matchesTokens(hay: string, tokens: string[]) {
-  const normalized = normalizeText(hay);
-  if (!normalized) return false;
-  const wordSet = new Set(splitTokens(normalized));
-  for (const token of tokens) {
-    if (!token) continue;
-    if (token.length <= 2) {
-      if (wordSet.has(token)) return true;
-    } else if (normalized.includes(token)) {
-      return true;
-    }
-  }
-  return false;
-}
 
 const incomeStopWords = new Set(["income", "salary", "pay", "payment", "wage"]);
 
@@ -72,33 +24,6 @@ function matchRule(txn: Transaction, label: string, id: string) {
     )
   );
   return matchesTokens(`${txn.label} ${txn.notes ?? ""}`, tokens);
-}
-
-function formatVariance(value: number, isPositiveGood: boolean) {
-  if (value === 0) {
-    return { label: "0", tone: "text-slate-500 dark:text-slate-400" };
-  }
-  const sign = value > 0 ? "+" : "-";
-  const abs = Math.abs(value);
-  const tone =
-    value > 0
-      ? isPositiveGood
-        ? "text-green-600"
-        : "text-rose-600"
-      : isPositiveGood
-        ? "text-rose-600"
-        : "text-green-600";
-  return { label: `${sign}${gbp(abs)}`, tone };
-}
-
-function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <div className="vn-card p-6">
-      <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
-    </div>
-  );
 }
 
 export default function IncomePage() {
@@ -279,10 +204,10 @@ export default function IncomePage() {
             </header>
 
             <div className="grid gap-6 md:grid-cols-3">
-              <StatCard label="Budgeted income" value={gbp(budgetedIncome)} />
+              <StatCard label="Budgeted income" value={formatMoney(budgetedIncome)} />
               <StatCard
                 label="Actual income"
-                value={gbp(actualIncome)}
+                value={formatMoney(actualIncome)}
                 hint={`Period ${period.start} to ${period.end}`}
               />
               <StatCard
@@ -310,9 +235,8 @@ export default function IncomePage() {
                     plan.incomeRules.map((rule) => (
                       <div
                         key={rule.id}
-                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${
-                          rule.enabled ? "bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700" : "bg-slate-100 dark:bg-slate-700/60 opacity-60"
-                        }`}
+                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${rule.enabled ? "bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700" : "bg-slate-100 dark:bg-slate-700/60 opacity-60"
+                          }`}
                       >
                         <div className="flex-1">
                           <div className="font-semibold text-slate-900 dark:text-white">{rule.label}</div>
@@ -321,7 +245,7 @@ export default function IncomePage() {
                             {!rule.enabled && " • Disabled"}
                           </div>
                         </div>
-                        <div className="font-semibold text-slate-900 dark:text-white">{gbp(rule.amount)}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white">{formatMoney(rule.amount)}</div>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleToggleEnabled(rule.id)}
@@ -361,7 +285,7 @@ export default function IncomePage() {
                           <div className="font-semibold text-slate-900 dark:text-white">{item.label}</div>
                           <div className="text-xs text-slate-500 dark:text-slate-400">Due {prettyDate(item.date)}</div>
                         </div>
-                        <div className="font-semibold text-green-600">{gbp(item.amount)}</div>
+                        <div className="font-semibold text-green-600">{formatMoney(item.amount)}</div>
                       </div>
                     ))
                   )}
@@ -413,13 +337,13 @@ export default function IncomePage() {
                                   <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                     Budget
                                   </span>
-                                  <span>{gbp(item.budgeted)}</span>
+                                  <span>{formatMoney(item.budgeted)}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-slate-900 dark:text-white sm:block sm:text-right">
                                   <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                     Actual
                                   </span>
-                                  <span>{gbp(item.actual)}</span>
+                                  <span>{formatMoney(item.actual)}</span>
                                 </div>
                                 <div
                                   className={`flex items-center justify-between font-semibold ${variance.tone} sm:block sm:text-right`}
@@ -444,7 +368,7 @@ export default function IncomePage() {
                                             {txn.notes ? ` - ${txn.notes}` : ""}
                                           </div>
                                         </div>
-                                        <div className="font-semibold text-slate-900 dark:text-white">{gbp(txn.amount)}</div>
+                                        <div className="font-semibold text-slate-900 dark:text-white">{formatMoney(txn.amount)}</div>
                                       </div>
                                     ))}
                                   </div>
@@ -493,7 +417,7 @@ export default function IncomePage() {
 
               <div>
                 <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
-                  Amount (£) *
+                  Amount *
                 </label>
                 <input
                   type="number"

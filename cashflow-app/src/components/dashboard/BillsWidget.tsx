@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { formatMoney } from "@/lib/currency";
+import { prettyDate } from "@/lib/formatUtils";
 
 type Bill = {
     id: string;
@@ -15,14 +17,7 @@ type BillsWidgetProps = {
     href?: string;
 };
 
-function money(n: number) {
-    return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n || 0);
-}
 
-function prettyDate(iso: string) {
-    const d = new Date(iso);
-    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
 
 function getDaysUntil(dateStr: string) {
     const today = new Date();
@@ -69,12 +64,12 @@ export function BillsWidget({ bills, href = "/bills" }: BillsWidgetProps) {
                         <>
                             <div className="flex items-baseline justify-between w-full mb-1">
                                 <span className="text-sm font-medium text-[var(--vn-text)] truncate mr-2">{nextBill.label}</span>
-                                <span className="text-lg font-bold text-[var(--vn-text)]">{money(nextBill.amount)}</span>
+                                <span className="text-lg font-bold text-[var(--vn-text)]">{formatMoney(nextBill.amount)}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${getDaysUntil(nextBill.date).includes("Overdue") ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300" :
-                                        getDaysUntil(nextBill.date).includes("today") ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" :
-                                            "bg-[var(--vn-bg)] text-[var(--vn-muted)]"
+                                    getDaysUntil(nextBill.date).includes("today") ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" :
+                                        "bg-[var(--vn-bg)] text-[var(--vn-muted)]"
                                     }`}>
                                     {getDaysUntil(nextBill.date)}
                                 </span>

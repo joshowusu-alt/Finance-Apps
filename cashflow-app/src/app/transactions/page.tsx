@@ -15,6 +15,7 @@ import { showToast } from "@/components/Toast";
 import { MerchantLogo } from "@/components/MerchantLogo";
 import { FormError } from "@/components/FormError";
 import type { Transaction, CashflowCategory, CashflowType, Plan, BillTemplate } from "@/data/plan";
+import { normalizeText, splitTokens } from "@/lib/textUtils";
 
 
 function formatNice(iso: string) {
@@ -37,16 +38,7 @@ function today() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function normalizeText(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-}
 
-function splitTokens(value: string) {
-  return normalizeText(value)
-    .split(" ")
-    .map((token) => token.trim())
-    .filter((token) => token.length > 0);
-}
 
 const incomeStopWords = new Set(["income", "salary", "pay", "payment", "wage"]);
 
@@ -1185,11 +1177,11 @@ export default function TransactionsPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                   Transactions ({periodTransactions.length})
-                    {bulkMode && selectedIds.size > 0 && (
-                      <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
-                        ({selectedIds.size} selected)
-                      </span>
-                    )}
+                  {bulkMode && selectedIds.size > 0 && (
+                    <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                      ({selectedIds.size} selected)
+                    </span>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   {!bulkMode ? (

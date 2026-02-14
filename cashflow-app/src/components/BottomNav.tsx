@@ -107,8 +107,10 @@ const primaryItems: NavItem[] = [
 
 const moreItems: NavItem[] = [
   { href: "/transactions", label: "Transactions", icon: () => <span className="text-lg">💳</span> },
+  { href: "/bills", label: "Bills", icon: () => <span className="text-lg">📄</span> },
   { href: "/income", label: "Income", icon: () => <span className="text-lg">💰</span> },
   { href: "/goals", label: "Goals", icon: () => <span className="text-lg">🎯</span> },
+  { href: "/coach", label: "Coach", icon: () => <span className="text-lg">🤖</span> },
   { href: "/settings", label: "Settings", icon: () => <span className="text-lg">⚙️</span> },
 ];
 
@@ -165,13 +167,14 @@ export default function BottomNav() {
                     <span className="text-sm font-medium text-(--vn-text)">Theme</span>
                     <ThemeToggle />
                   </div>
-                  <button
-                    onClick={() => { showToast("Export coming soon", "info"); setShowMore(false); }}
+                  <Link
+                    href="/insights"
+                    onClick={() => setShowMore(false)}
                     className="flex w-full items-center justify-between rounded-2xl px-4 py-3 bg-(--vn-bg) hover:bg-(--vn-border) transition-colors"
                   >
                     <span className="text-sm font-medium text-(--vn-text)">Export (PDF / CSV)</span>
-                    <span className="text-xs text-(--vn-muted)">Soon</span>
-                  </button>
+                    <span className="text-xs text-(--vn-muted)">via Insights</span>
+                  </Link>
                   <div className="flex items-center justify-between rounded-2xl px-4 py-3 bg-(--vn-bg) opacity-50">
                     <span className="text-sm font-medium text-(--vn-text)">Connected Accounts</span>
                     <span className="text-xs text-(--vn-muted)">Coming soon</span>

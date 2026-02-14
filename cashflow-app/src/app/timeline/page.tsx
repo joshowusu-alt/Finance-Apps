@@ -1,25 +1,13 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { loadPlan, savePlan } from "@/lib/storage";
-import {
-  buildTimeline,
-  generateEvents,
-  getPeriod,
-  getStartingBalance,
-  minPoint,
-} from "@/lib/cashflowEngine";
+import React, { useMemo, useState } from "react";
+import { savePlan } from "@/lib/storage";
+import { generateEvents, getStartingBalance } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
 import InfoTooltip from "@/components/InfoTooltip";
 import type { CashflowCategory, CashflowType } from "@/data/plan";
-
-function gbp(n: number) {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    maximumFractionDigits: 2,
-  }).format(n || 0);
-}
+import { useDerived } from "@/lib/useDerived";
+import { formatMoney } from "@/lib/currency";
 
 function formatNice(iso: string) {
   const d = new Date(iso + "T00:00:00");
@@ -46,17 +34,11 @@ type EditableEvent = {
 };
 
 export default function TimelinePage() {
-  const [plan, setPlan] = useState(() => loadPlan());
+  const { state: plan, derived } = useDerived();
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [eventDraft, setEventDraft] = useState<{ date: string; amount: string } | null>(null);
 
-  useEffect(() => {
-    const onFocus = () => setPlan(loadPlan());
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-  }, []);
-
-  const period = useMemo(() => getPeriod(plan, plan.setup.selectedPeriodId), [plan]);
+  const period = derived.period;
   const periodOverride = useMemo(
     () => plan.periodOverrides.find((o) => o.periodId === plan.setup.selectedPeriodId),
     [plan]
@@ -65,10 +47,7 @@ export default function TimelinePage() {
     () => getStartingBalance(plan, plan.setup.selectedPeriodId),
     [plan]
   );
-  const rows = useMemo(
-    () => buildTimeline(plan, plan.setup.selectedPeriodId, startingBalance),
-    [plan, startingBalance]
-  );
+  const rows = derived.cashflow.daily;
   const baseEvents = useMemo(() => {
     const stripped = { ...plan, eventOverrides: [] };
     return generateEvents(stripped, plan.setup.selectedPeriodId);
@@ -101,12 +80,11 @@ export default function TimelinePage() {
   }, [baseEvents, plan.eventOverrides]);
   const hasStartingOverride = typeof periodOverride?.startingBalance === "number";
 
-  const expectedMin = useMemo(() => {
-    if (rows.length === 0) return plan.setup.expectedMinBalance;
-    return Math.min(...rows.map((r) => r.balance));
-  }, [rows, plan.setup.expectedMinBalance]);
-
-  const lowestPoint = useMemo(() => minPoint(rows), [rows]);
+  const lowestPoint = derived.cashflow.lowest;
+  const lowestBelowMin =
+    plan.setup.expectedMinBalance > 0
+      ? lowestPoint.balance < plan.setup.expectedMinBalance
+      : lowestPoint.balance < 0;
 
   function updateStartingBalance(value: number) {
     let next = plan;
@@ -124,7 +102,6 @@ export default function TimelinePage() {
       next = { ...plan, setup: { ...plan.setup, startingBalance: value } };
     }
 
-    setPlan(next);
     savePlan(next);
   }
 
@@ -141,7 +118,6 @@ export default function TimelinePage() {
     }
 
     const next = { ...plan, periodOverrides: overrides };
-    setPlan(next);
     savePlan(next);
   }
 
@@ -183,7 +159,6 @@ export default function TimelinePage() {
     }
 
     const next = { ...plan, eventOverrides: overrides };
-    setPlan(next);
     savePlan(next);
     cancelEditEvent();
   }
@@ -191,7 +166,6 @@ export default function TimelinePage() {
   function clearEventEdit(eventId: string) {
     const overrides = plan.eventOverrides.filter((o) => o.eventId !== eventId);
     const next = { ...plan, eventOverrides: overrides };
-    setPlan(next);
     savePlan(next);
   }
 
@@ -240,21 +214,26 @@ export default function TimelinePage() {
                 </p>
               </div>
 
-              <div className="rounded-3xl bg-[var(--surface)] p-5 shadow-xl">
+              <div className="rounded-3xl bg-[var(--vn-surface)] p-5 shadow-xl">
                 <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center">Expected minimum balance<InfoTooltip text="The safety net amount you want to keep in your account. Any day your projected balance dips below this will be flagged as a warning." /></p>
                 <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-                  {gbp(plan.setup.expectedMinBalance)}
+                  {plan.setup.expectedMinBalance > 0
+                    ? formatMoney(plan.setup.expectedMinBalance)
+                    : <span className="text-slate-400 dark:text-slate-500">Not set</span>}
                 </p>
-                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">We flag any day that drops below this.</p>
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  {plan.setup.expectedMinBalance > 0
+                    ? "We flag any day that drops below this."
+                    : "Set a minimum in Settings to flag risky days."}
+                </p>
               </div>
 
               <div className="rounded-3xl bg-[var(--surface)] p-5 shadow-xl">
                 <p className="text-sm text-slate-500 dark:text-slate-400">Lowest point (period)</p>
                 <p
-                  className={`mt-2 text-2xl font-semibold ${expectedMin < plan.setup.expectedMinBalance ? "text-rose-600" : "text-green-600"
-                    }`}
+                  className={`mt-2 text-2xl font-semibold ${lowestBelowMin ? "text-rose-600" : "text-green-600"}`}
                 >
-                  {lowestPoint ? gbp(lowestPoint.balance) : "0"}
+                  {lowestPoint ? formatMoney(lowestPoint.balance) : "0"}
                 </p>
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                   {lowestPoint ? `On ${formatNice(lowestPoint.date)}` : ""}
@@ -278,14 +257,14 @@ export default function TimelinePage() {
                   >
                     <div className="text-slate-700 dark:text-slate-200">{formatNice(r.date)}</div>
                     <div className="col-span-2 text-slate-500 dark:text-slate-400">{r.label || ""}</div>
-                    <div className="text-right">{r.income ? gbp(r.income) : "0"}</div>
-                    <div className="text-right">{r.outflow ? gbp(r.outflow) : "0"}</div>
+                    <div className="text-right">{r.income ? formatMoney(r.income) : "0"}</div>
+                    <div className="text-right">{r.outflow ? formatMoney(r.outflow) : "0"}</div>
 
                     <div
-                      className={`col-span-5 mt-1 text-right text-sm font-semibold ${r.warning ? "text-rose-600" : "text-slate-800 dark:text-slate-100"
+                      className={`col-span-5 mt-1 text-right text-sm font-semibold ${r.belowMin ? "text-rose-600" : "text-slate-800 dark:text-slate-100"
                         }`}
                     >
-                      Balance: {gbp(r.balance)}
+                      Balance: {formatMoney(r.balance)}
                     </div>
                   </div>
                 ))}
@@ -348,7 +327,7 @@ export default function TimelinePage() {
                           </div>
                           <div>
                             <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                              Amount (GBP)
+                              Amount
                             </label>
                             <input
                               type="number"

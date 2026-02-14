@@ -288,3 +288,14 @@ export function AlertCard({
     </motion.div>
   );
 }
+
+/** Simple stat card used in detail pages (income, bills) */
+export function SimpleStatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="vn-card p-6">
+      <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
+      <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{value}</div>
+      {hint ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
+    </div>
+  );
+}

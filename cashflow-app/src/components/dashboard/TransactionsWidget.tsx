@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { formatMoney } from "@/lib/currency";
+import { prettyDate } from "@/lib/formatUtils";
 
 type Transaction = {
     id: string;
@@ -15,14 +17,7 @@ type TransactionsWidgetProps = {
     href?: string;
 };
 
-function money(n: number) {
-    return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n || 0);
-}
 
-function prettyDate(iso: string) {
-    const d = new Date(iso);
-    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
 
 export function TransactionsWidget({ transactions, href = "/transactions" }: TransactionsWidgetProps) {
     return (
@@ -52,7 +47,7 @@ export function TransactionsWidget({ transactions, href = "/transactions" }: Tra
                                 <span className="text-xs text-[var(--vn-muted)]">{prettyDate(t.date)}</span>
                             </div>
                             <span className="text-sm font-semibold text-[var(--vn-text)]">
-                                {money(t.amount)}
+                                {formatMoney(t.amount)}
                             </span>
                         </div>
                     ))

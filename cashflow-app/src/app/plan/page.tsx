@@ -1,28 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { loadPlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
-import {
-  buildTimeline,
-  generateEvents,
-  getPeriod,
-  getStartingBalance,
-  getUpcomingEvents,
-  minPoint,
-} from "@/lib/cashflowEngine";
+import { getUpcomingEvents } from "@/lib/cashflowEngine";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
+import { useDerived } from "@/lib/useDerived";
+import { prettyDate, prettyDateWithYear } from "@/lib/formatUtils";
 
-function prettyDate(iso: string) {
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
-}
 
-function prettyDateWithYear(iso: string) {
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-}
 
 function cadenceLabel(cadence: string) {
   if (cadence === "weekly") return "Weekly";
@@ -37,41 +23,18 @@ function monthlyEquivalent(amount: number, cadence: string) {
 }
 
 export default function PlanPage() {
-  const [plan, setPlan] = useState(() => loadPlan());
+  const { state: plan, derived } = useDerived();
   const [planMode, setPlanMode] = useState<"manual" | "adaptive">("manual");
 
-  useEffect(() => {
-    const refresh = () => setPlan(loadPlan());
-    window.addEventListener("focus", refresh);
-    window.addEventListener(PLAN_UPDATED_EVENT, refresh);
-    return () => {
-      window.removeEventListener("focus", refresh);
-      window.removeEventListener(PLAN_UPDATED_EVENT, refresh);
-    };
-  }, []);
-
-  const periodId = plan.setup.selectedPeriodId;
-  const period = useMemo(() => getPeriod(plan, periodId), [plan, periodId]);
-  const events = useMemo(() => generateEvents(plan, periodId), [plan, periodId]);
-  const startingBalance = useMemo(() => getStartingBalance(plan, periodId), [plan, periodId]);
-  const rows = useMemo(() => buildTimeline(plan, periodId, startingBalance), [plan, periodId, startingBalance]);
-  const lowest = useMemo(() => minPoint(rows), [rows]);
+  const period = derived.period;
+  const periodId = period.id;
   const upcomingOutflows = useMemo(() => getUpcomingEvents(plan, periodId, "outflow").slice(0, 3), [plan, periodId]);
 
   // Derived totals
-  const totalIncome = useMemo(
-    () => events.filter((e) => e.type === "income").reduce((s, e) => s + e.amount, 0),
-    [events]
-  );
-  const totalBills = useMemo(
-    () => events.filter((e) => e.type === "outflow" && e.category === "bill").reduce((s, e) => s + e.amount, 0),
-    [events]
-  );
-  const totalAllocations = useMemo(
-    () => events.filter((e) => e.type === "outflow" && e.category !== "bill").reduce((s, e) => s + e.amount, 0),
-    [events]
-  );
-  const remaining = totalIncome - totalBills - totalAllocations;
+  const totalIncome = derived.totals.incomeExpected;
+  const totalBills = derived.totals.committedBills;
+  const totalAllocations = derived.totals.allocationsTotal;
+  const remaining = derived.totals.remaining;
 
   // Allocation breakdown from outflow rules
   const allocations = useMemo(() => {
@@ -84,20 +47,18 @@ export default function PlanPage() {
   }, [plan.outflowRules]);
 
   // Risk assessment
-  const lowestBalance = lowest?.balance ?? startingBalance;
+  const lowestBalance = derived.cashflow.lowest.balance;
   const expectedMin = plan.setup.expectedMinBalance;
   const expectedMinIsSet = expectedMin > 0;
   const periodStartYear = period.start.slice(0, 4);
   const periodEndYear = period.end.slice(0, 4);
   const periodRange = `${periodStartYear === periodEndYear ? prettyDate(period.start) : prettyDateWithYear(period.start)} - ${prettyDateWithYear(period.end)}`;
   const periodHeader = `P${period.id}: ${periodRange}`;
-  const risk =
-    lowestBalance >= expectedMin ? "healthy" :
-    lowestBalance >= 0 ? "watch" : "atrisk";
+  const risk = derived.health.label;
   const riskConfig = {
-    healthy: { label: "Healthy", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800" },
-    watch: { label: "Watch", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800" },
-    atrisk: { label: "At Risk", color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800" },
+    Healthy: { label: "Healthy", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800" },
+    Watch: { label: "Watch", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800" },
+    "At Risk": { label: "At Risk", color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800" },
   }[risk];
 
   return (
@@ -122,21 +83,19 @@ export default function PlanPage() {
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   onClick={() => setPlanMode("manual")}
-                  className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all border ${
-                    planMode === "manual"
-                      ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10 text-[var(--vn-primary)]"
-                      : "border-[var(--vn-border)] text-[var(--vn-muted)] hover:border-[var(--vn-primary)]/40"
-                  }`}
+                  className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all border ${planMode === "manual"
+                    ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10 text-[var(--vn-primary)]"
+                    : "border-[var(--vn-border)] text-[var(--vn-muted)] hover:border-[var(--vn-primary)]/40"
+                    }`}
                 >
                   Manual Planning
                 </button>
                 <button
                   onClick={() => setPlanMode("adaptive")}
-                  className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all border ${
-                    planMode === "adaptive"
-                      ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10 text-[var(--vn-primary)]"
-                      : "border-[var(--vn-border)] text-[var(--vn-muted)] hover:border-[var(--vn-primary)]/40"
-                  }`}
+                  className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all border ${planMode === "adaptive"
+                    ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10 text-[var(--vn-primary)]"
+                    : "border-[var(--vn-border)] text-[var(--vn-muted)] hover:border-[var(--vn-primary)]/40"
+                    }`}
                 >
                   Adaptive Rollover
                 </button>
@@ -260,6 +219,7 @@ export default function PlanPage() {
                   {riskConfig.label}
                 </span>
               </div>
+              <div className="text-xs text-[var(--vn-muted)] -mt-1">{derived.health.reason}</div>
 
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
@@ -286,7 +246,7 @@ export default function PlanPage() {
                   <span className="text-[var(--vn-muted)]">Projected lowest balance</span>
                   <span className={`font-semibold ${lowestBalance >= expectedMin ? "text-[var(--vn-text)]" : "text-red-500"}`}>
                     {formatMoney(lowestBalance)}
-                    {lowest && <span className="text-xs text-[var(--vn-muted)] ml-1">({prettyDate(lowest.date)})</span>}
+                    <span className="text-xs text-[var(--vn-muted)] ml-1">({prettyDate(derived.cashflow.lowest.date)})</span>
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">

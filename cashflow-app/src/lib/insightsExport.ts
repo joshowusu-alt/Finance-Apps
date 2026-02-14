@@ -1,8 +1,10 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatMoney } from "@/lib/currency";
+import { formatPercent } from "@/lib/formatUtils";
 import { getReportBranding } from "@/lib/branding";
 import type { InsightsSnapshot } from "@/lib/insightsSnapshot";
+import type { Derived } from "@/lib/derive";
 
 function csvEscape(value: string) {
   if (value.includes(",") || value.includes("\n") || value.includes("\"")) {
@@ -19,10 +21,6 @@ function downloadTextFile(content: string, filename: string, type = "text/plain"
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
-}
-
-function formatPercent(value: number) {
-  return `${Math.round(value * 100)}%`;
 }
 
 function addSectionTitle(doc: jsPDF, text: string, y: number) {
@@ -43,10 +41,11 @@ function periodLabelAt(periods: InsightsSnapshot["sortedPeriods"], idx: number) 
   return periods[idx]?.label ?? "Unknown";
 }
 
-export function downloadInsightsCsv(snapshot: InsightsSnapshot) {
+export function downloadInsightsCsv(snapshot: InsightsSnapshot, derived: Derived) {
   const rows: string[][] = [];
   const pushSection = (title: string) => rows.push([`-- ${title} --`]);
   const pushBlank = () => rows.push([]);
+  const firstBelowMin = derived.cashflow.daily.find((day) => day.belowMin);
 
   pushSection("Meta");
   rows.push(["Base period", snapshot.basePeriod.label]);
@@ -78,11 +77,22 @@ export function downloadInsightsCsv(snapshot: InsightsSnapshot) {
   rows.push(["Period days", String(snapshot.periodDays)]);
   rows.push(["Projected leftover", formatMoney(snapshot.projectedLeftover)]);
   rows.push(["Projected end balance", formatMoney(snapshot.endBalance)]);
-  rows.push(["Lowest balance", snapshot.lowestPoint ? formatMoney(snapshot.lowestPoint.balance) : "0"]);
-  rows.push(["Risk days", String(snapshot.riskDays)]);
-  if (snapshot.firstRisk) {
-    rows.push(["First risk date", snapshot.firstRisk.date]);
+  rows.push(["Lowest balance", formatMoney(derived.cashflow.lowest.balance)]);
+  rows.push(["Risk days", String(derived.cashflow.daysBelowMin)]);
+  if (firstBelowMin) {
+    rows.push(["First risk date", firstBelowMin.date]);
   }
+  pushBlank();
+
+  pushSection("Derived metrics");
+  rows.push(["Health", derived.health.label]);
+  rows.push(["Health reason", derived.health.reason]);
+  rows.push(["Income stability", derived.incomeStability.label]);
+  rows.push(["Income stability note", derived.incomeStability.explanation]);
+  rows.push(["Savings streak", String(derived.savingsHealth.streak)]);
+  rows.push(["Savings streak note", derived.savingsHealth.streakExplanation]);
+  rows.push([derived.savingsHealth.leftoverLabel, formatMoney(derived.savingsHealth.leftoverValue)]);
+  rows.push(["Remaining meaning", derived.savingsHealth.explanation]);
   pushBlank();
 
   pushSection("Forecast scenarios");
@@ -198,11 +208,12 @@ export function downloadInsightsCsv(snapshot: InsightsSnapshot) {
   downloadTextFile(csv, `${filenamePrefix}-insights-${stamp}.csv`, "text/csv");
 }
 
-export function downloadInsightsPdf(snapshot: InsightsSnapshot) {
+export function downloadInsightsPdf(snapshot: InsightsSnapshot, derived: Derived) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const { brand, accentRgb, filenamePrefix } = getReportBranding();
   const headStyles = { fillColor: accentRgb };
   let y = 50;
+  const firstBelowMin = derived.cashflow.daily.find((day) => day.belowMin);
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
   doc.text(`${brand.name} Insights Report`, 40, y);
@@ -258,9 +269,29 @@ export function downloadInsightsPdf(snapshot: InsightsSnapshot) {
       ["Period days", String(snapshot.periodDays)],
       ["Projected leftover", formatMoney(snapshot.projectedLeftover)],
       ["Projected end balance", formatMoney(snapshot.endBalance)],
-      ["Lowest balance", snapshot.lowestPoint ? formatMoney(snapshot.lowestPoint.balance) : "0"],
-      ["Risk days", String(snapshot.riskDays)],
-      ["First risk date", snapshot.firstRisk?.date ?? "None"],
+      ["Lowest balance", formatMoney(derived.cashflow.lowest.balance)],
+      ["Risk days", String(derived.cashflow.daysBelowMin)],
+      ["First risk date", firstBelowMin?.date ?? "None"],
+    ],
+    theme: "grid",
+    styles: { fontSize: 9 },
+    headStyles,
+  });
+
+  y = nextTableY(doc, y + 20);
+  y = addSectionTitle(doc, "Derived metrics", y);
+  autoTable(doc, {
+    startY: y,
+    head: [["Metric", "Value"]],
+    body: [
+      ["Health", derived.health.label],
+      ["Health reason", derived.health.reason],
+      ["Income stability", derived.incomeStability.label],
+      ["Income stability note", derived.incomeStability.explanation],
+      ["Savings streak", String(derived.savingsHealth.streak)],
+      ["Savings streak note", derived.savingsHealth.streakExplanation],
+      [derived.savingsHealth.leftoverLabel, formatMoney(derived.savingsHealth.leftoverValue)],
+      ["Remaining meaning", derived.savingsHealth.explanation],
     ],
     theme: "grid",
     styles: { fontSize: 9 },

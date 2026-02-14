@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { hasStoredPlan, loadPlan, savePlan } from "@/lib/storage";
+import { hasStoredPlan, savePlan } from "@/lib/storage";
 import { createSamplePlan } from "@/data/plan";
 import { loadWizardState } from "@/lib/onboarding";
 import OnboardingWizard from "@/components/OnboardingWizard";
@@ -16,14 +16,7 @@ import {
   setOnboardingTask,
 } from "@/lib/onboarding";
 import { ALERT_PREFS_UPDATED_EVENT } from "@/lib/alerts";
-import {
-  buildTimeline,
-  generateEvents,
-  getPeriod,
-  getStartingBalance,
-  getUpcomingEvents,
-  minPoint,
-} from "@/lib/cashflowEngine";
+import { getUpcomingEvents } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
 import { formatMoney } from "@/lib/currency";
 import { VelanovoLogo } from "@/components/VelanovoLogo";
@@ -34,21 +27,11 @@ import { InsightWidget } from "@/components/dashboard/InsightWidget";
 import { TransactionsWidget } from "@/components/dashboard/TransactionsWidget";
 import { BillsWidget } from "@/components/dashboard/BillsWidget";
 import InfoTooltip from "@/components/InfoTooltip";
+import { useDerived } from "@/lib/useDerived";
+import { prettyDate } from "@/lib/formatUtils";
+import { toUtcDay, dayDiff } from "@/lib/dateUtils";
 
-function prettyDate(iso: string) {
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
-}
 
-function toUtcDay(iso: string) {
-  const [y, m, d] = iso.split("-").map(Number);
-  return Date.UTC(y, (m ?? 1) - 1, d ?? 1);
-}
-
-function dayDiff(startISO: string, endISO: string) {
-  const ms = toUtcDay(endISO) - toUtcDay(startISO);
-  return Math.floor(ms / (1000 * 60 * 60 * 24));
-}
 
 function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`;
@@ -62,14 +45,13 @@ function formatPeriodLabel(label: string) {
 
 
 export default function HomePage() {
-  const [plan, setPlan] = useState(() => loadPlan());
+  const { state: plan, derived } = useDerived();
   const [onboarding, setOnboarding] = useState(() => loadOnboardingState());
   const [isFirstVisit, setIsFirstVisit] = useState(() => !hasStoredPlan());
   const [showSetup, setShowSetup] = useState(() => !hasStoredPlan() && !loadWizardState().completed);
 
   useEffect(() => {
     const refresh = () => {
-      setPlan(loadPlan());
       setOnboarding(loadOnboardingState());
       setIsFirstVisit(!hasStoredPlan());
     };
@@ -99,19 +81,10 @@ export default function HomePage() {
     return changed ? { ...current, completed } : current;
   }, [plan, onboarding]);
 
-  const period = useMemo(() => getPeriod(plan, plan.setup.selectedPeriodId), [plan]);
-  const events = useMemo(() => generateEvents(plan, plan.setup.selectedPeriodId), [plan]);
-  const startingBalance = useMemo(
-    () => getStartingBalance(plan, plan.setup.selectedPeriodId),
-    [plan]
-  );
-  const rows = useMemo(
-    () => buildTimeline(plan, plan.setup.selectedPeriodId, startingBalance),
-    [plan, startingBalance]
-  );
-  const lowest = useMemo(() => minPoint(rows), [rows]);
-
-  const endingBalance = rows.length ? rows[rows.length - 1].balance : startingBalance;
+  const period = derived.period;
+  const rows = derived.cashflow.daily;
+  const lowest = derived.cashflow.lowest;
+  const endingBalance = rows.length ? rows[rows.length - 1].balance : 0;
 
   // Upcoming bills helper - need to map correctly for widget
   const upcomingBillsRaw = useMemo(
@@ -146,17 +119,8 @@ export default function HomePage() {
     }));
   }, [periodTransactions]);
 
-  const budgetOutflows = useMemo(
-    () => events.filter((e) => e.type === "outflow").reduce((sum, e) => sum + e.amount, 0),
-    [events]
-  );
-  const budgetSavings = useMemo(
-    () =>
-      events
-        .filter((e) => e.type === "outflow" && e.category === "savings")
-        .reduce((sum, e) => sum + e.amount, 0),
-    [events]
-  );
+  const budgetOutflows = derived.totals.committedBills + derived.totals.allocationsTotal;
+  const budgetSavings = derived.savingsHealth.savingsThisPeriod;
   const budgetSpending = budgetOutflows - budgetSavings;
 
   const actualIncome = useMemo(
@@ -214,7 +178,7 @@ export default function HomePage() {
       }
     }
 
-    if (lowest && lowest.balance < plan.setup.expectedMinBalance) {
+    if (lowest && plan.setup.expectedMinBalance > 0 && lowest.balance < plan.setup.expectedMinBalance) {
       return {
         text: `Heads up: Balance dips below safe minimum on ${prettyDate(lowest.date)}.`,
         tone: "bad" as const
@@ -236,7 +200,6 @@ export default function HomePage() {
 
   function handleQuickSetupComplete(builtPlan: Plan) {
     savePlan(builtPlan);
-    setPlan(builtPlan);
     setOnboarding(resetOnboarding());
     setIsFirstVisit(false);
     setShowSetup(false);
@@ -245,7 +208,6 @@ export default function HomePage() {
   function handleLoadSampleData() {
     const sample = createSamplePlan();
     savePlan(sample, { action: "reset" });
-    setPlan(sample);
     setOnboarding(resetOnboarding());
     setIsFirstVisit(false);
   }
@@ -298,6 +260,17 @@ export default function HomePage() {
                 <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-1 flex items-center">Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
                 <div className="text-4xl font-bold text-[var(--vn-success)]">{formatMoney(actualLeftover > 0 ? actualLeftover : 0)}</div>
                 <div className="text-xs text-[var(--vn-muted)] mt-1">Leftover from income this period</div>
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--vn-border)]">
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${derived.health.label === "Healthy"
+                      ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300"
+                      : derived.health.label === "Watch"
+                        ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                        : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                    }`}>
+                    {derived.health.label}
+                  </span>
+                  <span className="text-xs text-[var(--vn-muted)]">{derived.health.reason}</span>
+                </div>
               </div>
             </header>
 

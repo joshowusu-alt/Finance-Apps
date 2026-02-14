@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useMemo } from "react";
 import type { Transaction, CashflowCategory } from "@/data/plan";
 import { formatCurrency, getCategoryColor, getTextColor, getMutedColor } from "@/lib/chartConfig";
+import { prettyDate } from "@/lib/formatUtils";
 
 type Props = {
     isOpen: boolean;
@@ -14,10 +15,7 @@ type Props = {
     periodLabel?: string;
 };
 
-function prettyDate(iso: string) {
-    const d = new Date(iso + "T00:00:00");
-    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
-}
+
 
 export function CategoryDrilldown({
     isOpen,
