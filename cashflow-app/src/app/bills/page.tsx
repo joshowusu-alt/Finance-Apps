@@ -92,10 +92,32 @@ export default function BillsPage() {
     () => events.filter((e) => e.type === "outflow").reduce((sum, e) => sum + e.amount, 0),
     [events]
   );
+  const budgetedBillsPortion = useMemo(
+    () => events.filter((e) => e.type === "outflow" && e.category === "bill").reduce((sum, e) => sum + e.amount, 0),
+    [events]
+  );
+  const budgetedAllocationsPortion = useMemo(
+    () => events.filter((e) => e.type === "outflow" && e.category !== "bill").reduce((sum, e) => sum + e.amount, 0),
+    [events]
+  );
   const actualOutflows = useMemo(
     () =>
       plan.transactions
         .filter((t) => t.type === "outflow" && t.date >= period.start && t.date <= period.end)
+        .reduce((sum, t) => sum + t.amount, 0),
+    [plan, period]
+  );
+  const actualBillsPortion = useMemo(
+    () =>
+      plan.transactions
+        .filter((t) => t.type === "outflow" && t.category === "bill" && t.date >= period.start && t.date <= period.end)
+        .reduce((sum, t) => sum + t.amount, 0),
+    [plan, period]
+  );
+  const actualAllocationsPortion = useMemo(
+    () =>
+      plan.transactions
+        .filter((t) => t.type === "outflow" && t.category !== "bill" && t.date >= period.start && t.date <= period.end)
         .reduce((sum, t) => sum + t.amount, 0),
     [plan, period]
   );
@@ -323,12 +345,35 @@ export default function BillsPage() {
             </header>
 
             <div className="grid gap-6 md:grid-cols-3">
-              <StatCard label="Budgeted outflows" value={formatMoney(budgetedOutflows)} />
-              <StatCard
-                label="Actual outflows"
-                value={formatMoney(actualOutflows)}
-                hint={`Period ${period.start} to ${period.end}`}
-              />
+              <div className="vn-card p-5">
+                <div className="text-xs font-medium text-[var(--vn-muted)] mb-1">Budgeted outflows</div>
+                <div className="text-xl font-bold text-[var(--vn-text)]">{formatMoney(budgetedOutflows)}</div>
+                <div className="mt-2 space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[var(--vn-muted)]">Bills</span>
+                    <span className="font-medium text-[var(--vn-text)]">{formatMoney(budgetedBillsPortion)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[var(--vn-muted)]">Allocations</span>
+                    <span className="font-medium text-[var(--vn-text)]">{formatMoney(budgetedAllocationsPortion)}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="vn-card p-5">
+                <div className="text-xs font-medium text-[var(--vn-muted)] mb-1">Actual outflows</div>
+                <div className="text-xl font-bold text-[var(--vn-text)]">{formatMoney(actualOutflows)}</div>
+                <div className="mt-2 space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[var(--vn-muted)]">Bills</span>
+                    <span className="font-medium text-[var(--vn-text)]">{formatMoney(actualBillsPortion)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[var(--vn-muted)]">Other</span>
+                    <span className="font-medium text-[var(--vn-text)]">{formatMoney(actualAllocationsPortion)}</span>
+                  </div>
+                </div>
+                <div className="mt-1 text-[10px] text-[var(--vn-muted)]">{prettyDate(period.start)} – {prettyDate(period.end)}</div>
+              </div>
               <StatCard
                 label="Upcoming outflows"
                 value={String(upcoming.length)}
