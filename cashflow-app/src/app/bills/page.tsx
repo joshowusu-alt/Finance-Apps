@@ -333,7 +333,7 @@ export default function BillsPage() {
           <section className="space-y-6">
             <header className="vn-card p-6">
               <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Bills</div>
-              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Bills and outflows</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Bills and Outflows</h1>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 Plan your bills and compare with real spending.
               </p>
