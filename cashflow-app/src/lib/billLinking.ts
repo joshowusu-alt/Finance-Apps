@@ -1,4 +1,5 @@
 import type { BillTemplate } from "@/data/plan";
+import { normalizeText, splitTokens } from "@/lib/textUtils";
 
 const BILL_STOP_WORDS = new Set([
   "bill",
@@ -12,16 +13,7 @@ const BILL_STOP_WORDS = new Set([
   "transfer",
 ]);
 
-function normalizeText(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-}
 
-function splitTokens(value: string) {
-  return normalizeText(value)
-    .split(" ")
-    .map((token) => token.trim())
-    .filter((token) => token.length > 0);
-}
 
 function uniqueTokens(values: string[]) {
   return Array.from(new Set(values.flatMap((value) => splitTokens(value))));

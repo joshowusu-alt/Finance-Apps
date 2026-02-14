@@ -1,4 +1,5 @@
 import { PLAN, PLAN_VERSION, Plan, CashflowOverride, CashflowCategory } from "@/data/plan";
+import { formatMoney } from "@/lib/currency";
 
 const PLAN_KEY = "cashflow_plan_v2";
 const PREV_PLAN_KEY = "cashflow_prev_plan_v1";
@@ -180,8 +181,9 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+// C5 fix: use shared formatMoney instead of hardcoded GBP
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(value || 0);
+  return formatMoney(value || 0);
 }
 
 function formatDelta(label: string, prev: number, next: number, changes: string[]) {
@@ -413,10 +415,18 @@ function parsePlan(raw: string | null): Plan {
       ...parsed,
       setup: { ...PLAN.setup, ...parsed.setup },
       version: PLAN_VERSION,
+      // N8 fix: explicit defaults for array fields to prevent sample data leaking
+      incomeRules: parsed.incomeRules ?? PLAN.incomeRules,
+      outflowRules: parsed.outflowRules ?? PLAN.outflowRules,
+      bills: parsed.bills ?? PLAN.bills,
+      periods: Array.isArray(parsed.periods) && parsed.periods.length > 0
+        ? parsed.periods
+        : PLAN.periods,
+      periodOverrides: parsed.periodOverrides ?? [],
+      eventOverrides: parsed.eventOverrides ?? [],
+      overrides: parsed.overrides ?? [],
+      transactions: parsed.transactions ?? [],
     };
-    if (!Array.isArray(next.periods) || next.periods.length === 0) {
-      next.periods = PLAN.periods;
-    }
 
     if (!Array.isArray(parsed.incomeRules) && Array.isArray(parsed.items)) {
       const periodId = findPeriodIdByStart(parsed.periodStartISO);

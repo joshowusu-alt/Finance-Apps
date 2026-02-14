@@ -33,11 +33,9 @@ export type VarianceByCategory = {
   [key in CashflowCategory]?: VarianceSummary;
 };
 
-type EventsCache = Map<number, CashflowEvent[]>;
-type TimelineCache = Map<string, TimelineRow[]>;
-
-const eventsCache = new WeakMap<Plan, EventsCache>();
-const timelineCache = new WeakMap<Plan, TimelineCache>();
+// NOTE: Module-level caches were removed (C1 fix) because WeakMap<Plan>
+// can serve stale data when storage.ts mutates a cached Plan object in-place.
+// React-level memoisation via useMemo in useDerived handles re-render efficiency.
 
 function iso(d: Date) {
   const yyyy = d.getFullYear();
@@ -57,6 +55,10 @@ function clampDay(year: number, monthIndex: number, day: number) {
   return safeDay;
 }
 
+// N2: cur is mutated in-place via setDate, which is safe because iso() captures
+// the value before mutation. parseISO uses Date(y, m-1, d) constructor arguments,
+// avoiding UTC-vs-local issues. DST transitions are not a concern for date-only
+// iteration since we only use the date component, not hours/minutes.
 function eachDayInclusive(startISO: string, endISO: string) {
   const out: string[] = [];
   const cur = parseISO(startISO);
@@ -295,9 +297,6 @@ function getDisabledBills(plan: Plan, periodId: number) {
 }
 
 export function generateEvents(plan: Plan, periodId: number): CashflowEvent[] {
-  const cache = eventsCache.get(plan) ?? new Map();
-  const cached = cache.get(periodId);
-  if (cached) return cached;
 
   const period = getPeriod(plan, periodId);
   const overrides = plan.overrides.filter((o) => o.date >= period.start && o.date <= period.end);
@@ -366,16 +365,10 @@ export function generateEvents(plan: Plan, periodId: number): CashflowEvent[] {
     if (a.date === b.date) return a.id.localeCompare(b.id);
     return a.date.localeCompare(b.date);
   });
-  cache.set(periodId, sorted);
-  eventsCache.set(plan, cache);
   return sorted;
 }
 
 export function buildTimeline(plan: Plan, periodId: number, startingBalance: number): TimelineRow[] {
-  const cache = timelineCache.get(plan) ?? new Map();
-  const cacheKey = `${periodId}:${startingBalance}`;
-  const cached = cache.get(cacheKey);
-  if (cached) return cached;
 
   const period = getPeriod(plan, periodId);
   const days = eachDayInclusive(period.start, period.end);
@@ -414,11 +407,9 @@ export function buildTimeline(plan: Plan, periodId: number, startingBalance: num
       outflow,
       net,
       balance: bal,
-      warning: bal < plan.setup.expectedMinBalance,
+      warning: plan.setup.expectedMinBalance > 0 && bal < plan.setup.expectedMinBalance,
     };
   });
-  cache.set(cacheKey, rows);
-  timelineCache.set(plan, cache);
   return rows;
 }
 
@@ -528,7 +519,7 @@ export function getTotalVariance(plan: Plan, periodId: number) {
 
 export function getSavingsTransferReconciliation(plan: Plan, periodId: number) {
   const period = getPeriod(plan, periodId);
-  
+
   // Get budgeted savings transfers
   const budgetedSavings = generateEvents(plan, periodId)
     .filter((e) => e.category === "savings")

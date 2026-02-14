@@ -11,8 +11,9 @@ import type {
   Transaction,
 } from "@/data/plan";
 import { PLAN_VERSION } from "@/data/plan";
-import { generateEvents, getPeriod } from "@/lib/cashflowEngine";
+import { deriveApp } from "@/lib/derive";
 import { getReportBranding } from "@/lib/branding";
+import { formatMoney } from "@/lib/currency";
 
 type ImportResult = {
   plan: Plan;
@@ -61,9 +62,7 @@ const categorySet: Set<CashflowCategory> = new Set([
 
 const typeSet: Set<CashflowType> = new Set(["income", "outflow", "transfer"]);
 
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(value || 0);
-}
+
 
 function formatDate(d: Date) {
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
@@ -121,7 +120,10 @@ function parseString(value: unknown) {
 
 function parseDate(value: unknown) {
   if (value instanceof Date) {
-    return value.toISOString().slice(0, 10);
+    const y = value.getFullYear();
+    const m = String(value.getMonth() + 1).padStart(2, "0");
+    const d = String(value.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
   }
   if (typeof value === "number") {
     const d = XLSX.SSF.parse_date_code(value);
@@ -136,8 +138,14 @@ function parseDate(value: unknown) {
     const trimmed = value.trim();
     if (!trimmed) return "";
     if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+    // Parse as local date and extract Y/M/D to avoid timezone shift (C4 fix)
     const parsed = new Date(trimmed);
-    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
+    if (!Number.isNaN(parsed.getTime())) {
+      const y = parsed.getFullYear();
+      const m = String(parsed.getMonth() + 1).padStart(2, "0");
+      const d = String(parsed.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
   }
   return "";
 }
@@ -421,17 +429,15 @@ export function downloadPlanPdf(plan: Plan, periodId: number) {
   doc.text(`Generated ${new Date().toLocaleString("en-GB")}`, 40, y);
   y += 18;
 
-  const period = getPeriod(plan, periodId);
-  const events = generateEvents(plan, periodId);
+  const derived = deriveApp({ ...plan, setup: { ...plan.setup, selectedPeriodId: periodId } });
+  const period = derived.period;
   const transactions = plan.transactions.filter((t) => t.date >= period.start && t.date <= period.end);
 
-  const budgetIncome = events.filter((e) => e.type === "income").reduce((sum, e) => sum + e.amount, 0);
-  const budgetOutflows = events.filter((e) => e.type === "outflow").reduce((sum, e) => sum + e.amount, 0);
-  const budgetSavings = events
-    .filter((e) => e.type === "outflow" && e.category === "savings")
-    .reduce((sum, e) => sum + e.amount, 0);
+  const budgetIncome = derived.totals.incomeExpected;
+  const budgetOutflows = derived.totals.committedBills + derived.totals.allocationsTotal;
+  const budgetSavings = derived.savingsHealth.savingsThisPeriod;
   const budgetSpending = budgetOutflows - budgetSavings;
-  const budgetLeftover = budgetIncome - budgetOutflows;
+  const budgetLeftover = derived.totals.remaining;
 
   const actualIncome = transactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
   const actualSavings = transactions.filter((t) => t.category === "savings").reduce((sum, t) => sum + t.amount, 0);

@@ -6,6 +6,7 @@
  */
 
 import type { CashflowCategory } from "@/data/plan";
+import { normalizeText } from "@/lib/textUtils";
 
 // Category rule with keywords and optional merchant patterns
 type CategoryRule = {
@@ -152,15 +153,6 @@ const CATEGORY_RULES: CategoryRule[] = [
         priority: 1,
     },
 ];
-
-// Merchant name normalization
-function normalizeText(text: string): string {
-    return text
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-}
 
 // Tokenize text into words
 function tokenize(text: string): string[] {

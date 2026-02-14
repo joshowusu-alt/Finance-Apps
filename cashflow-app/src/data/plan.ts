@@ -142,22 +142,82 @@ export type Plan = {
 export const PLAN_VERSION = 2;
 
 // ---------------------------------------------------------------------------
-// Default periods — shared between sample and empty plans
+// Period cadence — how long each budget period lasts
 // ---------------------------------------------------------------------------
-export const DEFAULT_PERIODS: Period[] = [
-  { id: 1, label: "P1: 22 Dec 2025-25 Jan 2026", start: "2025-12-22", end: "2026-01-25" },
-  { id: 2, label: "P2: 26 Jan 2026-25 Feb 2026", start: "2026-01-26", end: "2026-02-25" },
-  { id: 3, label: "P3: 26 Feb 2026-25 Mar 2026", start: "2026-02-26", end: "2026-03-25" },
-  { id: 4, label: "P4: 26 Mar 2026-25 Apr 2026", start: "2026-03-26", end: "2026-04-25" },
-  { id: 5, label: "P5: 26 Apr 2026-25 May 2026", start: "2026-04-26", end: "2026-05-25" },
-  { id: 6, label: "P6: 26 May 2026-25 Jun 2026", start: "2026-05-26", end: "2026-06-25" },
-  { id: 7, label: "P7: 26 Jun 2026-25 Jul 2026", start: "2026-06-26", end: "2026-07-25" },
-  { id: 8, label: "P8: 26 Jul 2026-25 Aug 2026", start: "2026-07-26", end: "2026-08-25" },
-  { id: 9, label: "P9: 26 Aug 2026-25 Sep 2026", start: "2026-08-26", end: "2026-09-25" },
-  { id: 10, label: "P10: 26 Sep 2026-25 Oct 2026", start: "2026-09-26", end: "2026-10-25" },
-  { id: 11, label: "P11: 26 Oct 2026-25 Nov 2026", start: "2026-10-26", end: "2026-11-25" },
-  { id: 12, label: "P12: 26 Nov 2026-25 Dec 2026", start: "2026-11-26", end: "2026-12-25" },
-];
+export type PeriodCadence = "monthly" | "biweekly" | "weekly";
+
+/**
+ * Generate budget periods starting from a given date.
+ * - "monthly"  → each period runs from `dayOfMonth` to the day before next month's start
+ * - "biweekly" → 14-day periods
+ * - "weekly"   → 7-day periods
+ */
+export function generatePeriods(
+  startDate: string,
+  cadence: PeriodCadence = "monthly",
+  count = 12,
+): Period[] {
+  const periods: Period[] = [];
+  const start = new Date(startDate + "T00:00:00");
+
+  for (let i = 0; i < count; i++) {
+    let periodStart: Date;
+    let periodEnd: Date;
+
+    if (cadence === "monthly") {
+      // Advance by i months from the seed start date
+      periodStart = new Date(start);
+      periodStart.setMonth(periodStart.getMonth() + i);
+      // End = one day before next period starts
+      periodEnd = new Date(start);
+      periodEnd.setMonth(periodEnd.getMonth() + i + 1);
+      periodEnd.setDate(periodEnd.getDate() - 1);
+    } else {
+      const days = cadence === "biweekly" ? 14 : 7;
+      periodStart = new Date(start);
+      periodStart.setDate(periodStart.getDate() + i * days);
+      periodEnd = new Date(periodStart);
+      periodEnd.setDate(periodEnd.getDate() + days - 1);
+    }
+
+    const s = fmtDate(periodStart);
+    const e = fmtDate(periodEnd);
+    periods.push({
+      id: i + 1,
+      label: `P${i + 1}: ${fmtLabel(periodStart)}-${fmtLabel(periodEnd)}`,
+      start: s,
+      end: e,
+    });
+  }
+
+  return periods;
+}
+
+/** YYYY-MM-DD */
+function fmtDate(d: Date): string {
+  return d.toISOString().split("T")[0];
+}
+
+/** "22 Dec 2025" style label */
+export function fmtLabel(d: Date): string {
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/**
+ * Smart default: find a sensible period start near today.
+ * Uses the 1st of the current month so the user's first period
+ * starts cleanly. Returns YYYY-MM-DD.
+ */
+export function defaultPeriodStart(): string {
+  const now = new Date();
+  return fmtDate(new Date(now.getFullYear(), now.getMonth(), 1));
+}
+
+// ---------------------------------------------------------------------------
+// Default periods — dynamically generated from the 1st of the current month
+// ---------------------------------------------------------------------------
+export const DEFAULT_PERIODS: Period[] = generatePeriods(defaultPeriodStart(), "monthly", 12);
 
 // ---------------------------------------------------------------------------
 // Sample plan — generic data that teaches bills vs outflows, categories, etc.

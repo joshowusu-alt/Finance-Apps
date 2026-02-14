@@ -1,6 +1,7 @@
 import type { Recurrence, Transaction } from "@/data/plan";
 import { detectRecurringBills, type DetectedBill } from "@/lib/billDetection";
 import { suggestCategory } from "@/lib/categorization";
+import { normalizeText } from "@/lib/textUtils";
 
 export type SubscriptionRecommendation = "keep" | "review" | "cancel";
 
@@ -90,9 +91,7 @@ const NON_SUBSCRIPTION_KEYWORDS = [
   "mobile",
 ];
 
-function normalizeText(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-}
+
 
 function containsKeyword(text: string, keywords: string[]) {
   const normalized = normalizeText(text);
