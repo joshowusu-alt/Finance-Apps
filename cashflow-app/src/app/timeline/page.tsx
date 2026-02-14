@@ -224,7 +224,7 @@ export default function TimelinePage() {
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                   {plan.setup.expectedMinBalance > 0
                     ? "We flag any day that drops below this."
-                    : "Set a minimum in Settings to flag risky days."}
+                    : "Set an expected minimum balance in Settings to flag risky days."}
                 </p>
               </div>
 

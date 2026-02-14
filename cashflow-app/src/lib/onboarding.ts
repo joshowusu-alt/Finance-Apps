@@ -58,14 +58,14 @@ export const ONBOARDING_TASKS: OnboardingTask[] = [
     id: "income",
     label: "Add income rules",
     description: "Capture salary, side income, and any recurring inflows.",
-    href: "/settings",
+    href: "/income",
     autoComplete: (plan) => plan.incomeRules.length > 0,
   },
   {
     id: "outflows",
     label: "Add outflows and bills",
     description: "Set bills, giving, savings, and variable caps.",
-    href: "/settings",
+    href: "/bills",
     autoComplete: (plan) => plan.outflowRules.length > 0 || plan.bills.length > 0,
   },
   {

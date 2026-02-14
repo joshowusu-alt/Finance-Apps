@@ -253,6 +253,46 @@ export default function SettingsPage() {
             </div>
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Expected Minimum Balance</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                Your safety-net balance. Any day your projected balance dips below this amount will be flagged as a warning on the Timeline and Dashboard.
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={plan.setup.expectedMinBalance || ""}
+                  onChange={(e) => {
+                    const val = e.target.value !== "" ? Number(e.target.value) : 0;
+                    const updated = { ...plan, setup: { ...plan.setup, expectedMinBalance: val } };
+                    savePlan(updated);
+                    setPlan(updated);
+                  }}
+                  className="vn-input text-sm flex-1"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                />
+                {plan.setup.expectedMinBalance > 0 && (
+                  <button
+                    onClick={() => {
+                      const updated = { ...plan, setup: { ...plan.setup, expectedMinBalance: 0 } };
+                      savePlan(updated);
+                      setPlan(updated);
+                    }}
+                    className="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {plan.setup.expectedMinBalance > 0 && (
+                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  Currently set to {formatMoney(plan.setup.expectedMinBalance)}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">Periods</div>
                 <button
@@ -472,7 +512,7 @@ export default function SettingsPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-300">Version</span>
-                  <span className="font-medium text-slate-900 dark:text-slate-100">1.0.1 (Build {new Date().toISOString().slice(0, 16).replace("T", " ")})</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">1.0.1 (Build {(process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString()).slice(0, 16).replace("T", " ")})</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-300">App Name</span>
