@@ -55,8 +55,8 @@ export function WelcomeStep() {
         className="max-w-sm text-sm leading-relaxed"
         style={{ color: "var(--vn-muted)" }}
       >
-        Take control of your money story. Plan every pound, track what actually
-        happens, and see your financial future clearly.
+        Take control of your money story. Plan what comes in, track what goes
+        out, and see your financial future clearly.
       </motion.p>
 
       {/* Feature highlights */}

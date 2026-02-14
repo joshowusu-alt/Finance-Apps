@@ -1,10 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { StepIndicator } from "./onboarding/StepIndicator";
+import { WelcomeStep } from "./onboarding/steps/WelcomeStep";
+import { GetStartedStep } from "./onboarding/steps/GetStartedStep";
 import { completeWizard } from "@/lib/onboarding";
-import { PLAN_VERSION, generatePeriods, fmtLabel } from "@/data/plan";
+import { PLAN_VERSION, generatePeriods, fmtLabel, createSamplePlan } from "@/data/plan";
 import type { Plan, BillTemplate, IncomeRule, PeriodCadence } from "@/data/plan";
 import {
   COUNTRIES,
@@ -17,6 +19,8 @@ import {
 type QuickSetupProps = {
   onComplete: (plan: Plan) => void;
 };
+
+const TOTAL_STEPS = 7;
 
 const SPRING = { type: "spring" as const, stiffness: 300, damping: 25 };
 
@@ -36,43 +40,50 @@ const DEFAULT_BILLS: BillTemplate[] = [
 const POPULAR_COUNTRIES: CountryCode[] = ["US", "GB", "CA", "AU", "IN", "DE", "NG", "GH", "ZA", "FR", "NZ", "KE"];
 
 export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
+  /* -- Step navigation -- */
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  // Q0: Country
-  const [country, setCountry] = useState<CountryCode>(() => getCountry());
+  /* -- Step 1: Country -- */
+  const [country, setCountryLocal] = useState<CountryCode>(() => getCountry());
   const [showAllCountries, setShowAllCountries] = useState(false);
   const currencySymbol = CURRENCIES[COUNTRIES[country]?.currency ?? "USD"]?.symbol ?? "$";
 
-  // Q1: Pay cycle
+  /* -- Step 2: Pay cycle -- */
   const [periodCadence, setPeriodCadence] = useState<PeriodCadence>("monthly");
   const [periodStartDay, setPeriodStartDay] = useState<number>(1);
 
-  // Q2: Income
+  /* -- Step 3: Income -- */
   const [income, setIncome] = useState("");
   const incomeRef = useRef<HTMLInputElement>(null);
 
-  // Q3: Bills
+  /* -- Step 4: Bills -- */
   const [hasBills, setHasBills] = useState<boolean | null>(null);
 
-  // Q4: Mode
+  /* -- Step 5: Mode -- */
   const [mode, setMode] = useState<"forecast" | "track" | null>(null);
 
-  // Auto-focus income input on step 2
+  // Auto-focus income input
   useEffect(() => {
-    if (step === 2) {
+    if (step === 3) {
       setTimeout(() => incomeRef.current?.focus(), 400);
     }
   }, [step]);
 
+  /* -- Select country AND persist immediately -- */
+  const handleCountrySelect = useCallback(
+    (code: CountryCode) => {
+      setCountryLocal(code);
+      persistCountry(code); // saves country + currency to localStorage right away
+    },
+    [],
+  );
+
+  /* -- Navigation -- */
   const goNext = useCallback(() => {
-    // When leaving country step, persist the choice
-    if (step === 0) {
-      persistCountry(country); // also sets currency
-    }
     setDirection(1);
-    setStep((s) => Math.min(s + 1, 4));
-  }, [step, country]);
+    setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
+  }, []);
 
   const goBack = useCallback(() => {
     setDirection(-1);
@@ -80,13 +91,16 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
   }, []);
 
   const canAdvance =
-    (step === 0 && country in COUNTRIES) ||
-    (step === 1) || // pay cycle always valid (has defaults)
-    (step === 2 && Number(income) > 0) ||
-    (step === 3 && hasBills !== null) ||
-    (step === 4 && mode !== null);
+    step === 0 || // Welcome
+    (step === 1 && country in COUNTRIES) ||
+    step === 2 || // pay cycle always has defaults
+    (step === 3 && Number(income) > 0) ||
+    (step === 4 && hasBills !== null) ||
+    (step === 5 && mode !== null) ||
+    step === 6; // All Set
 
-  function handleFinish() {
+  /* -- Build a fresh plan from wizard answers -- */
+  function buildPlanFromWizard(): Plan {
     const today = new Date().toISOString().split("T")[0];
     const incomeAmount = Number(income) || 0;
 
@@ -101,15 +115,13 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
 
     const bills: BillTemplate[] = hasBills ? DEFAULT_BILLS : [];
 
-    // Build periods from the user's chosen start day and cadence
     const now = new Date();
     const periodStart = new Date(now.getFullYear(), now.getMonth(), periodStartDay);
-    // If the chosen day already passed this month, use it — it's still this month's period
     const periodStartStr = periodStart.toISOString().split("T")[0];
     const periodCount = periodCadence === "weekly" ? 26 : periodCadence === "biweekly" ? 13 : 12;
     const periods = generatePeriods(periodStartStr, periodCadence, periodCount);
 
-    const plan: Plan = {
+    return {
       version: PLAN_VERSION,
       setup: {
         selectedPeriodId: 1,
@@ -132,35 +144,47 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
       transactions: [],
       savingsGoals: [],
     };
-
-    completeWizard();
-    onComplete(plan);
   }
+
+  /* -- Final step handler -- */
+  function handleGetStarted(choice: "fresh" | "sample") {
+    completeWizard();
+    if (choice === "sample") {
+      onComplete(createSamplePlan());
+    } else {
+      onComplete(buildPlanFromWizard());
+    }
+  }
+
+  /* -- Button label for current step -- */
+  const nextLabel = step === 0 ? "Get Started" : "Next";
 
   return (
     <AnimatePresence>
+      {/* Backdrop */}
       <motion.div
         key="setup-backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-60 bg-black/60 backdrop-blur-md"
+        className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-md"
       />
 
+      {/* Dialog container */}
       <motion.div
         key="setup-container"
         initial={{ opacity: 0, scale: 0.92, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.92, y: 30 }}
         transition={SPRING}
-        className="fixed inset-0 z-60 flex items-center justify-center p-4 md:p-8"
+        className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8"
         role="dialog"
         aria-modal="true"
         aria-label="Quick setup"
       >
         <div
-          className="relative w-full max-w-lg overflow-hidden rounded-3xl shadow-2xl flex flex-col"
+          className="relative w-full max-w-lg max-h-[90dvh] rounded-3xl shadow-2xl flex flex-col"
           style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}
         >
           {/* Top bar */}
@@ -168,17 +192,20 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
             className="flex items-center justify-between px-6 py-4 shrink-0"
             style={{ borderBottom: "1px solid var(--vn-border)" }}
           >
-            <StepIndicator totalSteps={5} currentStep={step} />
+            <StepIndicator totalSteps={TOTAL_STEPS} currentStep={step} />
             <span className="text-xs text-[var(--vn-muted)]">Quick Setup</span>
           </div>
 
-          {/* Step content */}
-          <div className="flex-1 px-6 py-8 md:px-10 md:py-10">
+          {/* Step content (scrollable on mobile) */}
+          <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-8 md:px-10 md:py-10">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div key={step} custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit">
 
-                {/* Step 0: Country */}
-                {step === 0 && (
+                {/* Step 0: Welcome */}
+                {step === 0 && <WelcomeStep />}
+
+                {/* Step 1: Country */}
+                {step === 1 && (
                   <div className="space-y-5">
                     <div>
                       <h2 className="text-xl font-bold text-[var(--vn-text)]">Where are you based?</h2>
@@ -190,7 +217,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                         return (
                           <button
                             key={code}
-                            onClick={() => setCountry(code)}
+                            onClick={() => handleCountrySelect(code)}
                             className={`rounded-xl px-3 py-3 text-left transition-all border-2 ${
                               country === code
                                 ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10"
@@ -214,7 +241,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                     ) : (
                       <select
                         value={country}
-                        onChange={(e) => setCountry(e.target.value)}
+                        onChange={(e) => handleCountrySelect(e.target.value as CountryCode)}
                         className="w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-primary)]"
                       >
                         {Object.entries(COUNTRIES).map(([code, c]) => (
@@ -235,12 +262,12 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                   </div>
                 )}
 
-                {/* Step 1: Pay cycle */}
-                {step === 1 && (
+                {/* Step 2: Pay cycle */}
+                {step === 2 && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-xl font-bold text-[var(--vn-text)]">When does your pay cycle start?</h2>
-                      <p className="mt-2 text-sm text-[var(--vn-muted)]">We&apos;ll build budget periods around your pay dates.</p>
+                      <p className="mt-2 text-sm text-[var(--vn-muted)]">We'll build budget periods around your pay dates.</p>
                     </div>
 
                     {/* Cadence picker */}
@@ -310,21 +337,21 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                           const start = new Date(now.getFullYear(), now.getMonth(), periodStartDay);
                           const startStr = start.toISOString().split("T")[0];
                           const preview = generatePeriods(startStr, periodCadence, 1)[0];
-                          if (!preview) return "—";
+                          if (!preview) return "\u2014";
                           const s = new Date(preview.start + "T00:00:00");
                           const e = new Date(preview.end + "T00:00:00");
-                          return `${fmtLabel(s)} → ${fmtLabel(e)}`;
+                          return `${fmtLabel(s)} \u2192 ${fmtLabel(e)}`;
                         })()}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Step 2: Income */}
-                {step === 2 && (
+                {/* Step 3: Income */}
+                {step === 3 && (
                   <div className="space-y-6">
                     <div>
-                      <h2 className="text-xl font-bold text-[var(--vn-text)]">What&apos;s your monthly take-home pay?</h2>
+                      <h2 className="text-xl font-bold text-[var(--vn-text)]">What's your monthly take-home pay?</h2>
                       <p className="mt-2 text-sm text-[var(--vn-muted)]">After tax, what lands in your account each month?</p>
                     </div>
                     <div className="relative">
@@ -349,12 +376,12 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                   </div>
                 )}
 
-                {/* Step 3: Bills */}
-                {step === 3 && (
+                {/* Step 4: Bills */}
+                {step === 4 && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-xl font-bold text-[var(--vn-text)]">Do you have fixed monthly bills?</h2>
-                      <p className="mt-2 text-sm text-[var(--vn-muted)]">Rent, utilities, phone — things due on the same day each month.</p>
+                      <p className="mt-2 text-sm text-[var(--vn-muted)]">Rent, utilities, phone things due on the same day each month.</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <button
@@ -366,7 +393,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                         }`}
                       >
                         <div className="text-2xl mb-2">Yes</div>
-                        <div className="text-xs text-[var(--vn-muted)]">We&apos;ll add common ones you can edit later</div>
+                        <div className="text-xs text-[var(--vn-muted)]">We'll add common ones you can edit later</div>
                       </button>
                       <button
                         onClick={() => setHasBills(false)}
@@ -383,8 +410,8 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                   </div>
                 )}
 
-                {/* Step 4: Mode */}
-                {step === 4 && (
+                {/* Step 5: Mode */}
+                {step === 5 && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-xl font-bold text-[var(--vn-text)]">How do you want to use the app?</h2>
@@ -417,43 +444,52 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                   </div>
                 )}
 
+                {/* Step 6: All Set */}
+                {step === 6 && <GetStartedStep onComplete={handleGetStarted} />}
+
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Bottom navigation */}
-          <div
-            className="flex items-center justify-between px-6 py-4 shrink-0"
-            style={{ borderTop: "1px solid var(--vn-border)" }}
-          >
-            <button
-              onClick={goBack}
-              disabled={step === 0}
-              className="vn-btn vn-btn-ghost text-sm disabled:opacity-0 disabled:pointer-events-none transition-opacity"
+          {/* Bottom navigation (hidden on final step; GetStartedStep has its own CTAs) */}
+          {step < TOTAL_STEPS - 1 && (
+            <div
+              className="flex items-center justify-between px-6 py-4 shrink-0"
+              style={{ borderTop: "1px solid var(--vn-border)" }}
             >
-              Back
-            </button>
+              <button
+                onClick={goBack}
+                disabled={step === 0}
+                className="vn-btn vn-btn-ghost text-sm disabled:opacity-0 disabled:pointer-events-none transition-opacity"
+              >
+                Back
+              </button>
 
-            {step < 4 ? (
               <motion.button
                 onClick={goNext}
                 disabled={!canAdvance}
                 className="vn-btn vn-btn-primary text-sm disabled:opacity-40"
                 whileTap={{ scale: 0.98 }}
               >
-                Next
+                {nextLabel}
               </motion.button>
-            ) : (
-              <motion.button
-                onClick={handleFinish}
-                disabled={!canAdvance}
-                className="vn-btn vn-btn-primary text-sm disabled:opacity-40"
-                whileTap={{ scale: 0.98 }}
+            </div>
+          )}
+
+          {/* Back button on final step so users can still go back */}
+          {step === TOTAL_STEPS - 1 && (
+            <div
+              className="flex items-center px-6 py-4 shrink-0"
+              style={{ borderTop: "1px solid var(--vn-border)" }}
+            >
+              <button
+                onClick={goBack}
+                className="vn-btn vn-btn-ghost text-sm"
               >
-                Build My Dashboard
-              </motion.button>
-            )}
-          </div>
+                Back
+              </button>
+            </div>
+          )}
         </div>
       </motion.div>
     </AnimatePresence>
