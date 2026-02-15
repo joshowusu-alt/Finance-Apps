@@ -354,6 +354,31 @@ describe("deriveApp", () => {
     expect(derived.savingsHealth.leftoverValue).toBe(1300);
   });
 
+  it("bills with non-bill categories (e.g. giving) count as committedBills not allocations", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1, startingBalance: 0, rollForwardBalance: false },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      incomeRules: [
+        { id: "salary", label: "Salary", amount: 5000, cadence: "monthly", seedDate: "2026-02-01", enabled: true },
+      ],
+      bills: [
+        { id: "rent", label: "Rent", amount: 1200, dueDay: 1, category: "bill", enabled: true },
+        { id: "tithe", label: "Tithe", amount: 410, dueDay: 1, category: "giving", enabled: true },
+        { id: "parents", label: "Parents", amount: 140, dueDay: 1, category: "giving", enabled: true },
+      ],
+      outflowRules: [
+        { id: "savings", label: "Savings", amount: 500, cadence: "monthly", seedDate: "2026-02-15", category: "savings", enabled: true },
+      ],
+    });
+
+    const derived = deriveApp(plan);
+    // Bills = rent(1200) + tithe(410) + parents(140) = 1750
+    // Allocations = savings(500)
+    expect(derived.totals.committedBills).toBe(1750);
+    expect(derived.totals.allocationsTotal).toBe(500);
+    expect(derived.totals.remaining).toBe(5000 - 1750 - 500);
+  });
+
   it("negative Remaining After Plan with low starting balance causes At Risk", () => {
     const plan = buildPlan({
       setup: { selectedPeriodId: 1, startingBalance: 100, expectedMinBalance: 200, rollForwardBalance: false },

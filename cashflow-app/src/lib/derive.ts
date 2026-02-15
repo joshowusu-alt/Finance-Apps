@@ -170,14 +170,15 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
 
   const events = generateEvents(plan, resolvedPeriodId);
   const incomeExpected = sumBy(events, (e) => e.type === "income", (e) => e.amount);
+  const billIds = new Set(plan.bills.map((b) => b.id));
   const committedBills = sumBy(
     events,
-    (e) => e.type === "outflow" && e.category === "bill",
+    (e) => e.type === "outflow" && billIds.has(e.sourceId ?? ""),
     (e) => e.amount
   );
   const allocationsTotal = sumBy(
     events,
-    (e) => e.type === "outflow" && e.category !== "bill",
+    (e) => e.type === "outflow" && !billIds.has(e.sourceId ?? ""),
     (e) => e.amount
   );
   const remaining = incomeExpected - committedBills - allocationsTotal;

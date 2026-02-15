@@ -88,17 +88,18 @@ export default function BillsPage() {
     [plan.transactions, plan.bills]
   );
 
+  const billIds = useMemo(() => new Set(plan.bills.map((b) => b.id)), [plan.bills]);
   const budgetedOutflows = useMemo(
     () => events.filter((e) => e.type === "outflow").reduce((sum, e) => sum + e.amount, 0),
     [events]
   );
   const budgetedBillsPortion = useMemo(
-    () => events.filter((e) => e.type === "outflow" && e.category === "bill").reduce((sum, e) => sum + e.amount, 0),
-    [events]
+    () => events.filter((e) => e.type === "outflow" && billIds.has(e.sourceId ?? "")).reduce((sum, e) => sum + e.amount, 0),
+    [events, billIds]
   );
   const budgetedAllocationsPortion = useMemo(
-    () => events.filter((e) => e.type === "outflow" && e.category !== "bill").reduce((sum, e) => sum + e.amount, 0),
-    [events]
+    () => events.filter((e) => e.type === "outflow" && !billIds.has(e.sourceId ?? "")).reduce((sum, e) => sum + e.amount, 0),
+    [events, billIds]
   );
   const actualOutflows = useMemo(
     () =>
@@ -110,14 +111,14 @@ export default function BillsPage() {
   const actualBillsPortion = useMemo(
     () =>
       plan.transactions
-        .filter((t) => t.type === "outflow" && t.category === "bill" && t.date >= period.start && t.date <= period.end)
+        .filter((t) => t.type === "outflow" && t.linkedBillId && t.date >= period.start && t.date <= period.end)
         .reduce((sum, t) => sum + t.amount, 0),
     [plan, period]
   );
   const actualAllocationsPortion = useMemo(
     () =>
       plan.transactions
-        .filter((t) => t.type === "outflow" && t.category !== "bill" && t.date >= period.start && t.date <= period.end)
+        .filter((t) => t.type === "outflow" && !t.linkedBillId && t.date >= period.start && t.date <= period.end)
         .reduce((sum, t) => sum + t.amount, 0),
     [plan, period]
   );
