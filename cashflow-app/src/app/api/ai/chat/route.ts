@@ -68,7 +68,10 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ noApiKey: true, source: "local" });
+      return NextResponse.json(
+        { error: "AI coaching is temporarily unavailable. Please try again later." },
+        { status: 503 },
+      );
     }
 
     const systemPrompt = `You are a sharp, friendly financial coach inside Velanovo, a personal cashflow app. You speak like a knowledgeable friend — warm but honest, encouraging but real.
@@ -122,7 +125,10 @@ ${contextString}`;
 
     if (!response.ok) {
       console.error("OpenAI API error:", await response.json());
-      return NextResponse.json({ noApiKey: true, source: "local" });
+      return NextResponse.json(
+        { error: "AI coaching is temporarily unavailable. Please try again later." },
+        { status: 502 },
+      );
     }
 
     const data = await response.json();

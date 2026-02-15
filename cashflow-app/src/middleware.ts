@@ -33,6 +33,18 @@ export async function middleware(request: NextRequest) {
   // Refresh the session — do not remove this line
   await supabase.auth.getUser();
 
+  // Restrict CORS to same-origin for API routes
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    const origin = request.headers.get("origin");
+    const host = request.headers.get("host");
+    if (origin) {
+      const originHost = new URL(origin).host;
+      if (originHost !== host) {
+        return new NextResponse(null, { status: 403 });
+      }
+    }
+  }
+
   return supabaseResponse;
 }
 

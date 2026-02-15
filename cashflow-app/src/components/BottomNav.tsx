@@ -187,10 +187,7 @@ export default function BottomNav() {
       </AnimatePresence>
 
       {/* Bottom tab bar */}
-      <motion.nav
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      <nav
         className="fixed bottom-0 left-0 right-0 z-50 border-t border-(--border) bg-surface-elevated/95 backdrop-blur-xl md:hidden"
         style={{ boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.05)" }}
         aria-label="Primary"
@@ -266,7 +263,7 @@ export default function BottomNav() {
 
         {/* Bottom safe area for notched devices */}
         <div className="h-[env(safe-area-inset-bottom)] bg-surface-elevated/95" />
-      </motion.nav>
+      </nav>
     </>
   );
 }

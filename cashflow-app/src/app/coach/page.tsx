@@ -321,12 +321,7 @@ export default function CoachPage() {
       if (!res.ok) throw new Error("request failed");
       const data = await res.json();
 
-      let content: string;
-      if (data.noApiKey && financial) {
-        content = generateLocalResponse(text, financial.ctx, financial.expectedMinBalance);
-      } else {
-        content = data.response || "I couldn't process that. Please try again.";
-      }
+      const content = data.response || "I couldn't process that. Please try again.";
 
       setMessages(prev => [
         ...prev,

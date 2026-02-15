@@ -60,6 +60,12 @@ export default function RootLayout({
           </a>
           <AppWatermark />
           <ServiceWorkerRegistrar />
+          <noscript>
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontFamily: 'sans-serif' }}>
+              <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>JavaScript Required</h1>
+              <p>Velanovo requires JavaScript to run. Please enable it in your browser settings.</p>
+            </div>
+          </noscript>
           {/* Page content */}
           <ErrorBoundary>
             <div id="main-content" tabIndex={-1} className="relative z-10 min-h-screen pb-24">

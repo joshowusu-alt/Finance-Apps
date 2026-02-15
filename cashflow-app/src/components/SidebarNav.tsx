@@ -112,32 +112,23 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname?.startsWith(href));
 
   return (
-    <motion.aside
-      initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+    <aside
       className="hidden lg:flex flex-col gap-6 card-premium p-6 text-text-primary"
     >
       {/* Logo */}
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.3 }}
+      <div
         className="flex items-center px-3"
       >
         <VelanovoLogo size={32} showWordmark={true} />
-      </motion.div>
+      </div>
 
       {/* Navigation */}
       <nav className="space-y-1 text-sm flex-1">
         {items.map((item, index) => {
           const active = isActive(item.href);
           return (
-            <motion.div
+            <div
               key={item.href}
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.1 + index * 0.05, duration: 0.3 }}
             >
               <Link
                 href={item.href}
@@ -200,16 +191,13 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
                   )}
                 </motion.div>
               </Link>
-            </motion.div>
+            </div>
           );
         })}
       </nav>
 
       {/* Period Info */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
+      <div
         className="rounded-2xl bg-accent/10 border border-accent/20 p-4"
       >
         <div className="flex items-center gap-2 text-accent font-semibold text-sm mb-1">
@@ -223,7 +211,7 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
             {periodStart} → {periodEnd}
           </div>
         )}
-      </motion.div>
-    </motion.aside>
+      </div>
+    </aside>
   );
 }
