@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import SidebarNav from "@/components/SidebarNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelector from "@/components/CurrencySelector";
@@ -8,6 +9,7 @@ import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import { resetWizard } from "@/lib/onboarding";
 import { loadBranding } from "@/lib/branding";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Period, PeriodOverride, PeriodRuleOverride } from "@/data/plan";
 
 export default function SettingsPage() {
@@ -20,6 +22,7 @@ export default function SettingsPage() {
     end: "",
   });
   const [branding] = useState(() => loadBranding());
+  const { user, loading: authLoading, signOut } = useAuth();
 
   useEffect(() => {
     const refresh = () => setPlan(loadPlan());
@@ -190,6 +193,47 @@ export default function SettingsPage() {
               <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 Customize your {branding.name} experience
               </div>
+            </div>
+
+            {/* Account */}
+            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Account</div>
+              {authLoading ? (
+                <div className="text-sm text-slate-500 dark:text-slate-400">Loading...</div>
+              ) : user ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--vn-primary)]/15 text-[var(--vn-primary)] font-semibold text-sm">
+                      {(user.email?.[0] ?? "U").toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{user.email}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Signed in · Cloud sync active</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      await signOut();
+                      window.location.href = "/";
+                    }}
+                    className="vn-btn vn-btn-ghost text-xs text-red-500"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="text-sm text-slate-600 dark:text-slate-300">
+                    Sign in to back up your data to the cloud and sync across devices.
+                  </div>
+                  <Link
+                    href="/auth"
+                    className="vn-btn vn-btn-primary text-sm inline-block text-center"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              )}
             </div>
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
