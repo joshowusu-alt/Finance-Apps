@@ -126,6 +126,31 @@ function initializeFreshScope() {
   setCurrency("GBP");
 }
 
+/**
+ * Copy all cashflow_* keys from "default" scope to a new user scope
+ * so existing local data isn't lost when signing in for the first time.
+ */
+function migrateDefaultScopeToUser(targetScope: string) {
+  if (typeof window === "undefined") return;
+  const suffix = `::${targetScope}`;
+  let copied = 0;
+  for (let i = 0; i < window.localStorage.length; i += 1) {
+    const key = window.localStorage.key(i);
+    if (!key || !key.startsWith("cashflow_")) continue;
+    // Only copy keys from the default scope (no :: separator)
+    if (key.includes("::")) continue;
+    // Skip the scope key itself
+    if (key === "cashflow_scope_v1") continue;
+    const value = window.localStorage.getItem(key);
+    if (value) {
+      window.localStorage.setItem(`${key}${suffix}`, value);
+      copied += 1;
+    }
+  }
+  // eslint-disable-next-line no-console
+  console.log(`[CloudSync] Migrated ${copied} keys from default → ${targetScope}`);
+}
+
 function normalizePreferences(
   row: CloudPrefsRow,
   fallback: ReturnType<typeof getLocalPreferences>
@@ -198,7 +223,13 @@ export default function CloudSync() {
       const hasData = scopeHasData(targetScope);
       setStorageScope(targetScope);
       if (!hasData) {
-        initializeFreshScope();
+        // First sign-in: if the user had local data in "default" scope, copy it over
+        const defaultHasData = scopeHasData("default");
+        if (defaultHasData) {
+          migrateDefaultScopeToUser(targetScope);
+        } else {
+          initializeFreshScope();
+        }
       }
     }
   }, [loading, user]);
