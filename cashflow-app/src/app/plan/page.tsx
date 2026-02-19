@@ -171,7 +171,7 @@ export default function PlanPage() {
             <div className="vn-card p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
-                  <div className="text-sm font-bold text-[var(--vn-text)]">Allocations</div>
+                  <div className="text-sm font-bold text-[var(--vn-text)]">Recurring Outflows</div>
                   <div className="text-xs text-[var(--vn-muted)]">Flexible and protected spending (monthly)</div>
                 </div>
                 <Link href="/bills" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
@@ -180,11 +180,11 @@ export default function PlanPage() {
               </div>
               <div className="space-y-2">
                 {[
-                  { label: "Weekly Allowance", value: allocations.allowance },
+                  { label: "Allowance", value: allocations.allowance },
                   { label: "Savings", value: allocations.savings },
                   { label: "Giving", value: allocations.giving },
-                  { label: "Buffer Top-up", value: allocations.buffer },
-                  { label: "Other Outflows", value: allocations.other },
+                  { label: "Buffer", value: allocations.buffer },
+                  { label: "Other", value: allocations.other },
                 ].filter((row) => row.value > 0).map((row) => (
                   <div key={row.label} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
                     <div className="text-sm font-medium text-[var(--vn-text)] min-w-0 truncate">{row.label}</div>
@@ -212,8 +212,8 @@ export default function PlanPage() {
             <div className="vn-card p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
-                  <div className="text-sm font-bold text-[var(--vn-text)]">Total Budgeted Outflow</div>
-                  <div className="text-xs text-[var(--vn-muted)]">Bills + allocations this period</div>
+                  <div className="text-sm font-bold text-[var(--vn-text)]">Total Budgeted Outflows</div>
+                  <div className="text-xs text-[var(--vn-muted)]">Committed bills + recurring outflows this period</div>
                 </div>
                 <Link href="/bills" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
                   View details
@@ -230,7 +230,7 @@ export default function PlanPage() {
                 </div>
                 <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-[var(--vn-text)]">Other Allocations</div>
+                    <div className="text-sm font-medium text-[var(--vn-text)]">Recurring Outflows</div>
                     <div className="text-xs text-[var(--vn-muted)]">{plan.outflowRules.filter((r) => r.enabled).length} rule{plan.outflowRules.filter((r) => r.enabled).length === 1 ? '' : 's'}</div>
                   </div>
                   <div className="text-sm font-semibold text-[var(--vn-text)] shrink-0">{formatMoney(totalAllocations)}</div>
@@ -261,12 +261,12 @@ export default function PlanPage() {
                   <span className="font-semibold text-[var(--vn-text)]">-{formatMoney(totalBills)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--vn-muted)]">Allocations</span>
+                  <span className="text-[var(--vn-muted)]">Recurring outflows</span>
                   <span className="font-semibold text-[var(--vn-text)]">-{formatMoney(totalAllocations)}</span>
                 </div>
                 <div className="h-px bg-[var(--vn-border)]" />
                 <div className="flex justify-between text-sm font-semibold">
-                  <span className="text-[var(--vn-muted)]">Total budgeted outflow</span>
+                  <span className="text-[var(--vn-muted)]">Total budgeted outflows</span>
                   <span className="text-[var(--vn-text)]">-{formatMoney(totalBills + totalAllocations)}</span>
                 </div>
                 <div className="h-px bg-[var(--vn-border)]" />

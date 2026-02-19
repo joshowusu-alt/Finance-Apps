@@ -48,7 +48,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="transition-colors duration-200">
+    <html lang="en" className="transition-colors duration-200" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var scope=localStorage.getItem("cashflow_scope_v1");var key=scope&&scope.trim()&&scope!=="default"?"velanovo-theme::"+scope:"velanovo-theme";var t=localStorage.getItem(key)||localStorage.getItem("velanovo-theme");if(!t&&window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches)t="dark";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}else{document.documentElement.setAttribute("data-theme","light")}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className={`${playfair.variable} ${inter.variable} min-h-screen font-sans bg-white dark:bg-slate-900 transition-colors duration-200`}>
         <AuthProvider>
           <ConfirmProvider>

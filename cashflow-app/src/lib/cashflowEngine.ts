@@ -8,6 +8,7 @@ import type {
   Plan,
   CashflowCategory,
   EventOverride,
+  PeriodRuleOverride,
 } from "@/data/plan";
 
 export type TimelineRow = {
@@ -301,8 +302,28 @@ export function generateEvents(plan: Plan, periodId: number): CashflowEvent[] {
   const period = getPeriod(plan, periodId);
   const overrides = plan.overrides.filter((o) => o.date >= period.start && o.date <= period.end);
 
+  // Build period rule overrides lookup: ruleId → override
+  const periodRuleOverrideMap = new Map<string, PeriodRuleOverride>();
+  for (const pro of plan.periodRuleOverrides ?? []) {
+    if (pro.periodId === periodId) {
+      periodRuleOverrideMap.set(pro.ruleId, pro);
+    }
+  }
+
   const incomeEvents: CashflowEvent[] = [];
   for (const rule of plan.incomeRules) {
+    // Apply period rule override if present
+    const pro = periodRuleOverrideMap.get(rule.id);
+    const effectiveRule: IncomeRule = pro
+      ? {
+          ...rule,
+          enabled: pro.enabled ?? rule.enabled,
+          amount: pro.amount ?? rule.amount,
+          cadence: pro.cadence ?? rule.cadence,
+          seedDate: pro.seedDate ?? rule.seedDate,
+        }
+      : rule;
+
     const ruleOverrides = applyOverrides(rule.id, period, plan.overrides);
     if (ruleOverrides.length) {
       incomeEvents.push(
@@ -318,11 +339,23 @@ export function generateEvents(plan: Plan, periodId: number): CashflowEvent[] {
       );
       continue;
     }
-    incomeEvents.push(...generateIncomeEvents(rule, period));
+    incomeEvents.push(...generateIncomeEvents(effectiveRule, period));
   }
 
   const outflowEvents: CashflowEvent[] = [];
   for (const rule of plan.outflowRules) {
+    // Apply period rule override if present
+    const pro = periodRuleOverrideMap.get(rule.id);
+    const effectiveRule: OutflowRule = pro
+      ? {
+          ...rule,
+          enabled: pro.enabled ?? rule.enabled,
+          amount: pro.amount ?? rule.amount,
+          cadence: pro.cadence ?? rule.cadence,
+          seedDate: pro.seedDate ?? rule.seedDate,
+        }
+      : rule;
+
     const ruleOverrides = applyOverrides(rule.id, period, plan.overrides);
     if (ruleOverrides.length) {
       outflowEvents.push(
@@ -338,7 +371,7 @@ export function generateEvents(plan: Plan, periodId: number): CashflowEvent[] {
       );
       continue;
     }
-    outflowEvents.push(...generateOutflowEvents(rule, period));
+    outflowEvents.push(...generateOutflowEvents(effectiveRule, period));
   }
 
   const disabledBills = getDisabledBills(plan, periodId);

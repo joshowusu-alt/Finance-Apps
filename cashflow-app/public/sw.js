@@ -1,17 +1,21 @@
-const STATIC_CACHE = "cashflow-static-v2";
-const RUNTIME_CACHE = "cashflow-runtime-v2";
-const OLD_CACHES = ["cashflow-static-v1", "cashflow-runtime-v1"];
+const STATIC_CACHE = "cashflow-static-v3";
+const RUNTIME_CACHE = "cashflow-runtime-v3";
+const OLD_CACHES = ["cashflow-static-v1", "cashflow-runtime-v1", "cashflow-static-v2", "cashflow-runtime-v2"];
+
+const OFFLINE_PAGE = "/offline.html";
+
+// App shell pages to pre-cache for offline use
+const APP_SHELL = [
+  "/manifest.json",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/apple-touch-icon.png",
+  OFFLINE_PAGE,
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) =>
-      cache.addAll([
-        "/manifest.json",
-        "/icon-192.png",
-        "/icon-512.png",
-        "/apple-touch-icon.png",
-      ])
-    )
+    caches.open(STATIC_CACHE).then((cache) => cache.addAll(APP_SHELL))
   );
   self.skipWaiting();
 });
@@ -34,16 +38,26 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
 
-  // Navigation: always network-first, never serve stale HTML from cache
+  // Navigation: network-first with offline fallback page
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) return response;
-          // If the server returns 404 etc., redirect to root
+          if (response.ok) {
+            // Cache successful navigation responses for offline use
+            const copy = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+            return response;
+          }
           return Response.redirect("/", 302);
         })
-        .catch(() => Response.redirect("/", 302))
+        .catch(() =>
+          caches.match(request).then((cached) =>
+            cached || caches.match(OFFLINE_PAGE).then((offline) =>
+              offline || Response.redirect("/", 302)
+            )
+          )
+        )
     );
     return;
   }
@@ -57,9 +71,20 @@ self.addEventListener("fetch", (event) => {
           const copy = response.clone();
           caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
           return response;
-        })
+        }).catch(() => new Response("", { status: 503, statusText: "Offline" }))
       )
     );
     return;
   }
+
+  // Other same-origin GET requests: network-first with cache fallback
+  event.respondWith(
+    fetch(request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+        return response;
+      })
+      .catch(() => caches.match(request))
+  );
 });

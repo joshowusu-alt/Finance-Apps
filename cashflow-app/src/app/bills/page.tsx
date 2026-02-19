@@ -334,7 +334,7 @@ export default function BillsPage() {
           <section className="space-y-6">
             <header className="vn-card p-6">
               <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Bills</div>
-              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Bills and Outflows</h1>
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Committed Bills &amp; Recurring Outflows</h1>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 Plan your bills and compare with real spending.
               </p>
@@ -347,7 +347,7 @@ export default function BillsPage() {
 
             <div className="grid gap-6 md:grid-cols-3">
               <div className="vn-card p-5">
-                <div className="text-xs font-medium text-[var(--vn-muted)] mb-1">Budgeted outflows</div>
+                <div className="text-xs font-medium text-[var(--vn-muted)] mb-1">Total Budgeted Outflows</div>
                 <div className="text-xl font-bold text-[var(--vn-text)]">{formatMoney(budgetedOutflows)}</div>
                 <div className="mt-2 space-y-1">
                   <div className="flex justify-between text-xs">
@@ -355,13 +355,13 @@ export default function BillsPage() {
                     <span className="font-medium text-[var(--vn-text)]">{formatMoney(budgetedBillsPortion)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-[var(--vn-muted)]">Allocations</span>
+                    <span className="text-[var(--vn-muted)]">Recurring outflows</span>
                     <span className="font-medium text-[var(--vn-text)]">{formatMoney(budgetedAllocationsPortion)}</span>
                   </div>
                 </div>
               </div>
               <div className="vn-card p-5">
-                <div className="text-xs font-medium text-[var(--vn-muted)] mb-1">Actual outflows</div>
+                <div className="text-xs font-medium text-[var(--vn-muted)] mb-1">Total Actual Outflows</div>
                 <div className="text-xl font-bold text-[var(--vn-text)]">{formatMoney(actualOutflows)}</div>
                 <div className="mt-2 space-y-1">
                   <div className="flex justify-between text-xs">
@@ -369,7 +369,7 @@ export default function BillsPage() {
                     <span className="font-medium text-[var(--vn-text)]">{formatMoney(actualBillsPortion)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-[var(--vn-muted)]">Other</span>
+                    <span className="text-[var(--vn-muted)]">Recurring outflows</span>
                     <span className="font-medium text-[var(--vn-text)]">{formatMoney(actualAllocationsPortion)}</span>
                   </div>
                 </div>
@@ -401,7 +401,7 @@ export default function BillsPage() {
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Planned bills</div>
+                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Committed Bills</div>
                   <button
                     onClick={handleAddBill}
                     className="vn-btn vn-btn-primary text-xs px-4 py-2.5"
@@ -459,7 +459,7 @@ export default function BillsPage() {
 
               <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Recurring outflows</div>
+                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Recurring Outflows</div>
                   <button
                     onClick={handleAddOutflow}
                     className="vn-btn vn-btn-primary text-xs px-4 py-2.5"

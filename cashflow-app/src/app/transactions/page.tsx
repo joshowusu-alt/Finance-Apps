@@ -240,6 +240,152 @@ function resolveTransferRuleId(draft: TransactionDraft, rules: Plan["outflowRule
   return resolved || undefined;
 }
 
+/* ---------- Progress bar component ---------- */
+function ProgressBar({ value, max, favorable }: { value: number; max: number; favorable: boolean }) {
+  if (max <= 0) return null;
+  const pct = Math.min((value / max) * 100, 100);
+  const overBudget = value > max;
+  const barColor = overBudget
+    ? favorable
+      ? "bg-emerald-500 dark:bg-emerald-400"
+      : "bg-rose-500 dark:bg-rose-400"
+    : "bg-blue-500 dark:bg-blue-400";
+  return (
+    <div className="mt-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-600 overflow-hidden">
+      <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
+
+/* ---------- Budget vs Actual Summary ---------- */
+type BudgetData = {
+  budgetIncome: number; budgetSpending: number; budgetBills: number; budgetAllocations: number;
+  discretionaryBudget: number; budgetSavings: number; budgetLeftover: number;
+  actualIncome: number; actualSpending: number; actualSavings: number; actualLeftover: number;
+  actualBudgeted: number; actualUnbudgeted: number;
+  billTxns: Transaction[]; allocationTxns: Transaction[]; unbudgetedTxns: Transaction[];
+  incomeTxns: Transaction[]; savingsTxns: Transaction[];
+};
+
+function BudgetVsActualSummary({ data, formatMoney: fmt }: { data: BudgetData; formatMoney: (n: number) => string }) {
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+
+  const cards = [
+    {
+      key: "income", label: "Income",
+      budget: data.budgetIncome, actual: data.actualIncome,
+      favorableWhenOver: true,
+      breakdown: [] as { name: string; value: number }[],
+      txns: data.incomeTxns,
+    },
+    {
+      key: "spending", label: "Spending",
+      budget: data.budgetSpending, actual: data.actualSpending,
+      favorableWhenOver: false,
+      breakdown: [
+        { name: "Committed bills", value: data.budgetBills },
+        { name: "Recurring outflows", value: data.budgetAllocations },
+        ...(data.discretionaryBudget > 0 ? [{ name: "Discretionary cap", value: data.discretionaryBudget }] : []),
+      ],
+      txns: [...data.billTxns, ...data.allocationTxns, ...data.unbudgetedTxns],
+    },
+    {
+      key: "savings", label: "Savings",
+      budget: data.budgetSavings, actual: data.actualSavings,
+      favorableWhenOver: true,
+      breakdown: [] as { name: string; value: number }[],
+      txns: data.savingsTxns,
+    },
+    {
+      key: "leftover", label: "Leftover",
+      budget: data.budgetLeftover, actual: data.actualLeftover,
+      favorableWhenOver: true,
+      breakdown: [] as { name: string; value: number }[],
+      txns: [] as Transaction[],
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {cards.map((card) => {
+        const delta = card.actual - card.budget;
+        const favorable = card.favorableWhenOver ? delta >= 0 : delta <= 0;
+        const expanded = expandedCard === card.key;
+        const hasTxns = card.txns.length > 0;
+
+        return (
+          <div
+            key={card.key}
+            className={`rounded-2xl border bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm transition-colors ${
+              hasTxns ? "cursor-pointer hover:border-(--accent) dark:hover:border-(--accent)" : ""
+            } ${expanded ? "border-(--accent) dark:border-(--accent)" : "border-slate-200 dark:border-slate-700"}`}
+            onClick={() => hasTxns && setExpandedCard(expanded ? null : card.key)}
+            role={hasTxns ? "button" : undefined}
+            tabIndex={hasTxns ? 0 : undefined}
+            onKeyDown={(e) => { if (hasTxns && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setExpandedCard(expanded ? null : card.key); } }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{card.label}</div>
+              {hasTxns && (
+                <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              )}
+            </div>
+            <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">Budget {fmt(card.budget)}</div>
+            {card.breakdown.length > 0 && (
+              <div className="mt-0.5 space-y-0">
+                {card.breakdown.filter((b) => b.value > 0).map((b) => (
+                  <div key={b.name} className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500">
+                    <span>{b.name}</span>
+                    <span>{fmt(b.value)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">{fmt(card.actual)}</div>
+
+            {/* Progress bar */}
+            {card.budget > 0 && <ProgressBar value={card.actual} max={card.budget} favorable={card.favorableWhenOver} />}
+
+            {delta !== 0 && (
+              <div className={`mt-1 text-xs font-semibold ${favorable ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                {delta > 0 ? "+" : ""}{fmt(delta)}
+              </div>
+            )}
+
+            {/* Unbudgeted spending callout on spending card */}
+            {card.key === "spending" && data.actualUnbudgeted > 0 && (
+              <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 px-2 py-1.5 border border-amber-200 dark:border-amber-700/50">
+                <span className="text-amber-600 dark:text-amber-400 text-xs">⚠</span>
+                <span className="text-[10px] font-medium text-amber-700 dark:text-amber-300">{fmt(data.actualUnbudgeted)} unbudgeted</span>
+              </div>
+            )}
+
+            {/* Drill-down transaction list */}
+            {expanded && card.txns.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 space-y-1.5 max-h-48 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                {card.txns.slice(0, 20).map((txn) => (
+                  <div key={txn.id} className="flex items-center justify-between text-[11px]">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {card.key === "spending" && !txn.linkedBillId && !txn.linkedRuleId && (
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Unbudgeted" />
+                      )}
+                      <span className="truncate text-slate-600 dark:text-slate-300">{txn.label}</span>
+                    </div>
+                    <span className="font-medium text-slate-800 dark:text-slate-200 ml-2 shrink-0">{fmt(txn.amount)}</span>
+                  </div>
+                ))}
+                {card.txns.length > 20 && (
+                  <div className="text-[10px] text-slate-400 dark:text-slate-500 text-center">+{card.txns.length - 20} more</div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function TransactionsPage() {
   const [plan, setPlan] = useState<Plan>(() => loadPlan());
   const [newTransaction, setNewTransaction] = useState<TransactionDraft>({
@@ -295,16 +441,46 @@ export default function TransactionsPage() {
     const txns = plan.transactions.filter(
       (t) => t.date >= period.start && t.date <= period.end
     );
+    const billIds = new Set(plan.bills.map((b) => b.id));
+    const ruleIds = new Set(plan.outflowRules.map((r) => r.id));
+
     const budgetIncome = events.filter((e) => e.type === "income").reduce((s, e) => s + e.amount, 0);
-    const budgetOutflows = events.filter((e) => e.type === "outflow").reduce((s, e) => s + e.amount, 0);
+    const budgetBills = events.filter((e) => e.type === "outflow" && billIds.has(e.sourceId ?? "")).reduce((s, e) => s + e.amount, 0);
     const budgetSavings = events.filter((e) => e.type === "outflow" && e.category === "savings").reduce((s, e) => s + e.amount, 0);
-    const budgetSpending = budgetOutflows - budgetSavings;
+    const budgetAllocations = events.filter((e) => e.type === "outflow" && !billIds.has(e.sourceId ?? "") && e.category !== "savings").reduce((s, e) => s + e.amount, 0);
+    const discretionaryBudget = plan.setup.variableCap ?? 0;
+    const budgetSpending = budgetBills + budgetAllocations + discretionaryBudget;
+    const budgetOutflows = budgetSpending + budgetSavings;
     const budgetLeftover = budgetIncome - budgetOutflows;
+
     const actualIncome = txns.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
     const actualSavings = txns.filter((t) => t.category === "savings").reduce((s, t) => s + t.amount, 0);
     const actualSpending = txns.filter((t) => t.type === "outflow" && t.category !== "savings").reduce((s, t) => s + t.amount, 0);
+
+    // Split actual spending into budgeted (linked to rule/bill) and unbudgeted
+    const actualBudgeted = txns.filter((t) =>
+      t.type === "outflow" && t.category !== "savings" &&
+      (t.linkedBillId || t.linkedRuleId)
+    ).reduce((s, t) => s + t.amount, 0);
+    const actualUnbudgeted = actualSpending - actualBudgeted;
+
     const actualLeftover = actualIncome - actualSpending - actualSavings;
-    return { budgetIncome, budgetSpending, budgetSavings, budgetLeftover, actualIncome, actualSpending, actualSavings, actualLeftover };
+
+    // Build drill-down lists per category
+    const spendingTxns = txns.filter((t) => t.type === "outflow" && t.category !== "savings");
+    const billTxns = spendingTxns.filter((t) => t.linkedBillId && billIds.has(t.linkedBillId));
+    const allocationTxns = spendingTxns.filter((t) => t.linkedRuleId && ruleIds.has(t.linkedRuleId) && !t.linkedBillId);
+    const unbudgetedTxns = spendingTxns.filter((t) => !t.linkedBillId && !t.linkedRuleId);
+    const incomeTxns = txns.filter((t) => t.type === "income");
+    const savingsTxns = txns.filter((t) => t.category === "savings");
+
+    return {
+      budgetIncome, budgetSpending, budgetBills, budgetAllocations,
+      discretionaryBudget, budgetSavings, budgetLeftover,
+      actualIncome, actualSpending, actualSavings, actualLeftover,
+      actualBudgeted, actualUnbudgeted,
+      billTxns, allocationTxns, unbudgetedTxns, incomeTxns, savingsTxns,
+    };
   }, [plan, period]);
 
   const periodTransactions = useMemo(() => {
@@ -1147,29 +1323,7 @@ export default function TransactionsPage() {
 
             {/* Budget vs Actual Summary */}
             {budgetVsActual && (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                {([
-                  { label: "Income", budget: budgetVsActual.budgetIncome, actual: budgetVsActual.actualIncome, favorableWhenOver: true },
-                  { label: "Spending", budget: budgetVsActual.budgetSpending, actual: budgetVsActual.actualSpending, favorableWhenOver: false },
-                  { label: "Savings", budget: budgetVsActual.budgetSavings, actual: budgetVsActual.actualSavings, favorableWhenOver: true },
-                  { label: "Leftover", budget: budgetVsActual.budgetLeftover, actual: budgetVsActual.actualLeftover, favorableWhenOver: true },
-                ] as const).map((card) => {
-                  const delta = card.actual - card.budget;
-                  const favorable = card.favorableWhenOver ? delta >= 0 : delta <= 0;
-                  return (
-                    <div key={card.label} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{card.label}</div>
-                      <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">Budget {formatMoney(card.budget)}</div>
-                      <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">{formatMoney(card.actual)}</div>
-                      {delta !== 0 && (
-                        <div className={`mt-1 text-xs font-semibold ${favorable ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-                          {delta > 0 ? "+" : ""}{formatMoney(delta)}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              <BudgetVsActualSummary data={budgetVsActual} formatMoney={formatMoney} />
             )}
 
             {/* Transactions List */}
@@ -1637,7 +1791,12 @@ export default function TransactionsPage() {
                                   <div className="flex items-center gap-3 flex-1 min-w-[220px]">
                                     <MerchantLogo merchantName={txn.label} size="sm" />
                                     <div>
-                                      <div className="text-sm font-semibold text-slate-900 dark:text-white">{txn.label}</div>
+                                      <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-white">
+                                        {txn.label}
+                                        {txn.type === "outflow" && txn.category !== "savings" && !txn.linkedBillId && !txn.linkedRuleId && (
+                                          <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0" title="Unbudgeted spending" />
+                                        )}
+                                      </div>
                                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                                         <span>{formatNice(txn.date)}</span>
                                         <span className="text-slate-300">|</span>
