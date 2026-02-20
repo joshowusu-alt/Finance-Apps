@@ -1084,7 +1084,7 @@ export default function TransactionsPage() {
             <div className="vn-card p-6">
               <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Add transaction</div>
               <form onSubmit={handleAddTransaction} className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="text-xs font-semibold text-[var(--vn-muted)]">Date</label>
                     <input
@@ -1383,7 +1383,7 @@ export default function TransactionsPage() {
 
             {/* Transactions List */}
             <div className="vn-card p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
                 <div className="text-sm font-semibold text-[var(--vn-text)]">
                   Transactions ({periodTransactions.length})
                   {bulkMode && selectedIds.size > 0 && (
@@ -1392,7 +1392,7 @@ export default function TransactionsPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap justify-end gap-1.5">
                   {!bulkMode ? (
                     <>
                       <button
@@ -1550,22 +1550,22 @@ export default function TransactionsPage() {
                             key={txn.id}
                             data-index={virtualRow.index}
                             ref={rowVirtualizer.measureElement}
-                            className="absolute left-0 top-0 w-full"
+                            className="absolute left-0 top-0 w-full pb-2"
                             style={{ transform: `translateY(${virtualRow.start}px)` }}
                           >
-                            <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 flex flex-wrap items-center justify-between gap-3">
+                            <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 flex items-start gap-3">
                               {bulkMode && (
                                 <input
                                   type="checkbox"
                                   checked={selectedIds.has(txn.id)}
                                   onChange={() => toggleSelect(txn.id)}
-                                  className="h-4 w-4 rounded border-slate-300 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
+                                  className="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                                   onClick={(e) => e.stopPropagation()}
                                 />
                               )}
                               {editingId === txn.id && editTransaction ? (
-                                <div className="w-full space-y-3">
-                                  <div className="grid gap-3 md:grid-cols-2">
+                                <div className="flex-1 min-w-0 space-y-3">
+                                  <div className="grid gap-3 sm:grid-cols-2">
                                     <div>
                                       <label className="text-xs font-semibold text-[var(--vn-muted)]">Date</label>
                                       <input
@@ -1829,70 +1829,82 @@ export default function TransactionsPage() {
                                   <div className="flex items-center justify-end gap-2">
                                     <button
                                       onClick={() => handleUpdateTransaction(txn.id)}
-                                      className="vn-btn vn-btn-primary text-xs hover:bg-[var(--accent-deep)]"
+                                      className="vn-btn vn-btn-primary text-xs min-h-[44px] hover:bg-[var(--accent-deep)]"
                                     >
                                       Save
                                     </button>
                                     <button
                                       onClick={cancelEdit}
-                                      className="rounded-xl border border-[var(--vn-border)] px-4 py-2 text-xs font-semibold text-[var(--vn-muted)] hover:bg-[var(--vn-bg)]"
+                                      className="rounded-xl border border-[var(--vn-border)] px-4 py-2 text-xs min-h-[44px] font-semibold text-[var(--vn-muted)] hover:bg-[var(--vn-bg)]"
                                     >
                                       Cancel
                                     </button>
                                   </div>
                                 </div>
                               ) : (
-                                <>
-                                  <div className="flex items-center gap-3 flex-1 min-w-[220px]">
+                                <div className="flex-1 min-w-0">
+                                  {/* Main row: logo · text · desktop actions */}
+                                  <div className="flex items-start gap-3">
                                     <MerchantLogo merchantName={txn.label} size="sm" />
-                                    <div>
+                                    <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-1.5 text-sm font-semibold text-[var(--vn-text)]">
-                                        {txn.label}
+                                        <span className="truncate">{txn.label}</span>
                                         {txn.type === "outflow" && txn.category !== "savings" && !txn.linkedBillId && !txn.linkedRuleId && (
                                           <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0" title="Unbudgeted spending" />
                                         )}
                                       </div>
-                                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--vn-muted)]">
-                                        <span>{formatNice(txn.date)}</span>
-                                        <span className="text-slate-300">|</span>
+                                      <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-[var(--vn-muted)]">
+                                        <span className="whitespace-nowrap">{formatNice(txn.date)}</span>
+                                        <span className="text-slate-300">·</span>
                                         <span className="capitalize">{txn.category}</span>
                                         {txn.notes && (
                                           <>
-                                            <span className="text-slate-300">|</span>
-                                            <span className="text-[var(--vn-muted)]">{txn.notes}</span>
+                                            <span className="text-slate-300">·</span>
+                                            <span className="truncate max-w-[120px] sm:max-w-none">{txn.notes}</span>
                                           </>
                                         )}
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="flex items-center gap-4">
-                                    <div
-                                      className={`text-right ${txn.type === "income"
-                                        ? "text-green-600"
-                                        : txn.type === "transfer"
-                                          ? "text-sky-600"
-                                          : "text-rose-600"
-                                        }`}
-                                    >
-                                      <div className="text-sm font-semibold">
-                                        {txn.type === "income" ? "+" : txn.type === "transfer" ? "T" : "-"}
-                                        {formatMoney(txn.amount)}
-                                      </div>
+                                    {/* Desktop: amount + actions (sm+) */}
+                                    <div className="hidden sm:flex items-center gap-2 shrink-0">
+                                      <span className={`text-sm font-semibold ${txn.type === "income" ? "text-green-600" : txn.type === "transfer" ? "text-sky-600" : "text-rose-600"}`}>
+                                        {txn.type === "income" ? "+" : txn.type === "transfer" ? "T" : "−"}{formatMoney(txn.amount)}
+                                      </span>
+                                      <button
+                                        onClick={() => handleEditTransaction(txn)}
+                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-[var(--vn-muted)] hover:text-[var(--vn-text)] transition-colors"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteTransaction(txn.id)}
+                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-[var(--vn-muted)] hover:text-rose-600 transition-colors"
+                                      >
+                                        Delete
+                                      </button>
                                     </div>
-                                    <button
-                                      onClick={() => handleEditTransaction(txn)}
-                                      className="text-xs font-semibold text-[var(--vn-muted)] hover:text-[var(--vn-text)] transition-colors"
-                                    >
-                                      Edit
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteTransaction(txn.id)}
-                                      className="text-xs font-semibold text-[var(--vn-muted)] hover:text-rose-600 transition-colors"
-                                    >
-                                      Delete
-                                    </button>
                                   </div>
-                                </>
+                                  {/* Mobile footer: amount + actions (< sm) */}
+                                  <div className="mt-2.5 flex items-center justify-between border-t border-[var(--vn-border)] pt-2.5 sm:hidden">
+                                    <span className={`text-sm font-semibold ${txn.type === "income" ? "text-green-600" : txn.type === "transfer" ? "text-sky-600" : "text-rose-600"}`}>
+                                      {txn.type === "income" ? "+" : txn.type === "transfer" ? "T" : "−"}{formatMoney(txn.amount)}
+                                    </span>
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        onClick={() => handleEditTransaction(txn)}
+                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-[var(--vn-muted)] hover:text-[var(--vn-text)] transition-colors"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteTransaction(txn.id)}
+                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-[var(--vn-muted)] hover:text-rose-600 transition-colors"
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
                               )}
                             </div>
                           </div>
