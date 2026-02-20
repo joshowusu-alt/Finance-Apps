@@ -223,6 +223,39 @@ export default function InsightsPage() {
   const paceTone =
     paceDelta > 0.08 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400";
 
+  // Cross-period variance table data
+  const crossPeriodVariance = useMemo(() => {
+    if (sortedPeriods.length < 2) return null;
+    const txns = plan.transactions || [];
+    const categories = ["bill", "savings", "giving", "allowance", "buffer", "other"] as const;
+
+    // For each period, sum spend per category
+    const periodData = sortedPeriods.map(period => {
+      const periodTxns = txns.filter(t =>
+        t.type === "outflow" && t.date >= period.start && t.date <= period.end
+      );
+      const byCategory: Record<string, number> = {};
+      for (const cat of categories) byCategory[cat] = 0;
+      for (const t of periodTxns) {
+        if (categories.includes(t.category as typeof categories[number])) {
+          byCategory[t.category] = (byCategory[t.category] || 0) + t.amount;
+        }
+      }
+      return { period, byCategory };
+    });
+
+    // Compute max per category for heat-map scaling
+    const maxPerCat: Record<string, number> = {};
+    for (const cat of categories) {
+      maxPerCat[cat] = Math.max(...periodData.map(p => p.byCategory[cat] || 0));
+    }
+
+    // Only include categories where at least one period has data
+    const activeCategories = categories.filter(cat => maxPerCat[cat] > 0);
+
+    return { periodData, maxPerCat, activeCategories };
+  }, [sortedPeriods, plan.transactions]);
+
   function handleExportInsightsCsv() {
     downloadInsightsCsv(snapshot, derivedForPeriod);
   }
@@ -878,6 +911,63 @@ export default function InsightsPage() {
                     })}
                   </div>
                 </CollapsibleSection>
+
+                {crossPeriodVariance && crossPeriodVariance.activeCategories.length > 0 && (
+                  <CollapsibleSection title="8) Category trends across periods">
+                    <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Category</th>
+                            {crossPeriodVariance.periodData.map(({ period }) => (
+                              <th key={period.id} className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                                {period.label}
+                              </th>
+                            ))}
+                            <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Trend</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {crossPeriodVariance.activeCategories.map((cat) => {
+                            const values = crossPeriodVariance.periodData.map(p => p.byCategory[cat] || 0);
+                            const maxVal = crossPeriodVariance.maxPerCat[cat];
+                            const last = values[values.length - 1];
+                            const prev = values.length > 1 ? values[values.length - 2] : last;
+                            const trendUp = last > prev * 1.05;
+                            const trendDown = last < prev * 0.95;
+                            return (
+                              <tr key={cat} className="border-b border-slate-100 dark:border-slate-800 last:border-0">
+                                <td className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200 capitalize">{cat}</td>
+                                {values.map((val, idx) => {
+                                  const intensity = maxVal > 0 ? val / maxVal : 0;
+                                  const bg = intensity > 0.8 ? "rgba(239,68,68,0.25)" :
+                                    intensity > 0.5 ? "rgba(251,146,60,0.2)" :
+                                    intensity > 0.2 ? "rgba(250,204,21,0.15)" :
+                                    "transparent";
+                                  return (
+                                    <td key={idx} className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300 text-xs" style={{ background: bg }}>
+                                      {val > 0 ? formatMoney(val) : <span className="text-zinc-400">-</span>}
+                                    </td>
+                                  );
+                                })}
+                                <td className="px-4 py-3 text-right">
+                                  {trendUp ? (
+                                    <span className="text-rose-500 font-bold text-xs">↑ {formatDelta(last - prev)}</span>
+                                  ) : trendDown ? (
+                                    <span className="text-emerald-500 font-bold text-xs">↓ {formatDelta(last - prev)}</span>
+                                  ) : (
+                                    <span className="text-zinc-400 text-xs">~</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">Heat-map shading: darker = higher spend relative to category peak. Trend shows last vs previous period.</p>
+                  </CollapsibleSection>
+                )}
               </>
             )}
           </section>

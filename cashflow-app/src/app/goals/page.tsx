@@ -4,7 +4,7 @@ import { useState } from "react";
 import { loadPlan, savePlan } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
-import type { Plan, SavingsGoal } from "@/data/plan";
+import type { Plan, SavingsGoal, OutflowRule } from "@/data/plan";
 import { getPeriod } from "@/lib/cashflowEngine";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { toast } from "@/components/Toast";
@@ -25,10 +25,17 @@ const GOAL_COLORS = [
 
 const GOAL_ICONS = ["🎯", "✈️", "🏠", "🚗", "💍", "🎓", "🏥", "🎁", "💰", "🌴"];
 
-function GoalCard({ goal, onUpdate, onDelete }: {
+/** Returns the label suffix used to link an OutflowRule to a goal */
+function goalRuleLabel(goalName: string, goalId: string) {
+    return `${goalName} [goal-${goalId}]`;
+}
+
+function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
     goal: SavingsGoal;
     onUpdate: (goal: SavingsGoal) => void;
     onDelete: (id: string) => void;
+    linkedRule: OutflowRule | null;
+    onToggleAutoSave: (goal: SavingsGoal, enable: boolean, monthlyAmount: number) => void;
 }) {
     const [isEditing, setIsEditing] = useState(false);
     const [addAmount, setAddAmount] = useState("");
@@ -106,6 +113,9 @@ function GoalCard({ goal, onUpdate, onDelete }: {
     const weeklyNeeded = daysUntilTarget && daysUntilTarget > 0 && remaining > 0
         ? remaining / (daysUntilTarget / 7)
         : null;
+
+    const monthsUntilTarget = daysUntilTarget && daysUntilTarget > 0 ? daysUntilTarget / 30 : null;
+    const monthlySuggested = monthsUntilTarget && remaining > 0 ? Math.ceil(remaining / monthsUntilTarget) : null;
 
     // Edit mode UI
     if (isEditing) {
@@ -292,6 +302,34 @@ function GoalCard({ goal, onUpdate, onDelete }: {
                     ) : (
                         "⏰ Target date passed"
                     )}
+                </div>
+            )}
+
+            {/* Monthly auto-save toggle */}
+            {!isComplete && monthlySuggested !== null && (
+                <div className={`flex items-center justify-between gap-3 p-3 rounded-lg mb-3 ${
+                    linkedRule ? "bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800" : "bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                }`}>
+                    <div>
+                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            {linkedRule ? "✅ Monthly auto-save active" : "💡 Monthly auto-save"}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            {formatMoney(monthlySuggested)}/month added to your cashflow plan
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => onToggleAutoSave(goal, !linkedRule, monthlySuggested)}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                            linkedRule ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-600"
+                        }`}
+                        role="switch"
+                        aria-checked={!!linkedRule}
+                    >
+                        <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-xs transition-transform ${
+                            linkedRule ? "translate-x-5" : "translate-x-0"
+                        }`} />
+                    </button>
                 </div>
             )}
 
@@ -525,6 +563,37 @@ export default function GoalsPage() {
         toast.success("Goal updated!");
     };
 
+    const handleToggleAutoSave = (goal: SavingsGoal, enable: boolean, monthlyAmount: number) => {
+        const label = goalRuleLabel(goal.name, goal.id);
+        const existingRule = (plan.outflowRules || []).find(r => r.label === label);
+
+        let updatedRules: OutflowRule[];
+        if (enable && !existingRule) {
+            const today = new Date();
+            const seedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+            const newRule: OutflowRule = {
+                id: generateId(),
+                label,
+                amount: monthlyAmount,
+                cadence: "monthly",
+                seedDate,
+                category: "savings",
+                enabled: true,
+            };
+            updatedRules = [...(plan.outflowRules || []), newRule];
+            toast.success(`Auto-save of ${formatMoney(monthlyAmount)}/month added to your plan!`);
+        } else if (!enable && existingRule) {
+            updatedRules = (plan.outflowRules || []).filter(r => r.id !== existingRule.id);
+            toast.success("Auto-save removed from plan");
+        } else {
+            return;
+        }
+
+        const updatedPlan = { ...plan, outflowRules: updatedRules };
+        savePlan(updatedPlan);
+        setPlan(updatedPlan);
+    };
+
     const handleDeleteGoal = async (id: string) => {
         const goal = goals.find(g => g.id === id);
         const confirmed = await confirm({
@@ -580,14 +649,21 @@ export default function GoalsPage() {
 
                         {/* Goals grid */}
                         <div className="grid gap-4 md:grid-cols-2">
-                            {goals.map(goal => (
-                                <GoalCard
-                                    key={goal.id}
-                                    goal={goal}
-                                    onUpdate={handleUpdateGoal}
-                                    onDelete={handleDeleteGoal}
-                                />
-                            ))}
+                            {goals.map(goal => {
+                                const linkedRule = (plan.outflowRules || []).find(
+                                    r => r.label === goalRuleLabel(goal.name, goal.id)
+                                ) ?? null;
+                                return (
+                                    <GoalCard
+                                        key={goal.id}
+                                        goal={goal}
+                                        onUpdate={handleUpdateGoal}
+                                        onDelete={handleDeleteGoal}
+                                        linkedRule={linkedRule}
+                                        onToggleAutoSave={handleToggleAutoSave}
+                                    />
+                                );
+                            })}
                         </div>
 
                         {/* Empty state or new goal form */}
