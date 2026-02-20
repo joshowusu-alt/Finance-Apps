@@ -43,7 +43,7 @@ export async function POST(req: Request) {
             current: account.balances.current,
             available: account.balances.available,
             limit: account.balances.limit,
-            currency: account.balances.iso_currency_code || "GBP",
+            currency: account.balances.iso_currency_code || "USD",
           },
           mask: account.mask,
         }));

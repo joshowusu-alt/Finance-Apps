@@ -123,7 +123,8 @@ function initializeFreshScope() {
   saveWizardState(DEFAULT_WIZARD_STATE);
   saveAlertPreferences(DEFAULT_ALERT_PREFS);
   setTheme("light");
-  setCurrency("GBP");
+  // Use auto-detected currency based on user locale instead of hardcoding GBP
+  // setCurrency is intentionally not called — getCurrency() will auto-detect
 }
 
 /**
