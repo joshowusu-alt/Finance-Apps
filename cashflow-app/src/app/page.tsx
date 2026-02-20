@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion, useSpring, useTransform, AnimatePresence, type Variants } from "framer-motion";
 import Link from "next/link";
 import { hasStoredPlan, savePlan } from "@/lib/storage";
 import { createSamplePlan } from "@/data/plan";
@@ -42,6 +43,79 @@ function formatPeriodLabel(label: string) {
   return label.replace(/^P(\d+)/, "Period $1");
 }
 
+// ---------------------------------------------------------------------------
+// Animated money counter — smoothly counts to the new value on change
+// ---------------------------------------------------------------------------
+function AnimatedMoney({ value, className }: { value: number; className?: string }) {
+  const spring = useSpring(value, { stiffness: 70, damping: 18, mass: 0.6 });
+  useEffect(() => { spring.set(value); }, [value, spring]);
+  const display = useTransform(spring, (v) => formatMoney(Math.round(v)));
+  return <motion.span className={className}>{display}</motion.span>;
+}
+
+// ---------------------------------------------------------------------------
+// Confetti burst — canvas-based, fired on period close success
+// ---------------------------------------------------------------------------
+function ConfettiBurst({ onDone }: { onDone: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const doneCalled = useRef(false);
+  const stableDone = useCallback(onDone, []); // eslint-disable-line
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const colors = ["#6366f1","#8b5cf6","#06b6d4","#22c55e","#f59e0b","#ec4899","#f97316","#3b82f6"];
+    const pieces = Array.from({ length: 140 }, () => ({
+      x: canvas.width / 2 + (Math.random() - 0.5) * 300,
+      y: canvas.height * 0.45,
+      vx: (Math.random() - 0.5) * 16,
+      vy: Math.random() * -14 - 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      w: Math.random() * 10 + 4,
+      h: Math.random() * 5 + 3,
+      rot: Math.random() * 360,
+      rotV: (Math.random() - 0.5) * 10,
+    }));
+    const FRAMES = 130;
+    let frame = 0;
+    let raf: number;
+    function draw() {
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+      pieces.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.38; p.vx *= 0.98; p.rot += p.rotV;
+        ctx!.save();
+        ctx!.translate(p.x, p.y);
+        ctx!.rotate(p.rot * Math.PI / 180);
+        ctx!.globalAlpha = Math.max(0, 1 - (frame / FRAMES) * 1.4);
+        ctx!.fillStyle = p.color;
+        ctx!.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx!.restore();
+      });
+      frame++;
+      if (frame < FRAMES) { raf = requestAnimationFrame(draw); }
+      else if (!doneCalled.current) { doneCalled.current = true; stableDone(); }
+    }
+    raf = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(raf);
+  }, [stableDone]);
+  return <canvas ref={canvasRef} className="fixed inset-0 z-[9999] pointer-events-none" />;
+}
+
+// ---------------------------------------------------------------------------
+// Stagger variants — used for section + card entrances
+// ---------------------------------------------------------------------------
+const sectionStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
+};
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 22 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] } },
+};
+
 
 
 
@@ -52,6 +126,7 @@ export default function HomePage() {
   const [showSetup, setShowSetup] = useState(() => !hasStoredPlan() && !loadWizardState().completed);
   const [showClosePeriod, setShowClosePeriod] = useState(false);
   const [carryForward, setCarryForward] = useState(true);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     const refresh = () => {
@@ -247,11 +322,16 @@ export default function HomePage() {
         <div className="grid gap-5 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
-          <section className="space-y-6">
-            <header className="flex flex-col gap-4 rounded-3xl p-6 shadow-xl relative overflow-hidden"
+          <motion.section
+            className="space-y-6"
+            variants={sectionStagger}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.header variants={fadeUp} className="flex flex-col gap-4 rounded-3xl p-6 shadow-xl relative overflow-hidden"
               style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}>
 
-              {/* Background accent */}
+              {/* Background accent — subtle animated glow */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
               <div className="flex flex-col md:flex-row md:items-center md:justify-between relative z-10">
@@ -267,13 +347,15 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-3 mt-4 md:mt-0">
                   <ThemeToggle />
-                  <button
-                    onClick={() => setShowClosePeriod(true)}
-                    className="vn-btn vn-btn-ghost text-sm"
-                    title="Close this period and carry balance forward"
-                  >
-                    Close Period
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setShowClosePeriod(true)}
+                      className="vn-btn vn-btn-ghost text-sm"
+                    >
+                      Close Period
+                    </button>
+                    <InfoTooltip text="Use this once the period is over and all transactions are entered. It locks in your real ending balance and advances you to the next period so your forecast stays accurate." />
+                  </div>
                   <Link
                     href="/transactions"
                     className="vn-btn vn-btn-primary text-sm shadow-lg shadow-blue-500/20"
@@ -297,7 +379,7 @@ export default function HomePage() {
                 ) : (
                   <>
                     <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-1 flex items-center">Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
-                    <div className={`text-4xl font-bold ${actualLeftover > 0 ? "text-[var(--vn-success)]" : "text-rose-500"}`}>{formatMoney(actualLeftover)}</div>
+                    <AnimatedMoney value={actualLeftover} className={`text-4xl font-bold ${actualLeftover > 0 ? "text-[var(--vn-success)]" : "text-rose-500"}`} />
                     <div className="text-xs text-[var(--vn-muted)] mt-1">Leftover from income this period</div>
                     {actualIncome === 0 && plan.incomeRules.length > 0 && (
                       <div className="mt-1.5 flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400">
@@ -318,10 +400,12 @@ export default function HomePage() {
                         <div className="relative h-2 rounded-full bg-slate-200 dark:bg-slate-700">
                           {/* Time elapsed bar (background) */}
                           <div className="absolute inset-y-0 left-0 rounded-full bg-slate-300 dark:bg-slate-600" style={{ width: `${Math.round(timeProgress * 100)}%` }} />
-                          {/* Spending progress bar (foreground) */}
-                          <div
-                            className={`absolute inset-y-0 left-0 rounded-full transition-all ${spendingPaceGap > 0.08 ? "bg-rose-500" : spendingPaceGap < -0.08 ? "bg-emerald-500" : "bg-blue-500"}`}
-                            style={{ width: `${Math.min(100, Math.round(spendingProgress * 100))}%`, opacity: 0.85 }}
+                          {/* Spending progress bar (foreground — animated fill) */}
+                          <motion.div
+                            className={`absolute inset-y-0 left-0 rounded-full ${spendingPaceGap > 0.08 ? "bg-rose-500" : spendingPaceGap < -0.08 ? "bg-emerald-500" : "bg-blue-500"}`}
+                            initial={{ width: 0, opacity: 0 }}
+                            animate={{ width: `${Math.min(100, Math.round(spendingProgress * 100))}%`, opacity: 0.85 }}
+                            transition={{ duration: 1.1, ease: "easeOut", delay: 0.25 }}
                           />
                         </div>
                         <div className="flex justify-between text-[10px] text-[var(--vn-muted)] mt-1">
@@ -345,11 +429,11 @@ export default function HomePage() {
                   </>
                 )}
               </div>
-            </header>
+            </motion.header>
 
             {/* Onboarding Panel */}
             {!resolvedOnboarding.dismissed && (
-              <div className="vn-card p-6 border-l-4 border-l-[var(--vn-primary)]">
+              <motion.div variants={fadeUp} className="vn-card p-6 border-l-4 border-l-[var(--vn-primary)]">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="text-sm font-bold text-[var(--vn-text)]">Getting started</div>
@@ -406,12 +490,12 @@ export default function HomePage() {
                     <div className="text-sm text-[var(--vn-success)] font-medium text-center py-2">🎉 You&apos;re all set! Dismiss this card to clear space.</div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Predictive Overspend Warning */}
             {projectedOverspend !== null && projectedOverspend > 50 && timeProgress < 0.95 && (
-              <div className="vn-card p-4 border-l-4 border-l-rose-500 bg-rose-50/60 dark:bg-rose-900/10">
+              <motion.div variants={fadeUp} className="vn-card p-4 border-l-4 border-l-rose-500 bg-rose-50/60 dark:bg-rose-900/10">
                 <div className="flex items-start gap-3">
                   <span className="text-rose-500 text-base mt-0.5">⚠</span>
                   <div className="flex-1 min-w-0">
@@ -427,12 +511,12 @@ export default function HomePage() {
                   </div>
                   <a href="/insights" className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap">Details →</a>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Subscription Nudge */}
             {subscriptionNudge && (
-              <div className="vn-card p-4 border-l-4 border-l-amber-400 flex items-center justify-between gap-4">
+              <motion.div variants={fadeUp} className="vn-card p-4 border-l-4 border-l-amber-400 flex items-center justify-between gap-4">
                 <div>
                   <div className="text-sm font-semibold text-[var(--vn-text)]">💡 Subscription review</div>
                   <div className="text-xs text-[var(--vn-muted)] mt-0.5">
@@ -440,11 +524,11 @@ export default function HomePage() {
                   </div>
                 </div>
                 <Link href="/insights" className="vn-btn vn-btn-ghost text-xs whitespace-nowrap">Review →</Link>
-              </div>
+              </motion.div>
             )}
 
             {/* Visual Hero: Projection */}
-            <div className="vn-card p-6">
+            <motion.div variants={fadeUp} className="vn-card p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="text-sm font-bold text-[var(--vn-text)]">Cashflow Forecast</div>
@@ -463,36 +547,42 @@ export default function HomePage() {
                   lowBalanceThreshold={plan.setup.expectedMinBalance}
                 />
               </div>
-            </div>
+            </motion.div>
 
             {/* Pointers: Widget Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* 1. Insight Pointer */}
-              <div className="h-full">
+              <motion.div className="h-full" whileHover={{ y: -3, transition: { duration: 0.18 } }}>
                 <InsightWidget
                   insight={mainInsight.text}
                   tone={mainInsight.tone}
                 />
-              </div>
+              </motion.div>
 
               {/* 2. Transactions Pointer */}
-              <div className="h-full">
+              <motion.div className="h-full" whileHover={{ y: -3, transition: { duration: 0.18 } }}>
                 <TransactionsWidget transactions={recentTransactions} />
-              </div>
+              </motion.div>
 
               {/* 3. Bills Pointer */}
-              <div className="h-full">
+              <motion.div className="h-full" whileHover={{ y: -3, transition: { duration: 0.18 } }}>
                 <BillsWidget bills={upcomingBills} />
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
-          </section>
+          </motion.section>
         </div>
       </div>
 
       {showSetup && (
         <OnboardingWizard onComplete={handleQuickSetupComplete} />
       )}
+
+      <AnimatePresence>
+        {showConfetti && (
+          <ConfettiBurst onDone={() => setShowConfetti(false)} />
+        )}
+      </AnimatePresence>
 
       {/* Period Close Modal */}
       {showClosePeriod && (() => {
@@ -507,6 +597,7 @@ export default function HomePage() {
           const updated = { ...plan, setup: { ...plan.setup, selectedPeriodId: nextPeriod.id }, periodOverrides: newOverrides };
           savePlan(updated);
           setShowClosePeriod(false);
+          if (actualLeftover >= 0) setShowConfetti(true);
         }
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowClosePeriod(false)}>
