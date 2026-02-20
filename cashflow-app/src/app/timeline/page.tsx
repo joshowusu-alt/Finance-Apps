@@ -172,7 +172,7 @@ export default function TimelinePage() {
   }
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen overflow-x-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
@@ -244,7 +244,7 @@ export default function TimelinePage() {
             </div>
 
             <div className="rounded-2xl border border-[var(--vn-border)] overflow-hidden" style={{ background: "var(--vn-surface)" }}>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto w-full">
                 <div className="min-w-[480px]">
                   <div className="grid grid-cols-5 gap-2 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]" style={{ background: "var(--vn-bg)" }}>
                     <div>Date</div>
