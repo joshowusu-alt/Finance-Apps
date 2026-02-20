@@ -53,7 +53,7 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
     : chartConfig.margin;
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer width="100%" height={isMobile ? Math.min(height - 60, 220) : height}>
       <LineChart data={data} margin={margins}>
         <CartesianGrid
           strokeDasharray="3 3"

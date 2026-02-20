@@ -53,13 +53,13 @@ export function CategoryBreakdownChart({ data, height = 300, onCategoryClick }: 
 
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
-  // Mobile: smaller radius, no inline labels
-  // Desktop: larger radius with labels
-  const outerRadius = isMobile ? 60 : 80;
-  const innerRadius = isMobile ? 30 : 0; // Donut on mobile for cleaner look
+  // Mobile: smaller radius, donut style for clean look
+  // Desktop: larger radius with inline labels
+  const outerRadius = isMobile ? 55 : 80;
+  const innerRadius = isMobile ? 28 : 0;
 
   return (
-    <ResponsiveContainer width="100%" height={isMobile ? height - 40 : height}>
+    <ResponsiveContainer width="100%" height={isMobile ? Math.min(height - 80, 200) : height}>
       <PieChart>
         <Pie
           data={dataWithColors}
@@ -99,12 +99,18 @@ export function CategoryBreakdownChart({ data, height = 300, onCategoryClick }: 
           wrapperStyle={{
             paddingTop: isMobile ? 8 : 16,
             fontSize: isMobile ? "11px" : "12px",
+            maxWidth: "100%",
+            overflow: "hidden",
+            lineHeight: "1.6",
           }}
           iconType="circle"
           iconSize={isMobile ? 8 : 10}
           layout={isMobile ? "horizontal" : "horizontal"}
           align="center"
           verticalAlign="bottom"
+          formatter={(value) => (
+            <span style={{ maxWidth: isMobile ? 80 : 120, display: "inline-block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "middle" }}>{value}</span>
+          )}
         />
       </PieChart>
     </ResponsiveContainer>

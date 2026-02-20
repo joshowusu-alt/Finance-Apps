@@ -265,16 +265,16 @@ export default function SettingsPage() {
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Current As of Date
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <input
                       type="date"
                       value={plan.setup.asOfDate}
                       onChange={(e) => handleSetAsOfDate(e.target.value)}
-                      className="vn-input text-sm flex-1"
+                      className="vn-input text-sm flex-1 min-w-[160px]"
                     />
                     <button
                       onClick={handleSetToToday}
-                      className="vn-btn vn-btn-primary text-xs px-3 py-2"
+                      className="vn-btn vn-btn-primary text-xs px-3 py-2 min-h-[44px] shrink-0"
                     >
                       Set to Today
                     </button>
@@ -372,13 +372,13 @@ export default function SettingsPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleEditPeriod(period)}
-                          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                          className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDeletePeriod(period.id)}
-                          className="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                          className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                           disabled={plan.periods.length === 1}
                           title={plan.periods.length === 1 ? "Cannot delete the last period" : "Delete period"}
                         >

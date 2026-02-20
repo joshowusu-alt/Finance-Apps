@@ -298,17 +298,17 @@ export default function TimelinePage() {
                             {event.overridden ? " • edited" : ""}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <button
                             onClick={() => startEditEvent(event)}
-                            className="text-xs font-semibold text-[var(--vn-muted)] hover:text-[var(--vn-text)]"
+                            className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-[var(--vn-muted)] hover:text-[var(--vn-text)] transition-colors"
                           >
                             Edit
                           </button>
                           {event.overridden ? (
                             <button
                               onClick={() => clearEventEdit(event.id)}
-                              className="text-xs font-semibold text-[var(--vn-muted)] hover:text-rose-600"
+                              className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-[var(--vn-muted)] hover:text-rose-600 transition-colors"
                             >
                               Reset
                             </button>
@@ -317,7 +317,7 @@ export default function TimelinePage() {
                       </div>
 
                       {editingEventId === event.id && eventDraft ? (
-                        <div className="mt-4 grid gap-3 md:grid-cols-3">
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
                           <div>
                             <label className="text-xs font-semibold text-[var(--vn-muted)]">Date</label>
                             <input
@@ -347,16 +347,16 @@ export default function TimelinePage() {
                               placeholder="0.00"
                             />
                           </div>
-                          <div className="flex items-end gap-2">
+                          <div className="flex items-end gap-2 sm:col-span-1">
                             <button
                               onClick={saveEventEdit}
-                              className="w-full rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white shadow hover:bg-[var(--accent-deep)]"
+                              className="flex-1 rounded-xl bg-[var(--accent)] px-3 py-2 text-xs min-h-[44px] font-semibold text-white shadow hover:bg-[var(--accent-deep)]"
                             >
                               Save
                             </button>
                             <button
                               onClick={cancelEditEvent}
-                              className="w-full rounded-xl border border-[var(--vn-border)] px-3 py-2 text-xs font-semibold text-[var(--vn-muted)] hover:bg-[var(--vn-bg)]"
+                              className="flex-1 rounded-xl border border-[var(--vn-border)] px-3 py-2 text-xs min-h-[44px] font-semibold text-[var(--vn-muted)] hover:bg-[var(--vn-bg)]"
                             >
                               Cancel
                             </button>
