@@ -280,7 +280,7 @@ function BudgetVsActualSummary({ data, formatMoney: fmt }: { data: BudgetData; f
     },
     {
       key: "spending", label: "Spending",
-      budget: data.budgetSpending, actual: data.actualSpending,
+      budget: data.budgetSpending, actual: data.actualBudgeted,
       favorableWhenOver: false,
       breakdown: [
         { name: "Committed bills", value: data.budgetBills },
@@ -356,7 +356,10 @@ function BudgetVsActualSummary({ data, formatMoney: fmt }: { data: BudgetData; f
             {card.key === "spending" && data.actualUnbudgeted > 0 && (
               <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 px-2 py-1.5 border border-amber-200 dark:border-amber-700/50">
                 <span className="text-amber-600 dark:text-amber-400 text-xs">⚠</span>
-                <span className="text-[10px] font-medium text-amber-700 dark:text-amber-300">{fmt(data.actualUnbudgeted)} unbudgeted</span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-medium text-amber-700 dark:text-amber-300">+{fmt(data.actualUnbudgeted)} unbudgeted</span>
+                  <span className="text-[9px] text-amber-600/70 dark:text-amber-400/70">Total actual: {fmt(data.actualSpending)}</span>
+                </div>
               </div>
             )}
 
