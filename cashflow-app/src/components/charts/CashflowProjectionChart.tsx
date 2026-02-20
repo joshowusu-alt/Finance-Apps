@@ -1,7 +1,7 @@
 "use client";
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
-import { chartColors, formatCurrency, getTextColor, getMutedColor, getGridColor, chartConfig } from "@/lib/chartConfig";
+import { chartColors, formatCurrency, formatCompactCurrency, getTextColor, getMutedColor, getGridColor, chartConfig } from "@/lib/chartConfig";
 import { useEffect, useState } from "react";
 
 export type CashflowDataPoint = {
@@ -70,7 +70,7 @@ export function CashflowProjectionChart({
           stroke={getMutedColor(isDark)}
           style={{ fontSize: 12 }}
           tickLine={false}
-          tickFormatter={(value) => `£${value >= 1000 ? `${value / 1000}k` : value}`}
+          tickFormatter={(value) => formatCompactCurrency(value)}
         />
         <Tooltip
           contentStyle={{

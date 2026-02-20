@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import {
     chartColors,
     formatCurrency,
+    formatCompactCurrency,
     getTextColor,
     getMutedColor,
     getGridColor,
@@ -118,7 +119,7 @@ export function MonthlyTrendChart({
                         axisLine={false}
                         tickLine={false}
                         tick={{ fill: mutedColor, fontSize: 12 }}
-                        tickFormatter={(value) => `£${(value / 1000).toFixed(1)}k`}
+                        tickFormatter={(value) => formatCompactCurrency(value)}
                         width={50}
                     />
 

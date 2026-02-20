@@ -1,7 +1,7 @@
 "use client";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { chartColors, formatCurrency, getTextColor, getMutedColor, getGridColor, chartConfig } from "@/lib/chartConfig";
+import { chartColors, formatCurrency, formatCompactCurrency, getTextColor, getMutedColor, getGridColor, chartConfig } from "@/lib/chartConfig";
 import { useEffect, useState } from "react";
 
 export type SpendingDataPoint = {
@@ -74,7 +74,7 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
           stroke={getMutedColor(isDark)}
           style={{ fontSize: isMobile ? 10 : 12 }}
           tickLine={false}
-          tickFormatter={(value) => `£${value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value}`}
+          tickFormatter={(value) => formatCompactCurrency(value)}
           width={isMobile ? 35 : 50}
         />
         <Tooltip
