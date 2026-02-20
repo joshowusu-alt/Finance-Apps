@@ -2,11 +2,13 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { getUpcomingEvents } from "@/lib/cashflowEngine";
+import { getUpcomingEvents, getPeriod } from "@/lib/cashflowEngine";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
 import { useDerived } from "@/lib/useDerived";
 import { prettyDate, prettyDateWithYear } from "@/lib/formatUtils";
+import { savePlan, loadPlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import type { PeriodRuleOverride } from "@/data/plan";
 
 
 
@@ -25,6 +27,7 @@ function monthlyEquivalent(amount: number, cadence: string) {
 export default function PlanPage() {
   const { state: plan, derived } = useDerived();
   const [planMode, setPlanMode] = useState<"manual" | "adaptive">("manual");
+  const [applyStatus, setApplyStatus] = useState<"idle" | "applied" | "error">("idle");
 
   const period = derived.period;
   const periodId = period.id;
@@ -36,6 +39,109 @@ export default function PlanPage() {
   const totalAllocations = derived.totals.allocationsTotal;
   const remaining = derived.totals.remaining;
 
+  // ── Adaptive Rollover ─────────────────────────────────────────────────────
+  const prevPeriod = useMemo(() => {
+    const sorted = [...plan.periods].sort((a, b) => a.id - b.id);
+    const idx = sorted.findIndex((p) => p.id === periodId);
+    return idx > 0 ? sorted[idx - 1] : null;
+  }, [plan.periods, periodId]);
+
+  const prevActuals = useMemo(() => {
+    if (!prevPeriod) return null;
+    const txns = plan.transactions.filter(
+      (t) => t.date >= prevPeriod.start && t.date <= prevPeriod.end
+    );
+
+    const incomeByRule: Record<string, number> = {};
+    const outflowByRule: Record<string, number> = {};
+    const billById: Record<string, number> = {};
+    let unbudgeted = 0;
+
+    for (const t of txns) {
+      if (t.type === "income") {
+        if (t.linkedRuleId) incomeByRule[t.linkedRuleId] = (incomeByRule[t.linkedRuleId] ?? 0) + t.amount;
+      } else if (t.type === "outflow" && t.category !== "savings") {
+        if (t.linkedBillId) billById[t.linkedBillId] = (billById[t.linkedBillId] ?? 0) + t.amount;
+        else if (t.linkedRuleId) outflowByRule[t.linkedRuleId] = (outflowByRule[t.linkedRuleId] ?? 0) + t.amount;
+        else unbudgeted += t.amount;
+      }
+    }
+
+    return { incomeByRule, outflowByRule, billById, unbudgeted };
+  }, [prevPeriod, plan.transactions]);
+
+  // Suggestions: rules where last-period actual differs from current budget
+  const adaptiveSuggestions = useMemo(() => {
+    if (!prevActuals) return null;
+
+    const income = plan.incomeRules
+      .filter((r) => r.enabled)
+      .map((r) => ({
+        ruleId: r.id,
+        label: r.label,
+        type: "income" as const,
+        budget: r.amount,
+        actual: prevActuals.incomeByRule[r.id] ?? 0,
+      }))
+      .filter((s) => s.actual > 0);
+
+    const outflow = plan.outflowRules
+      .filter((r) => r.enabled)
+      .map((r) => ({
+        ruleId: r.id,
+        label: r.label,
+        type: "outflow" as const,
+        budget: r.amount,
+        actual: prevActuals.outflowByRule[r.id] ?? 0,
+      }))
+      .filter((s) => s.actual > 0);
+
+    const bills = plan.bills
+      .filter((b) => b.enabled)
+      .map((b) => ({
+        ruleId: b.id,
+        label: b.label,
+        type: "bill" as const,
+        budget: b.amount,
+        actual: prevActuals.billById[b.id] ?? 0,
+      }))
+      .filter((s) => s.actual > 0);
+
+    return { income, outflow, bills, unbudgeted: prevActuals.unbudgeted };
+  }, [prevActuals, plan.incomeRules, plan.outflowRules, plan.bills]);
+
+  function handleApplyAdaptive() {
+    if (!adaptiveSuggestions) return;
+    const current = loadPlan();
+    const overrides: PeriodRuleOverride[] = [
+      // Remove existing overrides for current period on income/outflow
+      ...current.periodRuleOverrides.filter(
+        (o) => o.periodId !== periodId || o.type === "income" && !adaptiveSuggestions.income.find((s) => s.ruleId === o.ruleId) || o.type === "outflow" && !adaptiveSuggestions.outflow.find((s) => s.ruleId === o.ruleId)
+      ),
+      // Add income overrides
+      ...adaptiveSuggestions.income.map((s): PeriodRuleOverride => ({
+        periodId,
+        ruleId: s.ruleId,
+        type: "income",
+        amount: s.actual,
+      })),
+      // Add outflow overrides
+      ...adaptiveSuggestions.outflow.map((s): PeriodRuleOverride => ({
+        periodId,
+        ruleId: s.ruleId,
+        type: "outflow",
+        amount: s.actual,
+      })),
+    ];
+
+    const updated = { ...current, periodRuleOverrides: overrides };
+    savePlan(updated);
+    window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+    setApplyStatus("applied");
+    setTimeout(() => setApplyStatus("idle"), 3000);
+  }
+
+  // ── Allocation breakdown from outflow rules ─────────────────────────────
   // Allocation breakdown from outflow rules
   const allocations = useMemo(() => {
     const groups: Record<string, number> = { allowance: 0, savings: 0, giving: 0, buffer: 0, other: 0 };
@@ -101,8 +207,122 @@ export default function PlanPage() {
                 </button>
               </div>
               {planMode === "adaptive" && (
-                <div className="mt-2 text-xs text-[var(--vn-muted)]">
-                  Adaptive mode will use last period&apos;s actuals to prefill the next period. Coming soon.
+                <div className="mt-3">
+                  {!prevPeriod ? (
+                    <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] px-4 py-4 text-sm text-[var(--vn-muted)]">
+                      No previous period found. Complete your first period to unlock Adaptive Rollover.
+                    </div>
+                  ) : !adaptiveSuggestions || (adaptiveSuggestions.income.length === 0 && adaptiveSuggestions.outflow.length === 0 && adaptiveSuggestions.bills.length === 0) ? (
+                    <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] px-4 py-4 text-sm text-[var(--vn-muted)]">
+                      No transactions recorded in {prevPeriod.label} yet. Add transactions to see adaptive suggestions.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="text-xs text-[var(--vn-muted)]">
+                        Showing actuals from <span className="font-semibold text-[var(--vn-text)]">{prevPeriod.label}</span>.
+                        Applying will override rule amounts for <span className="font-semibold text-[var(--vn-text)]">{period.label}</span> only — global rules stay unchanged.
+                      </div>
+
+                      {/* Income rows */}
+                      {adaptiveSuggestions.income.length > 0 && (
+                        <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] overflow-hidden">
+                          <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[var(--vn-muted)] border-b border-[var(--vn-border)]">Income</div>
+                          {adaptiveSuggestions.income.map((s) => {
+                            const delta = s.actual - s.budget;
+                            return (
+                              <div key={s.ruleId} className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-[var(--vn-border)] last:border-0">
+                                <span className="text-sm font-medium text-[var(--vn-text)] min-w-0 truncate">{s.label}</span>
+                                <div className="flex items-center gap-3 shrink-0 text-xs">
+                                  <span className="text-[var(--vn-muted)]">Budget {formatMoney(s.budget)}</span>
+                                  <span className="font-semibold text-[var(--vn-text)]">Actual {formatMoney(s.actual)}</span>
+                                  {delta !== 0 && (
+                                    <span className={`font-semibold ${delta > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
+                                      {delta > 0 ? "+" : ""}{formatMoney(delta)}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Outflow rule rows */}
+                      {adaptiveSuggestions.outflow.length > 0 && (
+                        <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] overflow-hidden">
+                          <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[var(--vn-muted)] border-b border-[var(--vn-border)]">Recurring Outflows</div>
+                          {adaptiveSuggestions.outflow.map((s) => {
+                            const delta = s.actual - s.budget;
+                            return (
+                              <div key={s.ruleId} className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-[var(--vn-border)] last:border-0">
+                                <span className="text-sm font-medium text-[var(--vn-text)] min-w-0 truncate">{s.label}</span>
+                                <div className="flex items-center gap-3 shrink-0 text-xs">
+                                  <span className="text-[var(--vn-muted)]">Budget {formatMoney(s.budget)}</span>
+                                  <span className="font-semibold text-[var(--vn-text)]">Actual {formatMoney(s.actual)}</span>
+                                  {delta !== 0 && (
+                                    <span className={`font-semibold ${delta <= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
+                                      {delta > 0 ? "+" : ""}{formatMoney(delta)}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Bills rows (read-only, can't override amount) */}
+                      {adaptiveSuggestions.bills.length > 0 && (
+                        <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] overflow-hidden">
+                          <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[var(--vn-muted)] border-b border-[var(--vn-border)] flex items-center justify-between">
+                            <span>Committed Bills</span>
+                            <span className="text-[9px] normal-case font-normal">(amounts fixed)</span>
+                          </div>
+                          {adaptiveSuggestions.bills.map((s) => {
+                            const delta = s.actual - s.budget;
+                            return (
+                              <div key={s.ruleId} className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-[var(--vn-border)] last:border-0">
+                                <span className="text-sm font-medium text-[var(--vn-text)] min-w-0 truncate">{s.label}</span>
+                                <div className="flex items-center gap-3 shrink-0 text-xs">
+                                  <span className="text-[var(--vn-muted)]">Budget {formatMoney(s.budget)}</span>
+                                  <span className="font-semibold text-[var(--vn-text)]">Actual {formatMoney(s.actual)}</span>
+                                  {delta !== 0 && (
+                                    <span className={`font-semibold ${delta <= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
+                                      {delta > 0 ? "+" : ""}{formatMoney(delta)}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Unbudgeted callout */}
+                      {adaptiveSuggestions.unbudgeted > 0 && (
+                        <div className="flex items-center gap-2 rounded-xl border border-amber-200 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20 px-4 py-3">
+                          <span className="text-amber-600 dark:text-amber-400">⚠</span>
+                          <div className="text-xs text-amber-700 dark:text-amber-300">
+                            <span className="font-semibold">{formatMoney(adaptiveSuggestions.unbudgeted)}</span> unbudgeted in {prevPeriod.label} — consider assigning these to a rule.
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Apply button */}
+                      {(adaptiveSuggestions.income.length > 0 || adaptiveSuggestions.outflow.length > 0) && (
+                        <button
+                          onClick={handleApplyAdaptive}
+                          className={`w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all border ${
+                            applyStatus === "applied"
+                              ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300"
+                              : "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10 text-[var(--vn-primary)] hover:bg-[var(--vn-primary)]/20"
+                          }`}
+                        >
+                          {applyStatus === "applied" ? "✓ Applied to this period" : `Apply ${prevPeriod.label} actuals to ${period.label}`}
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
