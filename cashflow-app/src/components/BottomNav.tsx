@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
 import { showToast } from "./Toast";
+import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import type { Period } from "@/data/plan";
 
 type NavItem = {
   href: string;
@@ -110,6 +112,7 @@ const moreItems: NavItem[] = [
   { href: "/bills", label: "Bills", icon: () => <span className="text-lg">📄</span> },
   { href: "/income", label: "Income", icon: () => <span className="text-lg">💰</span> },
   { href: "/goals", label: "Goals", icon: () => <span className="text-lg">🎯</span> },
+  { href: "/import", label: "Import", icon: () => <span className="text-lg">📂</span> },
   { href: "/coach", label: "Coach", icon: () => <span className="text-lg">🤖</span> },
   { href: "/settings", label: "Settings", icon: () => <span className="text-lg">⚙️</span> },
 ];
@@ -119,6 +122,36 @@ export default function BottomNav() {
   const [showMore, setShowMore] = useState(false);
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname?.startsWith(href));
   const isMoreActive = moreItems.some((it) => isActive(it.href));
+
+  // Period switcher state
+  const [periods, setPeriods] = useState<Period[]>([]);
+  const [selectedPeriodId, setSelectedPeriodId] = useState<number>(0);
+
+  useEffect(() => {
+    const refresh = () => {
+      try {
+        const plan = loadPlan();
+        setPeriods(plan.periods);
+        setSelectedPeriodId(plan.setup.selectedPeriodId);
+      } catch { /* ignore */ }
+    };
+    refresh();
+    window.addEventListener(PLAN_UPDATED_EVENT, refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.removeEventListener(PLAN_UPDATED_EVENT, refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, []);
+
+  const handlePeriodChange = (id: number) => {
+    try {
+      const plan = loadPlan();
+      savePlan({ ...plan, setup: { ...plan.setup, selectedPeriodId: id } });
+      setSelectedPeriodId(id);
+      window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+    } catch { /* ignore */ }
+  };
 
   return (
     <>
@@ -163,6 +196,20 @@ export default function BottomNav() {
                   ))}
                 </div>
                 <div className="mt-4 space-y-2">
+                  {periods.length > 1 && (
+                    <div className="flex items-center justify-between rounded-2xl px-4 py-3 bg-(--vn-bg)">
+                      <span className="text-sm font-medium text-(--vn-text)">Period</span>
+                      <select
+                        value={selectedPeriodId}
+                        onChange={(e) => handlePeriodChange(Number(e.target.value))}
+                        className="text-xs font-semibold text-(--vn-primary) bg-transparent border-none outline-none cursor-pointer"
+                      >
+                        {periods.map((p) => (
+                          <option key={p.id} value={p.id}>{p.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between rounded-2xl px-4 py-3 bg-(--vn-bg)">
                     <span className="text-sm font-medium text-(--vn-text)">Theme</span>
                     <ThemeToggle />
