@@ -327,15 +327,15 @@ export default function BillsPage() {
 
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-5 pb-28 pt-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
           <section className="space-y-6">
             <header className="vn-card p-6">
-              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Bills</div>
-              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Committed Bills &amp; Recurring Outflows</h1>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Bills</div>
+              <h1 className="text-2xl font-semibold text-[var(--vn-text)]">Committed Bills &amp; Recurring Outflows</h1>
+              <p className="mt-2 text-sm text-[var(--vn-muted)]">
                 Plan your bills and compare with real spending.
               </p>
               {lastUpdated ? (
@@ -401,7 +401,7 @@ export default function BillsPage() {
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Committed Bills</div>
+                  <div className="text-sm font-semibold text-[var(--vn-text)]">Committed Bills</div>
                   <button
                     onClick={handleAddBill}
                     className="vn-btn vn-btn-primary text-xs px-4 py-2.5"
@@ -411,29 +411,29 @@ export default function BillsPage() {
                 </div>
                 <div className="mt-4 space-y-3 text-sm">
                   {plan.bills.length === 0 ? (
-                    <div className="text-slate-500 dark:text-slate-400 text-xs">No bills yet. Add one to get started.</div>
+                    <div className="text-[var(--vn-muted)] text-xs">No bills yet. Add one to get started.</div>
                   ) : (
                     plan.bills.map((bill) => (
                       <div
                         key={bill.id}
                         className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${bill.enabled && !disabledBills.has(bill.id)
-                          ? "bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700"
-                          : "bg-slate-100 dark:bg-slate-700/60 opacity-60"
+                          ? "bg-[var(--vn-surface)] border border-[var(--vn-border)]"
+                          : "bg-[var(--vn-bg)]/60 opacity-60"
                           }`}
                       >
                         <div className="flex-1">
-                          <div className="font-semibold text-slate-900 dark:text-white">{bill.label}</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                          <div className="font-semibold text-[var(--vn-text)]">{bill.label}</div>
+                          <div className="text-xs text-[var(--vn-muted)]">
                             Due day {bill.dueDay} • {bill.category}
                             {!bill.enabled && " • Disabled"}
                             {disabledBills.has(bill.id) && " • Disabled for period"}
                           </div>
                         </div>
-                        <div className="font-semibold text-slate-900 dark:text-white">{formatMoney(bill.amount)}</div>
+                        <div className="font-semibold text-[var(--vn-text)]">{formatMoney(bill.amount)}</div>
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleToggleEnabled(bill.id)}
-                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 p-2 min-w-10 min-h-10 flex items-center justify-center"
+                            className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] p-2 min-w-10 min-h-10 flex items-center justify-center"
                             title={bill.enabled ? "Disable" : "Enable"}
                           >
                             {bill.enabled ? "👁️" : "👁️‍🗨️"}
@@ -459,7 +459,7 @@ export default function BillsPage() {
 
               <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Recurring Outflows</div>
+                  <div className="text-sm font-semibold text-[var(--vn-text)]">Recurring Outflows</div>
                   <button
                     onClick={handleAddOutflow}
                     className="vn-btn vn-btn-primary text-xs px-4 py-2.5"
@@ -469,28 +469,28 @@ export default function BillsPage() {
                 </div>
                 <div className="mt-4 space-y-3 text-sm">
                   {plan.outflowRules.length === 0 ? (
-                    <div className="text-slate-500 dark:text-slate-400 text-xs">No outflow rules yet. Add one to get started.</div>
+                    <div className="text-[var(--vn-muted)] text-xs">No outflow rules yet. Add one to get started.</div>
                   ) : (
                     plan.outflowRules.map((rule) => (
                       <div
                         key={rule.id}
                         className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${rule.enabled
-                          ? "bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700"
-                          : "bg-slate-100 dark:bg-slate-700/60 opacity-60"
+                          ? "bg-[var(--vn-surface)] border border-[var(--vn-border)]"
+                          : "bg-[var(--vn-bg)]/60 opacity-60"
                           }`}
                       >
                         <div className="flex-1">
-                          <div className="font-semibold text-slate-900 dark:text-white">{rule.label}</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                          <div className="font-semibold text-[var(--vn-text)]">{rule.label}</div>
+                          <div className="text-xs text-[var(--vn-muted)]">
                             {rule.cadence} • {rule.category}
                             {!rule.enabled && " • Disabled"}
                           </div>
                         </div>
-                        <div className="font-semibold text-slate-900 dark:text-white">{formatMoney(rule.amount)}</div>
+                        <div className="font-semibold text-[var(--vn-text)]">{formatMoney(rule.amount)}</div>
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleToggleOutflowEnabled(rule.id)}
-                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 p-2 min-w-10 min-h-10 flex items-center justify-center"
+                            className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] p-2 min-w-10 min-h-10 flex items-center justify-center"
                             title={rule.enabled ? "Disable" : "Enable"}
                           >
                             {rule.enabled ? "👁️" : "👁️‍🗨️"}
@@ -516,7 +516,7 @@ export default function BillsPage() {
             </div>
 
             <details className="vn-card p-6">
-              <summary className="cursor-pointer text-sm font-semibold text-slate-800 dark:text-slate-100">
+              <summary className="cursor-pointer text-sm font-semibold text-[var(--vn-text)]">
                 Budget vs actual by bill
               </summary>
               <div className="mt-4 text-sm">
@@ -527,7 +527,7 @@ export default function BillsPage() {
                   <div className="text-right">Variance</div>
                 </div>
                 {budgetVsActualBills.length === 0 ? (
-                  <div className="text-slate-500 dark:text-slate-400">No active bills for this period.</div>
+                  <div className="text-[var(--vn-muted)]">No active bills for this period.</div>
                 ) : (
                   <div className="mt-3 max-h-[65vh] space-y-3 overflow-auto pr-2">
                     {budgetVsActualBills.map((item) => {
@@ -537,19 +537,19 @@ export default function BillsPage() {
                           ? "1 item"
                           : `${item.transactions.length} items`;
                       return (
-                        <details key={item.id} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-4 py-3">
+                        <details key={item.id} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3">
                           <summary className="grid cursor-pointer list-none items-center gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
                             <div>
-                              <div className="font-semibold text-slate-900 dark:text-white">{item.label}</div>
-                              <div className="text-xs text-slate-500 dark:text-slate-400">{countLabel}</div>
+                              <div className="font-semibold text-[var(--vn-text)]">{item.label}</div>
+                              <div className="text-xs text-[var(--vn-muted)]">{countLabel}</div>
                             </div>
-                            <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 sm:block sm:text-right">
+                            <div className="flex items-center justify-between text-[var(--vn-muted)] sm:block sm:text-right">
                               <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                 Budget
                               </span>
                               <span>{formatMoney(item.budgeted)}</span>
                             </div>
-                            <div className="flex items-center justify-between text-slate-900 dark:text-white sm:block sm:text-right">
+                            <div className="flex items-center justify-between text-[var(--vn-text)] sm:block sm:text-right">
                               <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                 Actual
                               </span>
@@ -564,9 +564,9 @@ export default function BillsPage() {
                               <span>{variance.label}</span>
                             </div>
                           </summary>
-                          <div className="mt-3 border-t border-slate-200 dark:border-slate-700 pt-3 text-xs text-slate-600 dark:text-slate-300">
+                          <div className="mt-3 border-t border-[var(--vn-border)] pt-3 text-xs text-[var(--vn-muted)]">
                             {item.transactions.length === 0 ? (
-                              <div className="text-slate-500 dark:text-slate-400">No bill transactions recorded.</div>
+                              <div className="text-[var(--vn-muted)]">No bill transactions recorded.</div>
                             ) : (
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between text-[10px] uppercase tracking-wide text-slate-400">
@@ -585,16 +585,16 @@ export default function BillsPage() {
                                   {item.transactions.map((txn) => (
                                     <div
                                       key={txn.id}
-                                      className="grid grid-cols-[96px_1fr_auto] items-start gap-2 rounded-xl bg-white/70 dark:bg-slate-800/70 px-3 py-2"
+                                      className="grid grid-cols-[96px_1fr_auto] items-start gap-2 rounded-xl bg-[var(--vn-surface)] px-3 py-2"
                                     >
-                                      <div className="text-[11px] text-slate-500 dark:text-slate-400">{prettyDate(txn.date)}</div>
+                                      <div className="text-[11px] text-[var(--vn-muted)]">{prettyDate(txn.date)}</div>
                                       <div>
-                                        <div className="text-sm text-slate-700 dark:text-slate-200">{txn.label}</div>
+                                        <div className="text-sm text-[var(--vn-text)]">{txn.label}</div>
                                         {txn.notes ? (
                                           <div className="text-[11px] text-slate-400">{txn.notes}</div>
                                         ) : null}
                                       </div>
-                                      <div className="text-right text-sm font-semibold text-slate-900 dark:text-white">
+                                      <div className="text-right text-sm font-semibold text-[var(--vn-text)]">
                                         {formatMoney(txn.amount)}
                                       </div>
                                     </div>
@@ -612,7 +612,7 @@ export default function BillsPage() {
             </details>
 
             <details className="vn-card p-6">
-              <summary className="cursor-pointer text-sm font-semibold text-slate-800 dark:text-slate-100">
+              <summary className="cursor-pointer text-sm font-semibold text-[var(--vn-text)]">
                 Budget vs actual by outflow
               </summary>
               <div className="mt-4 text-sm">
@@ -623,7 +623,7 @@ export default function BillsPage() {
                   <div className="text-right">Variance</div>
                 </div>
                 {budgetVsActualOutflows.length === 0 ? (
-                  <div className="text-slate-500 dark:text-slate-400">No outflow rules yet.</div>
+                  <div className="text-[var(--vn-muted)]">No outflow rules yet.</div>
                 ) : (
                   <div className="mt-3 max-h-[65vh] space-y-3 overflow-auto pr-2">
                     {budgetVsActualOutflows.map((item) => {
@@ -633,19 +633,19 @@ export default function BillsPage() {
                           ? "1 item"
                           : `${item.transactions.length} items`;
                       return (
-                        <details key={item.id} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-4 py-3">
+                        <details key={item.id} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3">
                           <summary className="grid cursor-pointer list-none items-center gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
                             <div>
-                              <div className="font-semibold text-slate-900 dark:text-white">{item.label}</div>
-                              <div className="text-xs text-slate-500 dark:text-slate-400">{countLabel}</div>
+                              <div className="font-semibold text-[var(--vn-text)]">{item.label}</div>
+                              <div className="text-xs text-[var(--vn-muted)]">{countLabel}</div>
                             </div>
-                            <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 sm:block sm:text-right">
+                            <div className="flex items-center justify-between text-[var(--vn-muted)] sm:block sm:text-right">
                               <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                 Budget
                               </span>
                               <span>{formatMoney(item.budgeted)}</span>
                             </div>
-                            <div className="flex items-center justify-between text-slate-900 dark:text-white sm:block sm:text-right">
+                            <div className="flex items-center justify-between text-[var(--vn-text)] sm:block sm:text-right">
                               <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                 Actual
                               </span>
@@ -660,21 +660,21 @@ export default function BillsPage() {
                               <span>{variance.label}</span>
                             </div>
                           </summary>
-                          <div className="mt-3 border-t border-slate-200 dark:border-slate-700 pt-3 text-xs text-slate-600 dark:text-slate-300">
+                          <div className="mt-3 border-t border-[var(--vn-border)] pt-3 text-xs text-[var(--vn-muted)]">
                             {item.transactions.length === 0 ? (
-                              <div className="text-slate-500 dark:text-slate-400">No outflow transactions recorded.</div>
+                              <div className="text-[var(--vn-muted)]">No outflow transactions recorded.</div>
                             ) : (
                               <div className="space-y-2">
                                 {item.transactions.map((txn) => (
                                   <div key={txn.id} className="flex items-start justify-between gap-3">
                                     <div>
-                                      <div className="text-slate-700 dark:text-slate-200">{txn.label}</div>
-                                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                                      <div className="text-[var(--vn-text)]">{txn.label}</div>
+                                      <div className="text-[11px] text-[var(--vn-muted)]">
                                         {prettyDate(txn.date)}
                                         {txn.notes ? ` - ${txn.notes}` : ""}
                                       </div>
                                     </div>
-                                    <div className="font-semibold text-slate-900 dark:text-white">{formatMoney(txn.amount)}</div>
+                                    <div className="font-semibold text-[var(--vn-text)]">{formatMoney(txn.amount)}</div>
                                   </div>
                                 ))}
                               </div>
@@ -701,13 +701,13 @@ export default function BillsPage() {
             className="vn-card max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-lg font-semibold text-[var(--vn-text)] mb-4">
               {editingBill ? "Edit Bill" : "Add Bill"}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Label *
                 </label>
                 <input
@@ -720,7 +720,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Amount *
                 </label>
                 <input
@@ -734,7 +734,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Due Day (1-31) *
                 </label>
                 <input
@@ -749,7 +749,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Category *
                 </label>
                 <select
@@ -773,7 +773,7 @@ export default function BillsPage() {
                   checked={formData.enabled ?? true}
                   onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
                 />
-                <label htmlFor="enabled" className="text-sm text-slate-700 dark:text-slate-200">
+                <label htmlFor="enabled" className="text-sm text-[var(--vn-text)]">
                   Enabled
                 </label>
               </div>
@@ -806,13 +806,13 @@ export default function BillsPage() {
             className="vn-card max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-lg font-semibold text-[var(--vn-text)] mb-4">
               {editingOutflow ? "Edit Outflow Rule" : "Add Outflow Rule"}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Label *
                 </label>
                 <input
@@ -825,7 +825,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Amount ({getCurrencySymbol()}) *
                 </label>
                 <input
@@ -839,7 +839,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Cadence *
                 </label>
                 <select
@@ -854,7 +854,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Seed Date *
                 </label>
                 <input
@@ -866,7 +866,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Category *
                 </label>
                 <select
@@ -890,7 +890,7 @@ export default function BillsPage() {
                   checked={outflowFormData.enabled ?? true}
                   onChange={(e) => setOutflowFormData({ ...outflowFormData, enabled: e.target.checked })}
                 />
-                <label htmlFor="outflow-enabled" className="text-sm text-slate-700 dark:text-slate-200">
+                <label htmlFor="outflow-enabled" className="text-sm text-[var(--vn-text)]">
                   Enabled
                 </label>
               </div>

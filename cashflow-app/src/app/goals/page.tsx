@@ -132,7 +132,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
                 </div>
 
                 <div>
-                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Name</label>
+                    <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">Name</label>
                     <input
                         type="text"
                         value={editName}
@@ -148,7 +148,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Target</label>
+                        <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">Target</label>
                         <input
                             type="number"
                             value={editTarget}
@@ -162,7 +162,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
                         <FormError message={errors.target} />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Current</label>
+                        <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">Current</label>
                         <input
                             type="number"
                             value={editCurrent === "0" ? "" : editCurrent}
@@ -178,7 +178,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
                 </div>
 
                 <div>
-                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Target Date</label>
+                    <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">Target Date</label>
                     <input
                         type="date"
                         value={editDate}
@@ -193,14 +193,14 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
                 </div>
 
                 <div>
-                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Icon</label>
+                    <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">Icon</label>
                     <div className="flex gap-1 flex-wrap">
                         {GOAL_ICONS.map((icon) => (
                             <button
                                 key={icon}
                                 type="button"
                                 onClick={() => setEditIcon(icon)}
-                                className={`w-11 h-11 sm:w-8 sm:h-8 rounded text-xl sm:text-lg flex items-center justify-center ${editIcon === icon ? "bg-violet-100 dark:bg-violet-900 ring-2 ring-violet-500" : "bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600"
+                                className={`w-11 h-11 sm:w-8 sm:h-8 rounded text-xl sm:text-lg flex items-center justify-center ${editIcon === icon ? "bg-violet-100 dark:bg-violet-900 ring-2 ring-violet-500" : "bg-[var(--vn-bg)] hover:bg-slate-200 dark:hover:bg-slate-600"
                                     }`}
                             >
                                 {icon}
@@ -210,7 +210,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
                 </div>
 
                 <div>
-                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Color</label>
+                    <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">Color</label>
                     <div className="flex gap-2">
                         {GOAL_COLORS.map((color) => (
                             <button
@@ -227,7 +227,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
                 <div className="flex gap-2 pt-2">
                     <button
                         onClick={handleCancelEdit}
-                        className="flex-1 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg"
+                        className="flex-1 px-3 py-2 text-sm font-medium text-[var(--vn-muted)] bg-[var(--vn-bg)] hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg"
                     >
                         Cancel
                     </button>
@@ -250,7 +250,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
                     <span className="text-2xl">{goal.icon || "🎯"}</span>
                     <div>
                         <h3 className="font-semibold text-slate-800 dark:text-white">{goal.name}</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                        <p className="text-sm text-[var(--vn-muted)]">
                             {isComplete ? "🎉 Goal reached!" : `${formatMoney(remaining)} to go`}
                         </p>
                     </div>
@@ -288,12 +288,12 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
                 <span className="font-medium text-slate-800 dark:text-white">
                     {formatMoney(goal.currentAmount)} / {formatMoney(goal.targetAmount)}
                 </span>
-                <span className="text-slate-500 dark:text-slate-400">{Math.round(progress)}%</span>
+                <span className="text-[var(--vn-muted)]">{Math.round(progress)}%</span>
             </div>
 
             {/* Target date info */}
             {daysUntilTarget !== null && !isComplete && (
-                <div className="text-xs text-slate-500 dark:text-slate-400 mb-4 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="text-xs text-[var(--vn-muted)] mb-4 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
                     {daysUntilTarget > 0 ? (
                         <>
                             📅 {daysUntilTarget} days until target
@@ -308,13 +308,13 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
             {/* Monthly auto-save toggle */}
             {!isComplete && monthlySuggested !== null && (
                 <div className={`flex items-center justify-between gap-3 p-3 rounded-lg mb-3 ${
-                    linkedRule ? "bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800" : "bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    linkedRule ? "bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800" : "bg-slate-50 dark:bg-slate-800 border border-[var(--vn-border)]"
                 }`}>
                     <div>
                         <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                             {linkedRule ? "✅ Monthly auto-save active" : "💡 Monthly auto-save"}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        <div className="text-xs text-[var(--vn-muted)] mt-0.5">
                             {formatMoney(monthlySuggested)}/month added to your cashflow plan
                         </div>
                     </div>
@@ -484,7 +484,7 @@ function NewGoalForm({ onSave, onCancel }: {
                             onClick={() => setSelectedIcon(icon)}
                             className={`w-11 h-11 sm:w-10 sm:h-10 rounded-lg text-2xl sm:text-xl flex items-center justify-center transition-all ${selectedIcon === icon
                                 ? "bg-violet-100 dark:bg-violet-900 ring-2 ring-violet-500"
-                                : "bg-slate-100 dark:bg-slate-700 hover:bg-slate-200"
+                                : "bg-[var(--vn-bg)] hover:bg-slate-200"
                                 }`}
                         >
                             {icon}
@@ -513,7 +513,7 @@ function NewGoalForm({ onSave, onCancel }: {
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-[var(--vn-muted)] bg-[var(--vn-bg)] hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg"
                 >
                     Cancel
                 </button>
@@ -614,15 +614,15 @@ export default function GoalsPage() {
 
     return (
         <main className="min-h-screen">
-            <div className="mx-auto max-w-7xl px-5 pb-24 pt-6">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
                 <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
                     <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
                     <section className="space-y-6">
                         <header className="vn-card p-6">
-                            <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Goals</div>
-                            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Savings Goals</h1>
-                            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                            <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Goals</div>
+                            <h1 className="text-2xl font-semibold text-[var(--vn-text)]">Savings Goals</h1>
+                            <p className="mt-2 text-sm text-[var(--vn-muted)]">
                                 Track progress towards your savings targets
                             </p>
                         </header>
@@ -633,15 +633,15 @@ export default function GoalsPage() {
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                                     <div>
                                         <p className="text-xl sm:text-2xl font-bold text-violet-600">{goals.length}</p>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">Active Goals</p>
+                                        <p className="text-xs text-[var(--vn-muted)]">Active Goals</p>
                                     </div>
                                     <div>
                                         <p className="text-xl sm:text-2xl font-bold text-emerald-600">{formatMoney(totalSaved)}</p>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">Total Saved</p>
+                                        <p className="text-xs text-[var(--vn-muted)]">Total Saved</p>
                                     </div>
                                     <div>
-                                        <p className="text-xl sm:text-2xl font-bold text-slate-600 dark:text-slate-300">{formatMoney(totalTarget)}</p>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">Total Target</p>
+                                        <p className="text-xl sm:text-2xl font-bold text-[var(--vn-muted)]">{formatMoney(totalTarget)}</p>
+                                        <p className="text-xs text-[var(--vn-muted)]">Total Target</p>
                                     </div>
                                 </div>
                             </div>
@@ -675,7 +675,7 @@ export default function GoalsPage() {
                         ) : (
                             <button
                                 onClick={() => setShowNewGoalForm(true)}
-                                className="w-full p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl text-slate-500 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-300 transition-colors"
+                                className="w-full p-6 border-2 border-dashed border-[var(--vn-border)] rounded-2xl text-[var(--vn-muted)] hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-300 transition-colors"
                             >
                                 <span className="text-2xl block mb-1">+</span>
                                 <span className="text-sm font-medium">Add New Goal</span>

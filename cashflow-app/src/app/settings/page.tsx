@@ -183,14 +183,14 @@ export default function SettingsPage() {
 
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-5 pb-28 pt-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav />
           <section className="space-y-6">
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
-              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Settings</div>
+              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Settings</div>
               <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">App Settings</h1>
-              <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              <div className="mt-2 text-sm text-[var(--vn-muted)]">
                 Customize your {branding.name} experience
               </div>
             </div>
@@ -199,7 +199,7 @@ export default function SettingsPage() {
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Account</div>
               {authLoading ? (
-                <div className="text-sm text-slate-500 dark:text-slate-400">Loading...</div>
+                <div className="text-sm text-[var(--vn-muted)]">Loading...</div>
               ) : user ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
@@ -208,7 +208,7 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{user.email}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">Signed in · Cloud sync active</div>
+                      <div className="text-xs text-[var(--vn-muted)]">Signed in · Cloud sync active</div>
                     </div>
                   </div>
                   <button
@@ -223,7 +223,7 @@ export default function SettingsPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="text-sm text-slate-600 dark:text-slate-300">
+                  <div className="text-sm text-[var(--vn-muted)]">
                     Sign in to back up your data to the cloud and sync across devices.
                   </div>
                   <Link
@@ -242,7 +242,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Dark Mode</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Toggle between light and dark themes</div>
+                    <div className="text-xs text-[var(--vn-muted)]">Toggle between light and dark themes</div>
                   </div>
                   <ThemeToggle />
                 </div>
@@ -256,7 +256,7 @@ export default function SettingsPage() {
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">As of Date</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              <div className="text-xs text-[var(--vn-muted)] mb-4">
                 Controls the reference date for filtering transactions and calculating time progress
               </div>
 
@@ -298,7 +298,7 @@ export default function SettingsPage() {
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Expected Minimum Balance</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              <div className="text-xs text-[var(--vn-muted)] mb-4">
                 Your safety-net balance. Any day your projected balance dips below this amount will be flagged as a warning on the Timeline and Dashboard.
               </div>
               <div className="flex items-center gap-2">
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                 )}
               </div>
               {plan.setup.expectedMinBalance > 0 && (
-                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                <div className="mt-2 text-xs text-[var(--vn-muted)]">
                   Currently set to {formatMoney(plan.setup.expectedMinBalance)}
                 </div>
               )}
@@ -348,7 +348,7 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-3">
                 {plan.periods.length === 0 ? (
-                  <div className="text-slate-500 dark:text-slate-400 text-xs">No periods yet. Add one to get started.</div>
+                  <div className="text-[var(--vn-muted)] text-xs">No periods yet. Add one to get started.</div>
                 ) : (
                   plan.periods.map((period) => (
                     <div
@@ -365,7 +365,7 @@ export default function SettingsPage() {
                             <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">(Active)</span>
                           )}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                        <div className="text-xs text-[var(--vn-muted)]">
                           {period.start} to {period.end}
                         </div>
                       </div>
@@ -393,12 +393,12 @@ export default function SettingsPage() {
 
             <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Period Overrides</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              <div className="text-xs text-[var(--vn-muted)] mb-4">
                 Customize specific periods without affecting base rules
               </div>
 
               {plan.periods.length === 0 ? (
-                <div className="text-slate-500 dark:text-slate-400 text-xs">Add periods first to manage overrides.</div>
+                <div className="text-[var(--vn-muted)] text-xs">Add periods first to manage overrides.</div>
               ) : (
                 <div className="space-y-4">
                   {plan.periods.map((period) => {
@@ -555,11 +555,11 @@ export default function SettingsPage() {
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">About</div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-600 dark:text-slate-300">Version</span>
+                  <span className="text-[var(--vn-muted)]">Version</span>
                   <span className="font-medium text-slate-900 dark:text-slate-100">1.0.1 (Build {(process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString()).slice(0, 16).replace("T", " ")})</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600 dark:text-slate-300">App Name</span>
+                  <span className="text-[var(--vn-muted)]">App Name</span>
                   <span className="font-medium text-slate-900 dark:text-slate-100">{branding.name}</span>
                 </div>
               </div>

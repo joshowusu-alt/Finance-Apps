@@ -486,7 +486,7 @@ export default function CoachPage() {
 
         return (
           <div className="px-4 pb-2">
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{label}</p>
+            <p className="text-xs text-[var(--vn-muted)] mb-2">{label}</p>
             <div className="flex flex-wrap gap-2">
               {chips.map(q => (
                 <button
@@ -503,7 +503,7 @@ export default function CoachPage() {
       })()}
 
       {/* Input */}
-      <div className="p-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+      <div className="p-3 border-t border-[var(--vn-border)] bg-white dark:bg-slate-900">
         <div className="flex gap-2">
           <input
             ref={inputRef}

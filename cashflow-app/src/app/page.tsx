@@ -318,7 +318,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-5 pb-24 pt-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
         <div className="grid gap-5 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
@@ -345,7 +345,7 @@ export default function HomePage() {
                   </div>
 
                 </div>
-                <div className="flex items-center gap-3 mt-4 md:mt-0">
+                <div className="flex flex-wrap items-center gap-2 mt-3 md:mt-0">
                   <ThemeToggle />
                   <div className="flex items-center gap-1">
                     <button

@@ -36,9 +36,9 @@ function SummaryCard({
 }) {
   return (
     <div className="vn-card p-6">
-      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">{hint}</div> : null}
+      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">{label}</div>
+      <div className="mt-2 text-2xl font-semibold text-[var(--vn-text)]">{value}</div>
+      {hint ? <div className="mt-1 text-xs text-[var(--vn-muted)]">{hint}</div> : null}
     </div>
   );
 }
@@ -67,15 +67,15 @@ function ProgressBar({
         : "#eab308";
   const color = barColor || defaultColor;
   return (
-    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-      <div className="flex items-center justify-between text-xs text-zinc-700 dark:text-zinc-300">
+    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+      <div className="flex items-center justify-between text-xs text-[var(--vn-muted)]">
         <span>{label}</span>
-        <span className="font-semibold text-zinc-700 dark:text-zinc-200">{formatPercent(pct)}</span>
+        <span className="font-semibold text-[var(--vn-muted)]">{formatPercent(pct)}</span>
       </div>
-      <div className="mt-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700">
+      <div className="mt-2 h-2 rounded-full bg-[var(--vn-border)]">
         <div className="h-2 rounded-full" style={{ width: `${pct * 100}%`, background: color }} />
       </div>
-      {hint ? <div className="mt-2 text-xs text-zinc-700 dark:text-zinc-300">{hint}</div> : null}
+      {hint ? <div className="mt-2 text-xs text-[var(--vn-muted)]">{hint}</div> : null}
     </div>
   );
 }
@@ -145,8 +145,8 @@ function CollapsibleSection({
         className="flex w-full items-center justify-between gap-4 text-left"
         aria-expanded={open}
       >
-        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</span>
-        <span className="text-xs text-zinc-700 dark:text-zinc-300">{open ? "Hide" : "Show"}</span>
+        <span className="text-sm font-semibold text-[var(--vn-text)]">{title}</span>
+        <span className="text-xs text-[var(--vn-muted)]">{open ? "Hide" : "Show"}</span>
       </button>
       {open ? <div className="mt-4">{children}</div> : null}
     </section>
@@ -281,24 +281,24 @@ export default function InsightsPage() {
 
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-5 pb-24 pt-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={basePeriod.label} periodStart={basePeriod.start} periodEnd={basePeriod.end} />
 
           <section className="space-y-6">
             <header className="vn-card p-6">
-              <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Insights</div>
-              <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Insights</h1>
-              <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">
+              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Insights</div>
+              <h1 className="text-2xl font-semibold text-[var(--vn-text)]">Insights</h1>
+              <p className="mt-2 text-sm text-[var(--vn-muted)]">
                 Answers to the questions you normally ask about the period.
               </p>
-              <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-zinc-700 dark:text-zinc-300">
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-[var(--vn-muted)]">
                 <div className="flex items-center gap-2">
                   <span>Base period</span>
                   <select
                     value={basePeriodId}
                     onChange={(e) => setBasePeriodId(Number(e.target.value))}
-                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-2 py-1 text-xs text-zinc-700 dark:text-zinc-200"
+                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-2 py-1 text-xs text-[var(--vn-muted)]"
                   >
                     {sortedPeriods.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -320,7 +320,7 @@ export default function InsightsPage() {
                             : null
                       )
                     }
-                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-2 py-1 text-xs text-zinc-700 dark:text-zinc-200"
+                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-2 py-1 text-xs text-[var(--vn-muted)]"
                   >
                     <option value="auto">Auto (previous)</option>
                     <option value="">None</option>
@@ -336,19 +336,19 @@ export default function InsightsPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={handleExportInsightsCsv}
-                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-1.5 text-xs min-h-10 font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-slate-700"
+                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-muted)] hover:opacity-80"
                   >
                     Export insights (CSV)
                   </button>
                   <button
                     onClick={handleDownloadInsightsPdf}
-                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-1.5 text-xs min-h-10 font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-slate-700"
+                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-muted)] hover:opacity-80"
                   >
                     Download insights report (PDF)
                   </button>
                   <button
                     onClick={() => downloadPlanPdf(plan, baseStats.period.id)}
-                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-1.5 text-xs min-h-10 font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-slate-700"
+                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-muted)] hover:opacity-80"
                   >
                     Download plan report (PDF)
                   </button>
@@ -359,69 +359,69 @@ export default function InsightsPage() {
             <section className="vn-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Quick pulse</div>
-                  <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Key insights at a glance</div>
+                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Quick pulse</div>
+                  <div className="text-sm font-semibold text-[var(--vn-text)]">Key insights at a glance</div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowFullInsights((prev) => !prev)}
-                  className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-1.5 text-xs min-h-10 font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-slate-700"
+                  className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-muted)] hover:opacity-80"
                   aria-expanded={showFullInsights}
                 >
                   {showFullInsights ? "Hide details" : "See more"}
                 </button>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">On track</div>
+                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">On track</div>
                   <div className={`mt-2 text-lg font-semibold ${paceTone}`}>{paceStatus}</div>
-                  <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-1 text-xs text-[var(--vn-muted)]">
                     {formatPercent(spendingProgress)} of budget vs {formatPercent(timeProgress)} time
                   </div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Lowest point</div>
-                  <div className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Lowest point</div>
+                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">
                     {derivedLowest ? formatMoney(derivedLowest.balance) : "N/A"}
                   </div>
-                  <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-1 text-xs text-[var(--vn-muted)]">
                     {derivedLowest ? `on ${prettyDate(derivedLowest.date)}` : "No forecast yet"}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Risk days</div>
-                  <div className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Risk days</div>
+                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">
                     {derivedRiskDays === 0 ? "None" : `${derivedRiskDays} day${derivedRiskDays === 1 ? "" : "s"}`}
                   </div>
-                  <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-1 text-xs text-[var(--vn-muted)]">
                     {derivedRiskDays === 0 ? "Balance stays above minimum" : `First risk ${prettyDate(firstBelowMin?.date)}`}
                   </div>
                 </div>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Health</div>
-                  <div className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{derivedHealth.label}</div>
-                  <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">{derivedHealth.reason}</div>
+                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Health</div>
+                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">{derivedHealth.label}</div>
+                  <div className="mt-1 text-xs text-[var(--vn-muted)]">{derivedHealth.reason}</div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Income stability</div>
-                  <div className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{derivedIncomeStability.label}</div>
-                  <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">{derivedIncomeStability.explanation}</div>
+                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Income stability</div>
+                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">{derivedIncomeStability.label}</div>
+                  <div className="mt-1 text-xs text-[var(--vn-muted)]">{derivedIncomeStability.explanation}</div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Savings streak</div>
-                  <div className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Savings streak</div>
+                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">
                     {derivedSavings.streak} period{derivedSavings.streak === 1 ? "" : "s"}
                   </div>
-                  <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">{derivedSavings.streakExplanation}</div>
+                  <div className="mt-1 text-xs text-[var(--vn-muted)]">{derivedSavings.streakExplanation}</div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">{derivedSavings.leftoverLabel}</div>
-                  <div className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">{derivedSavings.leftoverLabel}</div>
+                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">
                     {formatMoney(derivedSavings.leftoverValue)}
                   </div>
-                  <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">{derivedSavings.explanation}</div>
+                  <div className="mt-1 text-xs text-[var(--vn-muted)]">{derivedSavings.explanation}</div>
                 </div>
               </div>
             </section>
@@ -457,12 +457,12 @@ export default function InsightsPage() {
                     })}
                   </div>
                   {overspentCategories.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">Over-budget categories</div>
+                    <div className="mt-3 pt-3 border-t border-[var(--vn-border)]">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)] mb-2">Over-budget categories</div>
                       <div className="space-y-1.5">
                         {overspentCategories.map(cat => (
                           <div key={cat.category} className="flex items-center justify-between text-xs">
-                            <span className="capitalize text-zinc-700 dark:text-zinc-300">{cat.category}</span>
+                            <span className="capitalize text-[var(--vn-muted)]">{cat.category}</span>
                             <span className="font-semibold text-rose-600 dark:text-rose-400">+{formatMoney(cat.actual - cat.budgeted)} over</span>
                           </div>
                         ))}
@@ -491,10 +491,10 @@ export default function InsightsPage() {
                       const delta = card.actual - card.budget;
                       const favorable = card.favorableWhenOver ? delta >= 0 : delta <= 0;
                       return (
-                        <div key={card.label} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                          <div className="text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-300">{card.label}</div>
-                          <div className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">Budget {formatMoney(card.budget)}</div>
-                          <div className="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">{formatMoney(card.actual)}</div>
+                        <div key={card.label} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
+                          <div className="text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]">{card.label}</div>
+                          <div className="mt-1 text-[11px] text-[var(--vn-muted)]">Budget {formatMoney(card.budget)}</div>
+                          <div className="mt-1 text-xl font-semibold text-[var(--vn-text)]">{formatMoney(card.actual)}</div>
                           {delta !== 0 && (
                             <div className={`mt-1 text-xs font-semibold ${favorable ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                               {delta > 0 ? "+" : ""}{formatMoney(delta)}
@@ -507,8 +507,8 @@ export default function InsightsPage() {
 
                   {/* Category Variance Breakdown */}
                   {Object.values(varianceByCategory).filter(Boolean).length > 0 && (
-                    <div className="mb-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-300 mb-3">Variance by category</div>
+                    <div className="mb-4 rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)] mb-3">Variance by category</div>
                       <div className="space-y-2">
                         {Object.values(varianceByCategory)
                           .filter(Boolean)
@@ -520,9 +520,9 @@ export default function InsightsPage() {
                             const favorable = isIncome ? overBudget : !overBudget;
                             return (
                               <div key={v.category} className="flex items-center justify-between text-sm">
-                                <span className="capitalize text-zinc-700 dark:text-zinc-300">{v.category}</span>
+                                <span className="capitalize text-[var(--vn-muted)]">{v.category}</span>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                  <span className="text-xs text-[var(--vn-muted)]">
                                     {formatMoney(v.budgeted)} &rarr; {formatMoney(v.actual)}
                                   </span>
                                   <span className={`text-xs font-semibold min-w-16 text-right ${favorable ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
@@ -567,42 +567,42 @@ export default function InsightsPage() {
                     />
                   </div>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Forecast end balance</div>
-                      <div className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">{formatMoney(endBalance)}</div>
-                      <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
+                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Forecast end balance</div>
+                      <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">{formatMoney(endBalance)}</div>
+                      <div className="mt-1 text-xs text-[var(--vn-muted)]">
                         Lowest point {derivedLowest ? formatMoney(derivedLowest.balance) : "N/A"}
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Risk days</div>
-                      <div className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Risk days</div>
+                      <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
                         {derivedRiskDays === 0 ? "None" : `${derivedRiskDays} day${derivedRiskDays === 1 ? "" : "s"}`}
                       </div>
-                      <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
+                      <div className="mt-1 text-xs text-[var(--vn-muted)]">
                         {firstBelowMin ? `First risk on ${prettyDate(firstBelowMin.date)}` : "Above safe minimum"}
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Projected leftover</div>
-                      <div className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Projected leftover</div>
+                      <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
                         {formatDelta(projectedLeftover)}
                       </div>
-                      <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
+                      <div className="mt-1 text-xs text-[var(--vn-muted)]">
                         Based on current pace
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300 flex items-center">
+                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] flex items-center">
                         Safe minimum
                         <InfoTooltip text="Your minimum safe balance. Any day the forecast dips below this is flagged as risk." />
                       </div>
-                      <div className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                      <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
                         {plan.setup.expectedMinBalance > 0
                           ? formatMoney(plan.setup.expectedMinBalance)
                           : "Not set"}
                       </div>
-                      <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
+                      <div className="mt-1 text-xs text-[var(--vn-muted)]">
                         {plan.setup.expectedMinBalance > 0
                           ? (derivedLowest && derivedLowest.balance < plan.setup.expectedMinBalance
                             ? "Below minimum"
@@ -612,7 +612,7 @@ export default function InsightsPage() {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Forecast scenarios</div>
+                    <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Forecast scenarios</div>
                     <div className="mt-3 grid gap-4 md:grid-cols-3">
                       {forecastScenarios.map((scenario) => {
                         const tone =
@@ -622,15 +622,15 @@ export default function InsightsPage() {
                         return (
                           <div
                             key={scenario.id}
-                            className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4"
+                            className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4"
                           >
-                            <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{scenario.label}</div>
-                            <div className="mt-2 text-xs text-zinc-700 dark:text-zinc-300">{scenario.note}</div>
-                            <div className="mt-3 text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Projected leftover</div>
-                            <div className="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                            <div className="text-sm font-semibold text-[var(--vn-text)]">{scenario.label}</div>
+                            <div className="mt-2 text-xs text-[var(--vn-muted)]">{scenario.note}</div>
+                            <div className="mt-3 text-xs uppercase tracking-wide text-[var(--vn-muted)]">Projected leftover</div>
+                            <div className="mt-1 text-lg font-semibold text-[var(--vn-text)]">
                               {formatMoney(scenario.leftover)}
                             </div>
-                            <div className="mt-2 text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">End balance</div>
+                            <div className="mt-2 text-xs uppercase tracking-wide text-[var(--vn-muted)]">End balance</div>
                             <div className={`mt-1 text-sm font-semibold ${tone}`}>
                               {formatMoney(scenario.endBalance)}
                             </div>
@@ -645,58 +645,58 @@ export default function InsightsPage() {
                   {compareStats ? (
                     <>
                       <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                          <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Income change</div>
-                          <div className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                        <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Income change</div>
+                          <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
                             {formatDelta(baseStats.actualIncome - compareStats.actualIncome)}
                           </div>
                         </div>
-                        <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                          <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Spending change</div>
-                          <div className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                        <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Spending change</div>
+                          <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
                             {formatDelta(baseStats.actualSpending - compareStats.actualSpending)}
                           </div>
                         </div>
-                        <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                          <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Savings change</div>
-                          <div className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                        <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Savings change</div>
+                          <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
                             {formatDelta(baseStats.actualSavings - compareStats.actualSavings)}
                           </div>
                         </div>
-                        <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                          <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Leftover change</div>
-                          <div className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                        <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Leftover change</div>
+                          <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
                             {formatDelta(baseStats.actualLeftover - compareStats.actualLeftover)}
                           </div>
                         </div>
                       </div>
 
                       <div className="mt-4 grid gap-4 md:grid-cols-2">
-                        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
-                          <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Top category changes</div>
-                          <div className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                        <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
+                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Top category changes</div>
+                          <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
                             {categoryChanges.length === 0 ? (
-                              <div className="text-zinc-700 dark:text-zinc-300">No category changes.</div>
+                              <div className="text-[var(--vn-muted)]">No category changes.</div>
                             ) : (
                               categoryChanges.map((item) => (
                                 <div key={item.category} className="flex items-center justify-between">
                                   <span className="capitalize">{item.category}</span>
-                                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDelta(item.delta)}</span>
+                                  <span className="font-semibold text-[var(--vn-text)]">{formatDelta(item.delta)}</span>
                                 </div>
                               ))
                             )}
                           </div>
                         </div>
-                        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
-                          <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Top merchant changes</div>
-                          <div className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                        <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
+                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Top merchant changes</div>
+                          <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
                             {labelChanges.length === 0 ? (
-                              <div className="text-zinc-700 dark:text-zinc-300">No merchant changes.</div>
+                              <div className="text-[var(--vn-muted)]">No merchant changes.</div>
                             ) : (
                               labelChanges.map((item) => (
                                 <div key={item.label} className="flex items-center justify-between">
                                   <span>{item.label}</span>
-                                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDelta(item.delta)}</span>
+                                  <span className="font-semibold text-[var(--vn-text)]">{formatDelta(item.delta)}</span>
                                 </div>
                               ))
                             )}
@@ -706,21 +706,21 @@ export default function InsightsPage() {
 
                       {incomeSourceChanges ? (
                         <div className="mt-4 grid gap-4 md:grid-cols-2">
-                          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
-                            <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">New income sources</div>
-                            <div className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+                          <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
+                            <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">New income sources</div>
+                            <div className="mt-2 space-y-1 text-sm text-[var(--vn-muted)]">
                               {incomeSourceChanges.newSources.length === 0
-                                ? <div className="text-zinc-700 dark:text-zinc-300">None this period.</div>
+                                ? <div className="text-[var(--vn-muted)]">None this period.</div>
                                 : incomeSourceChanges.newSources.map((source) => (
                                   <div key={source}>{source}</div>
                                 ))}
                             </div>
                           </div>
-                          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
-                            <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Missing income sources</div>
-                            <div className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+                          <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
+                            <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Missing income sources</div>
+                            <div className="mt-2 space-y-1 text-sm text-[var(--vn-muted)]">
                               {incomeSourceChanges.missingSources.length === 0
-                                ? <div className="text-zinc-700 dark:text-zinc-300">None missing.</div>
+                                ? <div className="text-[var(--vn-muted)]">None missing.</div>
                                 : incomeSourceChanges.missingSources.map((source) => (
                                   <div key={source}>{source}</div>
                                 ))}
@@ -730,65 +730,65 @@ export default function InsightsPage() {
                       ) : null}
                     </>
                   ) : (
-                    <div className="text-sm text-zinc-700 dark:text-zinc-300">Select a comparison period to see changes.</div>
+                    <div className="text-sm text-[var(--vn-muted)]">Select a comparison period to see changes.</div>
                   )}
                 </CollapsibleSection>
 
                 <CollapsibleSection title="3) Where am I overspending?">
                   {categoryChartData.length > 0 && (
-                    <div className="mb-6 rounded-2xl bg-white/70 dark:bg-slate-800/70 p-6 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300 mb-4">Spending by category</div>
+                    <div className="mb-6 rounded-2xl bg-[var(--vn-surface)] p-6 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-4">Spending by category</div>
                       <CategoryBreakdownChart data={categoryChartData} height={320} onCategoryClick={setDrilldownCategory} />
                     </div>
                   )}
 
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300 flex items-center">Variable cap<InfoTooltip text="Your budgeted limit for flexible spending each period. Anything above this means you're overspending on non-fixed expenses." /></div>
-                      <div className="mt-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] flex items-center">Variable cap<InfoTooltip text="Your budgeted limit for flexible spending each period. Anything above this means you're overspending on non-fixed expenses." /></div>
+                      <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
                         {formatMoney(plan.setup.variableCap)}
                       </div>
-                      <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
+                      <div className="mt-1 text-xs text-[var(--vn-muted)]">
                         Actual {formatMoney(variableSpend)} ({formatDelta(variableDelta)})
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Top overspent categories</div>
-                      <div className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Top overspent categories</div>
+                      <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
                         {overspentCategories.length === 0 ? (
-                          <div className="text-zinc-700 dark:text-zinc-300">No categories over budget.</div>
+                          <div className="text-[var(--vn-muted)]">No categories over budget.</div>
                         ) : (
                           overspentCategories.slice(0, 4).map((cat) => (
                             <div key={cat.category} className="flex items-center justify-between">
                               <span className="capitalize">{cat.category}</span>
-                              <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDelta(cat.variance)}</span>
+                              <span className="font-semibold text-[var(--vn-text)]">{formatDelta(cat.variance)}</span>
                             </div>
                           ))
                         )}
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
-                    <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Biggest overspend items</div>
-                    <div className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-4 rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
+                    <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Biggest overspend items</div>
+                    <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
                       {overspendItems.length === 0 ? (
-                        <div className="text-zinc-700 dark:text-zinc-300">No overspend items.</div>
+                        <div className="text-[var(--vn-muted)]">No overspend items.</div>
                       ) : (
                         overspendItems.map((item) => (
                           <div key={item.id} className="flex items-center justify-between">
                             <span>{item.label}</span>
-                            <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatMoney(item.amount)}</span>
+                            <span className="font-semibold text-[var(--vn-text)]">{formatMoney(item.amount)}</span>
                           </div>
                         ))
                       )}
                     </div>
                   </div>
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
-                      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Budget variance by bill</div>
-                      <div className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
+                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Budget variance by bill</div>
+                      <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
                         {billVariance.length === 0 ? (
-                          <div className="text-zinc-700 dark:text-zinc-300">No bill variance data.</div>
+                          <div className="text-[var(--vn-muted)]">No bill variance data.</div>
                         ) : (
                           billVariance.map((row) => {
                             const tone = row.variance > 0 ? "text-rose-600" : "text-green-600";
@@ -802,19 +802,19 @@ export default function InsightsPage() {
                         )}
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
-                      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Top merchants</div>
-                      <div className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
+                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Top merchants</div>
+                      <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
                         {merchantRows.length === 0 ? (
-                          <div className="text-zinc-700 dark:text-zinc-300">No merchant spend recorded.</div>
+                          <div className="text-[var(--vn-muted)]">No merchant spend recorded.</div>
                         ) : (
                           merchantRows.map((row) => (
                             <div key={row.label} className="flex items-center justify-between gap-3">
                               <span className="truncate">{row.label}</span>
-                              <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                              <span className="font-semibold text-[var(--vn-text)]">
                                 {formatMoney(row.total)}
                                 {compareStats ? (
-                                  <span className="ml-2 text-xs text-zinc-700 dark:text-zinc-300">
+                                  <span className="ml-2 text-xs text-[var(--vn-muted)]">
                                     ({formatDelta(row.delta)} vs last)
                                   </span>
                                 ) : null}
@@ -829,7 +829,7 @@ export default function InsightsPage() {
 
                 <CollapsibleSection title="4) How stable is my income?">
                   {!hasIncomeData ? (
-                    <div className="text-sm text-zinc-700 dark:text-zinc-300">
+                    <div className="text-sm text-[var(--vn-muted)]">
                       No income data recorded yet. Add income transactions to see stability metrics.
                     </div>
                   ) : (
@@ -872,9 +872,9 @@ export default function InsightsPage() {
                 </CollapsibleSection>
 
                 <CollapsibleSection title="6) What should I do next?">
-                  <div className="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="space-y-2 text-sm text-[var(--vn-muted)]">
                     {recommendations.map((rec) => (
-                      <div key={rec} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-4 py-3">
+                      <div key={rec} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3">
                         {rec}
                       </div>
                     ))}
@@ -883,8 +883,8 @@ export default function InsightsPage() {
 
                 <CollapsibleSection title="7) How do periods compare overall?">
                   {periodTrendData.length > 1 && (
-                    <div className="mb-6 rounded-2xl bg-white/70 dark:bg-slate-800/70 p-6 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300 mb-4">Income vs spending trends</div>
+                    <div className="mb-6 rounded-2xl bg-[var(--vn-surface)] p-6 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-4">Income vs spending trends</div>
                       <SpendingTrendChart data={periodTrendData} showIncome={true} height={300} />
                     </div>
                   )}
@@ -895,18 +895,18 @@ export default function InsightsPage() {
                       const delta = deltaValue(series.values);
                       const deltaTone = delta >= 0 ? "text-green-600" : "text-rose-600";
                       return (
-                        <div key={series.key} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
+                        <div key={series.key} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
                           <div className="flex items-start justify-between gap-4">
                             <div>
-                              <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">{series.label}</div>
-                              <div className="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{formatMoney(last)}</div>
+                              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">{series.label}</div>
+                              <div className="mt-1 text-lg font-semibold text-[var(--vn-text)]">{formatMoney(last)}</div>
                               <div className={`mt-1 text-xs ${deltaTone}`}>
                                 {delta >= 0 ? "Up" : "Down"} {formatDelta(delta)} vs last period
                               </div>
                             </div>
                             <Sparkline values={series.values} stroke={series.stroke} fill={series.fill} />
                           </div>
-                          <div className="mt-2 text-xs text-zinc-700 dark:text-zinc-300">
+                          <div className="mt-2 text-xs text-[var(--vn-muted)]">
                             {series.values.length} period(s) tracked
                           </div>
                         </div>
@@ -914,30 +914,30 @@ export default function InsightsPage() {
                     })}
                   </div>
 
-                  <div className="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 p-4">
-                    <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Period highlights</div>
-                    <div className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-4 rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
+                    <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Period highlights</div>
+                    <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
                       <div className="flex items-center justify-between">
                         <span>Highest income</span>
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        <span className="font-semibold text-[var(--vn-text)]">
                           {formatMoney(incomePeak.value)} ({periodLabelAt(sortedPeriods, incomePeak.index)})
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Highest spending</span>
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        <span className="font-semibold text-[var(--vn-text)]">
                           {formatMoney(spendingPeak.value)} ({periodLabelAt(sortedPeriods, spendingPeak.index)})
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Best leftover</span>
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        <span className="font-semibold text-[var(--vn-text)]">
                           {formatMoney(bestLeftover.value)} ({periodLabelAt(sortedPeriods, bestLeftover.index)})
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Lowest leftover</span>
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        <span className="font-semibold text-[var(--vn-text)]">
                           {formatMoney(worstLeftover.value)} ({periodLabelAt(sortedPeriods, worstLeftover.index)})
                         </span>
                       </div>
@@ -955,14 +955,14 @@ export default function InsightsPage() {
                       return (
                         <div
                           key={card.id}
-                          className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-4 py-3"
+                          className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3"
                         >
-                          <div className="font-semibold text-zinc-900 dark:text-zinc-100">{card.label}</div>
+                          <div className="font-semibold text-[var(--vn-text)]">{card.label}</div>
                           <div className="flex items-center gap-2 text-xs">
                             <span className={`rounded-full px-2 py-1 font-semibold ${badge}`}>
                               {card.status.toUpperCase()}
                             </span>
-                            <span className="text-zinc-700 dark:text-zinc-300">Leftover {formatMoney(card.leftover)}</span>
+                            <span className="text-[var(--vn-muted)]">Leftover {formatMoney(card.leftover)}</span>
                           </div>
                         </div>
                       );
@@ -972,17 +972,17 @@ export default function InsightsPage() {
 
                 {crossPeriodVariance && crossPeriodVariance.activeCategories.length > 0 && (
                   <CollapsibleSection title="8) Category trends across periods">
-                    <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <div className="overflow-x-auto rounded-2xl border border-[var(--vn-border)]">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Category</th>
+                          <tr className="border-b border-[var(--vn-border)] bg-[var(--vn-bg)]">
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]">Category</th>
                             {crossPeriodVariance.periodData.map(({ period }) => (
-                              <th key={period.id} className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                              <th key={period.id} className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)] whitespace-nowrap">
                                 {period.label}
                               </th>
                             ))}
-                            <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-300">Trend</th>
+                            <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]">Trend</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -994,8 +994,8 @@ export default function InsightsPage() {
                             const trendUp = last > prev * 1.05;
                             const trendDown = last < prev * 0.95;
                             return (
-                              <tr key={cat} className="border-b border-slate-100 dark:border-slate-800 last:border-0">
-                                <td className="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200 capitalize">{cat}</td>
+                              <tr key={cat} className="border-b border-[var(--vn-border)] last:border-0">
+                                <td className="px-4 py-3 font-medium text-[var(--vn-text)] capitalize">{cat}</td>
                                 {values.map((val, idx) => {
                                   const intensity = maxVal > 0 ? val / maxVal : 0;
                                   const bg = intensity > 0.8 ? "rgba(239,68,68,0.25)" :
@@ -1003,8 +1003,8 @@ export default function InsightsPage() {
                                     intensity > 0.2 ? "rgba(250,204,21,0.15)" :
                                     "transparent";
                                   return (
-                                    <td key={idx} className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300 text-xs" style={{ background: bg }}>
-                                      {val > 0 ? formatMoney(val) : <span className="text-zinc-400">-</span>}
+                                    <td key={idx} className="px-4 py-3 text-right tabular-nums text-[var(--vn-muted)] text-xs" style={{ background: bg }}>
+                                      {val > 0 ? formatMoney(val) : <span className="text-[var(--vn-muted)]">-</span>}
                                     </td>
                                   );
                                 })}
@@ -1014,7 +1014,7 @@ export default function InsightsPage() {
                                   ) : trendDown ? (
                                     <span className="text-emerald-500 font-bold text-xs">↓ {formatDelta(last - prev)}</span>
                                   ) : (
-                                    <span className="text-zinc-400 text-xs">~</span>
+                                    <span className="text-[var(--vn-muted)] text-xs">~</span>
                                   )}
                                 </td>
                               </tr>
@@ -1023,7 +1023,7 @@ export default function InsightsPage() {
                         </tbody>
                       </table>
                     </div>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">Heat-map shading: darker = higher spend relative to category peak. Trend shows last vs previous period.</p>
+                    <p className="text-xs text-[var(--vn-muted)] mt-2">Heat-map shading: darker = higher spend relative to category peak. Trend shows last vs previous period.</p>
                   </CollapsibleSection>
                 )}
               </>

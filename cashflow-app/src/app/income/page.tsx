@@ -185,15 +185,15 @@ export default function IncomePage() {
 
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-5 pb-28 pt-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
           <section className="space-y-6">
             <header className="vn-card p-6">
-              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Income</div>
-              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Income sources</h1>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Income</div>
+              <h1 className="text-2xl font-semibold text-[var(--vn-text)]">Income sources</h1>
+              <p className="mt-2 text-sm text-[var(--vn-muted)]">
                 Plan your pay and compare with real income.
               </p>
               {lastUpdated ? (
@@ -220,7 +220,7 @@ export default function IncomePage() {
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Income rules</div>
+                  <div className="text-sm font-semibold text-[var(--vn-text)]">Income rules</div>
                   <button
                     onClick={handleAddRule}
                     className="vn-btn vn-btn-primary text-xs px-3 py-1.5"
@@ -230,26 +230,26 @@ export default function IncomePage() {
                 </div>
                 <div className="mt-4 space-y-3 text-sm">
                   {plan.incomeRules.length === 0 ? (
-                    <div className="text-slate-500 dark:text-slate-400 text-xs">No income rules yet. Add one to get started.</div>
+                    <div className="text-[var(--vn-muted)] text-xs">No income rules yet. Add one to get started.</div>
                   ) : (
                     plan.incomeRules.map((rule) => (
                       <div
                         key={rule.id}
-                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${rule.enabled ? "bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700" : "bg-slate-100 dark:bg-slate-700/60 opacity-60"
+                        className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${rule.enabled ? "bg-[var(--vn-surface)] border border-[var(--vn-border)]" : "bg-[var(--vn-bg)]/60 opacity-60"
                           }`}
                       >
                         <div className="flex-1">
-                          <div className="font-semibold text-slate-900 dark:text-white">{rule.label}</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                          <div className="font-semibold text-[var(--vn-text)]">{rule.label}</div>
+                          <div className="text-xs text-[var(--vn-muted)]">
                             {rule.cadence} • {rule.seedDate}
                             {!rule.enabled && " • Disabled"}
                           </div>
                         </div>
-                        <div className="font-semibold text-slate-900 dark:text-white">{formatMoney(rule.amount)}</div>
+                        <div className="font-semibold text-[var(--vn-text)]">{formatMoney(rule.amount)}</div>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleToggleEnabled(rule.id)}
-                            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 p-2 min-w-10 min-h-10 flex items-center justify-center"
+                            className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] p-2 min-w-10 min-h-10 flex items-center justify-center"
                             title={rule.enabled ? "Disable" : "Enable"}
                           >
                             {rule.enabled ? "👁️" : "👁️‍🗨️"}
@@ -274,16 +274,16 @@ export default function IncomePage() {
               </div>
 
               <div className="vn-card p-6">
-                <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Upcoming income</div>
+                <div className="text-sm font-semibold text-[var(--vn-text)]">Upcoming income</div>
                 <div className="mt-4 space-y-3 text-sm">
                   {upcoming.length === 0 ? (
-                    <div className="text-slate-500 dark:text-slate-400">No income in the current window.</div>
+                    <div className="text-[var(--vn-muted)]">No income in the current window.</div>
                   ) : (
                     upcoming.map((item) => (
                       <div key={item.id} className="flex flex-wrap items-center justify-between gap-2">
                         <div>
-                          <div className="font-semibold text-slate-900 dark:text-white">{item.label}</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Due {prettyDate(item.date)}</div>
+                          <div className="font-semibold text-[var(--vn-text)]">{item.label}</div>
+                          <div className="text-xs text-[var(--vn-muted)]">Due {prettyDate(item.date)}</div>
                         </div>
                         <div className="font-semibold text-green-600">{formatMoney(item.amount)}</div>
                       </div>
@@ -294,7 +294,7 @@ export default function IncomePage() {
             </div>
 
             <details className="vn-card p-6">
-              <summary className="cursor-pointer text-sm font-semibold text-slate-800 dark:text-slate-100">
+              <summary className="cursor-pointer text-sm font-semibold text-[var(--vn-text)]">
                 Budget vs actual by source
               </summary>
               <div className="mt-4 text-sm">
@@ -305,7 +305,7 @@ export default function IncomePage() {
                   <div className="text-right">Variance</div>
                 </div>
                 {budgetVsActual.length === 0 ? (
-                  <div className="text-slate-500 dark:text-slate-400">No income rules yet.</div>
+                  <div className="text-[var(--vn-muted)]">No income rules yet.</div>
                 ) : (
                   <div ref={varianceListRef} className="mt-3 max-h-[65vh] overflow-auto pr-2">
                     <div
@@ -327,19 +327,19 @@ export default function IncomePage() {
                             className="absolute left-0 top-0 w-full"
                             style={{ transform: `translateY(${virtualRow.start}px)` }}
                           >
-                            <details className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-4 py-3">
+                            <details className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3">
                               <summary className="grid cursor-pointer list-none items-center gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
                                 <div>
-                                  <div className="font-semibold text-slate-900 dark:text-white">{item.label}</div>
-                                  <div className="text-xs text-slate-500 dark:text-slate-400">{countLabel}</div>
+                                  <div className="font-semibold text-[var(--vn-text)]">{item.label}</div>
+                                  <div className="text-xs text-[var(--vn-muted)]">{countLabel}</div>
                                 </div>
-                                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 sm:block sm:text-right">
+                                <div className="flex items-center justify-between text-[var(--vn-muted)] sm:block sm:text-right">
                                   <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                     Budget
                                   </span>
                                   <span>{formatMoney(item.budgeted)}</span>
                                 </div>
-                                <div className="flex items-center justify-between text-slate-900 dark:text-white sm:block sm:text-right">
+                                <div className="flex items-center justify-between text-[var(--vn-text)] sm:block sm:text-right">
                                   <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
                                     Actual
                                   </span>
@@ -354,21 +354,21 @@ export default function IncomePage() {
                                   <span>{variance.label}</span>
                                 </div>
                               </summary>
-                              <div className="mt-3 border-t border-slate-200 dark:border-slate-700 pt-3 text-xs text-slate-600 dark:text-slate-300">
+                              <div className="mt-3 border-t border-[var(--vn-border)] pt-3 text-xs text-[var(--vn-muted)]">
                                 {item.transactions.length === 0 ? (
-                                  <div className="text-slate-500 dark:text-slate-400">No income transactions recorded.</div>
+                                  <div className="text-[var(--vn-muted)]">No income transactions recorded.</div>
                                 ) : (
                                   <div className="space-y-2">
                                     {item.transactions.map((txn) => (
                                       <div key={txn.id} className="flex items-start justify-between gap-3">
                                         <div>
-                                          <div className="text-slate-700 dark:text-slate-200">{txn.label}</div>
-                                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                                          <div className="text-[var(--vn-text)]">{txn.label}</div>
+                                          <div className="text-[11px] text-[var(--vn-muted)]">
                                             {prettyDate(txn.date)}
                                             {txn.notes ? ` - ${txn.notes}` : ""}
                                           </div>
                                         </div>
-                                        <div className="font-semibold text-slate-900 dark:text-white">{formatMoney(txn.amount)}</div>
+                                        <div className="font-semibold text-[var(--vn-text)]">{formatMoney(txn.amount)}</div>
                                       </div>
                                     ))}
                                   </div>
@@ -397,13 +397,13 @@ export default function IncomePage() {
             className="vn-card max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-lg font-semibold text-[var(--vn-text)] mb-4">
               {editingRule ? "Edit Income Rule" : "Add Income Rule"}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Label *
                 </label>
                 <input
@@ -416,7 +416,7 @@ export default function IncomePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Amount *
                 </label>
                 <input
@@ -430,7 +430,7 @@ export default function IncomePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Frequency *
                 </label>
                 <select
@@ -445,7 +445,7 @@ export default function IncomePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
                   Start Date *
                 </label>
                 <input
@@ -463,7 +463,7 @@ export default function IncomePage() {
                   checked={formData.enabled ?? true}
                   onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
                 />
-                <label htmlFor="enabled" className="text-sm text-slate-700 dark:text-slate-200">
+                <label htmlFor="enabled" className="text-sm text-[var(--vn-text)]">
                   Enabled
                 </label>
               </div>
