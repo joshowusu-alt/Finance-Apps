@@ -209,6 +209,12 @@ export function setCurrency(currency: Currency) {
   touchPreferencesUpdatedAt();
 }
 
+/** Get the symbol for the current (or given) currency, e.g. "£", "GH₵", "$" */
+export function getCurrencySymbol(currency?: Currency): string {
+  const curr = currency || getCurrency();
+  return CURRENCIES[curr]?.symbol ?? "$";
+}
+
 export function formatMoney(amount: number, currency?: Currency): string {
   const curr = currency || getCurrency();
   const config = CURRENCIES[curr];
@@ -219,4 +225,13 @@ export function formatMoney(amount: number, currency?: Currency): string {
     currency: curr,
     maximumFractionDigits: zeroDecimal.includes(curr) ? 0 : 2,
   }).format(amount || 0);
+}
+
+/** Compact currency format for chart axis ticks, e.g. "$1.2k", "GH₵500" */
+export function formatCompactCurrency(value: number, currency?: Currency): string {
+  const symbol = getCurrencySymbol(currency);
+  if (Math.abs(value) >= 1000) {
+    return `${symbol}${(value / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+  return `${symbol}${value}`;
 }

@@ -108,8 +108,8 @@ export const chartConfig = {
   animationEasing: "ease-out" as const,
 };
 
-// Re-export formatMoney for chart tooltips
-export { formatMoney as formatCurrency } from "@/lib/currency";
+// Re-export currency helpers for chart tooltips and axis ticks
+export { formatMoney as formatCurrency, formatCompactCurrency, getCurrencySymbol } from "@/lib/currency";
 
 // Format percentage
 export function formatPercentage(value: number): string {
