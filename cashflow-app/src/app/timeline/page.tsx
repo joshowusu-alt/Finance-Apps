@@ -8,12 +8,14 @@ import InfoTooltip from "@/components/InfoTooltip";
 import type { CashflowCategory, CashflowType } from "@/data/plan";
 import { useDerived } from "@/lib/useDerived";
 import { formatMoney } from "@/lib/currency";
+import { getDisplayLocale } from "@/lib/formatUtils";
 
 function formatNice(iso: string) {
+  const locale = getDisplayLocale();
   const d = new Date(iso + "T00:00:00");
-  const weekday = d.toLocaleDateString("en-GB", { weekday: "short" });
-  const day = d.toLocaleDateString("en-GB", { day: "2-digit" });
-  const month = d.toLocaleDateString("en-GB", { month: "short" });
+  const weekday = d.toLocaleDateString(locale, { weekday: "short" });
+  const day = d.toLocaleDateString(locale, { day: "2-digit" });
+  const month = d.toLocaleDateString(locale, { month: "short" });
   return `${weekday} ${day} ${month}`;
 }
 

@@ -1,16 +1,33 @@
-import { formatMoney } from "@/lib/currency";
+import { formatMoney, CURRENCIES, getCurrency } from "@/lib/currency";
 
 /**
  * Shared date and number formatting utilities.
  * Used across pages for displaying dates, timestamps, and variances.
  */
 
+/**
+ * Returns the best display locale for the current user.
+ * Uses the currency locale (e.g. "en-GH" for Ghana) falling back to
+ * navigator.language, then "en-GB" as a final default.
+ */
+export function getDisplayLocale(): string {
+    if (typeof navigator !== "undefined" && navigator.language) {
+        return navigator.language;
+    }
+    try {
+        const curr = getCurrency();
+        return CURRENCIES[curr]?.locale ?? "en-GB";
+    } catch {
+        return "en-GB";
+    }
+}
+
 /** Format an ISO date string as "DD Mon" (e.g. "14 Feb") */
 export function prettyDate(iso?: string | null): string {
     if (!iso) return "";
     const d = new Date(iso + "T00:00:00");
     if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+    return d.toLocaleDateString(getDisplayLocale(), { day: "2-digit", month: "short" });
 }
 
 /** Format an ISO date string as "DD Mon YYYY" (e.g. "14 Feb 2025") */
@@ -18,7 +35,7 @@ export function prettyDateWithYear(iso: string): string {
     if (!iso) return "";
     const d = new Date(iso + "T00:00:00");
     if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    return d.toLocaleDateString(getDisplayLocale(), { day: "2-digit", month: "short", year: "numeric" });
 }
 
 /** Format an ISO timestamp as a human-readable "last updated" string */
@@ -26,7 +43,7 @@ export function formatUpdatedAt(value: string): string {
     if (!value) return "";
     const d = new Date(value);
     if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleString("en-GB", {
+    return d.toLocaleString(getDisplayLocale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",
