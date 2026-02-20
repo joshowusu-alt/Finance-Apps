@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { loadPlan, savePlan } from "@/lib/storage";
 import { getPeriod, generateEvents } from "@/lib/cashflowEngine";
-import { formatMoney } from "@/lib/currency";
+import { formatMoney, getCurrency } from "@/lib/currency";
 import { suggestBillId } from "@/lib/billLinking";
 import { detectRecurringBills, type DetectedBill } from "@/lib/billDetection";
 import { getConfidenceLabel, suggestCategory } from "@/lib/categorization";
@@ -1066,7 +1066,7 @@ export default function TransactionsPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Amount (GBP)</label>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Amount ({getCurrency()})</label>
                     <input
                       type="number"
                       placeholder="0.00"
@@ -1534,7 +1534,7 @@ export default function TransactionsPage() {
                                       />
                                     </div>
                                     <div>
-                                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Amount (GBP)</label>
+                                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Amount ({getCurrency()})</label>
                                       <input
                                         type="number"
                                         step="0.01"

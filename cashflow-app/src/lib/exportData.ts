@@ -1,5 +1,6 @@
 import type { Transaction } from "@/data/plan";
 import { getReportBranding } from "@/lib/branding";
+import { formatMoney } from "@/lib/currency";
 
 export function exportToCSV(transactions: Transaction[], periodLabel: string) {
   const headers = ["Date", "Label", "Amount", "Type", "Category", "Notes"];
@@ -102,16 +103,16 @@ export async function exportToPDF(
   // Add summary
   doc.setFontSize(10);
   const summaryStart = y + 28;
-  doc.text(`Total Income: £${totalIncome.toFixed(2)}`, 14, summaryStart);
-  doc.text(`Total Outflow: £${totalOutflow.toFixed(2)}`, 14, summaryStart + 6);
-  doc.text(`Total Transfers: £${totalTransfer.toFixed(2)}`, 14, summaryStart + 12);
-  doc.text(`Net: £${(totalIncome - totalOutflow - totalTransfer).toFixed(2)}`, 14, summaryStart + 18);
+  doc.text(`Total Income: ${formatMoney(totalIncome)}`, 14, summaryStart);
+  doc.text(`Total Outflow: ${formatMoney(totalOutflow)}`, 14, summaryStart + 6);
+  doc.text(`Total Transfers: ${formatMoney(totalTransfer)}`, 14, summaryStart + 12);
+  doc.text(`Net: ${formatMoney(totalIncome - totalOutflow - totalTransfer)}`, 14, summaryStart + 18);
 
   // Add transactions table
   const tableData = transactions.map((txn) => [
     txn.date,
     txn.label,
-    `£${txn.amount.toFixed(2)}`,
+    formatMoney(txn.amount),
     txn.type,
     txn.category,
     txn.notes || "",

@@ -7,7 +7,7 @@ import { detectRecurringBills } from "@/lib/billDetection";
 import SidebarNav from "@/components/SidebarNav";
 import BankingSection from "@/components/BankingSection";
 import { BillSuggestions } from "@/components/BillSuggestions";
-import { formatMoney } from "@/lib/currency";
+import { formatMoney, getCurrencySymbol } from "@/lib/currency";
 import { prettyDate, formatUpdatedAt, formatVariance } from "@/lib/formatUtils";
 import { splitTokens, matchesTokens } from "@/lib/textUtils";
 import { SimpleStatCard as StatCard } from "@/components/Card";
@@ -826,7 +826,7 @@ export default function BillsPage() {
 
               <div>
                 <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
-                  Amount (£) *
+                  Amount ({getCurrencySymbol()}) *
                 </label>
                 <input
                   type="number"
