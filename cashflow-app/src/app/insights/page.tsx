@@ -428,6 +428,49 @@ export default function InsightsPage() {
 
             {showFullInsights && (
               <>
+                {/* AI Coach — proactive nudges */}
+                <CollapsibleSection title="AI Coach" defaultOpen>
+                  <div className="space-y-3">
+                    {recommendations.map((tip, i) => {
+                      const isGood = tip.toLowerCase().includes("on track") || tip.toLowerCase().includes("keep");
+                      const isWarn = tip.toLowerCase().includes("behind") || tip.toLowerCase().includes("dips");
+                      return (
+                        <div key={i} className={`flex items-start gap-3 rounded-xl p-3 ${
+                          isGood
+                            ? "bg-emerald-50 dark:bg-emerald-900/15 border border-emerald-200 dark:border-emerald-800"
+                            : isWarn
+                            ? "bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800"
+                            : "bg-rose-50 dark:bg-rose-900/15 border border-rose-200 dark:border-rose-800"
+                        }`}>
+                          <span className="text-base mt-0.5 shrink-0">
+                            {isGood ? "✓" : isWarn ? "⚠" : "↑"}
+                          </span>
+                          <span className={`text-sm leading-snug ${
+                            isGood
+                              ? "text-emerald-800 dark:text-emerald-200"
+                              : isWarn
+                              ? "text-amber-800 dark:text-amber-200"
+                              : "text-rose-800 dark:text-rose-200"
+                          }`}>{tip}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {overspentCategories.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">Over-budget categories</div>
+                      <div className="space-y-1.5">
+                        {overspentCategories.map(cat => (
+                          <div key={cat.category} className="flex items-center justify-between text-xs">
+                            <span className="capitalize text-zinc-700 dark:text-zinc-300">{cat.category}</span>
+                            <span className="font-semibold text-rose-600 dark:text-rose-400">+{formatMoney(cat.actual - cat.budgeted)} over</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CollapsibleSection>
+
                 {/* Proactive Insights Panel */}
                 <InsightsPanel />
 

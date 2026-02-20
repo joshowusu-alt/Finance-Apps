@@ -50,6 +50,8 @@ export default function HomePage() {
   const [onboarding, setOnboarding] = useState(() => loadOnboardingState());
   const [isFirstVisit, setIsFirstVisit] = useState(() => !hasStoredPlan());
   const [showSetup, setShowSetup] = useState(() => !hasStoredPlan() && !loadWizardState().completed);
+  const [showClosePeriod, setShowClosePeriod] = useState(false);
+  const [carryForward, setCarryForward] = useState(true);
 
   useEffect(() => {
     const refresh = () => {
@@ -148,6 +150,11 @@ export default function HomePage() {
   const timeProgress = periodDays ? Math.min(1, daysElapsed / periodDays) : 0;
   const spendingProgress = budgetSpending ? Math.min(1, actualSpending / budgetSpending) : 0;
   const spendingPaceGap = spendingProgress - timeProgress;
+
+  // Projected end-of-period overspend (needs timeProgress + periodDays + daysElapsed)
+  const projectedSpending = timeProgress > 0.1 ? actualSpending / timeProgress : null;
+  const projectedOverspend = projectedSpending !== null && budgetSpending > 0 ? projectedSpending - budgetSpending : null;
+  const daysRemaining = Math.max(0, periodDays - daysElapsed);
 
   const onboardingTasks = useMemo(
     () =>
@@ -260,6 +267,13 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-3 mt-4 md:mt-0">
                   <ThemeToggle />
+                  <button
+                    onClick={() => setShowClosePeriod(true)}
+                    className="vn-btn vn-btn-ghost text-sm"
+                    title="Close this period and carry balance forward"
+                  >
+                    Close Period
+                  </button>
                   <Link
                     href="/transactions"
                     className="vn-btn vn-btn-primary text-sm shadow-lg shadow-blue-500/20"
@@ -395,6 +409,27 @@ export default function HomePage() {
               </div>
             )}
 
+            {/* Predictive Overspend Warning */}
+            {projectedOverspend !== null && projectedOverspend > 50 && timeProgress < 0.95 && (
+              <div className="vn-card p-4 border-l-4 border-l-rose-500 bg-rose-50/60 dark:bg-rose-900/10">
+                <div className="flex items-start gap-3">
+                  <span className="text-rose-500 text-base mt-0.5">⚠</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-rose-700 dark:text-rose-300">Projected overspend</div>
+                    <div className="text-xs text-rose-600 dark:text-rose-400 mt-0.5">
+                      At your current pace you&apos;ll spend <strong>{formatMoney(projectedSpending!)}</strong> this period — <strong>{formatMoney(projectedOverspend)}</strong> over budget.
+                    </div>
+                    {daysRemaining > 0 && (
+                      <div className="text-xs text-rose-500 dark:text-rose-400 mt-0.5">
+                        Cut <strong>{formatMoney(projectedOverspend / daysRemaining)}/day</strong> to finish on budget.
+                      </div>
+                    )}
+                  </div>
+                  <a href="/insights" className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap">Details →</a>
+                </div>
+              </div>
+            )}
+
             {/* Subscription Nudge */}
             {subscriptionNudge && (
               <div className="vn-card p-4 border-l-4 border-l-amber-400 flex items-center justify-between gap-4">
@@ -458,6 +493,57 @@ export default function HomePage() {
       {showSetup && (
         <OnboardingWizard onComplete={handleQuickSetupComplete} />
       )}
+
+      {/* Period Close Modal */}
+      {showClosePeriod && (() => {
+        const nextPeriod = plan.periods.find(p => p.id === period.id + 1);
+        const newStartBalance = carryForward ? endingBalance : plan.setup.startingBalance;
+        function doClose() {
+          if (!nextPeriod) return;
+          const existingIdx = plan.periodOverrides.findIndex(o => o.periodId === nextPeriod.id);
+          const newOverrides = existingIdx >= 0
+            ? plan.periodOverrides.map((o, i) => i === existingIdx ? { ...o, startingBalance: newStartBalance } : o)
+            : [...plan.periodOverrides, { periodId: nextPeriod.id, startingBalance: newStartBalance }];
+          const updated = { ...plan, setup: { ...plan.setup, selectedPeriodId: nextPeriod.id }, periodOverrides: newOverrides };
+          savePlan(updated);
+          setShowClosePeriod(false);
+        }
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowClosePeriod(false)}>
+            <div className="vn-card p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="text-base font-bold text-[var(--vn-text)] mb-1">Close Period</div>
+              <div className="text-xs text-[var(--vn-muted)] mb-4">{period.label}</div>
+              <div className="space-y-2 text-sm mb-4">
+                <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Income</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(actualIncome)}</span></div>
+                <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Spending</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(actualSpending)}</span></div>
+                <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Savings</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(actualSavings)}</span></div>
+                <div className="flex justify-between border-t border-[var(--vn-border)] pt-2"><span className="font-semibold text-[var(--vn-text)]">Leftover</span><span className={`font-bold ${actualLeftover >= 0 ? "text-emerald-600" : "text-rose-500"}`}>{formatMoney(actualLeftover)}</span></div>
+                <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Forecast end balance</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(endingBalance)}</span></div>
+              </div>
+              {nextPeriod ? (
+                <>
+                  <label className="flex items-center gap-2 text-sm text-[var(--vn-text)] cursor-pointer mb-4">
+                    <input type="checkbox" checked={carryForward} onChange={e => setCarryForward(e.target.checked)} className="accent-[var(--vn-primary)] w-4 h-4" />
+                    Carry balance ({formatMoney(endingBalance)}) to <strong className="ml-0.5">{nextPeriod.label}</strong>
+                  </label>
+                  {!carryForward && (
+                    <div className="text-xs text-[var(--vn-muted)] mb-4">Next period will use your default starting balance ({formatMoney(plan.setup.startingBalance)}).</div>
+                  )}
+                  <div className="flex gap-2">
+                    <button onClick={doClose} className="vn-btn vn-btn-primary flex-1 text-sm">Close &amp; Advance →</button>
+                    <button onClick={() => setShowClosePeriod(false)} className="vn-btn vn-btn-ghost text-sm">Cancel</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-xs text-amber-600 dark:text-amber-400 mb-4">⚠ No next period found. Generate more periods in Settings.</div>
+                  <button onClick={() => setShowClosePeriod(false)} className="vn-btn vn-btn-ghost w-full text-sm">Close</button>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </main>
   );
 }
