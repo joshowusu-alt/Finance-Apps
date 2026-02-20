@@ -9,6 +9,7 @@ import { buildInsightsSnapshot } from "@/lib/insightsSnapshot";
 import { downloadInsightsCsv, downloadInsightsPdf } from "@/lib/insightsExport";
 import SidebarNav from "@/components/SidebarNav";
 import { CategoryBreakdownChart, SpendingTrendChart } from "@/components/charts";
+import { CategoryDrilldown } from "@/components/CategoryDrilldown";
 import type { Plan } from "@/data/plan";
 import InsightsPanel from "@/components/InsightsPanel";
 import SubscriptionDashboard from "@/components/SubscriptionDashboard";
@@ -157,6 +158,7 @@ export default function InsightsPage() {
   const { state: plan, derived: derivedForPeriod } = useDerived(basePeriodId);
   const [comparePeriodId, setComparePeriodId] = useState<"auto" | number | null>("auto");
   const [showFullInsights, setShowFullInsights] = useState(false);
+  const [drilldownCategory, setDrilldownCategory] = useState<string | null>(null);
 
   const snapshot = useMemo(
     () => buildInsightsSnapshot(plan, basePeriodId, comparePeriodId),
@@ -204,6 +206,19 @@ export default function InsightsPage() {
     scorecards,
     periodHighlights,
   } = snapshot;
+
+  const drilldownTxns = useMemo(() => {
+    if (!drilldownCategory || !basePeriod) return [];
+    return plan.transactions.filter(t =>
+      t.type === "outflow" && t.category === drilldownCategory &&
+      t.date >= basePeriod.start && t.date <= basePeriod.end
+    );
+  }, [drilldownCategory, plan.transactions, basePeriod]);
+
+  const drilldownBudget = useMemo(() =>
+    varianceByCategory[drilldownCategory as keyof typeof varianceByCategory]?.budgeted,
+    [drilldownCategory, varianceByCategory]
+  );
 
   const derivedHealth = derivedForPeriod.health;
   const derivedIncomeStability = derivedForPeriod.incomeStability;
@@ -680,7 +695,7 @@ export default function InsightsPage() {
                   {categoryChartData.length > 0 && (
                     <div className="mb-6 rounded-2xl bg-white/70 dark:bg-slate-800/70 p-6 shadow-sm">
                       <div className="text-xs uppercase tracking-wide text-zinc-700 dark:text-zinc-300 mb-4">Spending by category</div>
-                      <CategoryBreakdownChart data={categoryChartData} height={320} />
+                      <CategoryBreakdownChart data={categoryChartData} height={320} onCategoryClick={setDrilldownCategory} />
                     </div>
                   )}
 
@@ -973,6 +988,15 @@ export default function InsightsPage() {
           </section>
         </div>
       </div>
+
+      <CategoryDrilldown
+        isOpen={!!drilldownCategory}
+        onClose={() => setDrilldownCategory(null)}
+        category={(drilldownCategory ?? "other") as import("@/data/plan").CashflowCategory}
+        transactions={drilldownTxns}
+        budgeted={drilldownBudget}
+        periodLabel={basePeriod?.label}
+      />
     </main>
   );
 }

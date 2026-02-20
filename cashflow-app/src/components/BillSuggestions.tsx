@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import { useState, useEffect } from "react";
 import { MerchantLogo } from "@/components/MerchantLogo";
 import type { DetectedBill } from "@/lib/billDetection";
@@ -22,6 +22,84 @@ function getFrequencyLabel(frequency: string): string {
         weekly: "Weekly",
     };
     return labels[frequency] || frequency;
+}
+
+function SwipeableBillCard({ bill, onAccept, onDismiss, isDark }: {
+    bill: DetectedBill;
+    onAccept: (b: DetectedBill) => void;
+    onDismiss: (id: string) => void;
+    isDark: boolean;
+}) {
+    const x = useMotionValue(0);
+    const acceptOpacity = useTransform(x, [0, 70], [0, 1]);
+    const dismissOpacity = useTransform(x, [-70, 0], [1, 0]);
+    const cardScale = useTransform(x, [-80, 0, 80], [0.97, 1, 0.97]);
+
+    function handleDragEnd(_: unknown, info: { offset: { x: number } }) {
+        if (info.offset.x > 80) onAccept(bill);
+        else if (info.offset.x < -80) onDismiss(bill.id);
+    }
+
+    return (
+        <div className="relative overflow-hidden rounded-xl" style={{ touchAction: "pan-y" }}>
+            {/* Accept hint: swipe right */}
+            <motion.div
+                className="absolute inset-0 flex items-center justify-start pl-5 rounded-xl"
+                aria-hidden
+                style={{ opacity: acceptOpacity, backgroundColor: isDark ? "rgba(16,185,129,0.18)" : "rgba(16,185,129,0.12)" }}
+            >
+                <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">✓ Add Bill</span>
+            </motion.div>
+            {/* Dismiss hint: swipe left */}
+            <motion.div
+                aria-hidden
+                className="absolute inset-0 flex items-center justify-end pr-5 rounded-xl"
+                style={{ opacity: dismissOpacity, backgroundColor: isDark ? "rgba(239,68,68,0.18)" : "rgba(239,68,68,0.12)" }}
+            >
+                <span className="font-bold text-sm text-rose-600 dark:text-rose-400">✗ Dismiss</span>
+            </motion.div>
+            {/* Card */}
+            <motion.div
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.15}
+                onDragEnd={handleDragEnd}
+                style={{ x, scale: cardScale, backgroundColor: isDark ? "#27272a" : "#ffffff", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+                className="relative rounded-xl p-4 cursor-grab active:cursor-grabbing z-10"
+                whileTap={{ cursor: "grabbing" }}
+            >
+                <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <MerchantLogo merchantName={bill.merchantName} size="md" />
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="font-medium" style={{ color: isDark ? "#fafafa" : "#18181b" }}>{bill.merchantName}</span>
+                                <ConfidenceBadge confidence={bill.confidence} />
+                            </div>
+                            <div className="mt-0.5 text-sm" style={{ color: isDark ? "#a1a1aa" : "#71717a" }}>
+                                {formatMoney(bill.averageAmount)} • {getFrequencyLabel(bill.frequency)} • Day {bill.suggestedDueDay}
+                            </div>
+                            <div className="mt-1 text-xs" style={{ color: isDark ? "#52525b" : "#a1a1aa" }}>
+                                {bill.occurrences.length} occurrences • <span className="text-[10px] opacity-70">Swipe to confirm or dismiss</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                            onClick={() => onDismiss(bill.id)}
+                            className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-medium transition-colors"
+                            style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", color: isDark ? "#a1a1aa" : "#71717a" }}
+                        >Dismiss</motion.button>
+                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                            onClick={() => onAccept(bill)}
+                            className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-medium text-white transition-colors"
+                            style={{ backgroundColor: "#6366f1" }}
+                        >Add Bill</motion.button>
+                    </div>
+                </div>
+            </motion.div>
+        </div>
+    );
 }
 
 function ConfidenceBadge({ confidence }: { confidence: number }) {
@@ -93,33 +171,16 @@ export function BillSuggestions({ detectedBills, onAccept, onDismiss, className 
         >
             {/* Header */}
             <div className="mb-4 flex items-center gap-2">
-                <svg
-                    className="h-5 w-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#6366f1"
-                    strokeWidth="2"
-                >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
                     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                 </svg>
-                <span
-                    className="text-sm font-semibold"
-                    style={{ color: isDark ? "#e0e0e0" : "#1e293b" }}
-                >
-                    Detected Recurring Bills
-                </span>
-                <span
-                    className="rounded-full px-2 py-0.5 text-xs font-medium"
-                    style={{
-                        backgroundColor: "#6366f1",
-                        color: "white",
-                    }}
-                >
+                <span className="text-sm font-semibold" style={{ color: isDark ? "#e0e0e0" : "#1e293b" }}>Detected Recurring Bills</span>
+                <span className="rounded-full px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: "#6366f1", color: "white" }}>
                     {visibleBills.length} found
                 </span>
             </div>
 
-            {/* Bill list */}
+            {/* Bill list — swipeable cards */}
             <div className="space-y-3">
                 <AnimatePresence mode="popLayout">
                     {visibleBills.slice(0, 5).map((bill) => (
@@ -128,80 +189,21 @@ export function BillSuggestions({ detectedBills, onAccept, onDismiss, className 
                             layout
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                            className="rounded-xl p-4"
-                            style={{
-                                backgroundColor: isDark ? "#27272a" : "#ffffff",
-                                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
-                            }}
+                            exit={{ opacity: 0, scale: 0.9, height: 0, marginBottom: 0, transition: { duration: 0.2 } }}
                         >
-                            <div className="flex items-start justify-between gap-3">
-                                {/* Left: Logo + Info */}
-                                <div className="flex items-center gap-3">
-                                    <MerchantLogo merchantName={bill.merchantName} size="md" />
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <span
-                                                className="font-medium"
-                                                style={{ color: isDark ? "#fafafa" : "#18181b" }}
-                                            >
-                                                {bill.merchantName}
-                                            </span>
-                                            <ConfidenceBadge confidence={bill.confidence} />
-                                        </div>
-                                        <div
-                                            className="mt-0.5 text-sm"
-                                            style={{ color: isDark ? "#a1a1aa" : "#71717a" }}
-                                        >
-                                            {formatMoney(bill.averageAmount)} • {getFrequencyLabel(bill.frequency)} • Day {bill.suggestedDueDay}
-                                        </div>
-                                        <div
-                                            className="mt-1 text-xs"
-                                            style={{ color: isDark ? "#71717a" : "#a1a1aa" }}
-                                        >
-                                            {bill.occurrences.length} occurrences detected
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Right: Actions */}
-                                <div className="flex items-center gap-2">
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => handleDismiss(bill.id)}
-                                        className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-medium transition-colors"
-                                        style={{
-                                            backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                                            color: isDark ? "#a1a1aa" : "#71717a",
-                                        }}
-                                    >
-                                        Dismiss
-                                    </motion.button>
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => handleAccept(bill)}
-                                        className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-medium text-white transition-colors"
-                                        style={{
-                                            backgroundColor: "#6366f1",
-                                        }}
-                                    >
-                                        Add Bill
-                                    </motion.button>
-                                </div>
-                            </div>
+                            <SwipeableBillCard
+                                bill={bill}
+                                onAccept={handleAccept}
+                                onDismiss={handleDismiss}
+                                isDark={isDark}
+                            />
                         </motion.div>
                     ))}
                 </AnimatePresence>
             </div>
 
-            {/* Show more indicator */}
             {visibleBills.length > 5 && (
-                <div
-                    className="mt-3 text-center text-xs"
-                    style={{ color: isDark ? "#71717a" : "#a1a1aa" }}
-                >
+                <div className="mt-3 text-center text-xs" style={{ color: isDark ? "#71717a" : "#a1a1aa" }}>
                     +{visibleBills.length - 5} more detected bills
                 </div>
             )}

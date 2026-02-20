@@ -267,8 +267,15 @@ type BudgetData = {
   incomeTxns: Transaction[]; savingsTxns: Transaction[];
 };
 
-function BudgetVsActualSummary({ data, formatMoney: fmt }: { data: BudgetData; formatMoney: (n: number) => string }) {
+function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }: {
+  data: BudgetData;
+  formatMoney: (n: number) => string;
+  bills?: Plan["bills"];
+  rules?: Plan["outflowRules"];
+  onLink?: (txnId: string, type: "bill" | "rule", id: string) => void;
+}) {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [linkingTxnId, setLinkingTxnId] = useState<string | null>(null);
 
   const cards = [
     {
@@ -374,7 +381,32 @@ function BudgetVsActualSummary({ data, formatMoney: fmt }: { data: BudgetData; f
                       )}
                       <span className="truncate text-slate-600 dark:text-slate-300">{txn.label}</span>
                     </div>
-                    <span className="font-medium text-slate-800 dark:text-slate-200 ml-2 shrink-0">{fmt(txn.amount)}</span>
+                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                      <span className="font-medium text-slate-800 dark:text-slate-200">{fmt(txn.amount)}</span>
+                      {card.key === "spending" && !txn.linkedBillId && !txn.linkedRuleId && onLink && (
+                        linkingTxnId === txn.id ? (
+                          <select
+                            autoFocus
+                            defaultValue=""
+                            className="text-[10px] border border-amber-300 dark:border-amber-600 rounded px-1 py-0.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 max-w-[110px]"
+                            onChange={(e) => {
+                              const [type, id] = e.target.value.split(":");
+                              if (type && id) { onLink(txn.id, type as "bill" | "rule", id); setLinkingTxnId(null); }
+                            }}
+                            onBlur={() => setLinkingTxnId(null)}
+                          >
+                            <option value="">Link to…</option>
+                            {bills?.filter(b => b.enabled).map(b => <option key={b.id} value={`bill:${b.id}`}>{b.label}</option>)}
+                            {rules?.filter(r => r.enabled && r.category !== "savings").map(r => <option key={r.id} value={`rule:${r.id}`}>{r.label}</option>)}
+                          </select>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setLinkingTxnId(txn.id); }}
+                            className="text-[10px] text-amber-600 dark:text-amber-400 hover:underline"
+                          >Link</button>
+                        )
+                      )}
+                    </div>
                   </div>
                 ))}
                 {card.txns.length > 20 && (
@@ -1018,6 +1050,20 @@ export default function TransactionsPage() {
     showToast(`Exported ${selected.length} transaction(s) to CSV`, "success");
   }
 
+  function handleLinkTransaction(txnId: string, type: "bill" | "rule", id: string) {
+    const updated = {
+      ...plan,
+      transactions: plan.transactions.map((t) =>
+        t.id === txnId
+          ? { ...t, linkedBillId: type === "bill" ? id : t.linkedBillId, linkedRuleId: type === "rule" ? id : t.linkedRuleId }
+          : t
+      ),
+    };
+    savePlan(updated);
+    setPlan(updated);
+    showToast("Transaction linked", "success");
+  }
+
   if (!period) {
     return <div className="px-6 py-10 text-slate-500 dark:text-slate-400">Loading...</div>;
   }
@@ -1326,7 +1372,13 @@ export default function TransactionsPage() {
 
             {/* Budget vs Actual Summary */}
             {budgetVsActual && (
-              <BudgetVsActualSummary data={budgetVsActual} formatMoney={formatMoney} />
+              <BudgetVsActualSummary
+                data={budgetVsActual}
+                formatMoney={formatMoney}
+                bills={plan.bills}
+                rules={plan.outflowRules}
+                onLink={handleLinkTransaction}
+              />
             )}
 
             {/* Transactions List */}

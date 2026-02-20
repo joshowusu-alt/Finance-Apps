@@ -13,9 +13,10 @@ export type CategoryData = {
 type Props = {
   data: CategoryData[];
   height?: number;
+  onCategoryClick?: (name: string) => void;
 };
 
-export function CategoryBreakdownChart({ data, height = 300 }: Props) {
+export function CategoryBreakdownChart({ data, height = 300, onCategoryClick }: Props) {
   const [isDark, setIsDark] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -76,6 +77,8 @@ export function CategoryBreakdownChart({ data, height = 300 }: Props) {
           animationDuration={400}
           animationEasing="ease-out"
           paddingAngle={isMobile ? 2 : 0}
+          onClick={(_, index) => onCategoryClick?.(dataWithColors[index].name)}
+          style={{ cursor: onCategoryClick ? "pointer" : "default" }}
         >
           {dataWithColors.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.color} />

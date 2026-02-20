@@ -285,6 +285,12 @@ export default function HomePage() {
                     <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-1 flex items-center">Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
                     <div className={`text-4xl font-bold ${actualLeftover > 0 ? "text-[var(--vn-success)]" : "text-rose-500"}`}>{formatMoney(actualLeftover)}</div>
                     <div className="text-xs text-[var(--vn-muted)] mt-1">Leftover from income this period</div>
+                    {actualIncome === 0 && plan.incomeRules.length > 0 && (
+                      <div className="mt-1.5 flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400">
+                        <span>⚠</span>
+                        <span>No income recorded yet — add an income transaction to see your true safe-to-spend</span>
+                      </div>
+                    )}
 
                     {/* Spending pace bar */}
                     {timeProgress > 0.02 && budgetSpending > 0 && (
