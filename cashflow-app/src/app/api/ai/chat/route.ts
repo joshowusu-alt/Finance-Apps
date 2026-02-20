@@ -119,24 +119,49 @@ ${contextString}`;
           ],
           max_tokens: 500,
           temperature: 0.7,
+          stream: true,
         }),
       },
     );
 
     if (!response.ok) {
-      console.error("OpenAI API error:", await response.json());
+      console.error("OpenAI API error status:", response.status);
       return NextResponse.json(
         { error: "AI coaching is temporarily unavailable. Please try again later." },
         { status: 502 },
       );
     }
 
-    const data = await response.json();
-    const aiResponse =
-      data.choices?.[0]?.message?.content ||
-      "I couldn't generate a response. Please try again.";
+    // Pass the OpenAI stream through as SSE
+    const reader = response.body!.getReader();
+    const encoder = new TextEncoder();
 
-    return NextResponse.json({ response: aiResponse, source: "openai" });
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+              controller.close();
+              break;
+            }
+            // Forward the raw SSE chunks from OpenAI directly
+            controller.enqueue(value);
+          }
+        } catch (err) {
+          controller.error(err);
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
   } catch (error) {
     console.error("AI Assistant error:", error);
     return serverError("Failed to process request");

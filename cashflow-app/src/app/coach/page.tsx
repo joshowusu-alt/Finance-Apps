@@ -306,6 +306,10 @@ export default function CoachPage() {
     setIsLoading(true);
 
     const financial = getFinancialContext();
+    const streamingId = `ai-${Date.now()}`;
+
+    // Add a blank streaming message immediately
+    setMessages(prev => [...prev, { id: streamingId, role: "assistant", content: "" }]);
 
     try {
       const res = await fetch("/api/ai/chat", {
@@ -318,24 +322,62 @@ export default function CoachPage() {
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("request failed");
-      const data = await res.json();
+      if (!res.ok || !res.body) throw new Error("request failed");
 
-      const content = data.response || "I couldn't process that. Please try again.";
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-      setMessages(prev => [
-        ...prev,
-        { id: `ai-${Date.now()}`, role: "assistant", content },
-      ]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process complete SSE lines
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? ""; // Keep the last incomplete line
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith("data:")) continue;
+          const payload = trimmed.slice(5).trim();
+          if (payload === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(payload);
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) {
+              setMessages(prev =>
+                prev.map(m =>
+                  m.id === streamingId
+                    ? { ...m, content: m.content + delta }
+                    : m,
+                ),
+              );
+            }
+          } catch {
+            // Ignore malformed SSE lines
+          }
+        }
+      }
+
+      // Check if we got any content at all — if not, fall back to local
+      setMessages(prev => {
+        const streamed = prev.find(m => m.id === streamingId);
+        if (!streamed?.content && financial) {
+          const fallback = generateLocalResponse(text, financial.ctx, financial.expectedMinBalance);
+          return prev.map(m => m.id === streamingId ? { ...m, content: fallback } : m);
+        }
+        return prev;
+      });
     } catch {
       const content = financial
         ? generateLocalResponse(text, financial.ctx, financial.expectedMinBalance)
         : "Sorry, I couldn't process your request. Please try again.";
 
-      setMessages(prev => [
-        ...prev,
-        { id: `err-${Date.now()}`, role: "assistant", content },
-      ]);
+      setMessages(prev =>
+        prev.map(m => m.id === streamingId ? { ...m, content } : m),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -394,37 +436,39 @@ export default function CoachPage() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {messages.map(msg => (
-          <motion.div
-            key={msg.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                msg.role === "user"
-                  ? "bg-violet-500 text-white rounded-br-md"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-md"
-              }`}
+        {messages.map((msg, idx) => {
+          const isStreamingMsg = isLoading && msg.role === "assistant" && idx === messages.length - 1;
+          return (
+            <motion.div
+              key={msg.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
-              <p className="whitespace-pre-wrap">{renderContent(msg.content)}</p>
-            </div>
-          </motion.div>
-        ))}
-
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-slate-100 dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-md">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div
+                className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                  msg.role === "user"
+                    ? "bg-violet-500 text-white rounded-br-md"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-md"
+                }`}
+              >
+                {isStreamingMsg && !msg.content ? (
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap">
+                    {renderContent(msg.content)}
+                    {isStreamingMsg && <span className="inline-block w-[2px] h-[1em] bg-slate-500 ml-0.5 align-middle animate-pulse" />}
+                  </p>
+                )}
               </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          );
+        })}
 
         <div ref={messagesEndRef} />
       </div>
