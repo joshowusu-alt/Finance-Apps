@@ -178,66 +178,66 @@ export default function TimelinePage() {
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
           <section className="space-y-6">
-            <header className="vn-card p-6">
+            <header className="vn-card px-5 py-4 sm:p-6">
               <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Timeline</div>
-              <h1 className="text-2xl font-semibold text-[var(--vn-text)]">Cashflow Timeline</h1>
-              <p className="mt-2 text-sm text-[var(--vn-muted)]">See your balance day by day.</p>
-              <p className="mt-1 text-xs text-slate-400">
+              <h1 className="text-xl sm:text-2xl font-semibold text-[var(--vn-text)]">Cashflow Timeline</h1>
+              <p className="mt-1 text-sm text-[var(--vn-muted)]">See your balance day by day.</p>
+              <p className="mt-0.5 text-xs text-slate-400">
                 {period.label} ({formatNice(period.start)} - {formatNice(period.end)})
               </p>
             </header>
 
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-              <div className="rounded-2xl bg-[var(--vn-surface)] border border-[var(--vn-border)] p-5">
-                <div className="flex items-center justify-between text-sm text-[var(--vn-muted)]">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl bg-[var(--vn-surface)] border border-[var(--vn-border)] p-4 sm:p-5">
+                <div className="flex items-center justify-between text-xs sm:text-sm text-[var(--vn-muted)]">
                   <span className="flex items-center">Starting balance<InfoTooltip text="Your account balance at the start of this period. When roll-forward is on, it carries over from the previous period automatically." /></span>
                   {plan.setup.rollForwardBalance && hasStartingOverride ? (
                     <button
                       onClick={clearStartingBalanceOverride}
-                      className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)]"
+                      className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] min-h-[44px] flex items-center"
                     >
                       Use auto
                     </button>
                   ) : null}
                 </div>
                 <input
-                  className="mt-2 w-full rounded-xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-lg text-[var(--vn-text)] outline-none focus:border-slate-400"
+                  className="mt-2 w-full rounded-xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-2 py-1.5 sm:px-3 sm:py-2 text-base sm:text-lg text-[var(--vn-text)] outline-none focus:border-slate-400"
                   type="number"
                   value={startingBalance || ""}
                   onChange={(e) => updateStartingBalance(Number(e.target.value))}
                   placeholder="0"
                 />
-                <p className="mt-2 text-xs text-[var(--vn-muted)]">
+                <p className="mt-1.5 text-xs text-[var(--vn-muted)] leading-snug">
                   {plan.setup.rollForwardBalance
                     ? hasStartingOverride
                       ? "Custom for this period."
-                      : "Auto from previous period. Editing sets a custom value."
-                    : "Enter what you had at the start of the period."}
+                      : "Auto from previous period."
+                    : "Enter start balance."}
                 </p>
               </div>
 
-              <div className="rounded-2xl bg-[var(--vn-surface)] border border-[var(--vn-border)] p-5">
-                <p className="text-sm text-[var(--vn-muted)] flex items-center">Expected minimum balance<InfoTooltip text="The safety net amount you want to keep in your account. Any day your projected balance dips below this will be flagged as a warning." /></p>
-                <p className="mt-2 text-2xl font-semibold text-[var(--vn-text)]">
+              <div className="rounded-2xl bg-[var(--vn-surface)] border border-[var(--vn-border)] p-4 sm:p-5">
+                <p className="text-xs sm:text-sm text-[var(--vn-muted)] flex items-center">Expected min.<InfoTooltip text="The safety net amount you want to keep in your account. Any day your projected balance dips below this will be flagged as a warning." /></p>
+                <p className="mt-2 text-xl sm:text-2xl font-semibold text-[var(--vn-text)]">
                   {plan.setup.expectedMinBalance > 0
                     ? formatMoney(plan.setup.expectedMinBalance)
                     : <span className="text-[var(--vn-muted)]">Not set</span>}
                 </p>
-                <p className="mt-2 text-xs text-[var(--vn-muted)]">
+                <p className="mt-1.5 text-xs text-[var(--vn-muted)] leading-snug">
                   {plan.setup.expectedMinBalance > 0
-                    ? "We flag any day that drops below this."
-                    : "Set an expected minimum balance in Settings to flag risky days."}
+                    ? "Flags days below this."
+                    : "Set in Settings."}
                 </p>
               </div>
 
-              <div className="rounded-2xl bg-[var(--vn-surface)] border border-[var(--vn-border)] p-5">
-                <p className="text-sm text-[var(--vn-muted)]">Lowest point (period)</p>
+              <div className="col-span-2 sm:col-span-1 rounded-2xl bg-[var(--vn-surface)] border border-[var(--vn-border)] p-4 sm:p-5">
+                <p className="text-xs sm:text-sm text-[var(--vn-muted)]">Lowest point (period)</p>
                 <p
-                  className={`mt-2 text-2xl font-semibold ${lowestBelowMin ? "text-rose-600" : "text-green-600"}`}
+                  className={`mt-2 text-xl sm:text-2xl font-semibold ${lowestBelowMin ? "text-rose-600" : "text-green-600"}`}
                 >
                   {lowestPoint ? formatMoney(lowestPoint.balance) : "0"}
                 </p>
-                <p className="mt-2 text-xs text-[var(--vn-muted)]">
+                <p className="mt-1.5 text-xs text-[var(--vn-muted)]">
                   {lowestPoint ? `On ${formatNice(lowestPoint.date)}` : ""}
                 </p>
               </div>
