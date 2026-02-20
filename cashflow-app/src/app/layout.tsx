@@ -56,7 +56,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${playfair.variable} ${inter.variable} min-h-screen font-sans bg-white dark:bg-slate-900 transition-colors duration-200`}>
+      <body className={`${playfair.variable} ${inter.variable} min-h-screen font-sans transition-colors duration-200`} style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
         <AuthProvider>
           <ConfirmProvider>
           <CloudSync />

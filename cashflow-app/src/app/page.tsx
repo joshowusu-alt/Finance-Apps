@@ -392,7 +392,7 @@ export default function HomePage() {
                     {timeProgress > 0.02 && budgetSpending > 0 && (
                       <div className="mt-3 pt-3 border-t border-[var(--vn-border)]">
                         <div className="flex items-center justify-between text-xs text-[var(--vn-muted)] mb-1.5">
-                          <span>Spending pace</span>
+                          <span className="flex items-center gap-1">Spending pace<InfoTooltip text="The blue bar shows how much of your budget you've spent. The grey bar shows how far through the period you are. If blue exceeds grey, you're spending faster than time is passing." /></span>
                           <span className={spendingPaceGap > 0.08 ? "text-rose-500 font-semibold" : spendingPaceGap < -0.08 ? "text-emerald-500 font-semibold" : "text-[var(--vn-muted)]"}>
                             {spendingPaceGap > 0.08 ? "Spending high" : spendingPaceGap < -0.08 ? "Under budget ✓" : "On track"}
                           </span>
@@ -425,6 +425,7 @@ export default function HomePage() {
                         {derived.health.label}
                       </span>
                       <span className="text-xs text-[var(--vn-muted)]">{derived.health.reason}</span>
+                      <InfoTooltip text="Your financial health score: Healthy = spending well within budget; Watch = nearing limits; Caution = over-budget or savings at risk." />
                     </div>
                   </>
                 )}

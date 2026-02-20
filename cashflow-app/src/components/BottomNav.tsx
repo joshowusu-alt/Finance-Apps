@@ -12,6 +12,7 @@ import type { Period } from "@/data/plan";
 type NavItem = {
   href: string;
   label: string;
+  desc?: string;
   icon: (active: boolean) => React.ReactElement;
 };
 
@@ -102,19 +103,19 @@ function IconMore(active: boolean) {
 
 const primaryItems: NavItem[] = [
   { href: "/", label: "Home", icon: IconHome },
-  { href: "/plan", label: "Plan", icon: IconPlan },
-  { href: "/timeline", label: "Timeline", icon: IconTimeline },
+  { href: "/plan", label: "Budget", icon: IconPlan },
+  { href: "/timeline", label: "Calendar", icon: IconTimeline },
   { href: "/insights", label: "Insights", icon: IconInsights },
 ];
 
 const moreItems: NavItem[] = [
-  { href: "/transactions", label: "Transactions", icon: () => <span className="text-lg">💳</span> },
-  { href: "/bills", label: "Bills", icon: () => <span className="text-lg">📄</span> },
-  { href: "/income", label: "Income", icon: () => <span className="text-lg">💰</span> },
-  { href: "/goals", label: "Goals", icon: () => <span className="text-lg">🎯</span> },
-  { href: "/import", label: "Import", icon: () => <span className="text-lg">📂</span> },
-  { href: "/coach", label: "Coach", icon: () => <span className="text-lg">🤖</span> },
-  { href: "/settings", label: "Settings", icon: () => <span className="text-lg">⚙️</span> },
+  { href: "/transactions", label: "Transactions", desc: "Log expenses", icon: () => <span className="text-lg">💳</span> },
+  { href: "/bills", label: "Bills", desc: "Recurring bills", icon: () => <span className="text-lg">📄</span> },
+  { href: "/income", label: "Income", desc: "Income rules", icon: () => <span className="text-lg">💰</span> },
+  { href: "/goals", label: "Goals", desc: "Save targets", icon: () => <span className="text-lg">🎯</span> },
+  { href: "/import", label: "Import", desc: "Upload data", icon: () => <span className="text-lg">📂</span> },
+  { href: "/coach", label: "Coach", desc: "AI advisor", icon: () => <span className="text-lg">🤖</span> },
+  { href: "/settings", label: "Settings", desc: "Preferences", icon: () => <span className="text-lg">⚙️</span> },
 ];
 
 export default function BottomNav() {
@@ -180,18 +181,22 @@ export default function BottomNav() {
                 <div className="h-1 w-10 rounded-full bg-[var(--vn-border)]" />
               </div>
               <div className="px-6 py-2">
-                <div className="grid grid-cols-4 gap-4">
+                <p className="text-[11px] uppercase tracking-widest font-semibold mb-3" style={{ color: "var(--vn-muted)" }}>All features</p>
+                <div className="grid grid-cols-4 gap-3">
                   {moreItems.map((it) => (
                     <Link
                       key={it.href}
                       href={it.href}
                       onClick={() => setShowMore(false)}
-                      className="flex flex-col items-center gap-2 rounded-2xl py-4 transition-colors hover:bg-[var(--vn-bg)]"
+                      className="flex flex-col items-center gap-1 rounded-2xl py-3 px-1 transition-colors hover:bg-[var(--vn-bg)]"
                     >
                       {it.icon(isActive(it.href))}
-                      <span className={`text-xs font-medium ${isActive(it.href) ? "text-[var(--vn-primary)]" : "text-[var(--vn-muted)]"}`}>
+                      <span className={`text-[11px] font-semibold leading-tight text-center ${isActive(it.href) ? "text-[var(--vn-primary)]" : "text-[var(--vn-text)]"}`}>
                         {it.label}
                       </span>
+                      {it.desc && (
+                        <span className="text-[9px] leading-tight text-center" style={{ color: "var(--vn-muted)" }}>{it.desc}</span>
+                      )}
                     </Link>
                   ))}
                 </div>
@@ -235,8 +240,8 @@ export default function BottomNav() {
 
       {/* Bottom tab bar */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-(--border) bg-surface-elevated/95 backdrop-blur-xl md:hidden"
-        style={{ boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.05)" }}
+        className="fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-xl md:hidden"
+        style={{ background: "var(--vn-surface)", borderTopColor: "var(--vn-border)", boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.08)" }}
         aria-label="Primary"
       >
         <div className="mx-auto max-w-5xl px-2">
@@ -258,18 +263,23 @@ export default function BottomNav() {
                     {active && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute inset-0 rounded-2xl bg-accent/15"
+                        className="absolute inset-0 rounded-2xl"
+                        style={{ background: "color-mix(in srgb, var(--vn-primary) 15%, transparent)" }}
                         transition={{ type: "spring", stiffness: 400, damping: 30 }}
                       />
                     )}
                     <motion.span
-                      className={`relative ${active ? "text-accent" : "text-(--text-secondary)"}`}
+                      className="relative"
+                      style={{ color: active ? "var(--vn-primary)" : "var(--vn-muted)" }}
                       animate={{ scale: active ? 1.05 : 1, y: active ? -1 : 0 }}
                       transition={{ type: "spring", stiffness: 400, damping: 20 }}
                     >
                       {it.icon(active)}
                     </motion.span>
-                    <span className={`relative text-[11px] ${active ? "text-accent font-bold" : "text-(--text-tertiary) font-medium"}`}>
+                    <span
+                      className={`relative text-[11px] ${active ? "font-bold" : "font-medium"}`}
+                      style={{ color: active ? "var(--vn-primary)" : "var(--vn-muted)" }}
+                    >
                       {it.label}
                     </span>
                   </motion.div>
@@ -289,18 +299,23 @@ export default function BottomNav() {
                 {(showMore || isMoreActive) && (
                   <motion.div
                     layoutId={showMore ? undefined : "activeTab"}
-                    className="absolute inset-0 rounded-2xl bg-accent/15"
+                    className="absolute inset-0 rounded-2xl"
+                    style={{ background: "color-mix(in srgb, var(--vn-primary) 15%, transparent)" }}
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
                 <motion.span
-                  className={`relative ${showMore || isMoreActive ? "text-accent" : "text-(--text-secondary)"}`}
+                  className="relative"
+                  style={{ color: showMore || isMoreActive ? "var(--vn-primary)" : "var(--vn-muted)" }}
                   animate={{ scale: showMore ? 1.05 : 1, y: showMore ? -1 : 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 >
                   {IconMore(showMore || isMoreActive)}
                 </motion.span>
-                <span className={`relative text-[11px] ${showMore || isMoreActive ? "text-accent font-bold" : "text-(--text-tertiary) font-medium"}`}>
+                <span
+                  className={`relative text-[11px] ${showMore || isMoreActive ? "font-bold" : "font-medium"}`}
+                  style={{ color: showMore || isMoreActive ? "var(--vn-primary)" : "var(--vn-muted)" }}
+                >
                   More
                 </span>
               </motion.div>
@@ -309,7 +324,7 @@ export default function BottomNav() {
         </div>
 
         {/* Bottom safe area for notched devices */}
-        <div className="h-[env(safe-area-inset-bottom)] bg-surface-elevated/95" />
+        <div className="h-[env(safe-area-inset-bottom)]" style={{ background: "var(--vn-surface)" }} />
       </nav>
     </>
   );
