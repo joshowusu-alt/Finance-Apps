@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { VelanovoLogo } from "./VelanovoLogo";
+import { useEffect, useState } from "react";
+import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import type { Period } from "@/data/plan";
 
 // Sidebar navigation component
 
@@ -87,6 +90,15 @@ const items = [
     )
   },
   {
+    href: "/import",
+    label: "Import",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+      </svg>
+    )
+  },
+  {
     href: "/coach",
     label: "Coach",
     icon: (
@@ -110,6 +122,48 @@ const items = [
 export default function SidebarNav({ periodLabel, periodStart, periodEnd }: SidebarNavProps) {
   const pathname = usePathname();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname?.startsWith(href));
+
+  // Self-contained period state — loads from storage, syncs with all pages
+  const [periods, setPeriods] = useState<Period[]>([]);
+  const [selectedPeriodId, setSelectedPeriodId] = useState<number>(0);
+  const [displayLabel, setDisplayLabel] = useState(periodLabel || "");
+  const [displayStart, setDisplayStart] = useState(periodStart || "");
+  const [displayEnd, setDisplayEnd] = useState(periodEnd || "");
+
+  useEffect(() => {
+    const refresh = () => {
+      try {
+        const plan = loadPlan();
+        setPeriods(plan.periods);
+        setSelectedPeriodId(plan.setup.selectedPeriodId);
+        const sel = plan.periods.find(p => p.id === plan.setup.selectedPeriodId);
+        if (sel) {
+          setDisplayLabel(sel.label);
+          setDisplayStart(sel.start);
+          setDisplayEnd(sel.end);
+        }
+      } catch { /* ignore SSR */ }
+    };
+    refresh();
+    window.addEventListener("focus", refresh);
+    window.addEventListener(PLAN_UPDATED_EVENT, refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener(PLAN_UPDATED_EVENT, refresh);
+    };
+  }, []);
+
+  function handlePeriodChange(id: number) {
+    const plan = loadPlan();
+    savePlan({ ...plan, setup: { ...plan.setup, selectedPeriodId: id } });
+    setSelectedPeriodId(id);
+    const sel = plan.periods.find(p => p.id === id);
+    if (sel) {
+      setDisplayLabel(sel.label);
+      setDisplayStart(sel.start);
+      setDisplayEnd(sel.end);
+    }
+  }
 
   return (
     <aside
@@ -196,19 +250,32 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
         })}
       </nav>
 
-      {/* Period Info */}
+      {/* Period Switcher */}
       <div
         className="rounded-2xl bg-accent/10 border border-accent/20 p-4"
       >
-        <div className="flex items-center gap-2 text-accent font-semibold text-sm mb-1">
+        <div className="flex items-center gap-2 text-accent font-semibold text-sm mb-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span>{periodLabel || "Current Period"}</span>
+          <span>Period</span>
         </div>
-        {periodStart && periodEnd && (
+        {periods.length > 1 ? (
+          <select
+            value={selectedPeriodId}
+            onChange={(e) => handlePeriodChange(Number(e.target.value))}
+            className="w-full rounded-lg bg-accent/10 border border-accent/20 text-accent text-xs font-medium px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-accent/50"
+          >
+            {periods.map(p => (
+              <option key={p.id} value={p.id}>{p.label}</option>
+            ))}
+          </select>
+        ) : (
+          <div className="text-xs font-medium text-accent">{displayLabel || periodLabel || "Current Period"}</div>
+        )}
+        {(displayStart || periodStart) && (displayEnd || periodEnd) && (
           <div className="text-xs text-(--text-secondary) mt-2 font-medium">
-            {periodStart} → {periodEnd}
+            {displayStart || periodStart} → {displayEnd || periodEnd}
           </div>
         )}
       </div>

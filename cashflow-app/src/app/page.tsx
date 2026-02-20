@@ -30,6 +30,7 @@ import InfoTooltip from "@/components/InfoTooltip";
 import { useDerived } from "@/lib/useDerived";
 import { prettyDate } from "@/lib/formatUtils";
 import { toUtcDay, dayDiff } from "@/lib/dateUtils";
+import { detectSubscriptions } from "@/lib/subscriptionDetection";
 
 
 
@@ -198,6 +199,19 @@ export default function HomePage() {
     }));
   }, [rows]);
 
+  // Empty state detection — no plan data set up yet
+  const hasData = plan.incomeRules.length > 0 || plan.bills.length > 0 || plan.transactions.length > 0 || plan.setup.startingBalance > 0;
+
+  // Subscription nudge — detect actionable subscriptions
+  const subscriptionNudge = useMemo(() => {
+    if (plan.transactions.length < 3) return null;
+    const subs = detectSubscriptions(plan.transactions);
+    const actionable = subs.filter(s => s.recommendation === "review" || s.recommendation === "cancel");
+    if (actionable.length === 0) return null;
+    const totalMonthly = actionable.reduce((sum, s) => sum + s.monthlyCost, 0);
+    return { count: actionable.length, totalMonthly };
+  }, [plan.transactions]);
+
   function handleQuickSetupComplete(builtPlan: Plan) {
     savePlan(builtPlan);
     setOnboarding(resetOnboarding());
@@ -257,20 +271,59 @@ export default function HomePage() {
 
               {/* Hero Metric */}
               <div className="p-5 rounded-2xl bg-[var(--vn-bg)] border border-[var(--vn-border)] mt-6">
-                <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-1 flex items-center">Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
-                <div className="text-4xl font-bold text-[var(--vn-success)]">{formatMoney(actualLeftover > 0 ? actualLeftover : 0)}</div>
-                <div className="text-xs text-[var(--vn-muted)] mt-1">Leftover from income this period</div>
-                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--vn-border)]">
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${derived.health.label === "Healthy"
-                      ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300"
-                      : derived.health.label === "Watch"
-                        ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
-                        : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
-                    }`}>
-                    {derived.health.label}
-                  </span>
-                  <span className="text-xs text-[var(--vn-muted)]">{derived.health.reason}</span>
-                </div>
+                {!hasData ? (
+                  <div className="text-center py-2">
+                    <div className="text-3xl mb-2">📊</div>
+                    <div className="text-sm font-semibold text-[var(--vn-text)]">Set up your plan to get started</div>
+                    <div className="text-xs text-[var(--vn-muted)] mt-1 mb-3">Add income, bills, or a starting balance to see your cashflow</div>
+                    <button onClick={() => setShowSetup(true)} className="vn-btn vn-btn-primary text-xs px-4 py-2">
+                      Quick Setup
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-1 flex items-center">Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
+                    <div className={`text-4xl font-bold ${actualLeftover > 0 ? "text-[var(--vn-success)]" : "text-rose-500"}`}>{formatMoney(actualLeftover)}</div>
+                    <div className="text-xs text-[var(--vn-muted)] mt-1">Leftover from income this period</div>
+
+                    {/* Spending pace bar */}
+                    {timeProgress > 0.02 && budgetSpending > 0 && (
+                      <div className="mt-3 pt-3 border-t border-[var(--vn-border)]">
+                        <div className="flex items-center justify-between text-xs text-[var(--vn-muted)] mb-1.5">
+                          <span>Spending pace</span>
+                          <span className={spendingPaceGap > 0.08 ? "text-rose-500 font-semibold" : spendingPaceGap < -0.08 ? "text-emerald-500 font-semibold" : "text-[var(--vn-muted)]"}>
+                            {spendingPaceGap > 0.08 ? "Spending high" : spendingPaceGap < -0.08 ? "Under budget ✓" : "On track"}
+                          </span>
+                        </div>
+                        <div className="relative h-2 rounded-full bg-slate-200 dark:bg-slate-700">
+                          {/* Time elapsed bar (background) */}
+                          <div className="absolute inset-y-0 left-0 rounded-full bg-slate-300 dark:bg-slate-600" style={{ width: `${Math.round(timeProgress * 100)}%` }} />
+                          {/* Spending progress bar (foreground) */}
+                          <div
+                            className={`absolute inset-y-0 left-0 rounded-full transition-all ${spendingPaceGap > 0.08 ? "bg-rose-500" : spendingPaceGap < -0.08 ? "bg-emerald-500" : "bg-blue-500"}`}
+                            style={{ width: `${Math.min(100, Math.round(spendingProgress * 100))}%`, opacity: 0.85 }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-[10px] text-[var(--vn-muted)] mt-1">
+                          <span>{Math.round(spendingProgress * 100)}% spent</span>
+                          <span>{Math.round(timeProgress * 100)}% of period</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--vn-border)]">
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${derived.health.label === "Healthy"
+                          ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300"
+                          : derived.health.label === "Watch"
+                            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                            : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                        }`}>
+                        {derived.health.label}
+                      </span>
+                      <span className="text-xs text-[var(--vn-muted)]">{derived.health.reason}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </header>
 
@@ -333,6 +386,19 @@ export default function HomePage() {
                     <div className="text-sm text-[var(--vn-success)] font-medium text-center py-2">🎉 You&apos;re all set! Dismiss this card to clear space.</div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Subscription Nudge */}
+            {subscriptionNudge && (
+              <div className="vn-card p-4 border-l-4 border-l-amber-400 flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--vn-text)]">💡 Subscription review</div>
+                  <div className="text-xs text-[var(--vn-muted)] mt-0.5">
+                    {subscriptionNudge.count} subscription{subscriptionNudge.count > 1 ? "s" : ""} worth reviewing — {formatMoney(subscriptionNudge.totalMonthly)}/month
+                  </div>
+                </div>
+                <Link href="/insights" className="vn-btn vn-btn-ghost text-xs whitespace-nowrap">Review →</Link>
               </div>
             )}
 
