@@ -90,6 +90,15 @@ const items = [
     )
   },
   {
+    href: "/networth",
+    label: "Net Worth",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+      </svg>
+    )
+  },
+  {
     href: "/import",
     label: "Import",
     icon: (
@@ -167,115 +176,100 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
 
   return (
     <aside
-      className="hidden lg:flex flex-col gap-6 card-premium p-6 text-text-primary"
+      className="hidden lg:flex flex-col gap-5 self-start sticky top-5 overflow-hidden"
+      style={{
+        background: "linear-gradient(160deg, #0f172a 0%, #0c1626 60%, #091220 100%)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: "20px",
+        boxShadow: "0 4px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)",
+        minHeight: "calc(100vh - 40px)",
+        position: "relative",
+      }}
     >
+      {/* Subtle gold glow */}
+      <div style={{
+        position: "absolute", top: -80, right: -80,
+        width: 260, height: 260,
+        background: "radial-gradient(circle, rgba(168,115,26,0.18), transparent 65%)",
+        pointerEvents: "none", borderRadius: "50%",
+      }} />
+
       {/* Logo */}
-      <div
-        className="flex items-center px-3"
-      >
-        <VelanovoLogo size={32} showWordmark={true} />
+      <div className="flex items-center px-6 pt-6 pb-2 relative">
+        <VelanovoLogo size={30} showWordmark={true} />
       </div>
 
       {/* Navigation */}
-      <nav className="space-y-1 text-sm flex-1">
-        {items.map((item, index) => {
+      <nav className="space-y-0.5 text-sm flex-1 px-3 relative overflow-y-auto">
+        {items.map((item) => {
           const active = isActive(item.href);
           return (
-            <div
-              key={item.href}
-            >
-              <Link
-                href={item.href}
-                className="block relative"
+            <Link key={item.href} href={item.href} className="block relative">
+              <motion.div
+                whileHover={{ x: 3 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200"
+                style={{
+                  color: active ? "#d4a843" : "rgba(240,237,232,0.62)",
+                  fontWeight: active ? 600 : 500,
+                }}
               >
-                <motion.div
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={[
-                    "relative flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200",
-                    active
-                      ? "text-accent font-semibold"
-                      : "text-(--text-secondary) hover:text-(--text-primary) font-medium",
-                  ].join(" ")}
+                {active && (
+                  <motion.div
+                    layoutId="sidebarActiveTab"
+                    className="absolute inset-0 rounded-xl"
+                    style={{ background: "rgba(212,168,67,0.12)", border: "1px solid rgba(212,168,67,0.18)" }}
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+                {active && (
+                  <div
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
+                    style={{ background: "#d4a843" }}
+                  />
+                )}
+                <motion.span
+                  className="relative z-10"
+                  animate={{ scale: active ? 1.05 : 1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
-                  {/* Active indicator */}
-                  {active && (
-                    <motion.div
-                      layoutId="sidebarActiveTab"
-                      className="absolute inset-0 rounded-xl bg-accent/10"
-                      transition={{
-                        type: "spring",
-                        stiffness: 380,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-
-                  {/* Icon */}
-                  <motion.span
-                    className="relative z-10"
-                    animate={{
-                      scale: active ? 1.1 : 1,
-                    }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  >
-                    {item.icon}
-                  </motion.span>
-
-                  {/* Label */}
-                  <span className="relative z-10">{item.label}</span>
-
-                  {/* Arrow indicator for active */}
-                  {active && (
-                    <motion.svg
-                      initial={{ opacity: 0, x: -5 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="w-4 h-4 ml-auto relative z-10"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </motion.svg>
-                  )}
-                </motion.div>
-              </Link>
-            </div>
+                  {item.icon}
+                </motion.span>
+                <span className="relative z-10 text-[13px] tracking-[-0.01em]">{item.label}</span>
+              </motion.div>
+            </Link>
           );
         })}
       </nav>
 
       {/* Period Switcher */}
       <div
-        className="rounded-2xl bg-accent/10 border border-accent/20 p-4"
+        className="mx-3 mb-4 px-4 py-3 rounded-xl"
+        style={{ background: "rgba(212,168,67,0.08)", border: "1px solid rgba(212,168,67,0.16)" }}
       >
-        <div className="flex items-center gap-2 text-accent font-semibold text-sm mb-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center gap-2 text-xs font-semibold mb-2" style={{ color: "#d4a843" }}>
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span>Period</span>
+          <span>Budget Period</span>
         </div>
         {periods.length > 1 ? (
           <select
             value={selectedPeriodId}
             onChange={(e) => handlePeriodChange(Number(e.target.value))}
-            className="w-full rounded-lg bg-accent/10 border border-accent/20 text-accent text-xs font-medium px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-accent/50"
+            className="w-full rounded-lg text-xs font-medium px-2 py-1.5 focus:outline-none"
+            style={{ background: "rgba(212,168,67,0.12)", border: "1px solid rgba(212,168,67,0.2)", color: "#d4a843" }}
           >
             {periods.map(p => (
-              <option key={p.id} value={p.id}>{p.label}</option>
+              <option key={p.id} value={p.id} style={{ background: "#0f172a" }}>{p.label}</option>
             ))}
           </select>
         ) : (
-          <div className="text-xs font-medium text-accent">{displayLabel || periodLabel || "Current Period"}</div>
+          <div className="text-xs font-semibold" style={{ color: "#d4a843" }}>{displayLabel || periodLabel || "Current Period"}</div>
         )}
         {(displayStart || periodStart) && (displayEnd || periodEnd) && (
-          <div className="text-xs text-(--text-secondary) mt-2 font-medium">
-            {displayStart || periodStart} → {displayEnd || periodEnd}
+          <div className="text-[11px] mt-1.5" style={{ color: "rgba(240,237,232,0.4)" }}>
+            {(displayStart || periodStart)} → {(displayEnd || periodEnd)}
           </div>
         )}
       </div>

@@ -328,29 +328,28 @@ export default function HomePage() {
             initial="hidden"
             animate="visible"
           >
-            <motion.header variants={fadeUp} className="flex flex-col gap-4 rounded-3xl p-6 shadow-xl relative overflow-hidden"
-              style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}>
+            <motion.header variants={fadeUp} className="vn-masthead flex flex-col gap-4">
 
-              {/* Background accent — subtle animated glow */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+              {/* Gold glow accent top-right */}
+              <div className="absolute top-0 right-0 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, rgba(168,115,26,0.18) 0%, transparent 70%)", transform: "translate(30%, -40%)" }} />
 
               <div className="flex flex-col md:flex-row md:items-center md:justify-between relative z-10">
                 <div className="lg:hidden mb-2">
                   <VelanovoLogo size={28} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-[var(--vn-text)]">Dashboard</h1>
-                  <div className="mt-1 text-sm text-[var(--vn-muted)]">
+                  <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Dashboard</h1>
+                  <div className="mt-1 text-sm text-white/45">
                     {formatPeriodLabel(period.label)} Overview
                   </div>
-
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mt-3 md:mt-0">
                   <ThemeToggle />
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setShowClosePeriod(true)}
-                      className="vn-btn vn-btn-ghost text-sm"
+                      className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      style={{ color: "rgba(240,237,232,0.65)", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
                     >
                       Close Period
                     </button>
@@ -358,31 +357,32 @@ export default function HomePage() {
                   </div>
                   <Link
                     href="/transactions"
-                    className="vn-btn vn-btn-primary text-sm shadow-lg shadow-blue-500/20"
+                    className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-all hover:brightness-110"
+                    style={{ background: "linear-gradient(135deg, #a8731a, #d4a843)", color: "#0f172a", boxShadow: "0 2px 12px rgba(168,115,26,0.35)" }}
                   >
-                    <span className="mr-2">+</span> Add Transaction
+                    <span className="mr-1.5">+</span> Add Transaction
                   </Link>
                 </div>
               </div>
 
               {/* Hero Metric */}
-              <div className="p-5 rounded-2xl bg-[var(--vn-bg)] border border-[var(--vn-border)] mt-6">
+              <div className="p-5 rounded-2xl mt-6 relative z-10" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(4px)" }}>
                 {!hasData ? (
                   <div className="text-center py-2">
                     <div className="text-3xl mb-2">📊</div>
-                    <div className="text-sm font-semibold text-[var(--vn-text)]">Set up your plan to get started</div>
-                    <div className="text-xs text-[var(--vn-muted)] mt-1 mb-3">Add income, bills, or a starting balance to see your cashflow</div>
+                    <div className="text-sm font-semibold text-white/80">Set up your plan to get started</div>
+                    <div className="text-xs mt-1 mb-3" style={{ color: "rgba(240,237,232,0.45)" }}>Add income, bills, or a starting balance to see your cashflow</div>
                     <button onClick={() => setShowSetup(true)} className="vn-btn vn-btn-primary text-xs px-4 py-2">
                       Quick Setup
                     </button>
                   </div>
                 ) : (
                   <>
-                    <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-1 flex items-center">Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
-                    <AnimatedMoney value={actualLeftover} className={`text-4xl font-bold ${actualLeftover > 0 ? "text-[var(--vn-success)]" : "text-rose-500"}`} />
-                    <div className="text-xs text-[var(--vn-muted)] mt-1">Leftover from income this period</div>
+                    <div className="text-xs uppercase tracking-widest font-semibold mb-1 flex items-center gap-1" style={{ color: "rgba(212,168,67,0.8)", letterSpacing: "0.12em" }}>Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
+                    <AnimatedMoney value={actualLeftover} className={`text-4xl font-bold ${actualLeftover > 0 ? "text-emerald-300" : "text-rose-400"}`} />
+                    <div className="text-xs mt-1" style={{ color: "rgba(240,237,232,0.45)" }}>Leftover from income this period</div>
                     {actualIncome === 0 && plan.incomeRules.length > 0 && (
-                      <div className="mt-1.5 flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400">
+                      <div className="mt-1.5 flex items-center gap-1 text-[11px] text-amber-300">
                         <span>⚠</span>
                         <span>No income recorded yet — add an income transaction to see your true safe-to-spend</span>
                       </div>
@@ -390,14 +390,14 @@ export default function HomePage() {
 
                     {/* Spending pace bar */}
                     {timeProgress > 0.02 && budgetSpending > 0 && (
-                      <div className="mt-3 pt-3 border-t border-[var(--vn-border)]">
-                        <div className="flex items-center justify-between text-xs text-[var(--vn-muted)] mb-1.5">
+                      <div className="mt-3 pt-3 border-t border-white/10">
+                        <div className="flex items-center justify-between text-xs mb-1.5" style={{ color: "rgba(240,237,232,0.45)" }}>
                           <span className="flex items-center gap-1">Spending pace<InfoTooltip text="The blue bar shows how much of your budget you've spent. The grey bar shows how far through the period you are. If blue exceeds grey, you're spending faster than time is passing." /></span>
-                          <span className={spendingPaceGap > 0.08 ? "text-rose-500 font-semibold" : spendingPaceGap < -0.08 ? "text-emerald-500 font-semibold" : "text-[var(--vn-muted)]"}>
+                          <span className={spendingPaceGap > 0.08 ? "text-rose-400 font-semibold" : spendingPaceGap < -0.08 ? "text-emerald-300 font-semibold" : ""} style={!(spendingPaceGap > 0.08) && !(spendingPaceGap < -0.08) ? { color: "rgba(240,237,232,0.45)" } : undefined}>
                             {spendingPaceGap > 0.08 ? "Spending high" : spendingPaceGap < -0.08 ? "Under budget ✓" : "On track"}
                           </span>
                         </div>
-                        <div className="relative h-2 rounded-full bg-slate-200 dark:bg-slate-700">
+                        <div className="relative h-2 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }}>
                           {/* Time elapsed bar (background) */}
                           <div className="absolute inset-y-0 left-0 rounded-full bg-slate-300 dark:bg-slate-600" style={{ width: `${Math.round(timeProgress * 100)}%` }} />
                           {/* Spending progress bar (foreground — animated fill) */}
@@ -408,23 +408,24 @@ export default function HomePage() {
                             transition={{ duration: 1.1, ease: "easeOut", delay: 0.25 }}
                           />
                         </div>
-                        <div className="flex justify-between text-[10px] text-[var(--vn-muted)] mt-1">
+                        <div className="flex justify-between text-[10px] mt-1" style={{ color: "rgba(240,237,232,0.38)" }}>
                           <span>{Math.round(spendingProgress * 100)}% spent</span>
                           <span>{Math.round(timeProgress * 100)}% of period</span>
                         </div>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--vn-border)]">
-                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${derived.health.label === "Healthy"
-                          ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300"
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10">
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                          derived.health.label === "Healthy"
+                          ? "bg-emerald-900/40 text-emerald-300"
                           : derived.health.label === "Watch"
-                            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
-                            : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                            ? "bg-amber-900/40 text-amber-300"
+                            : "bg-red-900/40 text-red-300"
                         }`}>
                         {derived.health.label}
                       </span>
-                      <span className="text-xs text-[var(--vn-muted)]">{derived.health.reason}</span>
+                      <span className="text-xs" style={{ color: "rgba(240,237,232,0.5)" }}>{derived.health.reason}</span>
                       <InfoTooltip text="Your financial health score: Healthy = spending well within budget; Watch = nearing limits; Caution = over-budget or savings at risk." />
                     </div>
                   </>

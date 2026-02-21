@@ -113,6 +113,7 @@ const moreItems: NavItem[] = [
   { href: "/bills", label: "Bills", desc: "Recurring bills", icon: () => <span className="text-lg">📄</span> },
   { href: "/income", label: "Income", desc: "Income rules", icon: () => <span className="text-lg">💰</span> },
   { href: "/goals", label: "Goals", desc: "Save targets", icon: () => <span className="text-lg">🎯</span> },
+  { href: "/networth", label: "Net Worth", desc: "Financial position", icon: () => <span className="text-lg">📊</span> },
   { href: "/import", label: "Import", desc: "Upload data", icon: () => <span className="text-lg">📂</span> },
   { href: "/coach", label: "Coach", desc: "AI advisor", icon: () => <span className="text-lg">🤖</span> },
   { href: "/settings", label: "Settings", desc: "Preferences", icon: () => <span className="text-lg">⚙️</span> },

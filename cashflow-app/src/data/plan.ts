@@ -126,6 +126,39 @@ export type SavingsGoal = {
   status?: "active" | "completed" | "paused"; // Goal status
 };
 
+// ---------------------------------------------------------------------------
+// Net Worth — accounts + historical snapshots
+// ---------------------------------------------------------------------------
+export type NetWorthAccountType =
+  | "savings"         // savings/current accounts, cash
+  | "investment"      // stocks, ISA, pension, crypto
+  | "property"        // real estate, land
+  | "other-asset"     // car, collectibles, valuables
+  | "credit-card"     // credit card balance (liability)
+  | "loan"            // personal loan, student loan
+  | "mortgage"        // mortgage outstanding
+  | "other-liability";// other debts
+
+export type NetWorthAccount = {
+  id: string;
+  name: string;          // "Monzo Savings", "Vanguard ISA"
+  type: NetWorthAccountType;
+  institution?: string;  // "Monzo", "Vanguard"
+  balance: number;       // current value (always positive; sign determined by type)
+  notes?: string;
+  icon?: string;         // emoji
+  order?: number;        // display ordering
+};
+
+export type NetWorthSnapshot = {
+  id: string;
+  date: string;          // YYYY-MM-DD — when snapshot was taken
+  totalAssets: number;
+  totalLiabilities: number;
+  netWorth: number;      // assets - liabilities
+  accountBalances: Record<string, number>; // accountId → balance at snapshot time
+};
+
 export type Plan = {
   version?: number;
   setup: PlanSetup;
@@ -139,6 +172,8 @@ export type Plan = {
   overrides: CashflowOverride[];
   transactions: Transaction[];
   savingsGoals?: SavingsGoal[];
+  netWorthAccounts?: NetWorthAccount[];
+  netWorthSnapshots?: NetWorthSnapshot[];
 };
 
 export const PLAN_VERSION = 2;

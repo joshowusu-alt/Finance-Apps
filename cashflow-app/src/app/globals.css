@@ -8,33 +8,34 @@
 }
 
 :root {
-  /* SAPPHIRE TRUST - Light Mode */
-  --background: #f8fafc;
-  /* Slate 50 - crisp white/grey */
-  --foreground: #0f172a;
-  /* Slate 900 - deep navy text */
-  --surface: #ffffff;
-  --surface-elevated: #f1f5f9;
-  /* Slate 100 */
-  --surface-soft: #e2e8f0;
-  /* Slate 200 */
-  --panel: #ffffff;
-  --border: #cbd5e1;
-  /* Slate 300 */
-  --border-hover: #94a3b8;
-  /* Slate 400 */
+  /* VELANOVO — Warm Parchment Light Mode */
+  --background: #f3f0e8;
+  /* Warm parchment — premium, calm */
+  --foreground: #1a1713;
+  /* Deep warm black */
+  --surface: #faf8f4;
+  /* Warm near-white cards */
+  --surface-elevated: #f0ece3;
+  /* Elevated card surface */
+  --surface-soft: #e8e2d9;
+  /* Soft inset areas */
+  --panel: #faf8f4;
+  --border: #dcd6cc;
+  /* Warm beige border */
+  --border-hover: #b5ad9e;
+  /* Warm mid-grey hover */
 
-  /* Brand Colors - Sapphire Blue */
+  /* Brand Colors — Deep Navy + Real Gold */
   --accent: #0f172a;
   /* Deep Navy Primary */
-  --accent-deep: #020617;
-  /* Darker Navy */
-  --accent-soft: rgba(15, 23, 42, 0.08);
-  --accent-hover: rgba(15, 23, 42, 0.12);
+  --accent-deep: #060d1a;
+  /* Deeper Navy */
+  --accent-soft: rgba(15, 23, 42, 0.07);
+  --accent-hover: rgba(15, 23, 42, 0.11);
 
-  --gold: #0369a1;
-  /* Sky 700 - using Blue as secondary */
-  --gold-soft: rgba(3, 105, 161, 0.1);
+  --gold: #a8731a;
+  /* Real amber gold — not sky blue */
+  --gold-soft: rgba(168, 115, 26, 0.12);
 
   /* Semantic Colors - Trustworthy & Professional */
   --success: #059669;
@@ -50,21 +51,21 @@
   /* Sky 600 */
   --info-soft: rgba(2, 132, 199, 0.1);
 
-  /* Text Colors */
-  --text-primary: #0f172a;
-  /* Slate 900 */
-  --text-secondary: #334155;
-  /* Slate 700 */
-  --text-tertiary: #475569;
-  /* Slate 600 — WCAG AA compliant */
-  --text-disabled: #94a3b8;
-  /* Slate 400 */
+  /* Text Colors — Warm */
+  --text-primary: #1a1713;
+  /* Warm near-black */
+  --text-secondary: #3d3a35;
+  /* Warm dark brown-grey */
+  --text-tertiary: #605c55;
+  /* Warm medium grey — WCAG AA compliant */
+  --text-disabled: #a09890;
+  /* Warm disabled */
 
-  /* Shadows - Crisp & Sharp */
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
+  /* Shadows — Warm depth */
+  --shadow-sm: 0 1px 2px rgba(26, 23, 19, 0.06);
+  --shadow-md: 0 2px 8px rgba(26, 23, 19, 0.08), 0 1px 3px rgba(26, 23, 19, 0.05);
+  --shadow-lg: 0 8px 24px rgba(26, 23, 19, 0.10), 0 3px 8px rgba(26, 23, 19, 0.06);
+  --shadow-xl: 0 16px 40px rgba(26, 23, 19, 0.12), 0 6px 16px rgba(26, 23, 19, 0.07);
 
   /* Radii */
   --radius-sm: 8px;
@@ -81,32 +82,31 @@
 }
 
 .dark {
-  /* ONYX & GOLD - Dark Mode */
-  --background: #020617;
-  /* Slate 950 - Absolute deepest dark */
-  --foreground: #f8fafc;
-  /* Slate 50 */
-  --surface: #0f172a;
-  /* Slate 900 */
-  --surface-elevated: #1e293b;
-  /* Slate 800 */
-  --surface-soft: #0f172a;
-  --panel: #020617;
-  --border: #1e293b;
-  /* Slate 800 */
-  --border-hover: #334155;
-  /* Slate 700 */
+  /* VELANOVO — Obsidian & Gold Dark Mode */
+  --background: #0c0d0f;
+  /* Deep warm obsidian */
+  --foreground: #f0ede8;
+  /* Warm off-white */
+  --surface: #141618;
+  /* Dark warm card */
+  --surface-elevated: #1c2026;
+  /* Elevated dark surface */
+  --surface-soft: #141618;
+  --panel: #0c0d0f;
+  --border: #262b32;
+  /* Dark warm border */
+  --border-hover: #363d47;
 
-  /* Brand Colors - Gold Luxury */
-  --accent: #fbbf24;
-  /* Amber 400 - Gold Primary */
-  --accent-deep: #f59e0b;
-  /* Amber 500 */
-  --accent-soft: rgba(251, 191, 36, 0.15);
-  --accent-hover: rgba(251, 191, 36, 0.25);
+  /* Brand Colors - Rich Gold on Obsidian */
+  --accent: #d4a843;
+  /* Rich warm gold */
+  --accent-deep: #c49228;
+  /* Deep gold */
+  --accent-soft: rgba(212, 168, 67, 0.14);
+  --accent-hover: rgba(212, 168, 67, 0.22);
 
-  --gold: #fbbf24;
-  --gold-soft: rgba(251, 191, 36, 0.2);
+  --gold: #d4a843;
+  --gold-soft: rgba(212, 168, 67, 0.18);
 
   /* Semantic Colors - Rich & Glowing */
   --success: #34d399;
@@ -122,21 +122,21 @@
   /* Sky 400 */
   --info-soft: rgba(56, 189, 248, 0.15);
 
-  /* Text Colors */
-  --text-primary: #f8fafc;
-  /* Slate 50 */
-  --text-secondary: #cbd5e1;
-  /* Slate 300 */
-  --text-tertiary: #cbd5e1;
-  /* Slate 300 — WCAG AA compliant */
-  --text-disabled: #64748b;
-  /* Slate 500 */
+  /* Text Colors — Warm off-white hierarchy */
+  --text-primary: #f0ede8;
+  /* Warm off-white */
+  --text-secondary: #c4bdb4;
+  /* Warm light grey */
+  --text-tertiary: #958d84;
+  /* Warm medium grey — WCAG AA */
+  --text-disabled: #4a4740;
+  /* Warm disabled */
 
-  /* Shadows - Deep & Ambient */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+  /* Shadows - Deep Obsidian */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.35);
+  --shadow-xl: 0 16px 50px rgba(0, 0, 0, 0.65), 0 6px 20px rgba(0, 0, 0, 0.45);
 }
 
 @layer base {
@@ -186,8 +186,8 @@
 
 body {
   background:
-    radial-gradient(circle at 15% 15%, rgba(30, 41, 59, 0.04), transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(251, 191, 36, 0.03), transparent 40%),
+    radial-gradient(ellipse at 8% 8%, rgba(168, 115, 26, 0.06), transparent 38%),
+    radial-gradient(ellipse at 92% 88%, rgba(15, 23, 42, 0.04), transparent 38%),
     var(--background);
   color: var(--text-primary);
   font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -202,8 +202,8 @@ body {
 
 .dark body {
   background:
-    radial-gradient(circle at 15% 15%, rgba(251, 191, 36, 0.05), transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(59, 130, 246, 0.03), transparent 40%),
+    radial-gradient(ellipse at 12% 12%, rgba(212, 168, 67, 0.07), transparent 40%),
+    radial-gradient(ellipse at 88% 85%, rgba(30, 60, 120, 0.05), transparent 40%),
     var(--background);
 }
 
