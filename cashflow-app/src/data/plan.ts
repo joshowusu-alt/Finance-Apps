@@ -100,6 +100,7 @@ export type Transaction = {
   notes?: string;
   linkedRuleId?: string; // for transfers, link to savings/outflow rule
   linkedBillId?: string; // optional explicit bill match
+  goalId?: string;       // optional link to a SavingsGoal
 };
 
 export type PlanSetup = {
@@ -117,11 +118,12 @@ export type SavingsGoal = {
   id: string;
   name: string;           // "Holiday Fund", "Emergency Fund"
   targetAmount: number;   // Target amount to save
-  currentAmount: number;  // Amount saved so far
+  currentAmount: number;  // Manual baseline (pre-transaction-linking balance)
   createdAt: string;      // ISO date when goal was created
   targetDate?: string;    // Optional deadline (ISO date)
   color?: string;         // For visual distinction (hex color)
   icon?: string;          // Emoji icon
+  status?: "active" | "completed" | "paused"; // Goal status
 };
 
 export type Plan = {
@@ -294,8 +296,8 @@ export const SAMPLE_PLAN: Plan = {
     // Pocket money (monthly outflow — linked to rule)
     { id: "txn-15", date: "2026-01-01", label: "Pocket money", amount: 100, type: "outflow", category: "allowance", notes: "Monthly allowance", linkedRuleId: "pocket-money" },
 
-    // Savings transfer (linked to rule)
-    { id: "txn-16", date: "2025-12-29", label: "Savings transfer", amount: 250, type: "transfer", category: "savings", notes: "Monthly savings", linkedRuleId: "savings" },
+    // Savings transfer (linked to rule + goal)
+    { id: "txn-16", date: "2025-12-29", label: "Savings transfer", amount: 250, type: "transfer", category: "savings", notes: "Monthly savings", linkedRuleId: "savings", goalId: "goal-emergency" },
 
     // Ad-hoc spending (unlinked — shows everyday life)
     { id: "txn-17", date: "2025-12-23", label: "Coffee shop", amount: 4.50, type: "outflow", category: "other", notes: "Morning coffee" },

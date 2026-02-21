@@ -4,7 +4,7 @@ import { useState } from "react";
 import { loadPlan, savePlan } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
-import type { Plan, SavingsGoal, OutflowRule } from "@/data/plan";
+import type { Plan, SavingsGoal, OutflowRule, Transaction } from "@/data/plan";
 import { getPeriod } from "@/lib/cashflowEngine";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { toast } from "@/components/Toast";
@@ -30,12 +30,13 @@ function goalRuleLabel(goalName: string, goalId: string) {
     return `${goalName} [goal-${goalId}]`;
 }
 
-function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
+function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave, transactions }: {
     goal: SavingsGoal;
     onUpdate: (goal: SavingsGoal) => void;
     onDelete: (id: string) => void;
     linkedRule: OutflowRule | null;
     onToggleAutoSave: (goal: SavingsGoal, enable: boolean, monthlyAmount: number) => void;
+    transactions: Transaction[];
 }) {
     const [isEditing, setIsEditing] = useState(false);
     const [addAmount, setAddAmount] = useState("");
@@ -48,9 +49,14 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
     const [editIcon, setEditIcon] = useState(goal.icon || "🎯");
     const [editColor, setEditColor] = useState(goal.color || GOAL_COLORS[0]);
 
-    const progress = goal.targetAmount > 0 ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100) : 0;
-    const remaining = goal.targetAmount - goal.currentAmount;
-    const isComplete = goal.currentAmount >= goal.targetAmount;
+    // Linked transactions (from transfer transactions with this goalId)
+    const linkedTxns = transactions.filter((t) => t.goalId === goal.id);
+    const linkedAmount = linkedTxns.reduce((sum, t) => sum + t.amount, 0);
+    const totalSaved = goal.currentAmount + linkedAmount;
+
+    const progress = goal.targetAmount > 0 ? Math.min(100, (totalSaved / goal.targetAmount) * 100) : 0;
+    const remaining = goal.targetAmount - totalSaved;
+    const isComplete = totalSaved >= goal.targetAmount;
 
     const handleAddAmount = () => {
         const amount = parseFloat(addAmount);
@@ -286,7 +292,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
 
             <div className="flex items-center justify-between text-sm mb-4">
                 <span className="font-medium text-slate-800 dark:text-white">
-                    {formatMoney(goal.currentAmount)} / {formatMoney(goal.targetAmount)}
+                    {formatMoney(totalSaved)} / {formatMoney(goal.targetAmount)}
                 </span>
                 <span className="text-[var(--vn-muted)]">{Math.round(progress)}%</span>
             </div>
@@ -330,6 +336,33 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave }: {
                             linkedRule ? "translate-x-5" : "translate-x-0"
                         }`} />
                     </button>
+                </div>
+            )}
+
+            {/* Linked transactions */}
+            {linkedTxns.length > 0 && (
+                <div className="mb-3 rounded-lg border border-[var(--vn-border)] overflow-hidden">
+                    <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-[var(--vn-muted)] flex items-center gap-1">
+                        🔗 Linked transfers ({linkedTxns.length})
+                        {linkedAmount > 0 && (
+                            <span className="ml-auto text-emerald-600 dark:text-emerald-400">
+                                +{formatMoney(linkedAmount)}
+                            </span>
+                        )}
+                    </div>
+                    <div className="divide-y divide-[var(--vn-border)] max-h-40 overflow-y-auto">
+                        {linkedTxns.map((t) => (
+                            <div key={t.id} className="px-3 py-2 flex items-center justify-between text-xs">
+                                <div className="min-w-0">
+                                    <p className="font-medium text-[var(--vn-text)] truncate">{t.label}</p>
+                                    <p className="text-[var(--vn-muted)]">{t.date}</p>
+                                </div>
+                                <span className="ml-3 shrink-0 font-semibold text-emerald-600 dark:text-emerald-400">
+                                    +{formatMoney(t.amount)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
 
@@ -661,6 +694,7 @@ export default function GoalsPage() {
                                         onDelete={handleDeleteGoal}
                                         linkedRule={linkedRule}
                                         onToggleAutoSave={handleToggleAutoSave}
+                                        transactions={plan.transactions || []}
                                     />
                                 );
                             })}

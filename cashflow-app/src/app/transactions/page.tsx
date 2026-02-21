@@ -206,6 +206,7 @@ type TransactionDraft = {
   notes: string;
   linkedRuleId?: string | null;
   linkedBillId?: string | null;
+  goalId?: string | null;
 };
 
 function normalizeCategoryForType(type: CashflowType, category: CashflowCategory) {
@@ -432,6 +433,7 @@ export default function TransactionsPage() {
     notes: "",
     linkedRuleId: undefined,
     linkedBillId: undefined,
+    goalId: undefined,
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTransaction, setEditTransaction] = useState<TransactionDraft | null>(null);
@@ -858,6 +860,7 @@ export default function TransactionsPage() {
           notes: normalizedDraft.notes || undefined,
           linkedRuleId,
           linkedBillId,
+          goalId: normalizedDraft.goalId || undefined,
         };
       }),
     };
@@ -907,6 +910,7 @@ export default function TransactionsPage() {
       notes: draft.notes || undefined,
       linkedRuleId,
       linkedBillId,
+      goalId: draft.goalId || undefined,
     };
 
     const updated = {
@@ -927,6 +931,7 @@ export default function TransactionsPage() {
       notes: "",
       linkedRuleId: undefined,
       linkedBillId: undefined,
+      goalId: undefined,
     });
     setNewCategoryTouched(false);
     setErrors({});
@@ -954,6 +959,7 @@ export default function TransactionsPage() {
       notes: txn.notes ?? "",
       linkedRuleId: txn.linkedRuleId,
       linkedBillId: txn.linkedBillId,
+      goalId: txn.goalId ?? undefined,
     });
     setEditCategoryTouched(false);
   }
@@ -1246,6 +1252,29 @@ export default function TransactionsPage() {
                         Suggested: {transferRuleLabel}
                         {newTransaction.linkedRuleId === undefined ? " (auto-selected)" : ""}
                       </p>
+                    </div>
+                  ) : null}
+
+                  {newTransaction.type === "transfer" && plan && plan.savingsGoals && plan.savingsGoals.length > 0 ? (
+                    <div>
+                      <label className="text-xs font-semibold text-[var(--vn-muted)]">Link to goal (optional)</label>
+                      <select
+                        value={newTransaction.goalId ?? ""}
+                        onChange={(e) =>
+                          setNewTransaction({
+                            ...newTransaction,
+                            goalId: e.target.value || null,
+                          })
+                        }
+                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                      >
+                        <option value="">No goal</option>
+                        {plan.savingsGoals.map((g) => (
+                          <option key={g.id} value={g.id}>
+                            {g.icon} {g.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   ) : null}
 
@@ -1714,6 +1743,29 @@ export default function TransactionsPage() {
                                           Suggested: {transferRuleLabel}
                                           {editTransaction.linkedRuleId === undefined ? " (auto-selected)" : ""}
                                         </p>
+                                      </div>
+                                    ) : null}
+
+                                    {editTransaction.type === "transfer" && plan && plan.savingsGoals && plan.savingsGoals.length > 0 ? (
+                                      <div>
+                                        <label className="text-xs font-semibold text-[var(--vn-muted)]">Link to goal (optional)</label>
+                                        <select
+                                          value={editTransaction.goalId ?? ""}
+                                          onChange={(e) =>
+                                            setEditTransaction({
+                                              ...editTransaction,
+                                              goalId: e.target.value || null,
+                                            })
+                                          }
+                                          className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                        >
+                                          <option value="">No goal</option>
+                                          {plan.savingsGoals.map((g) => (
+                                            <option key={g.id} value={g.id}>
+                                              {g.icon} {g.name}
+                                            </option>
+                                          ))}
+                                        </select>
                                       </div>
                                     ) : null}
 
