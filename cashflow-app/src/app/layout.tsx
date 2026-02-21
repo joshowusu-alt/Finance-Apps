@@ -1,7 +1,7 @@
 import "./globals.css";
 import "../styles/velanovo.css";
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Inter } from "next/font/google"; // The Elite Fonts
+import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import BottomNav from "@/components/BottomNav";
 import ReviewAccessLink from "@/components/ReviewAccessLink";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -22,9 +22,10 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -56,7 +57,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${playfair.variable} ${inter.variable} min-h-screen font-sans transition-colors duration-200`} style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
+      <body className={`${playfair.variable} ${jakarta.variable} min-h-screen font-sans transition-colors duration-200`} style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
         <AuthProvider>
           <ConfirmProvider>
           <CloudSync />

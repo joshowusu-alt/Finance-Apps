@@ -78,6 +78,37 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
+/* ── Typography Utilities ── */
+
+/* Uppercase data label — e.g. "SAFE TO SPEND", "INCOME" */
+.vn-label {
+  font-family: var(--font-jakarta), sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vn-muted);
+  line-height: 1.4;
+}
+
+/* Hero financial figure — e.g. £296.00 */
+.vn-number {
+  font-family: var(--font-jakarta), sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Subtext below a value */
+.vn-subtext {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--vn-muted);
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+}
+
 .vn-btn {
   display: inline-flex;
   align-items: center;
@@ -86,6 +117,9 @@ body {
   padding: 0 18px;
   border-radius: 14px;
   font-weight: 700;
+  font-family: var(--font-jakarta), sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.01em;
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 200ms ease;
