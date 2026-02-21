@@ -172,7 +172,7 @@ export default function TimelinePage() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden">
+    <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
@@ -230,50 +230,59 @@ export default function TimelinePage() {
                 </p>
               </div>
 
-              <div className="col-span-2 sm:col-span-1 rounded-2xl bg-[var(--vn-surface)] border border-[var(--vn-border)] p-4 sm:p-5">
-                <p className="text-xs sm:text-sm text-[var(--vn-muted)]">Lowest point (period)</p>
-                <p
-                  className={`mt-2 text-xl sm:text-2xl font-semibold ${lowestBelowMin ? "text-rose-600" : "text-green-600"}`}
-                >
-                  {lowestPoint ? formatMoney(lowestPoint.balance) : "0"}
-                </p>
-                <p className="mt-1.5 text-xs text-[var(--vn-muted)]">
-                  {lowestPoint ? `On ${formatNice(lowestPoint.date)}` : ""}
-                </p>
+              <div className="col-span-2 sm:col-span-1 rounded-2xl bg-[var(--vn-surface)] border border-[var(--vn-border)] p-3 sm:p-5 flex items-center justify-between sm:block gap-3">
+                <p className="text-xs text-[var(--vn-muted)] shrink-0">Lowest point</p>
+                <div className="flex items-baseline gap-2 flex-wrap justify-end sm:block">
+                  <p
+                    className={`text-lg sm:text-2xl font-semibold ${lowestBelowMin ? "text-rose-600" : "text-green-600"}`}
+                  >
+                    {lowestPoint ? formatMoney(lowestPoint.balance) : "0"}
+                  </p>
+                  <p className="text-xs text-[var(--vn-muted)] sm:mt-1">
+                    {lowestPoint ? formatNice(lowestPoint.date) : ""}
+                  </p>
+                </div>
               </div>
             </div>
 
             <div className="rounded-2xl border border-[var(--vn-border)] overflow-hidden" style={{ background: "var(--vn-surface)" }}>
-              <div className="overflow-x-auto w-full">
-                <div className="min-w-[480px]">
-                  <div className="grid grid-cols-5 gap-2 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]" style={{ background: "var(--vn-bg)" }}>
-                    <div>Date</div>
-                    <div className="col-span-2">Label</div>
-                    <div className="text-right">Income</div>
-                    <div className="text-right">Outflow</div>
-                  </div>
+              {/* Header */}
+              <div className="grid grid-cols-[1fr_auto] px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]" style={{ background: "var(--vn-bg)" }}>
+                <div>Date / Event</div>
+                <div>Balance</div>
+              </div>
 
-                  <div className="max-h-[60vh] overflow-y-auto">
-                    {rows.map((r) => (
-                      <div
-                        key={r.date}
-                        className="grid grid-cols-5 gap-2 border-t px-4 py-3 text-sm"
-                        style={{ borderTopColor: "var(--vn-border)", color: "var(--vn-text)" }}
-                      >
-                        <div className="text-[var(--vn-muted)] whitespace-nowrap">{formatNice(r.date)}</div>
-                        <div className="col-span-2 text-[var(--vn-muted)] truncate">{r.label || ""}</div>
-                        <div className="text-right font-medium">{r.income ? formatMoney(r.income) : ""}</div>
-                        <div className="text-right font-medium">{r.outflow ? formatMoney(r.outflow) : ""}</div>
-
-                        <div
-                          className={`col-span-5 text-right text-xs font-bold mt-0.5 ${r.belowMin ? "text-rose-500" : "text-[var(--vn-muted)]"}`}
-                        >
-                          Balance {formatMoney(r.balance)}
+              <div className="max-h-[60vh] overflow-y-auto divide-y" style={{ borderColor: "var(--vn-border)" }}>
+                {rows.map((r) => (
+                  <div
+                    key={r.date}
+                    className="grid grid-cols-[1fr_auto] gap-x-3 items-center px-4 py-2.5"
+                  >
+                    {/* Left: date + label + amounts */}
+                    <div className="min-w-0">
+                      <div className="text-xs text-[var(--vn-muted)] whitespace-nowrap">{formatNice(r.date)}</div>
+                      {r.label ? (
+                        <div className="text-sm text-[var(--vn-text)] truncate leading-snug">{r.label}</div>
+                      ) : null}
+                      {(r.income || r.outflow) ? (
+                        <div className="flex gap-2 mt-0.5">
+                          {r.income ? (
+                            <span className="text-xs font-medium text-emerald-600">+{formatMoney(r.income)}</span>
+                          ) : null}
+                          {r.outflow ? (
+                            <span className="text-xs font-medium text-rose-500">−{formatMoney(r.outflow)}</span>
+                          ) : null}
                         </div>
-                      </div>
-                    ))}
+                      ) : null}
+                    </div>
+                    {/* Right: balance */}
+                    <div
+                      className={`text-sm font-semibold whitespace-nowrap ${r.belowMin ? "text-rose-500" : "text-[var(--vn-muted)]"}`}
+                    >
+                      {formatMoney(r.balance)}
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
 
