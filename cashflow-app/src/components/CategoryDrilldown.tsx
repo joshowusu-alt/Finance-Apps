@@ -94,7 +94,7 @@ export function CategoryDrilldown({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+                        className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm"
                         onClick={onClose}
                     />
 
@@ -104,7 +104,7 @@ export function CategoryDrilldown({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                        className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl shadow-2xl"
+                        className="fixed left-1/2 top-1/2 z-[201] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl shadow-2xl"
                         style={{
                             backgroundColor: isDark ? "#18181b" : "#ffffff",
                             border: `1px solid ${isDark ? "#3f3f46" : "#e4e4e7"}`,
@@ -248,10 +248,11 @@ export function CategoryDrilldown({
                         >
                             <button
                                 onClick={onClose}
-                                className="w-full rounded-xl py-3 text-sm font-medium transition-all hover:opacity-90"
+                                className="w-full rounded-xl py-3 text-sm font-semibold transition-all hover:opacity-90"
                                 style={{
-                                    backgroundColor: categoryColor,
-                                    color: "#ffffff",
+                                    backgroundColor: isDark ? "#27272a" : "#f4f4f5",
+                                    color: isDark ? "#f4f4f5" : "#18181b",
+                                    border: `1px solid ${isDark ? "#3f3f46" : "#e4e4e7"}`,
                                 }}
                             >
                                 Close

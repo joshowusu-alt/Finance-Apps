@@ -77,11 +77,15 @@ export function CategoryBreakdownChart({ data, height = 300, onCategoryClick }: 
           animationDuration={400}
           animationEasing="ease-out"
           paddingAngle={isMobile ? 2 : 0}
-          onClick={(_, index) => onCategoryClick?.(dataWithColors[index].name)}
           style={{ cursor: onCategoryClick ? "pointer" : "default" }}
         >
           {dataWithColors.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color} />
+            <Cell
+              key={`cell-${index}`}
+              fill={entry.color}
+              style={{ cursor: onCategoryClick ? "pointer" : "default" }}
+              onClick={() => onCategoryClick?.(entry.name)}
+            />
           ))}
         </Pie>
         <Tooltip
@@ -108,8 +112,31 @@ export function CategoryBreakdownChart({ data, height = 300, onCategoryClick }: 
           layout={isMobile ? "horizontal" : "horizontal"}
           align="center"
           verticalAlign="bottom"
-          formatter={(value) => (
-            <span style={{ maxWidth: isMobile ? 80 : 120, display: "inline-block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "middle" }}>{value}</span>
+          content={({ payload }) => (
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "6px 12px", paddingTop: isMobile ? 8 : 16 }}>
+              {(payload ?? []).map((entry) => (
+                <button
+                  key={entry.value}
+                  onClick={() => onCategoryClick?.(entry.value as string)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    background: "none",
+                    border: "none",
+                    cursor: onCategoryClick ? "pointer" : "default",
+                    padding: "2px 4px",
+                    borderRadius: 6,
+                    fontSize: isMobile ? 11 : 12,
+                    color: getTextColor(isDark),
+                    WebkitTapHighlightColor: "transparent",
+                  }}
+                >
+                  <span style={{ display: "inline-block", width: isMobile ? 8 : 10, height: isMobile ? 8 : 10, borderRadius: "50%", backgroundColor: entry.color as string, flexShrink: 0 }} />
+                  <span style={{ maxWidth: isMobile ? 80 : 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.value}</span>
+                </button>
+              ))}
+            </div>
           )}
         />
       </PieChart>
