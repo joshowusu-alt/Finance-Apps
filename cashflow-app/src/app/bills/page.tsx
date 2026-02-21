@@ -332,14 +332,14 @@ export default function BillsPage() {
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
           <section className="space-y-6">
-            <header className="vn-card p-6">
-              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Bills</div>
-              <h1 className="text-2xl font-semibold text-[var(--vn-text)]">Committed Bills &amp; Recurring Outflows</h1>
-              <p className="mt-2 text-sm text-[var(--vn-muted)]">
+            <header className="vn-masthead">
+              <div className="text-xs uppercase tracking-widest font-semibold text-white/50">Bills</div>
+              <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Committed Bills &amp; Recurring Outflows</h1>
+              <p className="mt-2 text-sm text-white/55">
                 Plan your bills and compare with real spending.
               </p>
               {lastUpdated ? (
-                <div className="mt-1 text-[11px] text-slate-400">
+                <div className="mt-1 text-[11px] text-white/40">
                   Last updated {formatUpdatedAt(lastUpdated)}
                 </div>
               ) : null}
@@ -520,7 +520,7 @@ export default function BillsPage() {
                 Budget vs actual by bill
               </summary>
               <div className="mt-4 text-sm">
-                <div className="hidden grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 text-[11px] uppercase tracking-wide text-slate-400 sm:grid">
+                <div className="hidden grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 text-[11px] uppercase tracking-wide text-[var(--vn-muted)] sm:grid">
                   <div>Bill</div>
                   <div className="text-right">Budget</div>
                   <div className="text-right">Actual</div>
@@ -544,13 +544,13 @@ export default function BillsPage() {
                               <div className="text-xs text-[var(--vn-muted)]">{countLabel}</div>
                             </div>
                             <div className="flex items-center justify-between text-[var(--vn-muted)] sm:block sm:text-right">
-                              <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
+                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
                                 Budget
                               </span>
                               <span>{formatMoney(item.budgeted)}</span>
                             </div>
                             <div className="flex items-center justify-between text-[var(--vn-text)] sm:block sm:text-right">
-                              <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
+                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
                                 Actual
                               </span>
                               <span>{formatMoney(item.actual)}</span>
@@ -558,7 +558,7 @@ export default function BillsPage() {
                             <div
                               className={`flex items-center justify-between font-semibold ${variance.tone} sm:block sm:text-right`}
                             >
-                              <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
+                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
                                 Variance
                               </span>
                               <span>{variance.label}</span>
@@ -569,14 +569,14 @@ export default function BillsPage() {
                               <div className="text-[var(--vn-muted)]">No bill transactions recorded.</div>
                             ) : (
                               <div className="space-y-2">
-                                <div className="flex items-center justify-between text-[10px] uppercase tracking-wide text-slate-400">
+                                <div className="flex items-center justify-between text-[10px] uppercase tracking-wide text-[var(--vn-muted)]">
                                   <span>Actual breakdown</span>
                                   <span>
                                     {item.transactions.length} item{item.transactions.length === 1 ? "" : "s"} -{" "}
                                     {formatMoney(item.actual)}
                                   </span>
                                 </div>
-                                <div className="grid grid-cols-[96px_1fr_auto] gap-2 text-[10px] uppercase tracking-wide text-slate-400">
+                                <div className="grid grid-cols-[96px_1fr_auto] gap-2 text-[10px] uppercase tracking-wide text-[var(--vn-muted)]">
                                   <div>Date</div>
                                   <div>Details</div>
                                   <div className="text-right">Amount</div>
@@ -591,7 +591,7 @@ export default function BillsPage() {
                                       <div>
                                         <div className="text-sm text-[var(--vn-text)]">{txn.label}</div>
                                         {txn.notes ? (
-                                          <div className="text-[11px] text-slate-400">{txn.notes}</div>
+                                          <div className="text-[11px] text-[var(--vn-muted)]">{txn.notes}</div>
                                         ) : null}
                                       </div>
                                       <div className="text-right text-sm font-semibold text-[var(--vn-text)]">
@@ -616,7 +616,7 @@ export default function BillsPage() {
                 Budget vs actual by outflow
               </summary>
               <div className="mt-4 text-sm">
-                <div className="hidden grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 text-[11px] uppercase tracking-wide text-slate-400 sm:grid">
+                <div className="hidden grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 text-[11px] uppercase tracking-wide text-[var(--vn-muted)] sm:grid">
                   <div>Outflow</div>
                   <div className="text-right">Budget</div>
                   <div className="text-right">Actual</div>
@@ -640,13 +640,13 @@ export default function BillsPage() {
                               <div className="text-xs text-[var(--vn-muted)]">{countLabel}</div>
                             </div>
                             <div className="flex items-center justify-between text-[var(--vn-muted)] sm:block sm:text-right">
-                              <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
+                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
                                 Budget
                               </span>
                               <span>{formatMoney(item.budgeted)}</span>
                             </div>
                             <div className="flex items-center justify-between text-[var(--vn-text)] sm:block sm:text-right">
-                              <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
+                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
                                 Actual
                               </span>
                               <span>{formatMoney(item.actual)}</span>
@@ -654,7 +654,7 @@ export default function BillsPage() {
                             <div
                               className={`flex items-center justify-between font-semibold ${variance.tone} sm:block sm:text-right`}
                             >
-                              <span className="text-[10px] uppercase tracking-wide text-slate-400 sm:hidden">
+                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
                                 Variance
                               </span>
                               <span>{variance.label}</span>

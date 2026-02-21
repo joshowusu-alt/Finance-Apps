@@ -187,17 +187,17 @@ export default function SettingsPage() {
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav />
           <section className="space-y-6">
-            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
-              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Settings</div>
-              <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">App Settings</h1>
-              <div className="mt-2 text-sm text-[var(--vn-muted)]">
+            <div className="vn-masthead">
+              <div className="text-xs uppercase tracking-widest font-semibold text-white/50">Settings</div>
+              <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>App Settings</h1>
+              <div className="mt-2 text-sm text-white/55">
                 Customize your {branding.name} experience
               </div>
             </div>
 
             {/* Account */}
-            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
-              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Account</div>
+            <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Account</div>
               {authLoading ? (
                 <div className="text-sm text-[var(--vn-muted)]">Loading...</div>
               ) : user ? (
@@ -207,7 +207,7 @@ export default function SettingsPage() {
                       {(user.email?.[0] ?? "U").toUpperCase()}
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{user.email}</div>
+                      <div className="text-sm font-medium text-[var(--vn-text)]">{user.email}</div>
                       <div className="text-xs text-[var(--vn-muted)]">Signed in · Cloud sync active</div>
                     </div>
                   </div>
@@ -236,12 +236,12 @@ export default function SettingsPage() {
               )}
             </div>
 
-            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
-              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Appearance</div>
+            <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Appearance</div>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Dark Mode</div>
+                    <div className="text-sm font-medium text-[var(--vn-text)]">Dark Mode</div>
                     <div className="text-xs text-[var(--vn-muted)]">Toggle between light and dark themes</div>
                   </div>
                   <ThemeToggle />
@@ -249,20 +249,20 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
-              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Regional Settings</div>
+            <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Regional Settings</div>
               <CurrencySelector />
             </div>
 
-            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
-              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">As of Date</div>
+            <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">As of Date</div>
               <div className="text-xs text-[var(--vn-muted)] mb-4">
                 Controls the reference date for filtering transactions and calculating time progress
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-xs font-medium text-[var(--vn-muted)] mb-2">
                     Current As of Date
                   </label>
                   <div className="flex flex-wrap items-center gap-2">
@@ -289,15 +289,15 @@ export default function SettingsPage() {
                     onChange={handleToggleAutoUpdate}
                     className="rounded"
                   />
-                  <label htmlFor="auto-update-date" className="text-sm text-slate-700 dark:text-slate-300">
+                  <label htmlFor="auto-update-date" className="text-sm text-[var(--vn-muted)]">
                     Auto-update to today on app load (recommended)
                   </label>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
-              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Expected Minimum Balance</div>
+            <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-[var(--vn-text)] mb-2">Expected Minimum Balance</div>
               <div className="text-xs text-[var(--vn-muted)] mb-4">
                 Your safety-net balance. Any day your projected balance dips below this amount will be flagged as a warning on the Timeline and Dashboard.
               </div>
@@ -336,9 +336,9 @@ export default function SettingsPage() {
               )}
             </div>
 
-            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
+            <div className="vn-card p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">Periods</div>
+                <div className="text-sm font-semibold text-[var(--vn-text)]">Periods</div>
                 <button
                   onClick={handleAddPeriod}
                   className="vn-btn vn-btn-primary text-xs px-3 py-1.5"
@@ -354,15 +354,15 @@ export default function SettingsPage() {
                     <div
                       key={period.id}
                       className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${period.id === plan.setup.selectedPeriodId
-                        ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
-                        : "bg-white/70 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-600"
+                        ? "bg-[var(--vn-primary)]/10 border border-[var(--vn-primary)]/30"
+                        : "bg-[var(--vn-bg)] border border-[var(--vn-border)]"
                         }`}
                     >
                       <div className="flex-1">
-                        <div className="font-semibold text-slate-900 dark:text-slate-100">
+                        <div className="font-semibold text-[var(--vn-text)]">
                           {period.label}
                           {period.id === plan.setup.selectedPeriodId && (
-                            <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">(Active)</span>
+                            <span className="ml-2 text-xs text-[var(--vn-primary)]">(Active)</span>
                           )}
                         </div>
                         <div className="text-xs text-[var(--vn-muted)]">
@@ -391,8 +391,8 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
-              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Period Overrides</div>
+            <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Period Overrides</div>
               <div className="text-xs text-[var(--vn-muted)] mb-4">
                 Customize specific periods without affecting base rules
               </div>
@@ -408,8 +408,8 @@ export default function SettingsPage() {
                       plan.periodRuleOverrides.some((o) => o.periodId === period.id);
 
                     return (
-                      <details key={period.id} className="rounded-2xl border border-slate-200 dark:border-slate-600 bg-white/70 dark:bg-slate-700/70 px-4 py-3">
-                        <summary className="cursor-pointer font-semibold text-slate-900 dark:text-slate-100 flex items-center justify-between">
+                      <details key={period.id} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3">
+                        <summary className="cursor-pointer font-semibold text-[var(--vn-text)] flex items-center justify-between">
                           <span>
                             {period.label}
                             {hasOverrides && (
@@ -421,7 +421,7 @@ export default function SettingsPage() {
                         <div className="mt-4 space-y-4">
                           {/* Starting Balance Override */}
                           <div>
-                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            <label className="block text-xs font-medium text-[var(--vn-muted)] mb-2">
                               Starting Balance Override
                             </label>
                             <div className="flex items-center gap-2">
@@ -452,14 +452,14 @@ export default function SettingsPage() {
                           {/* Disabled Bills */}
                           {plan.bills.length > 0 && (
                             <div>
-                              <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                              <div className="text-xs font-medium text-[var(--vn-muted)] mb-2">
                                 Disabled Bills for this Period
                               </div>
                               <div className="space-y-2 max-h-48 overflow-y-auto">
                                 {plan.bills.map((bill) => {
                                   const isDisabled = disabledBills.includes(bill.id);
                                   return (
-                                    <div key={bill.id} className="flex items-center gap-2 p-2 rounded bg-white/50 dark:bg-slate-600/50">
+                                    <div key={bill.id} className="flex items-center gap-2 p-2 rounded bg-[var(--vn-bg)]">
                                       <input
                                         type="checkbox"
                                         id={`bill-${period.id}-${bill.id}`}
@@ -469,7 +469,7 @@ export default function SettingsPage() {
                                       />
                                       <label
                                         htmlFor={`bill-${period.id}-${bill.id}`}
-                                        className="text-xs text-slate-700 dark:text-slate-300 flex-1 cursor-pointer"
+                                        className="text-xs text-[var(--vn-muted)] flex-1 cursor-pointer"
                                       >
                                         {bill.label} ({formatMoney(bill.amount)})
                                       </label>
@@ -483,7 +483,7 @@ export default function SettingsPage() {
                           {/* Income Rule Overrides */}
                           {plan.incomeRules.length > 0 && (
                             <div>
-                              <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                              <div className="text-xs font-medium text-[var(--vn-muted)] mb-2">
                                 Disabled Income Rules for this Period
                               </div>
                               <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -491,7 +491,7 @@ export default function SettingsPage() {
                                   const ruleOverride = getRuleOverride(period.id, rule.id, "income");
                                   const isDisabled = ruleOverride?.enabled === false;
                                   return (
-                                    <div key={rule.id} className="flex items-center gap-2 p-2 rounded bg-white/50 dark:bg-slate-600/50">
+                                    <div key={rule.id} className="flex items-center gap-2 p-2 rounded bg-[var(--vn-bg)]">
                                       <input
                                         type="checkbox"
                                         id={`income-${period.id}-${rule.id}`}
@@ -501,7 +501,7 @@ export default function SettingsPage() {
                                       />
                                       <label
                                         htmlFor={`income-${period.id}-${rule.id}`}
-                                        className="text-xs text-slate-700 dark:text-slate-300 flex-1 cursor-pointer"
+                                        className="text-xs text-[var(--vn-muted)] flex-1 cursor-pointer"
                                       >
                                         {rule.label} ({formatMoney(rule.amount)} {rule.cadence})
                                       </label>
@@ -515,7 +515,7 @@ export default function SettingsPage() {
                           {/* Outflow Rule Overrides */}
                           {plan.outflowRules.length > 0 && (
                             <div>
-                              <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                              <div className="text-xs font-medium text-[var(--vn-muted)] mb-2">
                                 Disabled Outflow Rules for this Period
                               </div>
                               <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -523,7 +523,7 @@ export default function SettingsPage() {
                                   const ruleOverride = getRuleOverride(period.id, rule.id, "outflow");
                                   const isDisabled = ruleOverride?.enabled === false;
                                   return (
-                                    <div key={rule.id} className="flex items-center gap-2 p-2 rounded bg-white/50 dark:bg-slate-600/50">
+                                    <div key={rule.id} className="flex items-center gap-2 p-2 rounded bg-[var(--vn-bg)]">
                                       <input
                                         type="checkbox"
                                         id={`outflow-${period.id}-${rule.id}`}
@@ -533,7 +533,7 @@ export default function SettingsPage() {
                                       />
                                       <label
                                         htmlFor={`outflow-${period.id}-${rule.id}`}
-                                        className="text-xs text-slate-700 dark:text-slate-300 flex-1 cursor-pointer"
+                                        className="text-xs text-[var(--vn-muted)] flex-1 cursor-pointer"
                                       >
                                         {rule.label} ({formatMoney(rule.amount)} {rule.cadence})
                                       </label>
@@ -551,16 +551,16 @@ export default function SettingsPage() {
               )}
             </div>
 
-            <div className="rounded-3xl bg-[var(--surface)] dark:bg-slate-800 p-6 shadow-xl">
-              <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">About</div>
+            <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">About</div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-[var(--vn-muted)]">Version</span>
-                  <span className="font-medium text-slate-900 dark:text-slate-100">1.0.1 (Build {(process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString()).slice(0, 16).replace("T", " ")})</span>
+                  <span className="font-medium text-[var(--vn-text)]">1.0.1 (Build {(process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString()).slice(0, 16).replace("T", " ")})</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--vn-muted)]">App Name</span>
-                  <span className="font-medium text-slate-900 dark:text-slate-100">{branding.name}</span>
+                  <span className="font-medium text-[var(--vn-text)]">{branding.name}</span>
                 </div>
               </div>
               <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--vn-border)" }}>
@@ -588,13 +588,13 @@ export default function SettingsPage() {
             className="vn-card max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
+            <h2 className="text-lg font-semibold text-[var(--vn-text)] mb-4">
               {editingPeriod ? "Edit Period" : "Add Period"}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">
                   Label *
                 </label>
                 <input
@@ -607,7 +607,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">
                   Start Date *
                 </label>
                 <input
@@ -619,7 +619,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">
                   End Date *
                 </label>
                 <input

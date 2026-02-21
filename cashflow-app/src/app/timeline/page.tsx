@@ -178,11 +178,11 @@ export default function TimelinePage() {
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
           <section className="space-y-6">
-            <header className="vn-card px-5 py-4 sm:p-6">
-              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Timeline</div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-[var(--vn-text)]">Cashflow Timeline</h1>
-              <p className="mt-1 text-sm text-[var(--vn-muted)]">See your balance day by day.</p>
-              <p className="mt-0.5 text-xs text-slate-400">
+            <header className="vn-masthead">
+              <div className="text-xs uppercase tracking-widest font-semibold text-white/50">Timeline</div>
+              <h1 className="text-xl sm:text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Cashflow Timeline</h1>
+              <p className="mt-1 text-sm text-white/55">See your balance day by day.</p>
+              <p className="mt-0.5 text-xs text-white/40">
                 {period.label} ({formatNice(period.start)} - {formatNice(period.end)})
               </p>
             </header>

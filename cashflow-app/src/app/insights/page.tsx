@@ -286,19 +286,20 @@ export default function InsightsPage() {
           <SidebarNav periodLabel={basePeriod.label} periodStart={basePeriod.start} periodEnd={basePeriod.end} />
 
           <section className="space-y-6">
-            <header className="vn-card p-6">
-              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Insights</div>
-              <h1 className="text-2xl font-semibold text-[var(--vn-text)]">Insights</h1>
-              <p className="mt-2 text-sm text-[var(--vn-muted)]">
+            <header className="vn-masthead">
+              <div className="text-xs uppercase tracking-widest font-semibold text-white/50">Insights</div>
+              <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Insights</h1>
+              <p className="mt-2 text-sm text-white/55">
                 Answers to the questions you normally ask about the period.
               </p>
-              <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-[var(--vn-muted)]">
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-white/60">
                 <div className="flex items-center gap-2">
                   <span>Base period</span>
                   <select
                     value={basePeriodId}
                     onChange={(e) => setBasePeriodId(Number(e.target.value))}
-                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-2 py-1 text-xs text-[var(--vn-muted)]"
+                    className="rounded-lg px-2 py-1 text-xs"
+                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(240,237,232,0.85)" }}
                   >
                     {sortedPeriods.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -320,7 +321,8 @@ export default function InsightsPage() {
                             : null
                       )
                     }
-                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-2 py-1 text-xs text-[var(--vn-muted)]"
+                    className="rounded-lg px-2 py-1 text-xs"
+                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(240,237,232,0.85)" }}
                   >
                     <option value="auto">Auto (previous)</option>
                     <option value="">None</option>
@@ -336,19 +338,22 @@ export default function InsightsPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={handleExportInsightsCsv}
-                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-muted)] hover:opacity-80"
+                    className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-semibold transition-colors hover:opacity-90"
+                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(240,237,232,0.8)" }}
                   >
                     Export insights (CSV)
                   </button>
                   <button
                     onClick={handleDownloadInsightsPdf}
-                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-muted)] hover:opacity-80"
+                    className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-semibold transition-colors hover:opacity-90"
+                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(240,237,232,0.8)" }}
                   >
                     Download insights report (PDF)
                   </button>
                   <button
                     onClick={() => downloadPlanPdf(plan, baseStats.period.id)}
-                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-muted)] hover:opacity-80"
+                    className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-semibold transition-colors hover:opacity-90"
+                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(240,237,232,0.8)" }}
                   >
                     Download plan report (PDF)
                   </button>

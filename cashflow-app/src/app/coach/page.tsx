@@ -393,7 +393,7 @@ export default function CoachPage() {
   return (
     <div className="flex flex-col h-[calc(100dvh-6rem)]">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-linear-to-r from-violet-500 to-purple-600 text-white">
+      <div className="flex items-center gap-3 px-4 py-3 text-white" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)" }}>
         <button
           onClick={() => {
             if (window.history.length > 1) router.back();
@@ -449,20 +449,21 @@ export default function CoachPage() {
               <div
                 className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                   msg.role === "user"
-                    ? "bg-violet-500 text-white rounded-br-md"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-md"
-                }`}
+                    ? "text-white rounded-br-md" 
+                    : "bg-[var(--vn-surface)] border border-[var(--vn-border)] text-[var(--vn-text)] rounded-bl-md"
+                }
+                style={msg.role === "user" ? { background: "linear-gradient(135deg, #a8731a, #d4a843)" } : undefined}`}
               >
                 {isStreamingMsg && !msg.content ? (
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <div className="w-2 h-2 bg-[var(--vn-muted)] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-2 h-2 bg-[var(--vn-muted)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-2 h-2 bg-[var(--vn-muted)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                   </div>
                 ) : (
                   <p className="whitespace-pre-wrap">
                     {renderContent(msg.content)}
-                    {isStreamingMsg && <span className="inline-block w-[2px] h-[1em] bg-slate-500 ml-0.5 align-middle animate-pulse" />}
+                    {isStreamingMsg && <span className="inline-block w-[2px] h-[1em] bg-[var(--vn-muted)] ml-0.5 align-middle animate-pulse" />}
                   </p>
                 )}
               </div>
@@ -492,7 +493,7 @@ export default function CoachPage() {
                 <button
                   key={q}
                   onClick={() => sendMessage(q)}
-                  className="text-xs px-3 py-1.5 min-h-9 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors border border-violet-200 dark:border-violet-700"
+                  className="text-xs px-3 py-1.5 min-h-9 bg-[var(--vn-bg)] text-[var(--vn-text)] rounded-full hover:border-[var(--vn-gold)]/60 transition-colors border border-[var(--vn-border)]"
                 >
                   {q}
                 </button>
@@ -503,7 +504,7 @@ export default function CoachPage() {
       })()}
 
       {/* Input */}
-      <div className="p-3 border-t border-[var(--vn-border)] bg-white dark:bg-slate-900">
+      <div className="p-3 border-t border-[var(--vn-border)] bg-[var(--vn-surface)]">
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -513,12 +514,13 @@ export default function CoachPage() {
             onKeyDown={handleKeyDown}
             placeholder="Ask about your finances..."
             disabled={isLoading}
-            className="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="flex-1 px-4 py-2.5 bg-[var(--vn-bg)] text-[var(--vn-text)] rounded-xl text-sm placeholder:text-[var(--vn-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--vn-gold)]/50"
           />
           <button
             onClick={() => sendMessage()}
             disabled={!input.trim() || isLoading}
-            className="px-4 py-2.5 bg-violet-500 text-white rounded-xl hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2.5 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style={{ background: "linear-gradient(135deg, #a8731a, #d4a843)" }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

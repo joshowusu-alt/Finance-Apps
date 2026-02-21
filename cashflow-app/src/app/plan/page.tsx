@@ -176,13 +176,14 @@ export default function PlanPage() {
           <section className="space-y-5">
 
             {/* A) Period Header */}
-            <div className="vn-card p-6">
+            <div className="vn-masthead">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <h1 className="text-2xl font-bold text-[var(--vn-text)]">Plan</h1>
-                  <div className="mt-1 text-sm text-[var(--vn-muted)] break-words">{periodHeader}</div>
+                  <div className="text-xs uppercase tracking-widest font-semibold text-white/50 mb-1">Budget</div>
+                  <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Plan</h1>
+                  <div className="mt-1 text-sm text-white/55 break-words">{periodHeader}</div>
                 </div>
-                <Link href="/settings" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
+                <Link href="/settings" className="text-xs font-semibold px-3 py-1.5 rounded-lg self-end sm:self-auto transition-colors" style={{ color: "rgba(240,237,232,0.65)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}>
                   Edit period dates
                 </Link>
               </div>

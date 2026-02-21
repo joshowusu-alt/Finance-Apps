@@ -217,10 +217,10 @@ export default function ImportPage() {
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
           <section className="space-y-6">
-            <header className="vn-card p-6">
-              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-1">Transactions</div>
-              <h1 className="text-2xl font-bold text-[var(--vn-text)]">CSV Import</h1>
-              <p className="mt-1 text-sm text-[var(--vn-muted)]">
+            <header className="vn-masthead">
+              <div className="text-xs uppercase tracking-widest font-semibold text-white/50 mb-1">Transactions</div>
+              <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>CSV Import</h1>
+              <p className="mt-1 text-sm text-white/55">
                 Import transactions from your bank export. Supports most CSV formats.
               </p>
             </header>

@@ -252,7 +252,7 @@ function ProgressBar({ value, max, favorable }: { value: number; max: number; fa
       : "bg-rose-500 dark:bg-rose-400"
     : "bg-blue-500 dark:bg-blue-400";
   return (
-    <div className="mt-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-600 overflow-hidden">
+    <div className="mt-1.5 h-1.5 rounded-full bg-[var(--vn-border)] overflow-hidden">
       <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
     </div>
   );
@@ -335,7 +335,7 @@ function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }:
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]">{card.label}</div>
               {hasTxns && (
-                <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                <svg className={`w-3.5 h-3.5 text-[var(--vn-muted)] transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               )}
             </div>
             <div className="mt-1 text-[11px] text-[var(--vn-muted)]">Budget {fmt(card.budget)}</div>
@@ -1080,10 +1080,10 @@ export default function TransactionsPage() {
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
           <section className="space-y-6">
-            <div className="vn-card p-6">
-              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Transactions</div>
-              <h1 className="text-2xl font-semibold text-[var(--vn-text)]">Transactions</h1>
-              <div className="mt-2 text-sm text-[var(--vn-muted)]">Add what really happened.</div>
+            <div className="vn-masthead">
+              <div className="text-xs uppercase tracking-widest font-semibold text-white/50">Transactions</div>
+              <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Transactions</h1>
+              <div className="mt-2 text-sm text-white/55">Add what really happened.</div>
             </div>
 
             {/* Add Transaction Form */}

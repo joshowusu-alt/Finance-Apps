@@ -399,7 +399,7 @@ export default function HomePage() {
                         </div>
                         <div className="relative h-2 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }}>
                           {/* Time elapsed bar (background) */}
-                          <div className="absolute inset-y-0 left-0 rounded-full bg-slate-300 dark:bg-slate-600" style={{ width: `${Math.round(timeProgress * 100)}%` }} />
+                          <div className="absolute inset-y-0 left-0 rounded-full bg-[var(--vn-border)]" style={{ width: `${Math.round(timeProgress * 100)}%` }} />
                           {/* Spending progress bar (foreground — animated fill) */}
                           <motion.div
                             className={`absolute inset-y-0 left-0 rounded-full ${spendingPaceGap > 0.08 ? "bg-rose-500" : spendingPaceGap < -0.08 ? "bg-emerald-500" : "bg-blue-500"}`}
