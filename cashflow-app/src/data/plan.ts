@@ -144,10 +144,15 @@ export type NetWorthAccount = {
   name: string;          // "Monzo Savings", "Vanguard ISA"
   type: NetWorthAccountType;
   institution?: string;  // "Monzo", "Vanguard"
-  balance: number;       // current value (always positive; sign determined by type)
+  balance: number;       // manual balance (used when not auto-linked, or as snapshot baseline)
   notes?: string;
   icon?: string;         // emoji
   order?: number;        // display ordering
+  // ── Auto-populate from cashflow transactions ────────────────────────────
+  linkedRuleId?: string; // OutflowRule.id — accumulate matching transactions automatically
+  linkedBillId?: string; // BillTemplate.id — accumulate matching bill transactions
+  baseBalance?: number;  // opening balance for auto-calc (defaults to 0)
+  baseDate?: string;     // YYYY-MM-DD — only count transactions on/after this date
 };
 
 export type NetWorthSnapshot = {

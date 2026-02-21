@@ -6,7 +6,7 @@ import { loadPlan, savePlan } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
 import { toast } from "@/components/Toast";
-import type { NetWorthAccount, NetWorthAccountType, NetWorthSnapshot, Plan } from "@/data/plan";
+import type { NetWorthAccount, NetWorthAccountType, NetWorthSnapshot, Plan, OutflowRule, BillTemplate } from "@/data/plan";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
@@ -42,14 +42,17 @@ function today() {
 // ─────────────────────────────────────────────────────────────────
 function AccountRow({
   account,
+  effectiveAmt,
   onEdit,
   onDelete,
 }: {
   account: NetWorthAccount;
+  effectiveAmt: number;
   onEdit: (a: NetWorthAccount) => void;
   onDelete: (id: string) => void;
 }) {
   const meta = TYPE_META[account.type];
+  const isAuto = !!(account.linkedRuleId || account.linkedBillId);
   return (
     <div className="flex items-center gap-3 py-3 px-1 group">
       <div
@@ -59,13 +62,23 @@ function AccountRow({
         {account.icon || meta.icon}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-[var(--vn-text)] truncate">{account.name}</div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-[var(--vn-text)] truncate">{account.name}</span>
+          {isAuto && (
+            <span
+              className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
+              style={{ background: "rgba(34,197,94,0.15)", color: "#16a34a" }}
+            >
+              LIVE
+            </span>
+          )}
+        </div>
         {account.institution && (
           <div className="text-[11px] text-[var(--vn-muted)]">{account.institution}</div>
         )}
       </div>
       <div className="font-bold tabular-nums text-[var(--vn-text)] text-sm shrink-0">
-        {formatMoney(account.balance)}
+        {formatMoney(effectiveAmt)}
       </div>
       <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity ml-1 shrink-0">
         <button
@@ -96,10 +109,14 @@ function AccountRow({
 // ─────────────────────────────────────────────────────────────────
 function AccountForm({
   initial,
+  outflowRules,
+  bills,
   onSave,
   onCancel,
 }: {
   initial?: NetWorthAccount;
+  outflowRules: OutflowRule[];
+  bills: BillTemplate[];
   onSave: (a: Omit<NetWorthAccount, "id"> & { id?: string }) => void;
   onCancel: () => void;
 }) {
@@ -110,21 +127,52 @@ function AccountForm({
   const [icon, setIcon]               = useState(initial?.icon ?? "");
   const [notes, setNotes]             = useState(initial?.notes ?? "");
   const [error, setError]             = useState("");
+  // Auto-link fields
+  const [linkedRuleId, setLinkedRuleId] = useState(initial?.linkedRuleId ?? "");
+  const [linkedBillId, setLinkedBillId] = useState(initial?.linkedBillId ?? "");
+  const [baseBalance, setBaseBalance]   = useState(
+    initial?.baseBalance !== undefined ? String(initial.baseBalance) : "0"
+  );
+  const [baseDate, setBaseDate]         = useState(initial?.baseDate ?? "");
+
+  const isAutoLinked = !!linkedRuleId || !!linkedBillId;
+  const isSavingsType = type === "savings";
+  const isLiabilityType = LIABILITY_TYPES.includes(type);
+
+  // For savings accounts: only show savings outflow rules
+  const savingsRules = outflowRules.filter(r => r.category === "savings" && r.enabled);
+  // For liabilities: show all outflow rules + bills as payment sources
+  const paymentRules = outflowRules.filter(r => r.enabled);
+  const paymentBills = bills.filter(b => b.enabled);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) { setError("Account name is required"); return; }
-    const bal = parseFloat(balance);
-    if (isNaN(bal) || bal < 0) { setError("Balance must be a positive number"); return; }
+    const baseBal = parseFloat(baseBalance) || 0;
+    if (!isAutoLinked) {
+      const bal = parseFloat(balance);
+      if (isNaN(bal) || bal < 0) { setError("Balance must be a positive number"); return; }
+    }
     onSave({
       id: initial?.id,
       name: name.trim(),
       type,
       institution: institution.trim() || undefined,
-      balance: bal,
+      balance: isAutoLinked ? baseBal : parseFloat(balance),
       icon: icon.trim() || undefined,
       notes: notes.trim() || undefined,
+      linkedRuleId: linkedRuleId || undefined,
+      linkedBillId: linkedBillId || undefined,
+      baseBalance: isAutoLinked ? baseBal : undefined,
+      baseDate: isAutoLinked && baseDate ? baseDate : undefined,
     });
+  }
+
+  // Clear link when type changes
+  function handleTypeChange(t: NetWorthAccountType) {
+    setType(t);
+    setLinkedRuleId("");
+    setLinkedBillId("");
   }
 
   const allTypes = [...ASSET_TYPES, ...LIABILITY_TYPES];
@@ -153,7 +201,7 @@ function AccountForm({
           <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Type *</label>
           <select
             value={type}
-            onChange={e => setType(e.target.value as NetWorthAccountType)}
+            onChange={e => handleTypeChange(e.target.value as NetWorthAccountType)}
             className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
           >
             <optgroup label="Assets">
@@ -169,19 +217,21 @@ function AccountForm({
           </select>
         </div>
 
-        {/* Balance */}
-        <div>
-          <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Balance *</label>
-          <input
-            type="number"
-            value={balance}
-            onChange={e => setBalance(e.target.value)}
-            placeholder="0.00"
-            min="0"
-            step="0.01"
-            className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
-          />
-        </div>
+        {/* Balance — hidden when auto-linked */}
+        {!isAutoLinked && (
+          <div>
+            <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Balance *</label>
+            <input
+              type="number"
+              value={balance}
+              onChange={e => setBalance(e.target.value)}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+            />
+          </div>
+        )}
 
         {/* Institution */}
         <div>
@@ -206,6 +256,108 @@ function AccountForm({
           />
         </div>
       </div>
+
+      {/* ── Auto-link section ─────────────────────────────────── */}
+      {(isSavingsType || isLiabilityType) && (
+        <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-[var(--vn-text)]">
+              {isSavingsType ? "🔄 Auto-sync from savings transfers" : "🔄 Auto-track payments"}
+            </span>
+            <span
+              className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{ background: "rgba(168,115,26,0.15)", color: "var(--vn-gold)" }}
+            >
+              LIVE
+            </span>
+          </div>
+          <p className="text-xs text-[var(--vn-muted)]">
+            {isSavingsType
+              ? "Link to a savings rule so the balance updates automatically as you record transfers."
+              : "Link to a payment rule or bill so card payments automatically reduce this liability."}
+          </p>
+
+          {isSavingsType && savingsRules.length > 0 && (
+            <div>
+              <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Savings rule</label>
+              <select
+                value={linkedRuleId}
+                onChange={e => { setLinkedRuleId(e.target.value); setLinkedBillId(""); }}
+                className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+              >
+                <option value="">— Not linked (manual) —</option>
+                {savingsRules.map(r => (
+                  <option key={r.id} value={r.id}>{r.label} (£{r.amount.toFixed(2)})</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {isLiabilityType && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Payment rule</label>
+                <select
+                  value={linkedRuleId}
+                  onChange={e => { setLinkedRuleId(e.target.value); if (e.target.value) setLinkedBillId(""); }}
+                  className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                >
+                  <option value="">— None —</option>
+                  {paymentRules.map(r => (
+                    <option key={r.id} value={r.id}>{r.label} (£{r.amount.toFixed(2)})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Or bill</label>
+                <select
+                  value={linkedBillId}
+                  onChange={e => { setLinkedBillId(e.target.value); if (e.target.value) setLinkedRuleId(""); }}
+                  className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                >
+                  <option value="">— None —</option>
+                  {paymentBills.map(b => (
+                    <option key={b.id} value={b.id}>{b.label} (£{b.amount.toFixed(2)})</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Base balance + start date — shown when linked */}
+          {isAutoLinked && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">
+                  {isSavingsType ? "Opening balance (£)" : "Current balance owed (£)"}
+                </label>
+                <input
+                  type="number"
+                  value={baseBalance}
+                  onChange={e => setBaseBalance(e.target.value)}
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                />
+                <p className="mt-1 text-[10px] text-[var(--vn-muted)]">
+                  {isSavingsType ? "Amount already in this account" : "Outstanding balance before payments"}
+                </p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Count transactions from</label>
+                <input
+                  type="date"
+                  value={baseDate}
+                  onChange={e => setBaseDate(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                />
+                <p className="mt-1 text-[10px] text-[var(--vn-muted)]">Leave blank to count all</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Notes */}
       <div>
@@ -265,16 +417,49 @@ export default function NetWorthPage() {
     setSnapshots(p.netWorthSnapshots ?? []);
   }, []);
 
+  // ── Derived from plan ─────────────────────────────────────────
+  const transactions  = plan?.transactions  ?? [];
+  const outflowRules  = plan?.outflowRules  ?? [];
+  const bills         = plan?.bills         ?? [];
+
+  // ── Effective balance computation ──────────────────────────────
+  // For savings (asset): baseBalance + sum of matching transactions (transfers in)
+  // For liabilities: baseBalance − sum of matching payment transactions
+  function effectiveBalance(account: NetWorthAccount): number {
+    if (!account.linkedRuleId && !account.linkedBillId) return account.balance;
+    const since = account.baseDate ?? "0000-00-00";
+    let txSum = 0;
+    if (account.linkedRuleId) {
+      txSum += transactions
+        .filter(t => t.linkedRuleId === account.linkedRuleId && t.date >= since)
+        .reduce((s, t) => s + t.amount, 0);
+    }
+    if (account.linkedBillId) {
+      txSum += transactions
+        .filter(t => t.linkedBillId === account.linkedBillId && t.date >= since)
+        .reduce((s, t) => s + t.amount, 0);
+    }
+    const base = account.baseBalance ?? 0;
+    if (ASSET_TYPES.includes(account.type)) {
+      // Savings / asset: base + accumulated transfers
+      return base + txSum;
+    } else {
+      // Liability: base − payments made (floor at 0)
+      return Math.max(0, base - txSum);
+    }
+  }
+
   // ── Totals ─────────────────────────────────────────────────────
   const { totalAssets, totalLiabilities, netWorth } = useMemo(() => {
     const assets = accounts
       .filter(a => ASSET_TYPES.includes(a.type))
-      .reduce((s, a) => s + a.balance, 0);
+      .reduce((s, a) => s + effectiveBalance(a), 0);
     const liabilities = accounts
       .filter(a => LIABILITY_TYPES.includes(a.type))
-      .reduce((s, a) => s + a.balance, 0);
+      .reduce((s, a) => s + effectiveBalance(a), 0);
     return { totalAssets: assets, totalLiabilities: liabilities, netWorth: assets - liabilities };
-  }, [accounts]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accounts, transactions]);
 
   // ── Persist helpers ───────────────────────────────────────────
   function persist(newAccounts: NetWorthAccount[], newSnapshots?: NetWorthSnapshot[]) {
@@ -324,7 +509,7 @@ export default function NetWorthPage() {
       totalAssets,
       totalLiabilities,
       netWorth,
-      accountBalances: Object.fromEntries(accounts.map(a => [a.id, a.balance])),
+      accountBalances: Object.fromEntries(accounts.map(a => [a.id, effectiveBalance(a)])),
     };
     const next = [...snapshots, snap].sort((a, b) => a.date.localeCompare(b.date));
     persist(accounts, next);
@@ -455,6 +640,8 @@ export default function NetWorthPage() {
                 >
                   <AccountForm
                     initial={editAccount ?? undefined}
+                    outflowRules={outflowRules}
+                    bills={bills}
                     onSave={handleSaveAccount}
                     onCancel={() => { setShowForm(false); setEditAccount(null); }}
                   />
@@ -492,7 +679,7 @@ export default function NetWorthPage() {
                     const group = assetAccounts.filter(a => a.type === type);
                     if (group.length === 0) return null;
                     const meta = TYPE_META[type];
-                    const subtotal = group.reduce((s, a) => s + a.balance, 0);
+                    const subtotal = group.reduce((s, a) => s + effectiveBalance(a), 0);
                     return (
                       <div key={type} className="mb-4 last:mb-0">
                         <div className="flex items-center justify-between mb-2 pb-1 border-b border-[var(--vn-border)]">
@@ -504,7 +691,7 @@ export default function NetWorthPage() {
                         </div>
                         <div className="divide-y divide-[var(--vn-border)]/50">
                           {group.map(a => (
-                            <AccountRow key={a.id} account={a} onEdit={handleEditAccount} onDelete={handleDeleteAccount} />
+                            <AccountRow key={a.id} account={a} effectiveAmt={effectiveBalance(a)} onEdit={handleEditAccount} onDelete={handleDeleteAccount} />
                           ))}
                         </div>
                       </div>
@@ -543,7 +730,7 @@ export default function NetWorthPage() {
                     const group = liabilityAccounts.filter(a => a.type === type);
                     if (group.length === 0) return null;
                     const meta = TYPE_META[type];
-                    const subtotal = group.reduce((s, a) => s + a.balance, 0);
+                    const subtotal = group.reduce((s, a) => s + effectiveBalance(a), 0);
                     return (
                       <div key={type} className="mb-4 last:mb-0">
                         <div className="flex items-center justify-between mb-2 pb-1 border-b border-[var(--vn-border)]">
@@ -555,7 +742,7 @@ export default function NetWorthPage() {
                         </div>
                         <div className="divide-y divide-[var(--vn-border)]/50">
                           {group.map(a => (
-                            <AccountRow key={a.id} account={a} onEdit={handleEditAccount} onDelete={handleDeleteAccount} />
+                            <AccountRow key={a.id} account={a} effectiveAmt={effectiveBalance(a)} onEdit={handleEditAccount} onDelete={handleDeleteAccount} />
                           ))}
                         </div>
                       </div>
