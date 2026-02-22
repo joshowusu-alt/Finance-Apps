@@ -575,7 +575,7 @@ export default function NetWorthPage() {
 
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-40 pt-5">
         <div className="grid gap-5 lg:grid-cols-[240px_1fr]">
           <SidebarNav />
 
@@ -635,9 +635,10 @@ export default function NetWorthPage() {
             </header>
 
             {/* ── Net Worth hero metric ────────────────────────── */}
-            <div className="grid grid-cols-3 gap-4">
-              {/* Net Worth — spanning on mobile */}
-              <div className="col-span-3 sm:col-span-1 vn-stat-card">
+            {/* Mobile: 2-col grid so Assets/Liabilities each get 50% width */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {/* Net Worth — full width on mobile, 1/3 on desktop */}
+              <div className="col-span-2 sm:col-span-1 vn-stat-card">
                 <p className="vn-label mb-2">Total Net Worth</p>
                 <p
                   className={`text-3xl font-bold tabular-nums tracking-tight ${netWorth >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}
@@ -647,16 +648,16 @@ export default function NetWorthPage() {
                 </p>
                 <p className="vn-subtext mt-1">Assets minus liabilities</p>
               </div>
-              <div className="vn-stat-card">
+              <div className="vn-stat-card min-w-0">
                 <p className="vn-label mb-2">Total Assets</p>
-                <p className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400 tracking-tight">
+                <p className="text-xl sm:text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400 tracking-tight break-all">
                   {formatMoney(totalAssets)}
                 </p>
                 <p className="vn-subtext mt-1">{assetAccounts.length} account{assetAccounts.length !== 1 ? "s" : ""}</p>
               </div>
-              <div className="vn-stat-card">
+              <div className="vn-stat-card min-w-0">
                 <p className="vn-label mb-2">Total Liabilities</p>
-                <p className="text-2xl font-bold tabular-nums text-rose-500 tracking-tight">
+                <p className="text-xl sm:text-2xl font-bold tabular-nums text-rose-500 tracking-tight break-all">
                   {formatMoney(totalLiabilities)}
                 </p>
                 <p className="vn-subtext mt-1">{liabilityAccounts.length} account{liabilityAccounts.length !== 1 ? "s" : ""}</p>
