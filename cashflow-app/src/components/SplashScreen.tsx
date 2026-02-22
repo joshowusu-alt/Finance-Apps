@@ -41,12 +41,11 @@ export default function SplashScreen() {
           to   { opacity: 0; }
         }
         @keyframes vn-monogram-in {
-          0%   { opacity: 0; transform: scale(0.82); }
-          60%  { opacity: 1; transform: scale(1.04); }
+          0%   { opacity: 0; transform: scale(0.88); }
           100% { opacity: 1; transform: scale(1); }
         }
         @keyframes vn-wordmark-in {
-          0%   { opacity: 0; transform: translateY(18px); }
+          0%   { opacity: 0; transform: translateY(16px); }
           100% { opacity: 1; transform: translateY(0); }
         }
         @keyframes vn-tagline-in {
@@ -77,7 +76,7 @@ export default function SplashScreen() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#09090b",
+          background: "#0D1117",
           isolation: "isolate",
         }}
         aria-hidden="true"
@@ -88,12 +87,12 @@ export default function SplashScreen() {
           {/* Monogram circle */}
           <div
             style={{
-              animation: "vn-monogram-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both",
+              animation: "vn-monogram-in 0.55s cubic-bezier(0.4, 0.0, 0.2, 1) 0.1s both",
               width: 72,
               height: 72,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, rgba(168,115,26,0.22) 0%, rgba(212,168,67,0.10) 100%)",
-              border: "1.5px solid rgba(212,168,67,0.35)",
+              background: "linear-gradient(135deg, rgba(197,160,70,0.18) 0%, rgba(212,175,90,0.08) 100%)",
+              border: "1.5px solid rgba(197,160,70,0.30)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -105,8 +104,8 @@ export default function SplashScreen() {
               style={{
                 fontFamily: "var(--font-playfair, Georgia, serif)",
                 fontSize: 34,
-                fontWeight: 700,
-                color: "#d4a843",
+                fontWeight: 600,
+                color: "#C5A046",
                 letterSpacing: "-0.02em",
                 lineHeight: 1,
                 userSelect: "none",
@@ -119,12 +118,12 @@ export default function SplashScreen() {
           {/* Wordmark */}
           <h1
             style={{
-              animation: "vn-wordmark-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both",
-              fontFamily: "var(--font-playfair, Georgia, serif)",
-              fontSize: "clamp(2.6rem, 8vw, 4rem)",
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
-              color: "#f0ede8",
+              animation: "vn-wordmark-in 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) 0.45s both",
+              fontFamily: "var(--font-playfair, Georgia, 'Times New Roman', serif)",
+              fontSize: "clamp(2.4rem, 7vw, 3.6rem)",
+              fontWeight: 600,
+              letterSpacing: "-0.025em",
+              color: "#E6E8EB",
               margin: 0,
               lineHeight: 1,
               userSelect: "none",
@@ -138,7 +137,7 @@ export default function SplashScreen() {
             style={{
               animation: "vn-divider-in 0.4s ease 0.95s both",
               height: 1,
-              background: "linear-gradient(90deg, transparent, rgba(212,168,67,0.6), transparent)",
+              background: "linear-gradient(90deg, transparent, rgba(197,160,70,0.55), transparent)",
               margin: "16px 0 14px",
             }}
           />
@@ -147,12 +146,12 @@ export default function SplashScreen() {
           <p
             style={{
               animation: "vn-tagline-in 0.5s ease 1.05s both",
-              fontFamily: "Plus Jakarta Sans, var(--font-jakarta, sans-serif)",
-              fontSize: "clamp(0.7rem, 2.2vw, 0.82rem)",
+              fontFamily: "var(--font-jakarta, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif)",
+              fontSize: "clamp(0.68rem, 2vw, 0.78rem)",
               fontWeight: 500,
-              letterSpacing: "0.22em",
+              letterSpacing: "0.2em",
               textTransform: "uppercase",
-              color: "#f0ede8",
+              color: "#AAB2BD",
               margin: 0,
               userSelect: "none",
             }}
@@ -176,8 +175,8 @@ export default function SplashScreen() {
             style={{
               animation: "vn-progress 1.65s cubic-bezier(0.4, 0, 0.2, 1) 0.25s both",
               height: "100%",
-              background: "linear-gradient(90deg, #a8731a 0%, #d4a843 60%, #f0c060 100%)",
-              boxShadow: "0 0 12px rgba(212,168,67,0.5)",
+              background: "linear-gradient(90deg, #C5A046 0%, #D4AF5A 60%, #e8c870 100%)",
+              boxShadow: "0 0 10px rgba(197,160,70,0.4)",
             }}
           />
         </div>

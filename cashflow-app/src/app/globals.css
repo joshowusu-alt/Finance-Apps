@@ -8,169 +8,144 @@
 }
 
 :root {
-  /* VELANOVO — Warm Parchment Light Mode */
-  --background: #f3f0e8;
-  /* Warm parchment — premium, calm */
-  --foreground: #1a1713;
-  /* Deep warm black */
-  --surface: #faf8f4;
-  /* Warm near-white cards */
-  --surface-elevated: #f0ece3;
-  /* Elevated card surface */
-  --surface-soft: #e8e2d9;
-  /* Soft inset areas */
-  --panel: #faf8f4;
-  --border: #dcd6cc;
-  /* Warm beige border */
-  --border-hover: #b5ad9e;
-  /* Warm mid-grey hover */
+  /* VELANOVO — Light Mode */
+  --background: #F6F5F2;
+  --foreground: #111318;
+  --surface: #FFFFFF;
+  --surface-elevated: #F1EFEA;
+  --surface-soft: #F1EFEA;
+  --panel: #FFFFFF;
+  --border: rgba(0, 0, 0, 0.06);
+  --border-hover: rgba(0, 0, 0, 0.12);
 
-  /* Brand Colors — Deep Navy + Real Gold */
-  --accent: #0f172a;
-  /* Deep Navy Primary */
-  --accent-deep: #060d1a;
-  /* Deeper Navy */
-  --accent-soft: rgba(15, 23, 42, 0.07);
-  --accent-hover: rgba(15, 23, 42, 0.11);
+  /* Brand — Navy accent, Gold highlight */
+  --accent: #111318;
+  --accent-deep: #0D1117;
+  --accent-soft: rgba(17, 19, 24, 0.07);
+  --accent-hover: rgba(17, 19, 24, 0.11);
 
-  --gold: #a8731a;
-  /* Real amber gold — not sky blue */
-  --gold-soft: rgba(168, 115, 26, 0.12);
+  --gold: #C5A046;
+  --gold-500: #D4AF5A;
+  --gold-soft: rgba(197, 160, 70, 0.12);
 
-  /* Semantic Colors - Trustworthy & Professional */
-  --success: #059669;
-  /* Emerald 600 */
-  --success-soft: rgba(5, 150, 105, 0.1);
+  /* Semantic */
+  --success: #2F7A55;
+  --success-soft: rgba(47, 122, 85, 0.12);
   --warning: #92400e;
-  /* Amber 800 — WCAG AA compliant */
-  --warning-soft: rgba(146, 64, 14, 0.1);
-  --error: #b91c1c;
-  /* Red 700 — WCAG AA compliant */
-  --error-soft: rgba(185, 28, 28, 0.1);
+  --warning-soft: rgba(146, 64, 14, 0.10);
+  --error: #9E4E4E;
+  --error-soft: rgba(158, 78, 78, 0.12);
   --info: #0284c7;
-  /* Sky 600 */
-  --info-soft: rgba(2, 132, 199, 0.1);
+  --info-soft: rgba(2, 132, 199, 0.10);
 
-  /* Text Colors — Warm */
-  --text-primary: #1a1713;
-  /* Warm near-black */
-  --text-secondary: #3d3a35;
-  /* Warm dark brown-grey */
-  --text-tertiary: #605c55;
-  /* Warm medium grey — WCAG AA compliant */
-  --text-disabled: #a09890;
-  /* Warm disabled */
+  /* Text */
+  --text-primary: #111318;
+  --text-secondary: #525A65;
+  --text-tertiary: #8C94A3;
+  --text-disabled: #B8BEC8;
 
-  /* Shadows — Warm depth */
-  --shadow-sm: 0 1px 2px rgba(26, 23, 19, 0.06);
-  --shadow-md: 0 2px 8px rgba(26, 23, 19, 0.08), 0 1px 3px rgba(26, 23, 19, 0.05);
-  --shadow-lg: 0 8px 24px rgba(26, 23, 19, 0.10), 0 3px 8px rgba(26, 23, 19, 0.06);
-  --shadow-xl: 0 16px 40px rgba(26, 23, 19, 0.12), 0 6px 16px rgba(26, 23, 19, 0.07);
+  /* Elevation shadows — light */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 24px 56px rgba(0, 0, 0, 0.16);
 
   /* Radii */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-hero: 20px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
 
-  /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Transitions — deliberate, no bounce */
+  --transition-micro: 120ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  --transition-fast: 120ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  --transition-slow: 280ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  --transition-modal: 320ms cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .dark {
-  /* VELANOVO — Obsidian & Gold Dark Mode */
-  --background: #0c0d0f;
-  /* Deep warm obsidian */
-  --foreground: #f0ede8;
-  /* Warm off-white */
-  --surface: #141618;
-  /* Dark warm card */
-  --surface-elevated: #1c2026;
-  /* Elevated dark surface */
-  --surface-soft: #141618;
-  --panel: #0c0d0f;
-  --border: #262b32;
-  /* Dark warm border */
-  --border-hover: #363d47;
+  /* VELANOVO — Dark Mode */
+  --background: #0D1117;
+  --foreground: #E6E8EB;
+  --surface: #111827;
+  --surface-elevated: #141C26;
+  --surface-soft: #141C26;
+  --panel: #111827;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
 
-  /* Brand Colors - Rich Gold on Obsidian */
-  --accent: #d4a843;
-  /* Rich warm gold */
-  --accent-deep: #c49228;
-  /* Deep gold */
-  --accent-soft: rgba(212, 168, 67, 0.14);
-  --accent-hover: rgba(212, 168, 67, 0.22);
+  /* Brand */
+  --accent: #D4AF5A;
+  --accent-deep: #C5A046;
+  --accent-soft: rgba(212, 175, 90, 0.14);
+  --accent-hover: rgba(212, 175, 90, 0.22);
 
-  --gold: #d4a843;
-  --gold-soft: rgba(212, 168, 67, 0.18);
+  --gold: #C5A046;
+  --gold-500: #D4AF5A;
+  --gold-soft: rgba(197, 160, 70, 0.12);
 
-  /* Semantic Colors - Rich & Glowing */
-  --success: #34d399;
-  /* Emerald 400 */
-  --success-soft: rgba(52, 211, 153, 0.15);
+  /* Semantic */
+  --success: #4FAF7B;
+  --success-soft: rgba(79, 175, 123, 0.12);
   --warning: #fbbf24;
-  /* Amber 400 */
   --warning-soft: rgba(251, 191, 36, 0.15);
-  --error: #f87171;
-  /* Red 400 */
-  --error-soft: rgba(248, 113, 113, 0.15);
+  --error: #B85C5C;
+  --error-soft: rgba(184, 92, 92, 0.12);
   --info: #38bdf8;
-  /* Sky 400 */
   --info-soft: rgba(56, 189, 248, 0.15);
 
-  /* Text Colors — Warm off-white hierarchy */
-  --text-primary: #f0ede8;
-  /* Warm off-white */
-  --text-secondary: #c4bdb4;
-  /* Warm light grey */
-  --text-tertiary: #958d84;
-  /* Warm medium grey — WCAG AA */
-  --text-disabled: #4a4740;
-  /* Warm disabled */
+  /* Text */
+  --text-primary: #E6E8EB;
+  --text-secondary: #AAB2BD;
+  --text-tertiary: #7D8793;
+  --text-disabled: #4A5260;
 
-  /* Shadows - Deep Obsidian */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.35);
-  --shadow-xl: 0 16px 50px rgba(0, 0, 0, 0.65), 0 6px 20px rgba(0, 0, 0, 0.45);
+  /* Elevation shadows — dark */
+  --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 28px 64px rgba(0, 0, 0, 0.65);
 }
 
 @layer base {
 
+  /* Serif = strategic (page heroes only) */
   h1,
   h2,
   h3 {
-    font-family: var(--font-playfair), serif;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.15;
+    font-family: var(--font-playfair), Georgia, 'Times New Roman', serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Sans = operational (cards, labels, UI) */
   h4,
   h5,
   h6 {
-    font-family: var(--font-jakarta), sans-serif;
-    font-weight: 700;
+    font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    font-weight: 600;
     letter-spacing: -0.01em;
+    line-height: 1.4;
+  }
+
+  /* Tabular numbers for all currency & data values */
+  .tabular-nums,
+  [data-currency],
+  [data-amount] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
   }
 
   body {
-    font-family: var(--font-jakarta), sans-serif;
+    font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
     font-feature-settings: "kern" 1, "liga" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* Tabular numbers everywhere a money/number class appears */
-  .tabular-nums,
-  [class*="text-"][class*="font-bold"],
-  [class*="text-"][class*="font-semibold"] {
-    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -179,18 +154,12 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-jakarta);
   --font-serif: var(--font-playfair);
-
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
 }
 
 body {
-  background:
-    radial-gradient(ellipse at 8% 8%, rgba(168, 115, 26, 0.06), transparent 38%),
-    radial-gradient(ellipse at 92% 88%, rgba(15, 23, 42, 0.04), transparent 38%),
-    var(--background);
+  background: var(--background);
   color: var(--text-primary);
-  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   font-size: 15px;
   line-height: 1.6;
   min-height: 100vh;
@@ -200,12 +169,7 @@ body {
   font-feature-settings: "kern" 1, "liga" 1;
 }
 
-.dark body {
-  background:
-    radial-gradient(ellipse at 12% 12%, rgba(212, 168, 67, 0.07), transparent 40%),
-    radial-gradient(ellipse at 88% 85%, rgba(30, 60, 120, 0.05), transparent 40%),
-    var(--background);
-}
+/* Dark mode body inherits bg-app from .dark :root */
 
 .app-watermark {
   position: fixed;
@@ -270,24 +234,34 @@ body {
   }
 }
 
-/* Premium UI Utilities */
+/* Velanovo Card System */
 .card-premium {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  transition: all var(--transition-base);
+  border-radius: var(--radius-hero);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base), border-color var(--transition-base);
 }
 
 .card-premium:hover {
   border-color: var(--border-hover);
-  box-shadow: var(--shadow-xl);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .dark .card-premium {
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.card-elevated {
   background: var(--surface-elevated);
-  border-color: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-hero);
+  box-shadow: var(--shadow-md);
+}
+
+.dark .card-elevated {
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .button-premium {
@@ -295,21 +269,21 @@ body {
   color: white;
   font-weight: 600;
   padding: 12px 24px;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   border: none;
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base), background var(--transition-base);
   cursor: pointer;
 }
 
 .button-premium:hover:not(:disabled) {
   background: var(--accent-deep);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .button-premium:active:not(:disabled) {
-  transform: translateY(0);
+  transform: scale(0.98);
+  transition: transform var(--transition-micro);
 }
 
 .button-premium:disabled {

@@ -91,7 +91,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                                         onClick={handleConfirm}
                                         className={`flex-1 px-4 py-2.5 text-sm font-medium text-white rounded-xl transition-colors ${dialog.confirmStyle === "danger"
                                                 ? "bg-red-500 hover:bg-red-600"
-                                                : "bg-violet-600 hover:bg-violet-700"
+                                                : "bg-[var(--gold)] hover:opacity-90"
                                             }`}
                                     >
                                         {dialog.confirmText || "Confirm"}

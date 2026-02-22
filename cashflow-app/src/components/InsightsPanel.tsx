@@ -93,7 +93,7 @@ export default function InsightsPanel() {
         return (
             <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 bg-violet-100 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--gold-soft)" }}>
                         <span className="text-lg">📊</span>
                     </div>
                     <h3 className="font-semibold text-slate-800 dark:text-white">Your Financial Pulse</h3>
@@ -121,7 +121,7 @@ export default function InsightsPanel() {
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-violet-100 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--gold-soft)" }}>
                         <span className="text-lg">📊</span>
                     </div>
                     <h3 className="font-semibold text-slate-800 dark:text-white">Your Financial Pulse</h3>

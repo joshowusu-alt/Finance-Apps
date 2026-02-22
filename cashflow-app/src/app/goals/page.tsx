@@ -15,12 +15,12 @@ function generateId() {
 }
 
 const GOAL_COLORS = [
-    "#8b5cf6", // violet
-    "#06b6d4", // cyan
-    "#10b981", // emerald
-    "#f59e0b", // amber
-    "#ef4444", // red
-    "#ec4899", // pink
+    "#C5A046", // gold
+    "#5DA9E9", // desaturated blue
+    "#2F7A55", // success green
+    "#4FAF7B", // soft emerald
+    "#9E4E4E", // risk/earth red
+    "#AAB2BD", // neutral grey
 ];
 
 const GOAL_ICONS = ["🎯", "✈️", "🏠", "🚗", "💍", "🎓", "🏥", "🎁", "💰", "🌴"];
@@ -553,7 +553,8 @@ function NewGoalForm({ onSave, onCancel }: {
                 </button>
                 <button
                     type="submit"
-                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-lg"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                    style={{ background: "var(--gold)", color: "#ffffff" }}
                 >
                     Create Goal
                 </button>
@@ -666,7 +667,7 @@ export default function GoalsPage() {
                             <div className="vn-card p-5">
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                                     <div>
-                                        <p className="text-xl sm:text-2xl font-bold text-violet-600">{goals.length}</p>
+                                        <p className="text-xl sm:text-2xl font-semibold tabular-nums" style={{ color: "var(--gold)" }}>{goals.length}</p>
                                         <p className="text-xs text-[var(--vn-muted)]">Active Goals</p>
                                     </div>
                                     <div>
@@ -710,7 +711,8 @@ export default function GoalsPage() {
                         ) : (
                             <button
                                 onClick={() => setShowNewGoalForm(true)}
-                                className="w-full p-6 border-2 border-dashed border-[var(--vn-border)] rounded-2xl text-[var(--vn-muted)] hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-300 transition-colors"
+                                className="w-full p-6 border-2 border-dashed rounded-2xl transition-colors"
+                                style={{ borderColor: "var(--border-hover)", color: "var(--text-tertiary)" }}
                             >
                                 <span className="text-2xl block mb-1">+</span>
                                 <span className="text-sm font-medium">Add New Goal</span>

@@ -331,14 +331,14 @@ export default function HomePage() {
             <motion.header variants={fadeUp} className="vn-masthead flex flex-col gap-4">
 
               {/* Gold glow accent top-right */}
-              <div className="absolute top-0 right-0 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, rgba(168,115,26,0.18) 0%, transparent 70%)", transform: "translate(30%, -40%)" }} />
+              <div className="absolute top-0 right-0 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, rgba(197,160,70,0.14) 0%, transparent 70%)", transform: "translate(30%, -40%)" }} />
 
               <div className="flex flex-col md:flex-row md:items-center md:justify-between relative z-10">
                 <div className="lg:hidden mb-2">
                   <VelanovoLogo size={28} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Dashboard</h1>
+                  <h1 className="text-2xl font-semibold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Dashboard</h1>
                   <div className="mt-1 text-sm text-white/45">
                     {formatPeriodLabel(period.label)} Overview
                   </div>
@@ -358,7 +358,7 @@ export default function HomePage() {
                   <Link
                     href="/transactions"
                     className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-all hover:brightness-110"
-                    style={{ background: "linear-gradient(135deg, #a8731a, #d4a843)", color: "#0f172a", boxShadow: "0 2px 12px rgba(168,115,26,0.35)" }}
+                    style={{ background: "linear-gradient(135deg, #C5A046, #D4AF5A)", color: "#111318", boxShadow: "0 2px 12px rgba(197,160,70,0.30)" }}
                   >
                     <span className="mr-1.5">+</span> Add Transaction
                   </Link>
@@ -378,8 +378,8 @@ export default function HomePage() {
                   </div>
                 ) : (
                   <>
-                    <div className="text-xs uppercase tracking-widest font-semibold mb-1 flex items-center gap-1" style={{ color: "rgba(212,168,67,0.8)", letterSpacing: "0.12em" }}>Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
-                    <AnimatedMoney value={actualLeftover} className={`text-4xl font-bold ${actualLeftover > 0 ? "text-emerald-300" : "text-rose-400"}`} />
+                    <div className="text-xs uppercase tracking-widest font-semibold mb-1 flex items-center gap-1" style={{ color: "var(--gold)", letterSpacing: "0.12em" }}>Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
+                    <AnimatedMoney value={actualLeftover} className={`text-4xl font-semibold tabular-nums ${actualLeftover > 0 ? "text-emerald-300" : "text-red-400"}`} />
                     <div className="text-xs mt-1" style={{ color: "rgba(240,237,232,0.45)" }}>Leftover from income this period</div>
                     {actualIncome === 0 && plan.incomeRules.length > 0 && (
                       <div className="mt-1.5 flex items-center gap-1 text-[11px] text-amber-300">
@@ -402,7 +402,8 @@ export default function HomePage() {
                           <div className="absolute inset-y-0 left-0 rounded-full bg-[var(--vn-border)]" style={{ width: `${Math.round(timeProgress * 100)}%` }} />
                           {/* Spending progress bar (foreground — animated fill) */}
                           <motion.div
-                            className={`absolute inset-y-0 left-0 rounded-full ${spendingPaceGap > 0.08 ? "bg-rose-500" : spendingPaceGap < -0.08 ? "bg-emerald-500" : "bg-blue-500"}`}
+                            className={`absolute inset-y-0 left-0 rounded-full`}
+                            style={{ background: spendingPaceGap > 0.08 ? "rgba(184,92,92,0.9)" : spendingPaceGap < -0.08 ? "rgba(79,175,123,0.9)" : "#5DA9E9" }}
                             initial={{ width: 0, opacity: 0 }}
                             animate={{ width: `${Math.min(100, Math.round(spendingProgress * 100))}%`, opacity: 0.85 }}
                             transition={{ duration: 1.1, ease: "easeOut", delay: 0.25 }}
@@ -416,12 +417,12 @@ export default function HomePage() {
                     )}
 
                     <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10">
-                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
                           derived.health.label === "Healthy"
-                          ? "bg-emerald-900/40 text-emerald-300"
+                          ? "bg-emerald-900/30 text-emerald-300"
                           : derived.health.label === "Watch"
-                            ? "bg-amber-900/40 text-amber-300"
-                            : "bg-red-900/40 text-red-300"
+                            ? "bg-amber-900/30 text-amber-300"
+                            : "bg-red-900/30 text-red-300"
                         }`}>
                         {derived.health.label}
                       </span>

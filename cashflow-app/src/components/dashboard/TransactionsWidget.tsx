@@ -24,7 +24,7 @@ export function TransactionsWidget({ transactions, href = "/transactions" }: Tra
         <div className="vn-card p-5 h-full flex flex-col">
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "var(--gold-soft)", color: "var(--gold)" }}>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>

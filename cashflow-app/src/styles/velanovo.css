@@ -1,95 +1,81 @@
 :root {
-  /* VELANOVO — Warm Parchment Light */
-  --vn-navy: #0f172a;
-  /* Deep Navy — Primary text/accent */
-  --vn-teal: #0f6d8a;
-  /* Ocean teal — info/link */
-  --vn-bg: #f3f0e8;
-  /* Warm parchment background */
-  --vn-gold: #a8731a;
-  /* Real amber gold */
-  --vn-mist: #e8e2d9;
-  /* Warm soft border */
+  /* VELANOVO — Light Mode tokens */
+  --vn-navy: #111318;
+  --vn-teal: #0284c7;
+  --vn-bg: #F6F5F2;
+  --vn-gold: #C5A046;
+  --vn-gold-500: #D4AF5A;
+  --vn-mist: rgba(0, 0, 0, 0.06);
 
-  --vn-text: #1a1713;
-  /* Warm near-black */
-  --vn-muted: #605c55;
-  /* Warm medium grey — WCAG AA */
+  --vn-text: #111318;
+  --vn-muted: #8C94A3;
 
-  --vn-success: #166534;
-  /* Forest green */
-  --vn-warning: #78401a;
-  /* Warm amber — WCAG AA */
-  --vn-error: #991b1b;
-  /* Deep red — WCAG AA */
-  --vn-info: #0f6d8a;
-  /* Ocean teal */
+  --vn-success: #2F7A55;
+  --vn-warning: #92400e;
+  --vn-error: #9E4E4E;
+  --vn-info: #0284c7;
 
-  /* Semantic tokens */
-  --vn-surface: #faf8f4;
-  /* Warm near-white */
-  --vn-border: #dcd6cc;
-  /* Warm beige */
-  --vn-primary: #0f172a;
-  /* Deep navy */
-  --vn-primary-contrast: #faf8f4;
-  --vn-accent: #a8731a;
-  /* Real gold */
+  --vn-surface: #FFFFFF;
+  --vn-border: rgba(0, 0, 0, 0.06);
+  --vn-primary: #111318;
+  --vn-primary-contrast: #FFFFFF;
+  --vn-accent: #C5A046;
 
   /* Gradients */
-  --vn-gradient: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-  --vn-gradient-subtle: linear-gradient(135deg, rgba(15, 23, 42, 0.05) 0%, rgba(168, 115, 26, 0.06) 100%);
-  --vn-gradient-gold: linear-gradient(135deg, #a8731a 0%, #d4a843 100%);
+  --vn-gradient: linear-gradient(135deg, #111318 0%, #1e2a3a 100%);
+  --vn-gradient-subtle: linear-gradient(135deg, rgba(17, 19, 24, 0.04) 0%, rgba(197, 160, 70, 0.06) 100%);
+  --vn-gradient-gold: linear-gradient(135deg, #C5A046 0%, #D4AF5A 100%);
 }
 
 html[data-theme="dark"] {
-  /* VELANOVO — Obsidian & Gold Dark */
-  --vn-bg: #0c0d0f;
-  /* Deep obsidian */
-  --vn-surface: #141618;
-  /* Dark warm card */
-  --vn-border: #262b32;
-  /* Dark warm border */
-  --vn-text: #f0ede8;
-  /* Warm off-white */
-  --vn-muted: #958d84;
-  /* Warm medium grey — WCAG AA */
+  /* VELANOVO — Dark Mode */
+  --vn-bg: #0D1117;
+  --vn-surface: #111827;
+  --vn-border: rgba(255, 255, 255, 0.06);
+  --vn-text: #E6E8EB;
+  --vn-muted: #7D8793;
 
-  --vn-primary: #d4a843;
-  /* Rich gold becomes primary */
-  --vn-primary-contrast: #0c0d0f;
-  --vn-accent: #d4a843;
-  --vn-gold: #d4a843;
+  --vn-success: #4FAF7B;
+  --vn-warning: #fbbf24;
+  --vn-error: #B85C5C;
+
+  --vn-primary: #D4AF5A;
+  --vn-primary-contrast: #0D1117;
+  --vn-accent: #C5A046;
+  --vn-gold: #C5A046;
+  --vn-gold-500: #D4AF5A;
 
   /* Gradients */
-  --vn-gradient: linear-gradient(135deg, #1c2026 0%, #d4a843 100%);
-  --vn-gradient-subtle: linear-gradient(135deg, rgba(28, 32, 38, 0.4) 0%, rgba(212, 168, 67, 0.15) 100%);
-  --vn-gradient-gold: linear-gradient(135deg, #d4a843 0%, #c49228 100%);
+  --vn-gradient: linear-gradient(135deg, #141C26 0%, #1A2430 100%);
+  --vn-gradient-subtle: linear-gradient(135deg, rgba(20, 28, 38, 0.4) 0%, rgba(197, 160, 70, 0.12) 100%);
+  --vn-gradient-gold: linear-gradient(135deg, #C5A046 0%, #D4AF5A 100%);
 }
 
 body {
   background: var(--vn-bg);
   color: var(--vn-text);
-  transition: background-color 200ms ease, color 200ms ease;
+  transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), color 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .vn-card {
   background: var(--vn-surface);
   border: 1px solid var(--vn-border);
-  border-radius: 16px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 2px 6px rgba(0, 0, 0, 0.04),
-    0 6px 20px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 200ms ease, border-color 200ms ease;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .vn-card:hover {
-  border-color: color-mix(in srgb, var(--vn-border) 60%, var(--vn-muted));
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 4px 12px rgba(0, 0, 0, 0.07),
-    0 12px 32px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.dark .vn-card {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.dark .vn-card:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 
 /* Glass card — frosted, for modals and overlay panels */
@@ -106,29 +92,29 @@ body {
 .vn-stat-card {
   background: var(--vn-surface);
   border: 1px solid var(--vn-border);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 20px 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: all 180ms ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .vn-stat-card:hover {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.09), 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 /* Masthead gradient — for section headers */
 .vn-masthead {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  background: linear-gradient(135deg, #111318 0%, #1e2a3a 100%);
   border-radius: 20px;
-  color: #f0ede8;
+  color: #E6E8EB;
   padding: 28px 32px;
   position: relative;
   overflow: hidden;
 }
 
 .dark .vn-masthead {
-  background: linear-gradient(135deg, #1c2026 0%, #262b35 100%);
-  border: 1px solid rgba(212, 168, 67, 0.15);
+  background: linear-gradient(135deg, #141C26 0%, #1A2430 100%);
+  border: 1px solid rgba(197, 160, 70, 0.15);
 }
 
 .vn-masthead::before {
@@ -137,24 +123,35 @@ body {
   top: -60px; right: -60px;
   width: 240px; height: 240px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(168, 115, 26, 0.2), transparent 70%);
+  background: radial-gradient(circle, rgba(197, 160, 70, 0.15), transparent 70%);
   pointer-events: none;
 }
 
 .dark .vn-masthead::before {
-  background: radial-gradient(circle, rgba(212, 168, 67, 0.15), transparent 70%);
+  background: radial-gradient(circle, rgba(197, 160, 70, 0.12), transparent 70%);
 }
 
 /* ── Typography Utilities ── */
 
-/* Uppercase data label — e.g. "SAFE TO SPEND", "INCOME" */
+/* Uppercase data label — e.g. “SAFE TO SPEND”, “INCOME” */
 .vn-label {
-  font-family: var(--font-jakarta), sans-serif;
+  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--vn-muted);
+  line-height: 1.4;
+}
+
+/* Gold label variant — for Safe to Spend card and hero metrics */
+.vn-label-gold {
+  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vn-gold);
   line-height: 1.4;
 }
 
@@ -182,23 +179,23 @@ body {
   justify-content: center;
   height: 44px;
   padding: 0 18px;
-  border-radius: 14px;
-  font-weight: 700;
-  font-family: var(--font-jakarta), sans-serif;
+  border-radius: 12px;
+  font-weight: 600;
+  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
   font-size: 14px;
   letter-spacing: 0.01em;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1), background 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .vn-btn:hover {
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .vn-btn:active {
-  transform: translateY(0);
+  transform: scale(0.98);
+  transition: transform 120ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .vn-btn-primary {

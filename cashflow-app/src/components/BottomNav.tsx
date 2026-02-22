@@ -174,7 +174,7 @@ export default function BottomNav() {
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              transition={{ duration: 0.28, ease: [0.4, 0.0, 0.2, 1] }}
               className="fixed bottom-0 left-0 right-0 z-40 rounded-t-3xl pb-28 md:hidden"
               style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}
             >
@@ -258,28 +258,28 @@ export default function BottomNav() {
                   onClick={() => setShowMore(false)}
                 >
                   <motion.div
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={{ scale: 0.98 }}
                     className="relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 text-xs"
                   >
                     {active && (
                       <motion.div
                         layoutId="activeTab"
                         className="absolute inset-0 rounded-2xl"
-                        style={{ background: "color-mix(in srgb, var(--vn-primary) 15%, transparent)" }}
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        style={{ background: "var(--gold-soft)" }}
+                        transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
                       />
                     )}
                     <motion.span
                       className="relative"
-                      style={{ color: active ? "var(--vn-primary)" : "var(--vn-muted)" }}
-                      animate={{ scale: active ? 1.05 : 1, y: active ? -1 : 0 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                      style={{ color: active ? "var(--gold)" : "var(--text-tertiary)" }}
+                      animate={{ scale: active ? 1.04 : 1, y: active ? -1 : 0 }}
+                      transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
                     >
                       {it.icon(active)}
                     </motion.span>
                     <span
-                      className={`relative text-[11px] ${active ? "font-bold" : "font-medium"}`}
-                      style={{ color: active ? "var(--vn-primary)" : "var(--vn-muted)" }}
+                      className={`relative text-[11px] ${active ? "font-medium" : "font-normal"}`}
+                      style={{ color: active ? "var(--gold)" : "var(--text-tertiary)" }}
                     >
                       {it.label}
                     </span>
@@ -294,28 +294,28 @@ export default function BottomNav() {
               className="relative"
             >
               <motion.div
-                whileTap={{ scale: 0.9 }}
+                whileTap={{ scale: 0.98 }}
                 className="relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 text-xs"
               >
                 {(showMore || isMoreActive) && (
                   <motion.div
                     layoutId={showMore ? undefined : "activeTab"}
                     className="absolute inset-0 rounded-2xl"
-                    style={{ background: "color-mix(in srgb, var(--vn-primary) 15%, transparent)" }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    style={{ background: "var(--gold-soft)" }}
+                    transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
                   />
                 )}
                 <motion.span
                   className="relative"
-                  style={{ color: showMore || isMoreActive ? "var(--vn-primary)" : "var(--vn-muted)" }}
-                  animate={{ scale: showMore ? 1.05 : 1, y: showMore ? -1 : 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  style={{ color: showMore || isMoreActive ? "var(--gold)" : "var(--text-tertiary)" }}
+                  animate={{ scale: showMore ? 1.04 : 1, y: showMore ? -1 : 0 }}
+                  transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
                 >
                   {IconMore(showMore || isMoreActive)}
                 </motion.span>
                 <span
-                  className={`relative text-[11px] ${showMore || isMoreActive ? "font-bold" : "font-medium"}`}
-                  style={{ color: showMore || isMoreActive ? "var(--vn-primary)" : "var(--vn-muted)" }}
+                  className={`relative text-[11px] ${showMore || isMoreActive ? "font-medium" : "font-normal"}`}
+                  style={{ color: showMore || isMoreActive ? "var(--gold)" : "var(--text-tertiary)" }}
                 >
                   More
                 </span>
