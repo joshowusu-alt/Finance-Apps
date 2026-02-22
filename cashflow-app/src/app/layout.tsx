@@ -15,6 +15,7 @@ import CloudSync from "@/components/CloudSync";
 import AppWatermark from "@/components/AppWatermark";
 import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import SplashScreen from "@/components/SplashScreen";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -58,6 +59,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${playfair.variable} ${jakarta.variable} min-h-screen font-sans transition-colors duration-200`} style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
+        <SplashScreen />
         <AuthProvider>
           <ConfirmProvider>
           <CloudSync />
