@@ -20,13 +20,13 @@ const LIABILITY_TYPES: NetWorthAccountType[] = ["credit-card", "loan", "mortgage
 
 const TYPE_META: Record<NetWorthAccountType, { label: string; icon: string; color: string; group: "asset" | "liability" }> = {
   savings:          { label: "Savings & Cash",   icon: "🏦", color: "#22c55e", group: "asset" },
-  investment:       { label: "Investments",      icon: "📈", color: "#6366f1", group: "asset" },
+  investment:       { label: "Investments",      icon: "📈", color: "#5DA9E9", group: "asset" },
   property:         { label: "Property",         icon: "🏠", color: "#f59e0b", group: "asset" },
   "other-asset":    { label: "Other Assets",     icon: "💼", color: "#06b6d4", group: "asset" },
   "credit-card":    { label: "Credit Cards",     icon: "💳", color: "#ef4444", group: "liability" },
   loan:             { label: "Loans",            icon: "📋", color: "#f97316", group: "liability" },
-  mortgage:         { label: "Mortgage",         icon: "🏡", color: "#8b5cf6", group: "liability" },
-  "other-liability":{ label: "Other Debts",      icon: "⚠️",  color: "#ec4899", group: "liability" },
+  mortgage:         { label: "Mortgage",         icon: "🏡", color: "#AAB2BD", group: "liability" },
+  "other-liability":{ label: "Other Debts",      icon: "⚠️",  color: "#B85C5C", group: "liability" },
 };
 
 function makeId() {
@@ -77,26 +77,27 @@ function AccountRow({
           <div className="text-[11px] text-[var(--vn-muted)]">{account.institution}</div>
         )}
       </div>
-      <div className="font-bold tabular-nums text-[var(--vn-text)] text-sm shrink-0">
+      <div className="font-semibold tabular-nums text-[var(--vn-text)] text-sm shrink-0">
         {formatMoney(effectiveAmt)}
       </div>
-      <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity ml-1 shrink-0">
+      {/* Always visible on mobile (opacity-50), full opacity on desktop hover */}
+      <div className="flex gap-0.5 ml-1 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity">
         <button
           onClick={() => onEdit(account)}
-          className="p-1.5 rounded-lg text-[var(--vn-muted)] hover:text-[var(--vn-text)] hover:bg-[var(--vn-bg)] transition-colors"
+          className="p-1.5 rounded-lg text-[var(--vn-muted)] hover:text-[var(--vn-text)] hover:bg-[var(--vn-bg)] active:bg-[var(--vn-bg)] transition-colors"
           aria-label="Edit"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
           </svg>
         </button>
         <button
           onClick={() => onDelete(account.id)}
-          className="p-1.5 rounded-lg text-[var(--vn-muted)] hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+          className="p-1.5 rounded-lg text-[var(--vn-muted)] hover:text-[var(--error)] active:text-[var(--error)] hover:bg-[var(--error-soft)] active:bg-[var(--error-soft)] transition-colors"
           aria-label="Delete"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </button>
       </div>
@@ -134,6 +135,9 @@ function AccountForm({
     initial?.baseBalance !== undefined ? String(initial.baseBalance) : "0"
   );
   const [baseDate, setBaseDate]         = useState(initial?.baseDate ?? "");
+  const [linkedRuleShare, setLinkedRuleShare] = useState(
+    initial?.linkedRuleShare !== undefined ? String(Math.round((initial.linkedRuleShare) * 100)) : "100"
+  );
 
   const isAutoLinked = !!linkedRuleId || !!linkedBillId;
   const isSavingsType = type === "savings";
@@ -163,6 +167,9 @@ function AccountForm({
       notes: notes.trim() || undefined,
       linkedRuleId: linkedRuleId || undefined,
       linkedBillId: linkedBillId || undefined,
+      linkedRuleShare: (isAutoLinked && linkedRuleId)
+        ? Math.min(1, Math.max(0, parseFloat(linkedRuleShare) / 100 || 1))
+        : undefined,
       baseBalance: isAutoLinked ? baseBal : undefined,
       baseDate: isAutoLinked && baseDate ? baseDate : undefined,
     });
@@ -173,6 +180,7 @@ function AccountForm({
     setType(t);
     setLinkedRuleId("");
     setLinkedBillId("");
+    setLinkedRuleShare("100");
   }
 
   const allTypes = [...ASSET_TYPES, ...LIABILITY_TYPES];
@@ -354,6 +362,30 @@ function AccountForm({
                 />
                 <p className="mt-1 text-[10px] text-[var(--vn-muted)]">Leave blank to count all</p>
               </div>
+
+              {/* Split % — only relevant for liability linked to a rule */}
+              {isLiabilityType && linkedRuleId && (
+                <div className="col-span-2">
+                  <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">
+                    % of rule attributed to this card
+                  </label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <input
+                      type="number"
+                      value={linkedRuleShare}
+                      onChange={e => setLinkedRuleShare(e.target.value)}
+                      min="1"
+                      max="100"
+                      step="1"
+                      className="w-24 rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                    />
+                    <span className="text-sm text-[var(--vn-muted)]">%</span>
+                  </div>
+                  <p className="mt-1 text-[10px] text-[var(--vn-muted)]">
+                    Split one budget rule across multiple cards. E.g. two cards sharing a £500 rule: 60% here, 40% on the other.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -428,11 +460,12 @@ export default function NetWorthPage() {
   function effectiveBalance(account: NetWorthAccount): number {
     if (!account.linkedRuleId && !account.linkedBillId) return account.balance;
     const since = account.baseDate ?? "0000-00-00";
+    const share = account.linkedRuleShare ?? 1; // fraction of rule attributed to this account
     let txSum = 0;
     if (account.linkedRuleId) {
       txSum += transactions
         .filter(t => t.linkedRuleId === account.linkedRuleId && t.date >= since)
-        .reduce((s, t) => s + t.amount, 0);
+        .reduce((s, t) => s + t.amount, 0) * share;
     }
     if (account.linkedBillId) {
       txSum += transactions

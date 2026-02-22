@@ -149,10 +149,11 @@ export type NetWorthAccount = {
   icon?: string;         // emoji
   order?: number;        // display ordering
   // ── Auto-populate from cashflow transactions ────────────────────────────
-  linkedRuleId?: string; // OutflowRule.id — accumulate matching transactions automatically
-  linkedBillId?: string; // BillTemplate.id — accumulate matching bill transactions
-  baseBalance?: number;  // opening balance for auto-calc (defaults to 0)
-  baseDate?: string;     // YYYY-MM-DD — only count transactions on/after this date
+  linkedRuleId?: string;    // OutflowRule.id — accumulate matching transactions automatically
+  linkedBillId?: string;    // BillTemplate.id — accumulate matching bill transactions
+  linkedRuleShare?: number; // 0-1 fraction of rule to attribute to this account (default 1 = 100%)
+  baseBalance?: number;     // opening balance for auto-calc (defaults to 0)
+  baseDate?: string;        // YYYY-MM-DD — only count transactions on/after this date
 };
 
 export type NetWorthSnapshot = {
