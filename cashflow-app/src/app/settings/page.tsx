@@ -183,7 +183,7 @@ export default function SettingsPage() {
 
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-40 pt-5">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav />
           <section className="space-y-6">

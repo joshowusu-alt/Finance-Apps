@@ -318,7 +318,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-5">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-40 pt-5">
         <div className="grid gap-5 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={period.label} periodStart={period.start} periodEnd={period.end} />
 
