@@ -1,6 +1,6 @@
 import type { Plan } from "@/data/plan";
 import {
-  buildTimeline,
+  buildHybridTimeline,
   generateEvents,
   getPeriod,
   getStartingBalance,
@@ -183,7 +183,7 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
   );
   const remaining = incomeExpected - committedBills - allocationsTotal;
 
-  const rows = buildTimeline(plan, resolvedPeriodId, startingBalance);
+  const rows = buildHybridTimeline(plan, resolvedPeriodId, startingBalance);
   const expectedMin = plan.setup.expectedMinBalance;
   const daily = buildDaily(rows, expectedMin);
   const lowestRow = minPoint(rows);

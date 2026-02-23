@@ -446,6 +446,78 @@ export function buildTimeline(plan: Plan, periodId: number, startingBalance: num
   return rows;
 }
 
+/**
+ * Hybrid timeline: uses actual plan.transactions for dates ≤ asOfDate
+ * (what really happened) and planned events for dates > asOfDate (forecast).
+ * This means any transaction a user enters today immediately affects the
+ * projected balance for all future days.
+ */
+export function buildHybridTimeline(
+  plan: Plan,
+  periodId: number,
+  startingBalance: number
+): TimelineRow[] {
+  const period = getPeriod(plan, periodId);
+  const asOfDate = plan.setup.asOfDate;
+  const days = eachDayInclusive(period.start, period.end);
+  const expectedMin = plan.setup.expectedMinBalance;
+
+  // Planned future events indexed by date
+  const plannedEvents = generateEvents(plan, periodId);
+  const plannedByDate = new Map<string, CashflowEvent[]>();
+  for (const ev of plannedEvents) {
+    if (!plannedByDate.has(ev.date)) plannedByDate.set(ev.date, []);
+    plannedByDate.get(ev.date)!.push(ev);
+  }
+
+  // Actual transactions within this period, indexed by date
+  const actualTxns = plan.transactions.filter(
+    (t) => t.date >= period.start && t.date <= period.end
+  );
+  const actualByDate = new Map<string, typeof actualTxns[number][]>();
+  for (const t of actualTxns) {
+    if (!actualByDate.has(t.date)) actualByDate.set(t.date, []);
+    actualByDate.get(t.date)!.push(t);
+  }
+
+  // For dates that have BOTH actuals and planned events, actuals win.
+  // For future dates with no actuals, fall back to planned events.
+  // The running balance carries through seamlessly.
+  let bal = startingBalance;
+  return days.map((date) => {
+    const isPastOrToday = date <= asOfDate;
+    const hasActuals = actualByDate.has(date);
+
+    if (isPastOrToday || hasActuals) {
+      // Past / today — use real transactions
+      const todays = actualByDate.get(date) ?? [];
+      const income = money(todays.reduce((s, t) => s + (t.type === "income" ? t.amount : 0), 0));
+      const outflow = money(todays.reduce((s, t) => s + (t.type === "outflow" ? t.amount : 0), 0));
+      const label = todays.length
+        ? todays.length === 1
+          ? (todays[0].label || "Transaction")
+          : todays.map((t) => t.label || "Transaction").join(" + ")
+        : "";
+      const net = money(income - outflow);
+      bal = money(bal + net);
+      return { date, label, income, outflow, net, balance: bal, warning: expectedMin > 0 && bal < expectedMin };
+    } else {
+      // Future — use planned/budgeted events as forecast
+      const todays = plannedByDate.get(date) ?? [];
+      const income = money(todays.reduce((s, e) => s + (e.type === "income" ? e.amount : 0), 0));
+      const outflow = money(todays.reduce((s, e) => s + (e.type === "outflow" ? e.amount : 0), 0));
+      const label = todays.length
+        ? todays.length === 1
+          ? todays[0].label
+          : todays.map((e) => e.label).join(" + ")
+        : "";
+      const net = money(income - outflow);
+      bal = money(bal + net);
+      return { date, label, income, outflow, net, balance: bal, warning: expectedMin > 0 && bal < expectedMin };
+    }
+  });
+}
+
 export function minPoint(rows: TimelineRow[]) {
   if (!rows.length) return null;
   let min = rows[0];
