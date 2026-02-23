@@ -30,8 +30,11 @@ import { BillsWidget } from "@/components/dashboard/BillsWidget";
 import InfoTooltip from "@/components/InfoTooltip";
 import { useDerived } from "@/lib/useDerived";
 import { prettyDate } from "@/lib/formatUtils";
-import { toUtcDay, dayDiff } from "@/lib/dateUtils";
+import { dayDiff } from "@/lib/dateUtils";
 import { detectSubscriptions } from "@/lib/subscriptionDetection";
+import SpendingVelocityGauge from "@/components/SpendingVelocityGauge";
+import WhatIfPanel from "@/components/WhatIfPanel";
+import { getVarianceByCategory } from "@/lib/cashflowEngine";
 
 
 
@@ -230,6 +233,14 @@ export default function HomePage() {
   const projectedSpending = timeProgress > 0.1 ? actualSpending / timeProgress : null;
   const projectedOverspend = projectedSpending !== null && budgetSpending > 0 ? projectedSpending - budgetSpending : null;
   const daysRemaining = Math.max(0, periodDays - daysElapsed);
+
+  // Category variance for WhatIfPanel
+  const categoryItems = useMemo(() => {
+    const variance = getVarianceByCategory(plan, plan.setup.selectedPeriodId);
+    return Object.values(variance)
+      .filter((v) => v && v.category !== "income" && v.category !== "savings")
+      .map((v) => ({ category: v!.category, budgeted: v!.budgeted, actual: v!.actual }));
+  }, [plan]);
 
   const onboardingTasks = useMemo(
     () =>
@@ -571,7 +582,30 @@ export default function HomePage() {
               <motion.div className="h-full" whileHover={{ y: -3, transition: { duration: 0.18 } }}>
                 <BillsWidget bills={upcomingBills} />
               </motion.div>
+
+              {/* 4. Spending velocity gauge */}
+              {daysElapsed > 0 && budgetSpending > 0 && (
+                <motion.div className="h-full md:col-span-3" whileHover={{ y: -2, transition: { duration: 0.18 } }}>
+                  <SpendingVelocityGauge
+                    actualSpend={actualSpending}
+                    budgetSpend={budgetSpending}
+                    daysElapsed={daysElapsed}
+                    periodDays={periodDays}
+                    daysRemaining={daysRemaining}
+                  />
+                </motion.div>
+              )}
             </motion.div>
+
+            {/* What-if scenario panel */}
+            {categoryItems.length > 0 && (
+              <motion.div variants={fadeUp}>
+                <WhatIfPanel
+                  categories={categoryItems}
+                  projectedEndBalance={endingBalance}
+                />
+              </motion.div>
+            )}
 
           </motion.section>
         </div>
