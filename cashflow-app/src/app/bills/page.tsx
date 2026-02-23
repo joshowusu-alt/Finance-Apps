@@ -191,6 +191,31 @@ export default function BillsPage() {
       });
   }, [events, period, plan]);
 
+  // Detect period-over-period price changes for committed bills (≥5% change)
+  const priceChanges = useMemo(() => {
+    const sorted = [...plan.periods].sort((a, b) => a.start.localeCompare(b.start));
+    const curIdx = sorted.findIndex(p => p.id === plan.setup.selectedPeriodId);
+    if (curIdx < 1) return new Map<string, { prev: number; curr: number; pct: number }>();
+    const curP = sorted[curIdx];
+    const prevP = sorted[curIdx - 1];
+    const result = new Map<string, { prev: number; curr: number; pct: number }>();
+    for (const bill of plan.bills) {
+      const curr = plan.transactions
+        .filter(t => t.type === "outflow" && t.date >= curP.start && t.date <= curP.end &&
+          (t.linkedBillId === bill.id || matchBill(t, bill.label, bill.id)))
+        .reduce((s, t) => s + t.amount, 0);
+      const prev = plan.transactions
+        .filter(t => t.type === "outflow" && t.date >= prevP.start && t.date <= prevP.end &&
+          (t.linkedBillId === bill.id || matchBill(t, bill.label, bill.id)))
+        .reduce((s, t) => s + t.amount, 0);
+      if (prev > 0 && curr > 0) {
+        const pct = (curr - prev) / prev;
+        if (Math.abs(pct) >= 0.05) result.set(bill.id, { prev, curr, pct });
+      }
+    }
+    return result;
+  }, [plan]);
+
   function handleAddBill() {
     setEditingBill(null);
     setFormData({
@@ -422,7 +447,26 @@ export default function BillsPage() {
                           }`}
                       >
                         <div className="flex-1">
-                          <div className="font-semibold text-[var(--vn-text)]">{bill.label}</div>
+                          <div className="font-semibold text-[var(--vn-text)]">
+                            {bill.label}
+                            {(() => {
+                              const chg = priceChanges.get(bill.id);
+                              if (!chg) return null;
+                              const up = chg.pct > 0;
+                              return (
+                                <span
+                                  title={`Was ${formatMoney(chg.prev)}, now ${formatMoney(chg.curr)}`}
+                                  className={`inline-flex ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                    up
+                                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                                      : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
+                                  }`}
+                                >
+                                  {up ? "↑" : "↓"}{Math.round(Math.abs(chg.pct) * 100)}%
+                                </span>
+                              );
+                            })()}
+                          </div>
                           <div className="text-xs text-[var(--vn-muted)]">
                             Due day {bill.dueDay} • {bill.category}
                             {!bill.enabled && " • Disabled"}
