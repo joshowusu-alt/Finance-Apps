@@ -15,6 +15,35 @@ function generateId() {
     return Math.random().toString(36).substring(2, 15);
 }
 
+// ─── Goal Sparkline ───────────────────────────────────────────────────────────
+
+function GoalSparkline({ data, target, color }: { data: number[]; target: number; color: string }) {
+    if (data.length < 2) return null;
+    const W = 56, H = 28, PAD = 2;
+    const min = 0;
+    const max = Math.max(target, ...data);
+    const scaleX = (i: number) => PAD + (i / (data.length - 1)) * (W - PAD * 2);
+    const scaleY = (v: number) => H - PAD - ((v - min) / (max - min || 1)) * (H - PAD * 2);
+    const pts = data.map((v, i) => `${scaleX(i)},${scaleY(v)}`).join(" ");
+    const areaPath = `M${pts.split(" ").join("L")} L${scaleX(data.length - 1)},${H} L${scaleX(0)},${H} Z`;
+
+    return (
+        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="overflow-visible">
+            {/* Target line */}
+            <line
+                x1={PAD} y1={scaleY(target)} x2={W - PAD} y2={scaleY(target)}
+                stroke={color} strokeWidth={0.5} strokeDasharray="2,2" opacity={0.5}
+            />
+            {/* Area fill */}
+            <path d={areaPath} fill={color} opacity={0.12} />
+            {/* Line */}
+            <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+            {/* Latest dot */}
+            <circle cx={scaleX(data.length - 1)} cy={scaleY(data[data.length - 1])} r={2.5} fill={color} />
+        </svg>
+    );
+}
+
 const GOAL_COLORS = [
     "#C5A046", // gold
     "#5DA9E9", // desaturated blue
@@ -123,6 +152,53 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave, tran
 
     const monthsUntilTarget = daysUntilTarget && daysUntilTarget > 0 ? daysUntilTarget / 30 : null;
     const monthlySuggested = monthsUntilTarget && remaining > 0 ? Math.ceil(remaining / monthsUntilTarget) : null;
+
+    // ── Projected completion ──────────────────────────────────────────────────
+    // Compute monthly contribution rate from linked transactions
+    const { monthlyRate, projectedCompletion, sparklineData } = (() => {
+        if (linkedTxns.length < 2) {
+            // Not enough data — use monthlySuggested as a "what-if" projection
+            if (monthlySuggested && monthlySuggested > 0 && remaining > 0) {
+                const months = remaining / monthlySuggested;
+                const d = new Date();
+                d.setMonth(d.getMonth() + Math.ceil(months));
+                return {
+                    monthlyRate: monthlySuggested,
+                    projectedCompletion: d,
+                    sparklineData: [] as number[],
+                };
+            }
+            return { monthlyRate: null, projectedCompletion: null, sparklineData: [] as number[] };
+        }
+
+        // Group linked transactions by YYYY-MM bucket and build cumulative series
+        const byMonth = new Map<string, number>();
+        for (const t of linkedTxns) {
+            const key = t.date.substring(0, 7); // "YYYY-MM"
+            byMonth.set(key, (byMonth.get(key) ?? 0) + t.amount);
+        }
+        const sortedKeys = [...byMonth.keys()].sort();
+        const cumulative: number[] = [];
+        let running = goal.currentAmount;
+        for (const k of sortedKeys) {
+            running += byMonth.get(k)!;
+            cumulative.push(running);
+        }
+
+        // Average monthly contribution (only non-zero months)
+        const monthlyAmounts = sortedKeys.map(k => byMonth.get(k)!);
+        const avgMonthly = monthlyAmounts.reduce((s, v) => s + v, 0) / monthlyAmounts.length;
+
+        if (avgMonthly <= 0 || remaining <= 0) {
+            return { monthlyRate: avgMonthly, projectedCompletion: null, sparklineData: cumulative };
+        }
+
+        const monthsLeft = remaining / avgMonthly;
+        const projected = new Date();
+        projected.setMonth(projected.getMonth() + Math.ceil(monthsLeft));
+
+        return { monthlyRate: avgMonthly, projectedCompletion: projected, sparklineData: cumulative };
+    })();
 
     // Edit mode UI
     if (isEditing) {
@@ -310,6 +386,37 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave, tran
                     ) : (
                         "⏰ Target date passed"
                     )}
+                </div>
+            )}
+
+            {/* Projected completion */}
+            {!isComplete && projectedCompletion && remaining > 0 && (
+                <div className="mb-4 p-3 rounded-xl bg-[var(--vn-bg)] border border-[var(--vn-border)] flex items-start gap-3">
+                    {/* Sparkline */}
+                    {sparklineData.length >= 2 && (
+                        <div className="shrink-0 mt-0.5">
+                            <GoalSparkline
+                                data={sparklineData}
+                                target={goal.targetAmount}
+                                color={goal.color || "#5DA9E9"}
+                            />
+                        </div>
+                    )}
+                    <div className="min-w-0">
+                        <div className="text-xs font-semibold text-[var(--vn-text)]">
+                            🚀 On track to complete{" "}
+                            <span style={{ color: goal.color || "var(--vn-primary)" }}>
+                                {projectedCompletion.toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+                            </span>
+                        </div>
+                        {monthlyRate && monthlyRate > 0 && (
+                            <div className="text-[11px] text-[var(--vn-muted)] mt-0.5">
+                                {sparklineData.length >= 2
+                                    ? `At your average of ${formatMoney(monthlyRate)}/mo over ${sparklineData.length} month${sparklineData.length !== 1 ? "s" : ""}`
+                                    : `If you save ${formatMoney(monthlyRate)}/mo`}
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
