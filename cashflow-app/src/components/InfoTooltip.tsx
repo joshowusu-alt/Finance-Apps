@@ -26,21 +26,68 @@ export default function InfoTooltip({ text }: InfoTooltipProps) {
   }, [open]);
 
   return (
-    <div ref={ref} className="relative inline-flex items-center ml-1">
+    <div ref={ref} className="relative inline-flex items-center ml-1.5 shrink-0">
+      {/* Trigger — gold ring, gold italic "i" to match the brand */}
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen((v) => !v)}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
-        className="inline-flex items-center justify-center w-8 h-8 sm:w-6 sm:h-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-300 text-xs sm:text-[11px] font-bold leading-none hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors"
-        aria-label="More info"
+        aria-label="More information"
+        aria-expanded={open}
+        className="inline-flex items-center justify-center w-4.5 h-4.5 rounded-full transition-colors"
+        style={{
+          border: "1.5px solid var(--gold)",
+          color: "var(--gold)",
+          background: "var(--gold-soft)",
+          fontFamily: "var(--font-jakarta), sans-serif",
+          fontSize: "11px",
+          fontStyle: "italic",
+          fontWeight: 700,
+          lineHeight: 1,
+        }}
       >
         i
       </button>
+
+      {/* Tooltip popup — matches vn-card style */}
       {open && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-lg bg-slate-800 dark:bg-slate-700 text-white text-xs p-3 shadow-lg z-50 leading-relaxed">
+        <div
+          role="tooltip"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 w-60 rounded-2xl text-xs leading-relaxed z-50 p-3.5 shadow-lg"
+          style={{
+            background: "var(--vn-surface)",
+            border: "1px solid var(--vn-border)",
+            color: "var(--vn-text)",
+            fontFamily: "var(--font-jakarta), sans-serif",
+            fontWeight: 400,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.14)",
+          }}
+        >
           {text}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-[6px] border-x-transparent border-t-[6px] border-t-slate-800 dark:border-t-slate-700" />
+          {/* Caret */}
+          <div
+            className="absolute top-full left-1/2 -translate-x-1/2"
+            style={{
+              width: 0,
+              height: 0,
+              borderLeft: "6px solid transparent",
+              borderRight: "6px solid transparent",
+              borderTop: "6px solid var(--vn-border)",
+            }}
+          />
+          {/* Inner caret to cover the border line */}
+          <div
+            className="absolute left-1/2 -translate-x-1/2"
+            style={{
+              top: "calc(100% - 1px)",
+              width: 0,
+              height: 0,
+              borderLeft: "5px solid transparent",
+              borderRight: "5px solid transparent",
+              borderTop: "5px solid var(--vn-surface)",
+            }}
+          />
         </div>
       )}
     </div>
