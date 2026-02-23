@@ -10,6 +10,7 @@ import { downloadInsightsCsv, downloadInsightsPdf } from "@/lib/insightsExport";
 import SidebarNav from "@/components/SidebarNav";
 import { CategoryBreakdownChart, SpendingTrendChart } from "@/components/charts";
 import { CategoryDrilldown } from "@/components/CategoryDrilldown";
+import SpendingCalendarHeatmap from "@/components/SpendingCalendarHeatmap";
 import type { Plan } from "@/data/plan";
 import InsightsPanel from "@/components/InsightsPanel";
 import SubscriptionDashboard from "@/components/SubscriptionDashboard";
@@ -128,17 +129,19 @@ function Sparkline({
 }
 
 function CollapsibleSection({
+  id,
   title,
   defaultOpen = false,
   children,
 }: {
+  id?: string;
   title: string;
   defaultOpen?: boolean;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="vn-card p-6">
+    <section id={id} className="vn-card p-6">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
@@ -433,8 +436,45 @@ export default function InsightsPage() {
 
             {showFullInsights && (
               <>
+                {/* ── Quick-jump sticky nav ─────────────────────────────────── */}
+                <nav
+                  aria-label="Insights sections"
+                  className="sticky top-0 z-20 -mx-4 px-4 py-2 overflow-x-auto"
+                  style={{
+                    background: "var(--vn-bg)",
+                    borderBottom: "1px solid var(--vn-border)",
+                    scrollbarWidth: "none",
+                  }}
+                >
+                  <div className="flex gap-2 min-w-max">
+                    {([
+                      { id: "s-coach",       label: "Coach" },
+                      { id: "s-on-track",   label: "On Track" },
+                      { id: "s-changes",    label: "Changes" },
+                      { id: "s-overspend",  label: "Overspending" },
+                      { id: "s-income",     label: "Income" },
+                      { id: "s-savings",    label: "Savings" },
+                      { id: "s-next",       label: "Next Steps" },
+                      { id: "s-compare",    label: "Periods" },
+                    ] as const).map(({ id, label }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => {
+                          const el = document.getElementById(id);
+                          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
+                        className="rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors hover:bg-[var(--vn-primary)]/10 hover:text-[var(--vn-primary)] text-[var(--vn-muted)]"
+                        style={{ minHeight: 32 }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </nav>
+
                 {/* AI Coach — proactive nudges */}
-                <CollapsibleSection title="AI Coach" defaultOpen>
+                <CollapsibleSection id="s-coach" title="AI Coach" defaultOpen>
                   <div className="space-y-3">
                     {recommendations.map((tip, i) => {
                       const isGood = tip.toLowerCase().includes("on track") || tip.toLowerCase().includes("keep");
@@ -484,7 +524,7 @@ export default function InsightsPage() {
                   asOfDate={plan.setup.asOfDate}
                 />
 
-                <CollapsibleSection title="1) Am I on track?" defaultOpen>
+                <CollapsibleSection id="s-on-track" title="1) Am I on track?" defaultOpen>
                   {/* Budget vs Actual Summary */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                     {([
@@ -646,7 +686,7 @@ export default function InsightsPage() {
                   </div>
                 </CollapsibleSection>
 
-                <CollapsibleSection title="2) What changed vs last period?">
+                <CollapsibleSection id="s-changes" title="2) What changed vs last period?">
                   {compareStats ? (
                     <>
                       <div className="grid gap-4 sm:grid-cols-2">
@@ -739,13 +779,23 @@ export default function InsightsPage() {
                   )}
                 </CollapsibleSection>
 
-                <CollapsibleSection title="3) Where am I overspending?">
+                <CollapsibleSection id="s-overspend" title="3) Where am I overspending?">
                   {categoryChartData.length > 0 && (
                     <div className="mb-6 rounded-2xl bg-[var(--vn-surface)] p-6 shadow-sm">
                       <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-4">Spending by category</div>
                       <CategoryBreakdownChart data={categoryChartData} height={320} onCategoryClick={(name) => setDrilldownCategory(name.toLowerCase())} />
                     </div>
                   )}
+
+                  {/* Spending calendar heat-map */}
+                  <div className="mb-6 rounded-2xl bg-[var(--vn-surface)] p-6 shadow-sm">
+                    <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-4">Daily spend heat-map</div>
+                    <SpendingCalendarHeatmap
+                      transactions={plan.transactions}
+                      periodStart={basePeriod.start}
+                      periodEnd={basePeriod.end}
+                    />
+                  </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
@@ -832,7 +882,7 @@ export default function InsightsPage() {
                   </div>
                 </CollapsibleSection>
 
-                <CollapsibleSection title="4) How stable is my income?">
+                <CollapsibleSection id="s-income" title="4) How stable is my income?">
                   {!hasIncomeData ? (
                     <div className="text-sm text-[var(--vn-muted)]">
                       No income data recorded yet. Add income transactions to see stability metrics.
@@ -851,7 +901,7 @@ export default function InsightsPage() {
                   )}
                 </CollapsibleSection>
 
-                <CollapsibleSection title="5) How healthy are my savings?">
+                <CollapsibleSection id="s-savings" title="5) How healthy are my savings?">
                   <div className="grid gap-4 md:grid-cols-2">
                     <SummaryCard
                       label="Savings rate"
@@ -876,7 +926,7 @@ export default function InsightsPage() {
                   </div>
                 </CollapsibleSection>
 
-                <CollapsibleSection title="6) What should I do next?">
+                <CollapsibleSection id="s-next" title="6) What should I do next?">
                   <div className="space-y-2 text-sm text-[var(--vn-muted)]">
                     {recommendations.map((rec) => (
                       <div key={rec} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3">
@@ -886,7 +936,7 @@ export default function InsightsPage() {
                   </div>
                 </CollapsibleSection>
 
-                <CollapsibleSection title="7) How do periods compare overall?">
+                <CollapsibleSection id="s-compare" title="7) How do periods compare overall?">
                   {periodTrendData.length > 1 && (
                     <div className="mb-6 rounded-2xl bg-[var(--vn-surface)] p-6 shadow-sm">
                       <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-4">Income vs spending trends</div>
