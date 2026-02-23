@@ -160,7 +160,9 @@ export default function InsightsPage() {
   const [basePeriodId, setBasePeriodId] = useState<number>(() => loadPlan().setup.selectedPeriodId);
   const { state: plan, derived: derivedForPeriod } = useDerived(basePeriodId);
   const [comparePeriodId, setComparePeriodId] = useState<"auto" | number | null>("auto");
-  const [showFullInsights, setShowFullInsights] = useState(false);
+  const [showFullInsights, setShowFullInsights] = useState(() =>
+    typeof window !== "undefined" && window.innerWidth >= 768
+  );
   const [drilldownCategory, setDrilldownCategory] = useState<string | null>(null);
 
   const snapshot = useMemo(

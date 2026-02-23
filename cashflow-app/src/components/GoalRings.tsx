@@ -12,8 +12,10 @@
  */
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import type { SavingsGoal, Transaction } from "@/data/plan";
 import { formatMoney } from "@/lib/currency";
+import ConfettiBurst from "./ConfettiBurst";
 
 type Props = {
   goals: SavingsGoal[];
@@ -43,7 +45,10 @@ function Ring({ goal, transactions }: { goal: SavingsGoal; transactions: Transac
     : null;
 
   return (
-    <div className="flex flex-col items-center gap-2 min-w-0">
+    <Link
+      href={`/goals?focus=${goal.id}`}
+      className="flex flex-col items-center gap-2 min-w-0 group"
+    >
       {/* Ring SVG */}
       <div className="relative" aria-label={`${goal.icon ?? ""}${goal.name}: ${Math.round(pct * 100)}% complete`}>
         <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">
@@ -110,11 +115,34 @@ function Ring({ goal, transactions }: { goal: SavingsGoal; transactions: Transac
           by {deadlineLabel}
         </span>
       )}
-    </div>
+    </Link>
   );
 }
 
 export default function GoalRings({ goals, transactions }: Props) {
+  const [confettiGoal, setConfettiGoal] = useState<string | null>(null);
+
+  // Fire confetti once per session when a goal hits 100%
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const celebrated = new Set<string>(
+      JSON.parse(sessionStorage.getItem("vn-confetti-goals") ?? "[]") as string[],
+    );
+    for (const g of goals) {
+      if (celebrated.has(g.id)) continue;
+      const linked = transactions
+        .filter((t) => t.goalId === g.id)
+        .reduce((s, t) => s + t.amount, 0);
+      const pct = (g.currentAmount + linked) / (g.targetAmount || 1);
+      if (pct >= 1) {
+        celebrated.add(g.id);
+        sessionStorage.setItem("vn-confetti-goals", JSON.stringify([...celebrated]));
+        setConfettiGoal(g.id);
+        break; // fire one at a time
+      }
+    }
+  }, [goals, transactions]);
+
   // Show up to 4 — active ones first, then by progress desc
   const sorted = [...goals]
     .filter((g) => g.status !== "paused")
@@ -151,6 +179,10 @@ export default function GoalRings({ goals, transactions }: Props) {
           <Ring key={g.id} goal={g} transactions={transactions} />
         ))}
       </div>
+
+      {confettiGoal && (
+        <ConfettiBurst onDone={() => setConfettiGoal(null)} />
+      )}
     </section>
   );
 }

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
-import { showToast } from "./Toast";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import type { Period } from "@/data/plan";
 
@@ -128,6 +127,7 @@ export default function BottomNav() {
   // Period switcher state
   const [periods, setPeriods] = useState<Period[]>([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState<number>(0);
+  const [isOverspending, setIsOverspending] = useState(false);
 
   useEffect(() => {
     const refresh = () => {
@@ -135,6 +135,11 @@ export default function BottomNav() {
         const plan = loadPlan();
         setPeriods(plan.periods);
         setSelectedPeriodId(plan.setup.selectedPeriodId);
+        // Lightweight overspend check
+        const txns = plan.transactions ?? [];
+        const income = txns.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+        const outflows = txns.filter((t) => t.type === "outflow").reduce((s, t) => s + t.amount, 0);
+        setIsOverspending(income > 0 && outflows > income * 0.9);
       } catch { /* ignore */ }
     };
     refresh();
@@ -177,6 +182,12 @@ export default function BottomNav() {
               transition={{ duration: 0.28, ease: [0.4, 0.0, 0.2, 1] }}
               className="fixed bottom-0 left-0 right-0 z-40 rounded-t-3xl pb-28 md:hidden"
               style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 1 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 80 || info.velocity.y > 300) setShowMore(false);
+              }}
             >
               <div className="flex justify-center pt-3 pb-2">
                 <div className="h-1 w-10 rounded-full bg-[var(--vn-border)]" />
@@ -276,6 +287,9 @@ export default function BottomNav() {
                       transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
                     >
                       {it.icon(active)}
+                      {it.href === "/insights" && isOverspending && !active && (
+                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 border border-[var(--vn-surface)]" />
+                      )}
                     </motion.span>
                     <span
                       className={`relative text-[11px] ${active ? "font-medium" : "font-normal"}`}

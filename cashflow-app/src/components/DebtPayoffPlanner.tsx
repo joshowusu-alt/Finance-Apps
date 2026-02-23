@@ -60,9 +60,12 @@ function DebtRow({ account }: { account: NetWorthAccount }) {
   const assumed = balance * 1.2;
   const pctPaid = balance === 0 ? 1 : Math.max(0, Math.min(1, 1 - balance / assumed));
 
-  // Rough monthly payment — 2% of balance or ≥ £25
-  const estPayment = Math.max(25, balance * 0.02);
-  const clarity = months(balance, estPayment);
+  // Custom monthly payment overridden by the user, or fallback 2% of balance / ≥ £25
+  const [customPayment, setCustomPayment] = useState<string>("");
+  const payment = customPayment !== "" && parseFloat(customPayment) > 0
+    ? parseFloat(customPayment)
+    : Math.max(25, balance * 0.02);
+  const clarity = months(balance, payment);
 
   return (
     <div
@@ -115,7 +118,25 @@ function DebtRow({ account }: { account: NetWorthAccount }) {
 
       <div className="flex justify-between text-(--vn-muted) text-[10px]">
         <span>Est. clear in {clarity}</span>
-        <span>at ~{formatMoney(estPayment)}/mo</span>
+        <span>at ~{formatMoney(payment)}/mo</span>
+      </div>
+
+      {/* Custom monthly payment input */}
+      <div className="flex items-center gap-2 mt-1">
+        <label className="text-[10px] text-(--vn-muted) shrink-0">Monthly payment:</label>
+        <input
+          type="number"
+          inputMode="decimal"
+          value={customPayment}
+          onChange={(e) => setCustomPayment(e.target.value)}
+          placeholder={formatMoney(Math.max(25, balance * 0.02))}
+          className="flex-1 min-w-0 text-[11px] rounded-md px-2 py-0.5 outline-none"
+          style={{
+            background: "var(--vn-bg)",
+            color: "var(--vn-text)",
+            border: "1px solid var(--vn-border)",
+          }}
+        />
       </div>
     </div>
   );

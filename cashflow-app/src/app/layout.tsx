@@ -17,6 +17,7 @@ import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import NotificationScheduler from "@/components/NotificationScheduler";
 import SplashScreen from "@/components/SplashScreen";
+import QuickAddFAB from "@/components/QuickAddFAB";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -33,7 +34,7 @@ const jakarta = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Velanovo",
+  title: { template: "%s · Velanovo", default: "Velanovo" },
   description: "Private Wealth & Cashflow",
   manifest: "/manifest.json",
   icons: {
@@ -87,6 +88,7 @@ export default function RootLayout({
           </ErrorBoundary>
 
           {/* Persistent bottom navigation */}
+          <QuickAddFAB />
           <BottomNav />
           <InstallPrompt />
           <ReviewAccessLink />

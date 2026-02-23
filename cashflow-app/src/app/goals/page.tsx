@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { loadPlan, savePlan } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
@@ -126,7 +127,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave, tran
     // Edit mode UI
     if (isEditing) {
         return (
-            <div className="vn-card p-5 space-y-4">
+            <div id={`goal-${goal.id}`} className="vn-card p-5 space-y-4">
                 <div className="flex justify-between items-center">
                     <h3 className="font-semibold text-[var(--vn-text)]">Edit Goal</h3>
                     <button
@@ -251,7 +252,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave, tran
 
     // Normal view
     return (
-        <div className="vn-card p-5">
+        <div id={`goal-${goal.id}`} className="vn-card p-5">
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <span className="text-2xl">{goal.icon || "🎯"}</span>
@@ -564,9 +565,18 @@ function NewGoalForm({ onSave, onCancel }: {
 }
 
 export default function GoalsPage() {
+    const searchParams = useSearchParams();
+    const focusId = searchParams.get("focus");
     const [plan, setPlan] = useState(() => loadPlan());
     const [showNewGoalForm, setShowNewGoalForm] = useState(false);
     const { confirm } = useConfirm();
+
+    // Scroll to focused goal when coming from a deep-link
+    useEffect(() => {
+        if (!focusId) return;
+        const el = document.getElementById(`goal-${focusId}`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, [focusId]);
 
     const period = getPeriod(plan, plan.setup.selectedPeriodId);
     const goals = plan.savingsGoals || [];
