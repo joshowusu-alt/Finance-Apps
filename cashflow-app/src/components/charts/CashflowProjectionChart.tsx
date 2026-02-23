@@ -2,7 +2,7 @@
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { chartColors, formatCurrency, formatCompactCurrency, getTextColor, getMutedColor, getGridColor, chartConfig } from "@/lib/chartConfig";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type CashflowDataPoint = {
   date: string;
@@ -42,6 +42,34 @@ export function CashflowProjectionChart({
     return () => observer.disconnect();
   }, []);
 
+  // Derive Y-axis domain and threshold visibility from the actual data
+  const { yDomain, showThreshold } = useMemo(() => {
+    if (!data.length) return { yDomain: undefined, showThreshold: false };
+
+    const allBalances = data.flatMap((d) =>
+      [d.balance, d.projected].filter((v): v is number => v !== undefined)
+    );
+    const minBal = Math.min(...allBalances);
+    const maxBal = Math.max(...allBalances);
+    const padding = (maxBal - minBal) * 0.12 || Math.abs(maxBal) * 0.1 || 100;
+
+    // Only show the threshold line when the budget data is actually
+    // approaching it — defined as the min balance sitting within 1.5×
+    // the threshold value. If all balances are comfortably above it the
+    // line adds no useful information.
+    const relevant =
+      lowBalanceThreshold > 0 && minBal <= lowBalanceThreshold * 1.5;
+
+    const yMin = relevant
+      ? Math.min(minBal, lowBalanceThreshold) - padding
+      : minBal - padding;
+
+    return {
+      yDomain: [Math.floor(yMin), Math.ceil(maxBal + padding)] as [number, number],
+      showThreshold: relevant,
+    };
+  }, [data, lowBalanceThreshold]);
+
   return (
     <ResponsiveContainer width="100%" height={height}>
       <AreaChart data={data} margin={chartConfig.margin}>
@@ -71,6 +99,8 @@ export function CashflowProjectionChart({
           style={{ fontSize: 12 }}
           tickLine={false}
           tickFormatter={(value) => formatCompactCurrency(value)}
+          domain={yDomain}
+          allowDataOverflow={false}
         />
         <Tooltip
           contentStyle={{
@@ -80,23 +110,24 @@ export function CashflowProjectionChart({
             color: getTextColor(isDark),
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
           }}
-        formatter={(value: number | undefined, name?: string) =>
+          formatter={(value: number | undefined, name?: string) =>
             value !== undefined ? [formatCurrency(value), name ?? ""] : ["", ""]
           }
           labelStyle={{ color: getMutedColor(isDark), marginBottom: 4 }}
         />
-        <ReferenceLine
-          y={lowBalanceThreshold}
-          stroke={chartColors.warning}
-          strokeDasharray="3 3"
-          label={{
-            value: "Min Balance",
-            position: "top",
-            fill: chartColors.warning,
-            fontSize: 10,
-            dy: -10,
-          }}
-        />
+        {showThreshold && (
+          <ReferenceLine
+            y={lowBalanceThreshold}
+            stroke={chartColors.warning}
+            strokeDasharray="3 3"
+            label={{
+              value: "Min Balance",
+              position: "insideTopRight",
+              fill: chartColors.warning,
+              fontSize: 10,
+            }}
+          />
+        )}
         <Area
           type="monotone"
           dataKey="balance"
