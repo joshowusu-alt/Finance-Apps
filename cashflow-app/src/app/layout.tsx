@@ -18,6 +18,7 @@ import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import NotificationScheduler from "@/components/NotificationScheduler";
 import SplashScreen from "@/components/SplashScreen";
 import QuickAddFAB from "@/components/QuickAddFAB";
+import CommandPalette from "@/components/CommandPalette";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -88,6 +89,7 @@ export default function RootLayout({
           </ErrorBoundary>
 
           {/* Persistent bottom navigation */}
+          <CommandPalette />
           <QuickAddFAB />
           <BottomNav />
           <InstallPrompt />
