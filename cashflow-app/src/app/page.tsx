@@ -34,6 +34,8 @@ import { dayDiff } from "@/lib/dateUtils";
 import { detectSubscriptions } from "@/lib/subscriptionDetection";
 import SpendingVelocityGauge from "@/components/SpendingVelocityGauge";
 import WhatIfPanel from "@/components/WhatIfPanel";
+import GoalRings from "@/components/GoalRings";
+import DebtPayoffPlanner from "@/components/DebtPayoffPlanner";
 import { getVarianceByCategory } from "@/lib/cashflowEngine";
 
 
@@ -241,6 +243,20 @@ export default function HomePage() {
       .filter((v) => v && v.category !== "income" && v.category !== "savings")
       .map((v) => ({ category: v!.category, budgeted: v!.budgeted, actual: v!.actual }));
   }, [plan]);
+
+  // Active goals for GoalRings
+  const activeGoals = useMemo(
+    () => (plan.savingsGoals ?? []).filter((g) => g.status !== "paused" && g.targetAmount > 0),
+    [plan]
+  );
+
+  // Liability accounts for DebtPayoffPlanner
+  const liabilityAccounts = useMemo(
+    () => (plan.netWorthAccounts ?? []).filter((a) =>
+      ["credit-card", "loan", "mortgage", "other-liability"].includes(a.type) && a.balance !== 0
+    ),
+    [plan]
+  );
 
   const onboardingTasks = useMemo(
     () =>
@@ -604,6 +620,20 @@ export default function HomePage() {
                   categories={categoryItems}
                   projectedEndBalance={endingBalance}
                 />
+              </motion.div>
+            )}
+
+            {/* Goal progress rings */}
+            {activeGoals.length > 0 && (
+              <motion.div variants={fadeUp}>
+                <GoalRings goals={activeGoals} transactions={plan.transactions} />
+              </motion.div>
+            )}
+
+            {/* Debt payoff planner */}
+            {liabilityAccounts.length > 0 && (
+              <motion.div variants={fadeUp}>
+                <DebtPayoffPlanner accounts={liabilityAccounts} />
               </motion.div>
             )}
 

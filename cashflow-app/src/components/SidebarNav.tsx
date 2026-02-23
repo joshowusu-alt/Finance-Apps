@@ -200,11 +200,11 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
       </div>
 
       {/* Navigation */}
-      <nav className="space-y-0.5 text-sm flex-1 px-3 relative overflow-y-auto">
+      <nav className="space-y-0.5 text-sm flex-1 px-3 relative overflow-y-auto" aria-label="Main navigation">
         {items.map((item) => {
           const active = isActive(item.href);
           return (
-            <Link key={item.href} href={item.href} className="block relative">
+            <Link key={item.href} href={item.href} className="block relative" aria-current={active ? "page" : undefined} aria-label={item.label}>
               <motion.div
                 whileHover={{ x: 3 }}
                 whileTap={{ scale: 0.98 }}
