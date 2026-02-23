@@ -12,7 +12,23 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { useHaptic } from "@/lib/useHaptic";
+import { suggestCategory } from "@/lib/categorization";
 import type { CashflowCategory, CashflowType } from "@/data/plan";
+
+// Voice transcript → form fields
+function parseVoice(raw: string): { label: string; amount: string; type: CashflowType } {
+  const lower = raw.toLowerCase().trim();
+  const isIncome = /\b(earned|received|income|salary|wages|bonus|deposit|got paid)\b/.test(lower);
+  const type: CashflowType = isIncome ? "income" : "outflow";
+  const amountMatch = lower.match(/[£$€]?(\d+(?:\.\d{1,2})?)/);
+  const amount = amountMatch ? amountMatch[1] : "";
+  let label = lower
+    .replace(/[£$€]?\d+(?:\.\d{1,2})?/, "")
+    .replace(/\b(spent|paid|bought|purchased|received|earned|income|salary|deposit|on|for|at|the|a|an|and|my)\b/g, " ")
+    .replace(/\s+/g, " ").trim();
+  label = label ? label.charAt(0).toUpperCase() + label.slice(1) : "";
+  return { label, amount, type };
+}
 
 const CATEGORIES: CashflowCategory[] = [
   "bill",
@@ -40,6 +56,45 @@ export default function QuickAddFAB() {
   const [category, setCategory] = useState<CashflowCategory>("other");
   const [date, setDate] = useState(today());
   const [saved, setSaved] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [voiceHint, setVoiceHint] = useState("");
+
+  function startVoice() {
+    type SpeechRec = {
+      lang: string; interimResults: boolean; maxAlternatives: number;
+      start(): void;
+      onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+      onerror: (() => void) | null;
+      onend: (() => void) | null;
+    };
+    type SpeechRecCtor = new () => SpeechRec;
+    const win = (typeof window !== "undefined") ? (window as unknown as Record<string, unknown>) : null;
+    const Recog = win && ((win.SpeechRecognition || win.webkitSpeechRecognition) as SpeechRecCtor | undefined);
+    if (!Recog) { setVoiceHint("Voice not supported in this browser"); return; }
+    const recog: SpeechRec = new Recog();
+    recog.lang = "en-GB";
+    recog.interimResults = false;
+    recog.maxAlternatives = 1;
+    setListening(true);
+    setVoiceHint("Listening…");
+    recog.onresult = (e) => {
+      const transcript = (e.results[0] as ArrayLike<{ transcript: string }>)[0].transcript;
+      const parsed = parseVoice(transcript);
+      setLabel(parsed.label);
+      setAmount(parsed.amount);
+      setType(parsed.type);
+      if (parsed.label && parsed.type !== "income") {
+        const suggestion = suggestCategory(parsed.label);
+        setCategory(suggestion.category as CashflowCategory);
+      }
+      setVoiceHint(`Heard: "${transcript}"`);
+      haptic(10);
+      setListening(false);
+    };
+    recog.onerror = () => { setVoiceHint("Couldn't hear — try again"); setListening(false); };
+    recog.onend = () => setListening(false);
+    recog.start();
+  }
 
   function reset() {
     setLabel("");
@@ -126,9 +181,24 @@ export default function QuickAddFAB() {
               {/* Handle */}
               <div className="w-10 h-1 rounded-full bg-white/20 mx-auto -mt-1" />
 
-              <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-jakarta)", color: "var(--vn-text)" }}>
-                Quick Add Transaction
-              </h2>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-jakarta)", color: "var(--vn-text)" }}>
+                  Quick Add Transaction
+                </h2>
+                <button
+                  type="button"
+                  onClick={startVoice}
+                  disabled={listening}
+                  title="Voice input"
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all active:scale-90 disabled:opacity-50"
+                  style={{ background: listening ? "var(--vn-primary, var(--gold))" : "var(--vn-surface-raised, var(--vn-surface))", color: listening ? "white" : "var(--vn-text)" }}
+                >
+                  {listening ? "🔴" : "🎙️"}
+                </button>
+              </div>
+              {voiceHint && (
+                <div className="text-xs text-[var(--vn-muted)] -mt-2 truncate">{voiceHint}</div>
+              )}
 
               {/* Label */}
               <input
