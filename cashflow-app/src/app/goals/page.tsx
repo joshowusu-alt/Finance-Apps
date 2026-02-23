@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { loadPlan, savePlan } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
@@ -671,7 +671,7 @@ function NewGoalForm({ onSave, onCancel }: {
     );
 }
 
-export default function GoalsPage() {
+function GoalsPageInner() {
     const searchParams = useSearchParams();
     const focusId = searchParams.get("focus");
     const [plan, setPlan] = useState(() => loadPlan());
@@ -848,5 +848,13 @@ export default function GoalsPage() {
                 </div>
             </div>
         </main>
+    );
+}
+
+export default function GoalsPage() {
+    return (
+        <Suspense fallback={null}>
+            <GoalsPageInner />
+        </Suspense>
     );
 }
