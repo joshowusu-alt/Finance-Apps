@@ -13,23 +13,138 @@ interface Message {
   content: string;
 }
 
-function renderContent(content: string): React.ReactNode[] {
+// ── Inline bold parser ──────────────────────────────────────────────────────
+function parseBold(text: string, baseKey: number): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  let remaining = content;
-  let key = 0;
-
+  let remaining = text;
+  let key = baseKey;
   while (remaining.length > 0) {
-    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
-    if (boldMatch && boldMatch.index !== undefined) {
-      if (boldMatch.index > 0) parts.push(remaining.slice(0, boldMatch.index));
-      parts.push(<strong key={key++} className="font-semibold">{boldMatch[1]}</strong>);
-      remaining = remaining.slice(boldMatch.index + boldMatch[0].length);
-    } else {
-      parts.push(remaining);
-      break;
-    }
+    const m = remaining.match(/\*\*(.+?)\*\*/);
+    if (m && m.index !== undefined) {
+      if (m.index > 0) parts.push(remaining.slice(0, m.index));
+      parts.push(<strong key={key++} className="font-semibold">{m[1]}</strong>);
+      remaining = remaining.slice(m.index + m[0].length);
+    } else { parts.push(remaining); break; }
   }
   return parts;
+}
+
+// ── Stat row detector ───────────────────────────────────────────────────────
+// Matches lines like:  **Spent:** £34.00  or  **Daily budget:** £12/day (55%)
+const STAT_ROW_RE = /^\*\*(.+?):\*\*\s+(.+)$/;
+
+function isMoneyOrPct(val: string) {
+  return /[£$€\d]/.test(val) || /%/.test(val);
+}
+
+function pctFromStr(val: string): number | null {
+  const m = val.match(/(\d+(?:\.\d+)?)%/);
+  return m ? Math.min(100, parseFloat(m[1])) : null;
+}
+
+function StatCard({ label, value, k }: { label: string; value: string; k: number }) {
+  const pct = pctFromStr(value);
+  return (
+    <div
+      key={k}
+      className="flex flex-col gap-1 rounded-xl p-2.5"
+      style={{ background: "var(--vn-bg)", border: "1px solid var(--vn-border)" }}
+    >
+      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: "var(--vn-muted)" }}>
+        {label}
+      </span>
+      <span className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>
+        {value.replace(/\*\*/g, "")}
+      </span>
+      {pct !== null && (
+        <div
+          className="h-1 rounded-full overflow-hidden"
+          style={{ background: "var(--vn-border)" }}
+          role="progressbar"
+          aria-valuenow={Math.round(pct)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className="h-full rounded-full"
+            style={{
+              width: `${pct}%`,
+              background: pct > 85 ? "#b85c5c" : pct > 65 ? "#d4914f" : "#4FAF7B",
+              transition: "width 0.6s ease",
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main message renderer ─────────────────────────────────────────────────
+function renderMessage(content: string, isStreaming: boolean): React.ReactNode {
+  if (!content) return null;
+
+  // Split into paragraphs on blank lines
+  const blocks = content.split(/\n{2,}/);
+  let keyCounter = 0;
+
+  const rendered = blocks.map((block, bi) => {
+    const lines = block.split("\n");
+
+    // Check if this block looks like a stat table (≥2 lines matching STAT_ROW_RE
+    // AND at least one looks like a money/% value)
+    const statLines = lines.map((l) => ({ m: l.match(STAT_ROW_RE), raw: l }));
+    const matchCount = statLines.filter((sl) => sl.m).length;
+    const hasMoneyPct = statLines.some((sl) => sl.m && isMoneyOrPct(sl.m[2]));
+
+    if (matchCount >= 2 && hasMoneyPct) {
+      // Render as a mini stat grid
+      return (
+        <div key={`block-${bi}`} className="grid grid-cols-2 gap-1.5 my-2" role="group" aria-label="Financial summary">
+          {statLines.map((sl, li) => {
+            if (sl.m) {
+              return <StatCard key={`sc-${bi}-${li}`} label={sl.m[1]} value={sl.m[2]} k={keyCounter++} />;
+            }
+            // Non-stat line mixed in, render inline
+            return sl.raw ? (
+              <p key={`p-${bi}-${li}`} className="col-span-2 text-[13px] leading-relaxed">
+                {parseBold(sl.raw, keyCounter++)}
+              </p>
+            ) : null;
+          })}
+        </div>
+      );
+    }
+
+    // Bullet list block
+    if (lines.every((l) => l.startsWith("•") || l.startsWith("-") || l === "")) {
+      return (
+        <ul key={`block-${bi}`} className="space-y-1 my-1 list-none" role="list">
+          {lines.filter(Boolean).map((l, li) => (
+            <li key={li} className="flex gap-2 text-[13px] leading-relaxed">
+              <span aria-hidden="true" className="shrink-0 mt-0.5" style={{ color: "var(--vn-primary)" }}>•</span>
+              <span>{parseBold(l.replace(/^[•\-]\s*/, ""), keyCounter++)}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    // Plain paragraph
+    return (
+      <p key={`block-${bi}`} className="text-[13px] leading-relaxed whitespace-pre-wrap my-0.5">
+        {parseBold(block, keyCounter++)}
+      </p>
+    );
+  });
+
+  return (
+    <div className="space-y-1">
+      {rendered}
+      {isStreaming && (
+        <span className="inline-block w-[2px] h-[1em] bg-[var(--vn-muted)] ml-0.5 align-middle animate-pulse" />
+      )}
+    </div>
+  );
 }
 
 const SUGGESTED_QUESTIONS = [
@@ -435,7 +550,13 @@ export default function CoachPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      <div
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
+        role="log"
+        aria-label="Conversation history"
+        aria-live="polite"
+        aria-relevant="additions"
+      >
         {messages.map((msg, idx) => {
           const isStreamingMsg = isLoading && msg.role === "assistant" && idx === messages.length - 1;
           return (
@@ -461,10 +582,9 @@ export default function CoachPage() {
                     <div className="w-2 h-2 bg-[var(--vn-muted)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                   </div>
                 ) : (
-                  <p className="whitespace-pre-wrap">
-                    {renderContent(msg.content)}
-                    {isStreamingMsg && <span className="inline-block w-[2px] h-[1em] bg-[var(--vn-muted)] ml-0.5 align-middle animate-pulse" />}
-                  </p>
+                  <div>
+                    {renderMessage(msg.content, isStreamingMsg)}
+                  </div>
                 )}
               </div>
             </motion.div>
