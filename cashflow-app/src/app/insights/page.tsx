@@ -743,7 +743,7 @@ export default function InsightsPage() {
                   {categoryChartData.length > 0 && (
                     <div className="mb-6 rounded-2xl bg-[var(--vn-surface)] p-6 shadow-sm">
                       <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-4">Spending by category</div>
-                      <CategoryBreakdownChart data={categoryChartData} height={320} onCategoryClick={setDrilldownCategory} />
+                      <CategoryBreakdownChart data={categoryChartData} height={320} onCategoryClick={(name) => setDrilldownCategory(name.toLowerCase())} />
                     </div>
                   )}
 
