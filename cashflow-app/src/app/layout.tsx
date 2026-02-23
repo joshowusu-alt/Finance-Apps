@@ -19,6 +19,7 @@ import NotificationScheduler from "@/components/NotificationScheduler";
 import SplashScreen from "@/components/SplashScreen";
 import QuickAddFAB from "@/components/QuickAddFAB";
 import CommandPalette from "@/components/CommandPalette";
+import PullToRefresh from "@/components/PullToRefresh";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -90,6 +91,7 @@ export default function RootLayout({
 
           {/* Persistent bottom navigation */}
           <CommandPalette />
+          <PullToRefresh />
           <QuickAddFAB />
           <BottomNav />
           <InstallPrompt />

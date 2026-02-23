@@ -11,6 +11,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { useHaptic } from "@/lib/useHaptic";
 import type { CashflowCategory, CashflowType } from "@/data/plan";
 
 const CATEGORIES: CashflowCategory[] = [
@@ -31,6 +32,7 @@ function generateId(): string {
 }
 
 export default function QuickAddFAB() {
+  const haptic = useHaptic();
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState("");
   const [amount, setAmount] = useState("");
@@ -74,6 +76,7 @@ export default function QuickAddFAB() {
     };
     savePlan(updated);
     window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+    haptic(12);
     setSaved(true);
     setTimeout(close, 900);
   }
