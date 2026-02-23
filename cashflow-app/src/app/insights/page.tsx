@@ -276,6 +276,19 @@ export default function InsightsPage() {
     return { periodData, maxPerCat, activeCategories };
   }, [sortedPeriods, plan.transactions]);
 
+  // Per-period savings rate series for the trend chart
+  const savingsRateSeries = useMemo(() => {
+    return sortedPeriods.map(p => {
+      const income = plan.transactions
+        .filter(t => t.type === "income" && t.date >= p.start && t.date <= p.end)
+        .reduce((s, t) => s + t.amount, 0);
+      const savings = plan.transactions
+        .filter(t => t.category === "savings" && t.date >= p.start && t.date <= p.end)
+        .reduce((s, t) => s + t.amount, 0);
+      return income > 0 ? savings / income : 0;
+    });
+  }, [plan.transactions, sortedPeriods]);
+
   function handleExportInsightsCsv() {
     downloadInsightsCsv(snapshot, derivedForPeriod);
   }
@@ -926,6 +939,21 @@ export default function InsightsPage() {
                       hint="Actual vs planned"
                     />
                   </div>
+                  {savingsRateSeries.filter(r => r > 0).length >= 2 && (
+                    <div className="mt-4 rounded-2xl bg-[var(--vn-surface)] p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs text-[var(--vn-muted)]">Savings rate across periods</div>
+                        <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                          {formatPercent(savingsRateSeries[savingsRateSeries.length - 1])} now
+                        </div>
+                      </div>
+                      <Sparkline values={savingsRateSeries} stroke="#22c55e" fill="#22c55e" />
+                      <div className="mt-1 flex justify-between text-[10px] text-[var(--vn-muted)]">
+                        <span>{sortedPeriods[0]?.label}</span>
+                        <span>{sortedPeriods[sortedPeriods.length - 1]?.label}</span>
+                      </div>
+                    </div>
+                  )}
                 </CollapsibleSection>
 
                 <CollapsibleSection id="s-next" title="6) What should I do next?">
