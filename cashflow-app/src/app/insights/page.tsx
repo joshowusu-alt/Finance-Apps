@@ -298,12 +298,12 @@ export default function InsightsPage() {
   }
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen overflow-x-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-40 pt-5">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={basePeriod.label} periodStart={basePeriod.start} periodEnd={basePeriod.end} />
 
-          <section className="space-y-6">
+          <section className="space-y-6 min-w-0 w-full">
             <header className="vn-masthead">
               <div className="text-xs uppercase tracking-widest font-semibold text-white/50">Insights</div>
               <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Insights</h1>

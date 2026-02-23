@@ -64,7 +64,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${playfair.variable} ${jakarta.variable} min-h-screen font-sans transition-colors duration-200`} style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
+      <body className={`${playfair.variable} ${jakarta.variable} min-h-screen font-sans transition-colors duration-200 overflow-x-hidden`} style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
         <SplashScreen />
         <AuthProvider>
           <ConfirmProvider>
