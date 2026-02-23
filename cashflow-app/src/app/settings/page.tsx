@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import SidebarNav from "@/components/SidebarNav";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -11,6 +11,15 @@ import { resetWizard } from "@/lib/onboarding";
 import { loadBranding } from "@/lib/branding";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Period, PeriodOverride, PeriodRuleOverride } from "@/data/plan";
+import {
+  isNotificationsSupported,
+  getNotificationPermission,
+  isNotificationsEnabled,
+  requestNotificationPermission,
+  enableNotifications,
+  disableNotifications,
+  resetNotificationCooldowns,
+} from "@/lib/pushNotifications";
 
 export default function SettingsPage() {
   const [plan, setPlan] = useState(() => loadPlan());
@@ -23,6 +32,33 @@ export default function SettingsPage() {
   });
   const [branding] = useState(() => loadBranding());
   const { user, loading: authLoading, signOut } = useAuth();
+
+  // ── Notifications state ──────────────────────────────────────────────────
+  // Read browser APIs only on the client; initialize to safe defaults for SSR.
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission | "unsupported">(
+    () => (typeof window !== "undefined" ? getNotificationPermission() : "default")
+  );
+  const [notifEnabled, setNotifEnabled] = useState(
+    () => (typeof window !== "undefined" ? isNotificationsEnabled() : false)
+  );
+
+  const handleEnableNotifications = useCallback(async () => {
+    if (notifPermission === "granted") {
+      enableNotifications();
+      resetNotificationCooldowns();
+      setNotifEnabled(true);
+    } else {
+      const granted = await requestNotificationPermission();
+      setNotifPermission(getNotificationPermission());
+      setNotifEnabled(granted);
+      if (granted) resetNotificationCooldowns();
+    }
+  }, [notifPermission]);
+
+  const handleDisableNotifications = useCallback(() => {
+    disableNotifications();
+    setNotifEnabled(false);
+  }, []);
 
   useEffect(() => {
     const refresh = () => setPlan(loadPlan());
@@ -547,6 +583,54 @@ export default function SettingsPage() {
                       </details>
                     );
                   })}
+                </div>
+              )}
+            </div>
+
+            {/* ── Notifications ─────────────────────────────────────────── */}
+            <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-[var(--vn-text)] mb-1">Notifications</div>
+              <p className="text-xs text-[var(--vn-muted)] mb-4">
+                Get a browser notification when low balance risk, missed income, or large bills are detected — fires when you open or return to the app.
+              </p>
+
+              {!isNotificationsSupported() ? (
+                <div className="text-xs text-[var(--vn-muted)] rounded-xl bg-[var(--vn-surface)] p-3">
+                  Browser notifications are not supported in this context.
+                </div>
+              ) : notifPermission === "denied" ? (
+                <div className="text-xs text-amber-600 dark:text-amber-400 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3">
+                  Notifications were blocked by your browser. Please allow them in your browser site settings then return here.
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-sm text-[var(--vn-text)]">
+                      {notifEnabled ? "Notifications are on" : "Notifications are off"}
+                    </div>
+                    <div className="text-xs text-[var(--vn-muted)] mt-0.5">
+                      {notifPermission === "granted"
+                        ? "Permission granted — alerts fire on tab focus"
+                        : "Permission not yet granted"}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={notifEnabled ? handleDisableNotifications : handleEnableNotifications}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                      notifEnabled
+                        ? "bg-[var(--vn-accent)] focus:ring-[var(--vn-accent)]"
+                        : "bg-[var(--vn-border)] focus:ring-[var(--vn-border)]"
+                    }`}
+                    role="switch"
+                    aria-checked={notifEnabled}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
+                        notifEnabled ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
                 </div>
               )}
             </div>

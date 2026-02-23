@@ -15,6 +15,7 @@ import CloudSync from "@/components/CloudSync";
 import AppWatermark from "@/components/AppWatermark";
 import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import NotificationScheduler from "@/components/NotificationScheduler";
 import SplashScreen from "@/components/SplashScreen";
 
 const playfair = Playfair_Display({
@@ -71,6 +72,7 @@ export default function RootLayout({
           </a>
           <AppWatermark />
           <ServiceWorkerRegistrar />
+          <NotificationScheduler />
           <noscript>
             <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontFamily: 'sans-serif' }}>
               <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>JavaScript Required</h1>
