@@ -7,6 +7,7 @@ import SidebarNav from "@/components/SidebarNav";
 import { getPeriod } from "@/lib/cashflowEngine";
 import { toast } from "@/components/Toast";
 import type { CashflowCategory, CashflowType, Transaction } from "@/data/plan";
+import { suggestCategory } from "@/lib/categorization";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,11 +20,95 @@ interface ParsedRow {
   type: CashflowType;
   category: CashflowCategory;
   selected: boolean;
+  isDuplicate?: boolean; // flagged against existing transactions
+  confidence?: number;   // categorization confidence 0-100
 }
 
 const CATEGORIES: CashflowCategory[] = [
   "income", "bill", "giving", "savings", "allowance", "buffer", "other",
 ];
+
+// ─── Deduplication ────────────────────────────────────────────────────────────
+
+function normalizeLabel(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function labelSimilarity(a: string, b: string): number {
+  const na = normalizeLabel(a);
+  const nb = normalizeLabel(b);
+  if (na === nb) return 1;
+  if (na.includes(nb) || nb.includes(na)) return 0.8;
+  const wa = new Set(na.split(" "));
+  const wb = new Set(nb.split(" "));
+  let shared = 0;
+  wa.forEach(w => { if (wb.has(w)) shared++; });
+  return shared / Math.max(wa.size, wb.size);
+}
+
+function isDuplicateOf(row: ParsedRow, existing: Transaction[]): boolean {
+  const rowDate = new Date(row.date).getTime();
+  for (const t of existing) {
+    const tDate = new Date(t.date).getTime();
+    const daysDiff = Math.abs(rowDate - tDate) / 86_400_000;
+    if (daysDiff > 3) continue;
+    if (Math.abs(t.amount - row.amount) > 0.01) continue;
+    if (labelSimilarity(t.label, row.label) >= 0.6) return true;
+  }
+  return false;
+}
+
+// ─── OFX / QFX Parsing ───────────────────────────────────────────────────────
+
+function parseOFX(text: string): ParsedRow[] {
+  const rows: ParsedRow[] = [];
+  // Support both SGML (old OFX) and XML-style OFX
+  const txnBlocks = text.match(/<STMTTRN>[\s\S]*?<\/STMTTRN>/gi) ??
+                    [...text.matchAll(/\<STMTTRN\>([\s\S]*?)(?=\<STMTTRN\>|\<\/BANKTRANLIST\>)/gi)].map(m => m[0]);
+
+  for (const block of txnBlocks) {
+    const get = (tag: string) => {
+      const m = block.match(new RegExp(`<${tag}>([^<\r\n]+)`, "i"));
+      return m ? m[1].trim() : "";
+    };
+
+    const trntype = get("TRNTYPE");
+    const dtposted = get("DTPOSTED");
+    const trnamt = get("TRNAMT");
+    const name = get("NAME") || get("MEMO");
+
+    if (!dtposted || !trnamt || !name) continue;
+
+    // OFX date: YYYYMMDDHHMMSS or YYYYMMDD
+    const y = dtposted.substring(0, 4);
+    const mo = dtposted.substring(4, 6);
+    const d = dtposted.substring(6, 8);
+    const date = `${y}-${mo}-${d}`;
+
+    const rawAmt = parseFloat(trnamt.replace(/[^0-9.\-]/g, ""));
+    if (isNaN(rawAmt)) continue;
+
+    const amount = Math.abs(rawAmt);
+    const isCredit = rawAmt > 0 || trntype === "CREDIT" || trntype === "DEP" || trntype === "INT";
+    const type: CashflowType = isCredit ? "income" : "outflow";
+
+    const suggestion = suggestCategory(name);
+    const category: CashflowCategory = type === "income" ? "income" : suggestion.category;
+
+    rows.push({
+      id: `ofx-${rows.length}-${Date.now()}`,
+      rawDate: dtposted,
+      date,
+      label: name,
+      amount,
+      type,
+      category,
+      selected: true,
+      confidence: suggestion.confidence,
+    });
+  }
+  return rows;
+}
 
 // ─── CSV Parsing ──────────────────────────────────────────────────────────────
 
@@ -55,7 +140,7 @@ function parseDate(raw: string): string {
   const slash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (slash) {
     const [, a, b, y] = slash;
-    // Heuristic: if month > 12 use DD/MM; otherwise default MM/DD
+    // Heuristic: if first part > 12 it must be day, so DD/MM/YYYY
     const mm = parseInt(a) > 12 ? b.padStart(2, "0") : a.padStart(2, "0");
     const dd = parseInt(a) > 12 ? a.padStart(2, "0") : b.padStart(2, "0");
     return `${y}-${mm}-${dd}`;
@@ -82,15 +167,6 @@ function detectColumns(headers: string[]): { dateCol: number; labelCol: number; 
   };
 }
 
-function guessCategory(label: string): CashflowCategory {
-  const l = label.toLowerCase();
-  if (/salary|payroll|income|wage|direct dep/.test(l)) return "income";
-  if (/rent|mortgage|utilities|electric|gas|water|broadband|internet|insurance/.test(l)) return "bill";
-  if (/church|charity|donat|tithe/.test(l)) return "giving";
-  if (/saving|invest|transfer to|isa|pension|401k/.test(l)) return "savings";
-  return "other";
-}
-
 function parseAmount(raw: string): number {
   return parseFloat(raw.replace(/[£$€,\s]/g, "")) || 0;
 }
@@ -107,6 +183,17 @@ export default function ImportPage() {
   const [imported, setImported] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [hideDuplicates, setHideDuplicates] = useState(false);
+
+  function applyDedup(parsed: ParsedRow[]): ParsedRow[] {
+    const existing = loadPlan().transactions;
+    return parsed.map(row => ({
+      ...row,
+      isDuplicate: isDuplicateOf(row, existing),
+      // Auto-deselect likely duplicates
+      selected: !isDuplicateOf(row, existing),
+    }));
+  }
 
   function processCSV(text: string) {
     const lines = text.split(/\r?\n/).filter(l => l.trim());
@@ -124,7 +211,7 @@ export default function ImportPage() {
       if (cols.every(c => !c)) continue;
 
       const rawDate = dateCol >= 0 ? cols[dateCol] ?? "" : "";
-      const label   = labelCol >= 0 ? cols[labelCol] ?? "" : cols[1] ?? "";
+      const label   = (labelCol >= 0 ? cols[labelCol] ?? "" : cols[1] ?? "").replace(/^"(.*)"$/, "$1");
       let amount    = 0;
       let type: CashflowType = "outflow";
 
@@ -142,42 +229,61 @@ export default function ImportPage() {
       if (!label || amount === 0) continue;
 
       const date = parseDate(rawDate);
-      const category = type === "income" ? "income" : guessCategory(label);
+      const suggestion = type === "income" ? { category: "income" as CashflowCategory, confidence: 99 } : suggestCategory(label);
+      const category = suggestion.category;
 
       parsed.push({
         id: `import-${i}-${Date.now()}`,
         rawDate,
         date,
-        label: label.replace(/^"(.*)"$/, "$1"),
+        label,
         amount,
         type,
         category,
         selected: true,
+        confidence: suggestion.confidence,
       });
     }
 
-    setRows(parsed);
+    setRows(applyDedup(parsed));
     setImported(false);
+  }
+
+  function processOFX(text: string) {
+    const parsed = parseOFX(text);
+    if (parsed.length === 0) { toast.error("No transactions found in OFX file"); return; }
+    setHeaders([]);
+    setRows(applyDedup(parsed));
+    setImported(false);
+  }
+
+  function processFile(file: File) {
+    setFileName(file.name);
+    const reader = new FileReader();
+    const name = file.name.toLowerCase();
+    if (name.endsWith(".ofx") || name.endsWith(".qfx") || name.endsWith(".qbo")) {
+      reader.onload = (ev) => processOFX(ev.target?.result as string);
+    } else {
+      reader.onload = (ev) => processCSV(ev.target?.result as string);
+    }
+    reader.readAsText(file);
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (ev) => processCSV(ev.target?.result as string);
-    reader.readAsText(file);
+    processFile(file);
   }
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (!file || !file.name.endsWith(".csv")) { toast.error("Please drop a CSV file"); return; }
-    setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (ev) => processCSV(ev.target?.result as string);
-    reader.readAsText(file);
+    if (!file) { toast.error("Please drop a CSV or OFX file"); return; }
+    const name = file.name.toLowerCase();
+    const valid = name.endsWith(".csv") || name.endsWith(".ofx") || name.endsWith(".qfx") || name.endsWith(".qbo");
+    if (!valid) { toast.error("Supported formats: CSV, OFX, QFX"); return; }
+    processFile(file);
   }
 
   function updateRow(id: string, patch: Partial<ParsedRow>) {
@@ -208,6 +314,8 @@ export default function ImportPage() {
     setRows([]);
   }
 
+  const visibleRows = hideDuplicates ? rows.filter(r => !r.isDuplicate) : rows;
+  const duplicateCount = rows.filter(r => r.isDuplicate).length;
   const selectedCount = rows.filter(r => r.selected).length;
 
   return (
@@ -219,9 +327,9 @@ export default function ImportPage() {
           <section className="space-y-6">
             <header className="vn-masthead">
               <div className="text-xs uppercase tracking-widest font-semibold text-white/50 mb-1">Transactions</div>
-              <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>CSV Import</h1>
+              <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>CSV / Bank Import</h1>
               <p className="mt-1 text-sm text-white/55">
-                Import transactions from your bank export. Supports most CSV formats.
+                Import transactions from your bank export. Supports CSV, OFX, QFX, and QBO formats.
               </p>
             </header>
 
@@ -239,13 +347,13 @@ export default function ImportPage() {
                 onDrop={handleDrop}
               >
                 <div className="text-4xl mb-4">📂</div>
-                <p className="font-semibold text-[var(--vn-text)]">Drop your bank CSV here</p>
+                <p className="font-semibold text-[var(--vn-text)]">Drop your bank file here</p>
                 <p className="text-sm text-[var(--vn-muted)] mt-1">or click to browse</p>
-                <p className="text-xs text-[var(--vn-muted)] mt-3">Supports most bank export formats including Barclays, Chase, Monzo, Revolut, YNAB</p>
+                <p className="text-xs text-[var(--vn-muted)] mt-3">CSV, OFX, QFX, QBO — Barclays, Chase, Monzo, Revolut, YNAB, Quicken</p>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".csv"
+                  accept=".csv,.ofx,.qfx,.qbo"
                   className="hidden"
                   onChange={handleFileChange}
                 />
@@ -275,22 +383,44 @@ export default function ImportPage() {
                     <div className="font-semibold text-[var(--vn-text)]">
                       {fileName} — {rows.length} rows
                     </div>
-                    <div className="text-xs text-[var(--vn-muted)] mt-0.5">
-                      {selectedCount} selected · {formatMoney(rows.filter(r => r.selected && r.type === "outflow").reduce((s, r) => s + r.amount, 0))} outflows · {formatMoney(rows.filter(r => r.selected && r.type === "income").reduce((s, r) => s + r.amount, 0))} income
+                    <div className="text-xs text-[var(--vn-muted)] mt-0.5 flex items-center gap-2 flex-wrap">
+                      <span>{selectedCount} selected</span>
+                      <span>·</span>
+                      <span>{formatMoney(rows.filter(r => r.selected && r.type === "outflow").reduce((s, r) => s + r.amount, 0))} outflows</span>
+                      <span>·</span>
+                      <span>{formatMoney(rows.filter(r => r.selected && r.type === "income").reduce((s, r) => s + r.amount, 0))} income</span>
+                      {duplicateCount > 0 && (
+                        <>
+                          <span>·</span>
+                          <button
+                            onClick={() => setHideDuplicates(h => !h)}
+                            className={`font-medium transition-colors ${hideDuplicates ? "text-amber-600" : "text-amber-500 hover:text-amber-700"}`}
+                          >
+                            {duplicateCount} possible duplicate{duplicateCount !== 1 ? "s" : ""}
+                            {hideDuplicates ? " (showing)" : " (hidden)"}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
+                      onClick={() => setRows(prev => prev.map(r => ({ ...r, selected: !r.isDuplicate })))}
+                      className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] px-2 py-1"
+                    >
+                      Select non-dupes
+                    </button>
+                    <button
                       onClick={() => setRows(prev => prev.map(r => ({ ...r, selected: true })))}
                       className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] px-2 py-1"
                     >
-                      Select all
+                      All
                     </button>
                     <button
                       onClick={() => setRows(prev => prev.map(r => ({ ...r, selected: false })))}
                       className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] px-2 py-1"
                     >
-                      Deselect all
+                      None
                     </button>
                     <button
                       onClick={handleImport}
@@ -306,7 +436,7 @@ export default function ImportPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-left text-xs text-[var(--vn-muted)] border-b border-[var(--vn-border)] bg-[var(--vn-bg-subtle,var(--vn-bg))]">
-                        <th className="px-4 py-2 w-8"><input type="checkbox" checked={selectedCount === rows.length} onChange={e => setRows(prev => prev.map(r => ({ ...r, selected: e.target.checked })))} /></th>
+                        <th className="px-4 py-2 w-8"><input type="checkbox" checked={selectedCount === visibleRows.length && visibleRows.length > 0} onChange={e => setRows(prev => prev.map(r => (hideDuplicates && r.isDuplicate) ? r : { ...r, selected: e.target.checked }))} /></th>
                         <th className="px-4 py-2">Date</th>
                         <th className="px-4 py-2 min-w-[200px]">Description</th>
                         <th className="px-4 py-2 text-right">Amount</th>
@@ -315,10 +445,10 @@ export default function ImportPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {rows.map((row) => (
+                      {visibleRows.map((row) => (
                         <tr
                           key={row.id}
-                          className={`border-b border-[var(--vn-border)] transition-colors ${!row.selected ? "opacity-40" : ""}`}
+                          className={`border-b border-[var(--vn-border)] transition-colors ${!row.selected ? "opacity-40" : ""} ${row.isDuplicate ? "bg-amber-50/30 dark:bg-amber-900/10" : ""}`}
                         >
                           <td className="px-4 py-2">
                             <input
@@ -329,12 +459,19 @@ export default function ImportPage() {
                           </td>
                           <td className="px-4 py-2 text-xs text-[var(--vn-muted)] whitespace-nowrap">{row.date}</td>
                           <td className="px-4 py-2">
-                            <input
-                              type="text"
-                              value={row.label}
-                              onChange={e => updateRow(row.id, { label: e.target.value })}
-                              className="w-full bg-transparent border-none outline-none text-[var(--vn-text)] text-sm focus:bg-[var(--vn-bg)] focus:px-1 rounded"
-                            />
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={row.label}
+                                onChange={e => updateRow(row.id, { label: e.target.value })}
+                                className="flex-1 bg-transparent border-none outline-none text-[var(--vn-text)] text-sm focus:bg-[var(--vn-bg)] focus:px-1 rounded min-w-0"
+                              />
+                              {row.isDuplicate && (
+                                <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+                                  duplicate?
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className={`px-4 py-2 text-right font-medium tabular-nums ${row.type === "income" ? "text-emerald-600" : ""}`}>
                             {row.type === "income" ? "+" : "-"}{formatMoney(row.amount)}
@@ -351,15 +488,20 @@ export default function ImportPage() {
                             </select>
                           </td>
                           <td className="px-4 py-2">
-                            <select
-                              value={row.category}
-                              onChange={e => updateRow(row.id, { category: e.target.value as CashflowCategory })}
-                              className="text-xs bg-transparent border border-[var(--vn-border)] rounded px-1 py-0.5 capitalize"
-                            >
-                              {CATEGORIES.map(c => (
-                                <option key={c} value={c} className="capitalize">{c}</option>
-                              ))}
-                            </select>
+                            <div className="flex items-center gap-1.5">
+                              <select
+                                value={row.category}
+                                onChange={e => updateRow(row.id, { category: e.target.value as CashflowCategory })}
+                                className="text-xs bg-transparent border border-[var(--vn-border)] rounded px-1 py-0.5 capitalize"
+                              >
+                                {CATEGORIES.map(c => (
+                                  <option key={c} value={c} className="capitalize">{c}</option>
+                                ))}
+                              </select>
+                              {row.confidence !== undefined && row.confidence < 50 && (
+                                <span title={`Auto-categorised with ${row.confidence}% confidence`} className="text-[10px] text-[var(--vn-muted)]">~</span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -372,13 +514,21 @@ export default function ImportPage() {
             {/* Format tips */}
             <div className="vn-card p-5">
               <h3 className="text-sm font-semibold text-[var(--vn-text)] mb-3">📋 Supported formats</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[var(--vn-muted)]">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[var(--vn-muted)]">
                 <div>
-                  <div className="font-medium text-[var(--vn-text)] mb-1">Auto-detected columns</div>
+                  <div className="font-medium text-[var(--vn-text)] mb-1">CSV auto-detected columns</div>
                   <ul className="space-y-0.5">
                     <li>• Date, Posted Date, Transaction Date</li>
                     <li>• Description, Memo, Payee, Narration</li>
                     <li>• Amount, Debit/Credit columns</li>
+                  </ul>
+                </div>
+                <div>
+                  <div className="font-medium text-[var(--vn-text)] mb-1">OFX / QFX / QBO</div>
+                  <ul className="space-y-0.5">
+                    <li>• Quicken, Mint, most UK banks</li>
+                    <li>• Full date + payee parsing</li>
+                    <li>• Credit/debit auto-detected</li>
                   </ul>
                 </div>
                 <div>
