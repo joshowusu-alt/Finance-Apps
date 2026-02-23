@@ -518,6 +518,51 @@ export function buildHybridTimeline(
   });
 }
 
+/**
+ * Actuals-only timeline: uses only plan.transactions for dates within the
+ * period that are on or before asOfDate. Future dates are excluded — the line
+ * naturally stops at today. Used as the "Actuals (Recorded)" line alongside
+ * the budget forecast on the cashflow chart.
+ */
+export function buildActualsTimeline(
+  plan: Plan,
+  periodId: number,
+  startingBalance: number
+): TimelineRow[] {
+  const period = getPeriod(plan, periodId);
+  const asOfDate = plan.setup.asOfDate;
+  const expectedMin = plan.setup.expectedMinBalance;
+
+  // Only days from period start up to and including today
+  const allDays = eachDayInclusive(period.start, period.end);
+  const days = allDays.filter((d) => d <= asOfDate);
+  if (!days.length) return [];
+
+  const actualTxns = plan.transactions.filter(
+    (t) => t.date >= period.start && t.date <= asOfDate
+  );
+  const byDate = new Map<string, typeof actualTxns[number][]>();
+  for (const t of actualTxns) {
+    if (!byDate.has(t.date)) byDate.set(t.date, []);
+    byDate.get(t.date)!.push(t);
+  }
+
+  let bal = startingBalance;
+  return days.map((date) => {
+    const todays = byDate.get(date) ?? [];
+    const income = money(todays.reduce((s, t) => s + (t.type === "income" ? t.amount : 0), 0));
+    const outflow = money(todays.reduce((s, t) => s + (t.type === "outflow" ? t.amount : 0), 0));
+    const label = todays.length
+      ? todays.length === 1
+        ? todays[0].label || "Transaction"
+        : todays.map((t) => t.label || "Transaction").join(" + ")
+      : "";
+    const net = money(income - outflow);
+    bal = money(bal + net);
+    return { date, label, income, outflow, net, balance: bal, warning: expectedMin > 0 && bal < expectedMin };
+  });
+}
+
 export function minPoint(rows: TimelineRow[]) {
   if (!rows.length) return null;
   let min = rows[0];

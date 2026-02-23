@@ -80,7 +80,9 @@ export function CashflowProjectionChart({
             color: getTextColor(isDark),
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
           }}
-          formatter={(value: number | undefined) => value !== undefined ? [formatCurrency(value), ""] : ["", ""]}
+        formatter={(value: number | undefined, name?: string) =>
+            value !== undefined ? [formatCurrency(value), name ?? ""] : ["", ""]
+          }
           labelStyle={{ color: getMutedColor(isDark), marginBottom: 4 }}
         />
         <ReferenceLine
@@ -102,7 +104,7 @@ export function CashflowProjectionChart({
           strokeWidth={2}
           fillOpacity={1}
           fill="url(#colorBalance)"
-          name="Current Balance"
+          name="Budget (Planned)"
           animationDuration={chartConfig.animationDuration}
           animationEasing={chartConfig.animationEasing}
         />
@@ -115,7 +117,8 @@ export function CashflowProjectionChart({
             strokeDasharray="5 5"
             fillOpacity={1}
             fill="url(#colorProjected)"
-            name="Projected"
+            name="Actuals (Recorded)"
+            connectNulls={false}
             animationDuration={chartConfig.animationDuration}
             animationEasing={chartConfig.animationEasing}
           />

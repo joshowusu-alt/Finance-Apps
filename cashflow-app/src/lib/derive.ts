@@ -1,6 +1,7 @@
 import type { Plan } from "@/data/plan";
 import {
-  buildHybridTimeline,
+  buildTimeline,
+  buildActualsTimeline,
   generateEvents,
   getPeriod,
   getStartingBalance,
@@ -34,7 +35,8 @@ export type Derived = {
     remaining: number;
   };
   cashflow: {
-    daily: DerivedDay[];
+    daily: DerivedDay[];         // Budget (planned) — full period
+    actualsDaily: DerivedDay[];  // Actuals (recorded) — up to today only
     lowest: { date: string; balance: number };
     daysBelowMin: number;
   };
@@ -183,9 +185,14 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
   );
   const remaining = incomeExpected - committedBills - allocationsTotal;
 
-  const rows = buildHybridTimeline(plan, resolvedPeriodId, startingBalance);
+  // Budget forecast — pure planned rules, bills and outflow rules (no actual transactions)
+  const rows = buildTimeline(plan, resolvedPeriodId, startingBalance);
   const expectedMin = plan.setup.expectedMinBalance;
   const daily = buildDaily(rows, expectedMin);
+
+  // Actuals — only what the user has recorded as transactions, up to today
+  const actualsRows = buildActualsTimeline(plan, resolvedPeriodId, startingBalance);
+  const actualsDaily = buildDaily(actualsRows, expectedMin);
   const lowestRow = minPoint(rows);
   const lowest = lowestRow
     ? { date: lowestRow.date, balance: lowestRow.balance }
@@ -254,6 +261,7 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
     },
     cashflow: {
       daily,
+      actualsDaily,
       lowest,
       daysBelowMin,
     },

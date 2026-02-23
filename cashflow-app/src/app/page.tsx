@@ -219,11 +219,16 @@ export default function HomePage() {
   const completedCount = onboardingTasks.filter((task) => task.done).length;
 
   const cashflowChartData: CashflowDataPoint[] = useMemo(() => {
+    // Map actuals by date so we can look them up quickly
+    const actualsMap = new Map(
+      derived.cashflow.actualsDaily.map((d) => [d.date, d.balance])
+    );
     return rows.slice(0, 30).map((row) => ({
       date: prettyDate(row.date),
-      balance: row.balance,
+      balance: row.balance,                     // Budget (Planned) line
+      projected: actualsMap.get(row.date),      // Actuals (Recorded) line — undefined for future days
     }));
-  }, [rows]);
+  }, [rows, derived.cashflow.actualsDaily]);
 
   // Empty state detection — no plan data set up yet
   const hasData = plan.incomeRules.length > 0 || plan.bills.length > 0 || plan.transactions.length > 0 || plan.setup.startingBalance > 0;
@@ -486,7 +491,20 @@ export default function HomePage() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="text-sm font-bold text-[var(--vn-text)]">Cashflow Forecast</div>
-                  <div className="text-xs text-[var(--vn-muted)]">Projected balance for next 30 days</div>
+                  <div className="text-xs text-[var(--vn-muted)] mb-1">Projected balance for next 30 days</div>
+                  {/* Legend */}
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="flex items-center gap-1 text-[10px] text-[var(--vn-muted)]">
+                      <span className="inline-block w-6 h-0.5 bg-[var(--vn-primary)] rounded" />
+                      Budget (Planned)
+                    </span>
+                    {derived.cashflow.actualsDaily.length > 0 && (
+                      <span className="flex items-center gap-1 text-[10px] text-[var(--vn-muted)]">
+                        <span className="inline-block w-6 h-0.5 border-t-2 border-dashed border-[var(--vn-secondary)]" />
+                        Actuals (Recorded)
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="text-xs font-bold px-2 py-1 rounded bg-[var(--vn-bg)] text-[var(--vn-text)]">
                   End: {formatMoney(endingBalance)}
@@ -496,7 +514,7 @@ export default function HomePage() {
               <div className="h-[250px] w-full">
                 <CashflowProjectionChart
                   data={cashflowChartData}
-                  showProjection={false}
+                  showProjection={derived.cashflow.actualsDaily.length > 0}
                   height={250}
                   lowBalanceThreshold={plan.setup.expectedMinBalance}
                 />
