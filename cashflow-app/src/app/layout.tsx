@@ -20,6 +20,7 @@ import SplashScreen from "@/components/SplashScreen";
 import QuickAddFAB from "@/components/QuickAddFAB";
 import CommandPalette from "@/components/CommandPalette";
 import PullToRefresh from "@/components/PullToRefresh";
+import BiometricLock from "@/components/BiometricLock";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -90,6 +91,7 @@ export default function RootLayout({
           </ErrorBoundary>
 
           {/* Persistent bottom navigation */}
+          <BiometricLock />
           <CommandPalette />
           <PullToRefresh />
           <QuickAddFAB />

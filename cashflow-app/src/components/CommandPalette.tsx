@@ -32,6 +32,7 @@ const NAV_COMMANDS: CommandItem[] = [
   { id: "nav-income",       label: "Income",          icon: "💰", href: "/income",       group: "Navigate" },
   { id: "nav-goals",        label: "Goals",           icon: "🎯", href: "/goals",        group: "Navigate" },
   { id: "nav-envelopes",    label: "Envelope Budget", icon: "✉️", href: "/envelopes",    group: "Navigate" },
+  { id: "nav-year",         label: "Year in Review",  icon: "🌟", href: "/year",         group: "Navigate" },
   { id: "nav-networth",     label: "Net Worth",       icon: "📊", href: "/networth",     group: "Navigate" },
   { id: "nav-import",       label: "Import CSV / OFX", icon: "📂", href: "/import",     group: "Navigate" },
   { id: "nav-coach",        label: "AI Coach",        icon: "🤖", href: "/coach",        group: "Navigate" },

@@ -10,6 +10,7 @@ import { formatMoney } from "@/lib/currency";
 import { resetWizard } from "@/lib/onboarding";
 import { loadBranding } from "@/lib/branding";
 import { useAuth } from "@/contexts/AuthContext";
+import { isLockEnabled, enableLock, disableLock, registerBiometric } from "@/components/BiometricLock";
 import type { Period, PeriodOverride, PeriodRuleOverride } from "@/data/plan";
 import {
   isNotificationsSupported,
@@ -32,6 +33,45 @@ export default function SettingsPage() {
   });
   const [branding] = useState(() => loadBranding());
   const { user, loading: authLoading, signOut } = useAuth();
+
+  // ── Lock / Biometric state ────────────────────────────────────────────────
+  const [lockEnabled, setLockEnabled] = useState(() =>
+    typeof window !== "undefined" ? isLockEnabled() : false
+  );
+  const [pinSetup, setPinSetup] = useState("");
+  const [pinConfirm, setPinConfirm] = useState("");
+  const [pinError, setPinError] = useState("");
+  const [pinSuccess, setPinSuccess] = useState("");
+  const [biometricStatus, setBiometricStatus] = useState<"idle"|"registered"|"error">("idle");
+
+  async function handleEnableLock() {
+    if (pinSetup.length < 4) { setPinError("PIN must be 4 digits"); return; }
+    if (!/^\d{4}$/.test(pinSetup)) { setPinError("PIN must be 4 digits (numbers only)"); return; }
+    if (pinSetup !== pinConfirm) { setPinError("PINs do not match"); return; }
+    await enableLock(pinSetup);
+    setLockEnabled(true);
+    setPinSetup("");
+    setPinConfirm("");
+    setPinError("");
+    setPinSuccess("Lock enabled — current session stays unlocked");
+    setTimeout(() => setPinSuccess(""), 3000);
+  }
+
+  function handleDisableLock() {
+    disableLock();
+    setLockEnabled(false);
+    setBiometricStatus("idle");
+    setPinSetup("");
+    setPinConfirm("");
+    setPinError("");
+    setPinSuccess("");
+  }
+
+  async function handleRegisterBiometric() {
+    setBiometricStatus("idle");
+    const ok = await registerBiometric();
+    setBiometricStatus(ok ? "registered" : "error");
+  }
 
   // ── Notifications state ──────────────────────────────────────────────────
   // Read browser APIs only on the client; initialize to safe defaults for SSR.
@@ -583,6 +623,81 @@ export default function SettingsPage() {
                       </details>
                     );
                   })}
+                </div>
+              )}
+            </div>
+
+            {/* ── Privacy & Security ────────────────────────────────────── */}
+            <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-[var(--vn-text)] mb-1">Privacy &amp; Security</div>
+              <p className="text-xs text-[var(--vn-muted)] mb-4">
+                Lock the app with a 4-digit PIN. On supported devices, you can also unlock with Face ID or Touch ID.
+              </p>
+              {lockEnabled ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="text-emerald-600 dark:text-emerald-400">🔒 Lock is ON</span>
+                    <button
+                      type="button"
+                      onClick={handleDisableLock}
+                      className="ml-auto text-xs text-rose-600 hover:text-rose-800 font-medium px-3 py-1.5 rounded-lg"
+                      style={{ background: "var(--vn-surface-raised, var(--vn-surface))" }}
+                    >
+                      Disable lock
+                    </button>
+                  </div>
+                  <div className="pt-2 border-t border-[var(--vn-border)]">
+                    <div className="text-xs text-[var(--vn-muted)] mb-2">Register biometrics (Face ID / Touch ID)</div>
+                    <button
+                      type="button"
+                      onClick={handleRegisterBiometric}
+                      className="vn-btn vn-btn-ghost text-xs px-4 py-2"
+                    >
+                      {biometricStatus === "registered" ? "✓ Registered" : biometricStatus === "error" ? "Failed — try again" : "Set up biometrics"}
+                    </button>
+                    {biometricStatus === "registered" && (
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">Biometrics registered — use face/finger on the lock screen.</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs text-[var(--vn-muted)] mb-1">New PIN (4 digits)</label>
+                      <input
+                        type="password"
+                        inputMode="numeric"
+                        maxLength={4}
+                        value={pinSetup}
+                        onChange={(e) => { setPinSetup(e.target.value.replace(/\D/g, "").slice(0, 4)); setPinError(""); }}
+                        placeholder="••••"
+                        className="vn-input text-sm w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-[var(--vn-muted)] mb-1">Confirm PIN</label>
+                      <input
+                        type="password"
+                        inputMode="numeric"
+                        maxLength={4}
+                        value={pinConfirm}
+                        onChange={(e) => { setPinConfirm(e.target.value.replace(/\D/g, "").slice(0, 4)); setPinError(""); }}
+                        placeholder="••••"
+                        className="vn-input text-sm w-full"
+                      />
+                    </div>
+                  </div>
+                  {pinError && <p className="text-xs text-rose-500">{pinError}</p>}
+                  {pinSuccess && <p className="text-xs text-emerald-600 dark:text-emerald-400">{pinSuccess}</p>}
+                  <button
+                    type="button"
+                    onClick={handleEnableLock}
+                    disabled={pinSetup.length < 4}
+                    className="vn-btn vn-btn-primary text-xs px-4 py-2 disabled:opacity-50"
+                  >
+                    Enable lock
+                  </button>
                 </div>
               )}
             </div>
