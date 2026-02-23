@@ -38,6 +38,8 @@ import GoalRings from "@/components/GoalRings";
 import DebtPayoffPlanner from "@/components/DebtPayoffPlanner";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import { getVarianceByCategory } from "@/lib/cashflowEngine";
+import { detectAnomalies } from "@/lib/anomalyDetection";
+import AnomalyAlerts from "@/components/AnomalyAlerts";
 
 
 
@@ -273,6 +275,8 @@ export default function HomePage() {
     const totalMonthly = actionable.reduce((sum, s) => sum + s.monthlyCost, 0);
     return { count: actionable.length, totalMonthly };
   }, [plan.transactions]);
+
+  const spendingAnomalies = useMemo(() => detectAnomalies(plan), [plan]);
 
   function handleQuickSetupComplete(builtPlan: Plan) {
     savePlan(builtPlan);
@@ -599,6 +603,13 @@ export default function HomePage() {
                   categories={categoryItems}
                   projectedEndBalance={endingBalance}
                 />
+              </motion.div>
+            )}
+
+            {/* Spending anomalies */}
+            {spendingAnomalies.length > 0 && (
+              <motion.div variants={fadeUp}>
+                <AnomalyAlerts anomalies={spendingAnomalies} />
               </motion.div>
             )}
 
