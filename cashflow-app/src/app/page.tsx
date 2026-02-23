@@ -24,7 +24,6 @@ import { VelanovoLogo } from "@/components/VelanovoLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 import { CashflowProjectionChart } from "@/components/charts";
 import type { CashflowDataPoint } from "@/components/charts";
-import { InsightWidget } from "@/components/dashboard/InsightWidget";
 import { TransactionsWidget } from "@/components/dashboard/TransactionsWidget";
 import { BillsWidget } from "@/components/dashboard/BillsWidget";
 import InfoTooltip from "@/components/InfoTooltip";
@@ -42,10 +41,6 @@ import { detectAnomalies } from "@/lib/anomalyDetection";
 import AnomalyAlerts from "@/components/AnomalyAlerts";
 
 
-
-function formatPercent(value: number) {
-  return `${Math.round(value * 100)}%`;
-}
 
 function formatPeriodLabel(label: string) {
   return label.replace(/^P(\d+)/, "Period $1");
@@ -121,7 +116,6 @@ export default function HomePage() {
 
   const period = derived.period;
   const rows = derived.cashflow.daily;
-  const lowest = derived.cashflow.lowest;
   const endingBalance = rows.length ? rows[rows.length - 1].balance : 0;
 
   // Upcoming bills helper - need to map correctly for widget
@@ -186,9 +180,6 @@ export default function HomePage() {
   const spendingProgress = budgetSpending ? Math.min(1, actualSpending / budgetSpending) : 0;
   const spendingPaceGap = spendingProgress - timeProgress;
 
-  // Projected end-of-period overspend (needs timeProgress + periodDays + daysElapsed)
-  const projectedSpending = timeProgress > 0.1 ? actualSpending / timeProgress : null;
-  const projectedOverspend = projectedSpending !== null && budgetSpending > 0 ? projectedSpending - budgetSpending : null;
   const daysRemaining = Math.max(0, periodDays - daysElapsed);
 
   // Category variance for WhatIfPanel
@@ -226,35 +217,6 @@ export default function HomePage() {
     [resolvedOnboarding, plan]
   );
   const completedCount = onboardingTasks.filter((task) => task.done).length;
-
-  // Single best insight for the widget
-  const mainInsight = useMemo(() => {
-    if (timeProgress > 0.05) {
-      if (spendingPaceGap > 0.08) {
-        return {
-          text: `Spending is high! ${formatPercent(spendingProgress)} of budget used with ${formatPercent(timeProgress)} of month gone.`,
-          tone: "bad" as const
-        };
-      } else if (spendingPaceGap < -0.08) {
-        return {
-          text: `Under budget. ${formatPercent(spendingProgress)} spent with ${formatPercent(timeProgress)} of month gone. Great job!`,
-          tone: "good" as const
-        };
-      }
-    }
-
-    if (lowest && plan.setup.expectedMinBalance > 0 && lowest.balance < plan.setup.expectedMinBalance) {
-      return {
-        text: `Heads up: Balance dips below safe minimum on ${prettyDate(lowest.date)}.`,
-        tone: "bad" as const
-      };
-    }
-
-    return {
-      text: "Everything is on track. Spending and balance are tracking normally.",
-      tone: "good" as const
-    };
-  }, [spendingPaceGap, spendingProgress, timeProgress, lowest, plan.setup.expectedMinBalance]);
 
   const cashflowChartData: CashflowDataPoint[] = useMemo(() => {
     return rows.slice(0, 30).map((row) => ({
@@ -506,27 +468,6 @@ export default function HomePage() {
               </motion.div>
             )}
 
-            {/* Predictive Overspend Warning */}
-            {projectedOverspend !== null && projectedOverspend > 50 && timeProgress < 0.95 && (
-              <motion.div variants={fadeUp} className="vn-card p-4 border-l-4 border-l-rose-500 bg-rose-50/60 dark:bg-rose-900/10">
-                <div className="flex items-start gap-3">
-                  <span className="text-rose-500 text-base mt-0.5">⚠</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-rose-700 dark:text-rose-300">Projected overspend</div>
-                    <div className="text-xs text-rose-600 dark:text-rose-400 mt-0.5">
-                      At your current pace you&apos;ll spend <strong>{formatMoney(projectedSpending!)}</strong> this period — <strong>{formatMoney(projectedOverspend)}</strong> over budget.
-                    </div>
-                    {daysRemaining > 0 && (
-                      <div className="text-xs text-rose-500 dark:text-rose-400 mt-0.5">
-                        Cut <strong>{formatMoney(projectedOverspend / daysRemaining)}/day</strong> to finish on budget.
-                      </div>
-                    )}
-                  </div>
-                  <a href="/insights" className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap">Details →</a>
-                </div>
-              </motion.div>
-            )}
-
             {/* Subscription Nudge */}
             {subscriptionNudge && (
               <motion.div variants={fadeUp} className="vn-card p-4 border-l-4 border-l-amber-400 flex items-center justify-between gap-4">
@@ -563,21 +504,13 @@ export default function HomePage() {
             </motion.div>
 
             {/* Pointers: Widget Grid */}
-            <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {/* 1. Insight Pointer */}
-              <motion.div className="h-full" whileHover={{ y: -3, transition: { duration: 0.18 } }}>
-                <InsightWidget
-                  insight={mainInsight.text}
-                  tone={mainInsight.tone}
-                />
-              </motion.div>
-
-              {/* 2. Transactions Pointer */}
+            <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Transactions Pointer */}
               <motion.div className="h-full" whileHover={{ y: -3, transition: { duration: 0.18 } }}>
                 <TransactionsWidget transactions={recentTransactions} />
               </motion.div>
 
-              {/* 3. Bills Pointer */}
+              {/* Bills Pointer */}
               <motion.div className="h-full" whileHover={{ y: -3, transition: { duration: 0.18 } }}>
                 <BillsWidget bills={upcomingBills} />
               </motion.div>
