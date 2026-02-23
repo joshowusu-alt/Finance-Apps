@@ -44,7 +44,7 @@ function computeYearStats(plan: Plan, year: string) {
   const worstPeriod = periodStats.sort((a, b) => a.leftover - b.leftover)[0] ?? null;
 
   // Goals completed this year
-  const completedGoals = plan.savingsGoals.filter(
+  const completedGoals = (plan.savingsGoals ?? []).filter(
     (g) => g.currentAmount >= g.targetAmount
   ).length;
 
@@ -117,7 +117,7 @@ export default function YearInReviewPage() {
   const currentYear = new Date().getFullYear().toString();
   const [year, setYear] = useState(years[0] ?? currentYear);
   const s = useMemo(() => computeYearStats(plan, year), [plan, year]);
-  const currency = getCurrencySymbol(plan.setup.currency);
+  const currency = getCurrencySymbol();
 
   const leftover = s.income - s.spending;
   const hasData = s.txnCount > 0;
