@@ -119,6 +119,15 @@ export default function SpendingCalendarHeatmap({
           const isToday = date === today;
           const isFuture = date > today;
 
+          // Column-aware tooltip position so edge cells don't overflow off-screen
+          const col = i % 7;
+          const tooltipPos =
+            col === 0
+              ? "left-0"
+              : col >= 5
+              ? "right-0 left-auto"
+              : "left-1/2 -translate-x-1/2";
+
           return (
             <div
               key={date}
@@ -133,21 +142,18 @@ export default function SpendingCalendarHeatmap({
               }}
               onMouseEnter={() => setHovered(date)}
               onMouseLeave={() => setHovered(null)}
+              onTouchStart={() => setHovered(date)}
+              onTouchEnd={() => setTimeout(() => setHovered(null), 2000)}
               title={spend > 0 ? `${date}: ${formatMoney(spend)}` : date}
             >
               <span className="text-[9px] font-medium text-[var(--vn-text)] leading-none">
                 {formatDayNumber(date)}
               </span>
-              {spend > 0 && (
-                <span className="text-[8px] text-rose-700 dark:text-rose-300 font-semibold leading-none mt-0.5">
-                  {formatMoney(spend)}
-                </span>
-              )}
 
-              {/* Hover tooltip */}
+              {/* Hover / tap tooltip */}
               {hovered === date && spend > 0 && (
                 <div
-                  className="absolute z-10 bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-xl bg-[var(--vn-surface)] border border-[var(--vn-border)] shadow-lg px-2 py-1 text-[10px] text-[var(--vn-text)] pointer-events-none"
+                  className={`absolute z-10 bottom-full mb-1 whitespace-nowrap rounded-xl bg-[var(--vn-surface)] border border-[var(--vn-border)] shadow-lg px-2 py-1 text-[10px] text-[var(--vn-text)] pointer-events-none ${tooltipPos}`}
                 >
                   {date}: {formatMoney(spend)}
                 </div>

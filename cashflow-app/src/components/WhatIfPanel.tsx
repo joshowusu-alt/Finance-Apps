@@ -147,11 +147,11 @@ export default function WhatIfPanel({
 
               return (
                 <div key={cat.category}>
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="font-medium text-[var(--vn-text)]">
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-xs mb-1.5">
+                    <span className="font-medium text-[var(--vn-text)] shrink-0">
                       {LABEL[cat.category] ?? cat.category}
                     </span>
-                    <span className={`font-semibold tabular-nums ${
+                    <span className={`font-semibold tabular-nums text-right min-w-0 ${
                       adj < 0
                         ? "text-emerald-600 dark:text-emerald-400"
                         : adj > 0

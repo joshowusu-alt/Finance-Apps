@@ -145,7 +145,8 @@ export default function GoalRings({ goals, transactions }: Props) {
         </Link>
       </div>
 
-      <div className="flex justify-around gap-2 flex-wrap">
+      {/* 2-col on phones → 4-col on sm+. justify-items-center keeps rings centred in each cell */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-6 justify-items-center">
         {sorted.map((g) => (
           <Ring key={g.id} goal={g} transactions={transactions} />
         ))}

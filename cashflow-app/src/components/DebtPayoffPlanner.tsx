@@ -155,8 +155,9 @@ export default function DebtPayoffPlanner({ accounts }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {/* Total badge — hidden on narrow phones since the subtitle already shows the total */}
           <span
-            className="text-[10px] font-semibold px-2 py-1 rounded-full"
+            className="hidden sm:inline-flex text-[10px] font-semibold px-2 py-1 rounded-full"
             style={{
               background: "rgba(224,82,82,0.10)",
               color: "#e05252",
