@@ -15,7 +15,7 @@ export default function AIAssistant() {
             aria-label="Open Financial Coach"
             style={{
                 position: "fixed",
-                bottom: "6rem",
+                bottom: "9.5rem",
                 right: "1rem",
                 zIndex: 50,
                 width: 52,

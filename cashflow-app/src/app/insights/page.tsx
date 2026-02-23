@@ -541,7 +541,7 @@ export default function InsightsPage() {
 
                 <CollapsibleSection id="s-on-track" title="1) Am I on track?" defaultOpen>
                   {/* Budget vs Actual Summary */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                     {([
                       { label: "Income", budget: baseStats.budgetIncome, actual: baseStats.actualIncome, favorableWhenOver: true },
                       { label: "Spending", budget: baseStats.budgetSpending, actual: baseStats.actualSpending, favorableWhenOver: false },
