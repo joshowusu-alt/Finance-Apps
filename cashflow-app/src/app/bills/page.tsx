@@ -88,7 +88,8 @@ export default function BillsPage() {
     return new Set(override?.disabledBills ?? []);
   }, [plan]);
   const upcoming = useMemo(
-    () => getUpcomingEvents(plan, plan.setup.selectedPeriodId, "outflow").slice(0, 6),
+    () => getUpcomingEvents(plan, plan.setup.selectedPeriodId, "outflow")
+      .sort((a, b) => a.date.localeCompare(b.date)),
     [plan]
   );
 
@@ -444,6 +445,78 @@ export default function BillsPage() {
                 onAccept={handleAcceptBill}
                 onDismiss={handleDismissBill}
               />
+            )}
+
+            {/* ── Upcoming Payments Timeline ─────────────────────────── */}
+            {upcoming.length > 0 && (
+              <div className="vn-card p-6">
+                <div className="text-sm font-semibold text-(--vn-text) mb-4">
+                  Upcoming Payments
+                  <span className="ml-2 text-xs font-normal text-(--vn-muted)">next {plan.setup.windowDays} days</span>
+                </div>
+                <div className="space-y-2">
+                  {upcoming.map((ev) => {
+                    const today = plan.setup.asOfDate;
+                    const msPerDay = 86_400_000;
+                    const todayMs = new Date(today + "T00:00:00").getTime();
+                    const evMs = new Date(ev.date + "T00:00:00").getTime();
+                    const daysAway = Math.round((evMs - todayMs) / msPerDay);
+                    const isToday = daysAway === 0;
+                    const isTomorrow = daysAway === 1;
+                    const badgeColor =
+                      daysAway <= 0
+                        ? "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400"
+                        : daysAway <= 3
+                          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                          : daysAway <= 7
+                            ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400"
+                            : "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+                    const badgeLabel = isToday
+                      ? "Today"
+                      : isTomorrow
+                        ? "Tomorrow"
+                        : daysAway < 0
+                          ? "Overdue"
+                          : `In ${daysAway}d`;
+                    const categoryColor: Record<string, string> = {
+                      bill: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
+                      savings: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
+                      giving: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300",
+                      allowance: "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300",
+                      buffer: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+                      other: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+                    };
+                    return (
+                      <div
+                        key={ev.id}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-(--vn-border) bg-(--vn-surface) px-4 py-3"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${badgeColor}`}
+                          >
+                            {badgeLabel}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-(--vn-text)">{ev.label}</div>
+                            <div className="text-xs text-(--vn-muted)">{prettyDate(ev.date)}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                              categoryColor[ev.category] ?? categoryColor.other
+                            }`}
+                          >
+                            {ev.category}
+                          </span>
+                          <span className="text-sm font-semibold text-(--vn-text)">{formatMoney(ev.amount)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             )}
 
             <div className="grid gap-6 lg:grid-cols-2">
