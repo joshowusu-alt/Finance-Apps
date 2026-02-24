@@ -1,5 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { generateEvents, buildTimeline, minPoint, getStartingBalance, getSavingsTransferReconciliation } from "../cashflowEngine";
+import {
+  generateEvents,
+  buildTimeline,
+  buildHybridTimeline,
+  buildActualsTimeline,
+  minPoint,
+  getStartingBalance,
+  getSavingsTransferReconciliation,
+  getVarianceByCategory,
+} from "../cashflowEngine";
 import { deriveApp } from "@/lib/derive";
 import { PLAN, SAMPLE_PLAN, PLAN_VERSION, Plan } from "@/data/plan";
 
@@ -484,5 +493,438 @@ describe("getStartingBalance with rollForward", () => {
     const balance = getStartingBalance(plan, 2);
     // P1 starts with 1000, rent of 400 → ends at 600
     expect(balance).toBe(600);
+  });
+});
+
+// ── getVarianceByCategory ────────────────────────────────────────────
+
+describe("getVarianceByCategory", () => {
+  it("reports under when actual spending is below budget", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      bills: [{ id: "rent", label: "Rent", amount: 800, dueDay: 1, category: "bill", enabled: true }],
+      transactions: [
+        { id: "t1", date: "2026-02-01", label: "Rent", amount: 650, type: "outflow", category: "bill" },
+      ],
+    });
+
+    const v = getVarianceByCategory(plan, 1);
+    expect(v.bill?.budgeted).toBe(800);
+    expect(v.bill?.actual).toBe(650);
+    expect(v.bill?.variance).toBe(-150); // under
+    expect(v.bill?.status).toBe("under");
+  });
+
+  it("reports over when actual spending exceeds budget", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      outflowRules: [
+        { id: "groceries", label: "Groceries", amount: 100, cadence: "monthly", seedDate: "2026-02-01", category: "allowance", enabled: true },
+      ],
+      transactions: [
+        { id: "t1", date: "2026-02-01", label: "Groceries", amount: 175, type: "outflow", category: "allowance" },
+      ],
+    });
+
+    const v = getVarianceByCategory(plan, 1);
+    expect(v.allowance?.budgeted).toBe(100);
+    expect(v.allowance?.actual).toBe(175);
+    expect(v.allowance?.variance).toBe(75); // over
+    expect(v.allowance?.status).toBe("over");
+  });
+
+  it("reports neutral when variance is within ±5", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      bills: [{ id: "phone", label: "Phone", amount: 50, dueDay: 1, category: "bill", enabled: true }],
+      transactions: [
+        { id: "t1", date: "2026-02-01", label: "Phone", amount: 53, type: "outflow", category: "bill" },
+      ],
+    });
+
+    const v = getVarianceByCategory(plan, 1);
+    expect(v.bill?.variance).toBe(3); // ±5 → neutral
+    expect(v.bill?.status).toBe("neutral");
+  });
+
+  it("shows zero actual when there are no matching transactions", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      bills: [{ id: "rent", label: "Rent", amount: 900, dueDay: 1, category: "bill", enabled: true }],
+    });
+
+    const v = getVarianceByCategory(plan, 1);
+    expect(v.bill?.budgeted).toBe(900);
+    expect(v.bill?.actual).toBe(0);
+    expect(v.bill?.status).toBe("under");
+  });
+
+  it("captures unbudgeted ad-hoc spending as over-budget", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      transactions: [
+        { id: "t1", date: "2026-02-05", label: "Restaurant", amount: 80, type: "outflow", category: "other" },
+      ],
+    });
+
+    const v = getVarianceByCategory(plan, 1);
+    // No budget for "other", but £80 was spent
+    expect(v.other?.budgeted).toBe(0);
+    expect(v.other?.actual).toBe(80);
+    expect(v.other?.variance).toBe(80);
+    expect(v.other?.status).toBe("over");
+  });
+
+  it("excludes transfer transactions from outflow variance", () => {
+    // A savings outflow rule budgets £200; actual transaction is a transfer, not outflow
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      outflowRules: [
+        { id: "sv", label: "Savings", amount: 200, cadence: "monthly", seedDate: "2026-02-15", category: "savings", enabled: true },
+      ],
+      transactions: [
+        // transfer type — excluded from variance calc
+        { id: "t1", date: "2026-02-15", label: "Transfer", amount: 200, type: "transfer", category: "savings" },
+      ],
+    });
+
+    const v = getVarianceByCategory(plan, 1);
+    // budgeted 200 (outflow rule), actual 0 (transfer excluded) → under
+    expect(v.savings?.budgeted).toBe(200);
+    expect(v.savings?.actual).toBe(0);
+    expect(v.savings?.status).toBe("under");
+  });
+
+  it("only considers transactions within the selected period", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      bills: [{ id: "rent", label: "Rent", amount: 800, dueDay: 1, category: "bill", enabled: true }],
+      transactions: [
+        { id: "old", date: "2026-01-15", label: "Rent", amount: 800, type: "outflow", category: "bill" }, // outside P1
+        { id: "t1",  date: "2026-02-01", label: "Rent", amount: 800, type: "outflow", category: "bill" }, // inside P1
+      ],
+    });
+
+    const v = getVarianceByCategory(plan, 1);
+    expect(v.bill?.actual).toBe(800); // only P1 transaction counted
+    expect(v.bill?.variance).toBe(0);
+  });
+});
+
+// ── buildHybridTimeline ──────────────────────────────────────────────
+
+describe("buildHybridTimeline", () => {
+  it("uses actual transactions for dates on or before asOfDate", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1, asOfDate: "2026-02-02", expectedMinBalance: 0 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-05" }],
+      // Planned income of £500 on Feb 1 — should be ignored in favour of actuals
+      incomeRules: [
+        { id: "pay", label: "Pay", amount: 500, cadence: "monthly", seedDate: "2026-02-01", enabled: true },
+      ],
+      transactions: [
+        { id: "t1", date: "2026-02-01", label: "Side gig", amount: 120, type: "income", category: "income" },
+      ],
+    });
+
+    const rows = buildHybridTimeline(plan, 1, 1000);
+    // Feb 1 is past → actual income £120 used, NOT the planned £500
+    const feb1 = rows.find((r) => r.date === "2026-02-01")!;
+    expect(feb1.income).toBe(120);
+    expect(feb1.balance).toBe(1120);
+  });
+
+  it("uses planned events for dates after asOfDate", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1, asOfDate: "2026-02-02", expectedMinBalance: 0 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-05" }],
+      bills: [
+        { id: "phone", label: "Phone", amount: 60, dueDay: 4, category: "bill", enabled: true },
+      ],
+    });
+
+    const rows = buildHybridTimeline(plan, 1, 1000);
+    // Feb 4 is in the future → planned bill £60 is used
+    const feb4 = rows.find((r) => r.date === "2026-02-04")!;
+    expect(feb4.outflow).toBe(60);
+    expect(feb4.balance).toBe(940);
+  });
+
+  it("carries running balance seamlessly across the past/future boundary", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1, asOfDate: "2026-02-02", expectedMinBalance: 0 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-04" }],
+      incomeRules: [
+        { id: "pay", label: "Pay", amount: 300, cadence: "monthly", seedDate: "2026-02-03", enabled: true },
+      ],
+      transactions: [
+        { id: "t1", date: "2026-02-01", label: "Salary", amount: 1000, type: "income", category: "income" },
+        { id: "t2", date: "2026-02-02", label: "Grocery", amount: 50,   type: "outflow", category: "allowance" },
+      ],
+    });
+
+    const rows = buildHybridTimeline(plan, 1, 500);
+    // Feb 1: 500 + 1000 = 1500 (actual)
+    expect(rows[0].balance).toBe(1500);
+    // Feb 2: 1500 - 50 = 1450 (actual)
+    expect(rows[1].balance).toBe(1450);
+    // Feb 3: 1450 + 300 = 1750 (planned)
+    expect(rows[2].balance).toBe(1750);
+    // Feb 4: no events = 1750
+    expect(rows[3].balance).toBe(1750);
+  });
+});
+
+// ── buildActualsTimeline ─────────────────────────────────────────────
+
+describe("buildActualsTimeline", () => {
+  it("returns only rows up to and including asOfDate", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1, asOfDate: "2026-02-03", expectedMinBalance: 0 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-10" }],
+    });
+
+    const rows = buildActualsTimeline(plan, 1, 1000);
+    expect(rows).toHaveLength(3); // Feb 1, 2, 3 only
+    expect(rows[rows.length - 1].date).toBe("2026-02-03");
+  });
+
+  it("returns empty array when asOfDate is before the period start", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1, asOfDate: "2026-01-20", expectedMinBalance: 0 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+    });
+
+    const rows = buildActualsTimeline(plan, 1, 1000);
+    expect(rows).toHaveLength(0);
+  });
+
+  it("accumulates only actual transaction balances, ignoring planned events", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1, asOfDate: "2026-02-03", expectedMinBalance: 0 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-10" }],
+      // A planned rule that should NOT appear in actuals
+      incomeRules: [
+        { id: "pay", label: "Pay", amount: 500, cadence: "monthly", seedDate: "2026-02-01", enabled: true },
+      ],
+      transactions: [
+        { id: "t1", date: "2026-02-01", label: "Freelance", amount: 200, type: "income",  category: "income" },
+        { id: "t2", date: "2026-02-03", label: "Rent",      amount: 400, type: "outflow", category: "bill" },
+      ],
+    });
+
+    const rows = buildActualsTimeline(plan, 1, 1000);
+    expect(rows[0].income).toBe(200);   // actual, not planned £500
+    expect(rows[0].balance).toBe(1200);
+    expect(rows[1].balance).toBe(1200); // Feb 2, no transaction
+    expect(rows[2].outflow).toBe(400);
+    expect(rows[2].balance).toBe(800);
+  });
+});
+
+// ── Period rule overrides ────────────────────────────────────────────
+
+describe("periodRuleOverrides", () => {
+  it("disables an enabled rule for a specific period only", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [
+        { id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" },
+        { id: 2, label: "P2", start: "2026-03-01", end: "2026-03-31" },
+      ],
+      incomeRules: [
+        { id: "pay", label: "Pay", amount: 2000, cadence: "monthly", seedDate: "2026-02-01", enabled: true },
+      ],
+      periodRuleOverrides: [
+        { periodId: 1, ruleId: "pay", type: "income", enabled: false },
+      ],
+    });
+
+    // Period 1: rule disabled by override → no income events
+    const p1Events = generateEvents(plan, 1).filter((e) => e.type === "income");
+    expect(p1Events).toHaveLength(0);
+
+    // Period 2: override doesn't apply → income events present
+    const p2Events = generateEvents(plan, 2).filter((e) => e.type === "income");
+    expect(p2Events).toHaveLength(1);
+    expect(p2Events[0].amount).toBe(2000);
+  });
+
+  it("overrides the amount of an outflow rule for a specific period", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      outflowRules: [
+        { id: "groceries", label: "Groceries", amount: 100, cadence: "monthly", seedDate: "2026-02-15", category: "allowance", enabled: true },
+      ],
+      periodRuleOverrides: [
+        { periodId: 1, ruleId: "groceries", type: "outflow", amount: 250 },
+      ],
+    });
+
+    const events = generateEvents(plan, 1).filter((e) => e.sourceId === "groceries");
+    expect(events).toHaveLength(1);
+    expect(events[0].amount).toBe(250); // overridden from 100 → 250
+  });
+
+  it("enables a disabled rule for a specific period", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      incomeRules: [
+        { id: "bonus", label: "Bonus", amount: 500, cadence: "monthly", seedDate: "2026-02-15", enabled: false },
+      ],
+      periodRuleOverrides: [
+        { periodId: 1, ruleId: "bonus", type: "income", enabled: true },
+      ],
+    });
+
+    const events = generateEvents(plan, 1).filter((e) => e.type === "income");
+    expect(events).toHaveLength(1);
+    expect(events[0].amount).toBe(500);
+  });
+});
+
+// ── Event overrides ──────────────────────────────────────────────────
+
+describe("eventOverrides", () => {
+  it("disabling an event removes it from the timeline", () => {
+    // Income rule generates event id "pay-2026-02-01"
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      incomeRules: [
+        { id: "pay", label: "Pay", amount: 1000, cadence: "monthly", seedDate: "2026-02-01", enabled: true },
+      ],
+      eventOverrides: [
+        { id: "eo-1", eventId: "pay-2026-02-01", disabled: true },
+      ],
+    });
+
+    const events = generateEvents(plan, 1).filter((e) => e.type === "income");
+    expect(events).toHaveLength(0);
+  });
+
+  it("date override shifts the event to a new date within the period", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      incomeRules: [
+        { id: "pay", label: "Pay", amount: 1000, cadence: "monthly", seedDate: "2026-02-01", enabled: true },
+      ],
+      eventOverrides: [
+        { id: "eo-1", eventId: "pay-2026-02-01", date: "2026-02-20" },
+      ],
+    });
+
+    const events = generateEvents(plan, 1).filter((e) => e.type === "income");
+    expect(events).toHaveLength(1);
+    expect(events[0].date).toBe("2026-02-20");
+    expect(events[0].amount).toBe(1000);
+  });
+
+  it("amount override changes the event amount", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      bills: [
+        { id: "rent", label: "Rent", amount: 900, dueDay: 1, category: "bill", enabled: true },
+      ],
+      eventOverrides: [
+        { id: "eo-1", eventId: "rent-2026-02-01", amount: 950 },
+      ],
+    });
+
+    const events = generateEvents(plan, 1).filter((e) => e.sourceId === "rent");
+    expect(events).toHaveLength(1);
+    expect(events[0].amount).toBe(950); // overridden from 900 → 950
+  });
+
+  it("event overridden to a date outside the period is excluded", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      incomeRules: [
+        { id: "pay", label: "Pay", amount: 1000, cadence: "monthly", seedDate: "2026-02-01", enabled: true },
+      ],
+      eventOverrides: [
+        { id: "eo-1", eventId: "pay-2026-02-01", date: "2026-03-05" }, // outside period
+      ],
+    });
+
+    const events = generateEvents(plan, 1).filter((e) => e.type === "income");
+    expect(events).toHaveLength(0); // pushed out of period bounds
+  });
+});
+
+// ── Disabled rules and bills ─────────────────────────────────────────
+
+describe("disabled rules and bills", () => {
+  it("disabled income rule produces no events", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      incomeRules: [
+        { id: "pay", label: "Pay", amount: 2000, cadence: "monthly", seedDate: "2026-02-01", enabled: false },
+      ],
+    });
+
+    const events = generateEvents(plan, 1).filter((e) => e.type === "income");
+    expect(events).toHaveLength(0);
+  });
+
+  it("disabled outflow rule produces no events", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      outflowRules: [
+        { id: "groceries", label: "Groceries", amount: 80, cadence: "weekly", seedDate: "2026-02-02", category: "allowance", enabled: false },
+      ],
+    });
+
+    const events = generateEvents(plan, 1).filter((e) => e.sourceId === "groceries");
+    expect(events).toHaveLength(0);
+  });
+
+  it("disabled bill produces no events", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [{ id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" }],
+      bills: [
+        { id: "gym", label: "Gym", amount: 30, dueDay: 10, category: "bill", enabled: false },
+      ],
+    });
+
+    const events = generateEvents(plan, 1).filter((e) => e.sourceId === "gym");
+    expect(events).toHaveLength(0);
+  });
+
+  it("per-period disabled bill is excluded only for that period", () => {
+    const plan = buildPlan({
+      setup: { selectedPeriodId: 1 },
+      periods: [
+        { id: 1, label: "P1", start: "2026-02-01", end: "2026-02-28" },
+        { id: 2, label: "P2", start: "2026-03-01", end: "2026-03-31" },
+      ],
+      bills: [
+        { id: "gym", label: "Gym", amount: 30, dueDay: 10, category: "bill", enabled: true },
+      ],
+      periodOverrides: [
+        { periodId: 1, disabledBills: ["gym"] },
+      ],
+    });
+
+    const p1Events = generateEvents(plan, 1).filter((e) => e.sourceId === "gym");
+    expect(p1Events).toHaveLength(0); // disabled for P1
+
+    const p2Events = generateEvents(plan, 2).filter((e) => e.sourceId === "gym");
+    expect(p2Events).toHaveLength(1); // still active in P2
   });
 });
