@@ -678,8 +678,8 @@ export default function InsightsPage() {
                       {forecastScenarios.map((scenario) => {
                         const tone =
                           scenario.bufferDelta >= 0
-                            ? "text-green-600"
-                            : "text-rose-600";
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-rose-600 dark:text-rose-400";
                         return (
                           <div
                             key={scenario.id}
@@ -862,7 +862,7 @@ export default function InsightsPage() {
                           <div className="text-[var(--vn-muted)]">No bill variance data.</div>
                         ) : (
                           billVariance.map((row) => {
-                            const tone = row.variance > 0 ? "text-rose-600" : "text-green-600";
+                            const tone = row.variance > 0 ? "text-rose-600 dark:text-rose-400" : "text-green-600 dark:text-green-400";
                             return (
                               <div key={row.id} className="flex items-center justify-between gap-3">
                                 <span className="truncate">{row.label}</span>
@@ -979,7 +979,7 @@ export default function InsightsPage() {
                     {seriesCards.map((series) => {
                       const last = lastValue(series.values);
                       const delta = deltaValue(series.values);
-                      const deltaTone = delta >= 0 ? "text-green-600" : "text-rose-600";
+                      const deltaTone = delta >= 0 ? "text-green-600 dark:text-green-400" : "text-rose-600 dark:text-rose-400";
                       return (
                         <div key={series.key} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
                           <div className="flex items-start justify-between gap-4">

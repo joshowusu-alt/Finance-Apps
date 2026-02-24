@@ -31,9 +31,11 @@ html[data-theme="dark"] {
   /* VELANOVO — Dark Mode */
   --vn-bg: #0D1117;
   --vn-surface: #111827;
-  --vn-border: rgba(255, 255, 255, 0.06);
+  /* Borders: bumped from 0.06 → 0.10 so cards/dividers are visible */
+  --vn-border: rgba(255, 255, 255, 0.10);
   --vn-text: #E6E8EB;
-  --vn-muted: #7D8793;
+  /* Muted: #9BA4B0 = ~7:1 on #0D1117, always WCAG AA-compliant */
+  --vn-muted: #9BA4B0;
 
   --vn-success: #4FAF7B;
   --vn-warning: #fbbf24;
@@ -41,14 +43,15 @@ html[data-theme="dark"] {
 
   --vn-primary: #D4AF5A;
   --vn-primary-contrast: #0D1117;
-  --vn-accent: #C5A046;
-  --vn-gold: #C5A046;
-  --vn-gold-500: #D4AF5A;
+  --vn-accent: #D4AF5A;
+  /* Gold: brighter champagne in dark for vibrancy */
+  --vn-gold: #D4AF5A;
+  --vn-gold-500: #E2C074;
 
-  /* Gradients */
+  /* Gradients — updated to use brighter dark-mode gold */
   --vn-gradient: linear-gradient(135deg, #141C26 0%, #1A2430 100%);
-  --vn-gradient-subtle: linear-gradient(135deg, rgba(20, 28, 38, 0.4) 0%, rgba(197, 160, 70, 0.12) 100%);
-  --vn-gradient-gold: linear-gradient(135deg, #C5A046 0%, #D4AF5A 100%);
+  --vn-gradient-subtle: linear-gradient(135deg, rgba(20, 28, 38, 0.4) 0%, rgba(212, 175, 90, 0.14) 100%);
+  --vn-gradient-gold: linear-gradient(135deg, #D4AF5A 0%, #E2C074 100%);
 }
 
 body {
@@ -76,11 +79,12 @@ body {
 }
 
 .dark .vn-card {
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
 .dark .vn-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 

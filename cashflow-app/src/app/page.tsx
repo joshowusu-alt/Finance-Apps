@@ -616,7 +616,7 @@ export default function HomePage() {
                 <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Income</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(actualIncome)}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Spending</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(actualSpending)}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Savings</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(actualSavings)}</span></div>
-                <div className="flex justify-between border-t border-[var(--vn-border)] pt-2"><span className="font-semibold text-[var(--vn-text)]">Leftover</span><span className={`font-bold ${actualLeftover >= 0 ? "text-emerald-600" : "text-rose-500"}`}>{formatMoney(actualLeftover)}</span></div>
+                <div className="flex justify-between border-t border-[var(--vn-border)] pt-2"><span className="font-semibold text-[var(--vn-text)]">Leftover</span><span className={`font-bold ${actualLeftover >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}>{formatMoney(actualLeftover)}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Forecast end balance</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(endingBalance)}</span></div>
               </div>
               {nextPeriod ? (
