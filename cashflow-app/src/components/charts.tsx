@@ -216,22 +216,12 @@ export function CashflowProjectionChart({
             y={lowBalanceThreshold}
             stroke="#f43f5e"
             strokeDasharray="4 2"
-            label={(props: { viewBox?: { x?: number; y?: number; width?: number } }) => {
-              const vb = props.viewBox ?? {};
-              const x = (vb.x ?? 0) + (vb.width ?? 0) - 4;
-              const y = (vb.y ?? 0) - 5;
-              return (
-                <text x={x} y={y} fill="#f43f5e" fontSize={10} textAnchor="end" fontWeight={600}>
-                  Low balance
-                </text>
-              );
-            }}
           />
         )}
         <Line
           type="monotone"
           dataKey="balance"
-          name="Balance"
+          name="Budget (Planned)"
           stroke="#6366f1"
           strokeWidth={2.5}
           dot={{ r: 3, fill: "#6366f1", strokeWidth: 0 }}
@@ -243,7 +233,7 @@ export function CashflowProjectionChart({
           <Line
             type="monotone"
             dataKey="projected"
-            name="Projected"
+            name="Actuals (Recorded)"
             stroke="#a5b4fc"
             strokeWidth={1.5}
             strokeDasharray="5 3"

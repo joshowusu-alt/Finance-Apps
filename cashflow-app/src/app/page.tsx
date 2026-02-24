@@ -493,7 +493,7 @@ export default function HomePage() {
                   <div className="text-sm font-bold text-(--vn-text)">Cashflow Forecast</div>
                   <div className="text-xs text-(--vn-muted) mb-1">Projected balance for next 30 days</div>
                   {/* Legend */}
-                  <div className="flex items-center gap-3 mt-1">
+                  <div className="flex flex-wrap items-center gap-3 mt-1">
                     <span className="flex items-center gap-1 text-[10px] text-(--vn-muted)">
                       <span className="inline-block w-6 h-0.5 bg-(--vn-primary) rounded" />
                       Budget (Planned)
@@ -502,6 +502,12 @@ export default function HomePage() {
                       <span className="flex items-center gap-1 text-[10px] text-(--vn-muted)">
                         <span className="inline-block w-6 h-0.5 border-t-2 border-dashed border-(--vn-secondary)" />
                         Actuals (Recorded)
+                      </span>
+                    )}
+                    {(plan.setup.expectedMinBalance ?? 0) > 0 && (
+                      <span className="flex items-center gap-1 text-[10px] text-rose-500">
+                        <span className="inline-block w-6 h-0 border-t-2 border-dashed border-rose-500" />
+                        Min balance
                       </span>
                     )}
                   </div>
