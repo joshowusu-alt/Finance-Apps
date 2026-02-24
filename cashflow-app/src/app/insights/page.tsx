@@ -298,7 +298,7 @@ export default function InsightsPage() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden">
+    <main className="min-h-screen w-full max-w-full overflow-x-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-40 pt-5">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <SidebarNav periodLabel={basePeriod.label} periodStart={basePeriod.start} periodEnd={basePeriod.end} />
@@ -454,11 +454,12 @@ export default function InsightsPage() {
                 {/* ── Quick-jump sticky nav ─────────────────────────────────── */}
                 <nav
                   aria-label="Insights sections"
-                  className="sticky top-0 z-20 -mx-4 px-4 py-2 overflow-x-auto"
+                  className="sticky top-0 z-20 -mx-4 px-4 py-2 overflow-x-auto scroll-x-hide"
                   style={{
                     background: "var(--vn-bg)",
                     borderBottom: "1px solid var(--vn-border)",
                     scrollbarWidth: "none",
+                    WebkitOverflowScrolling: "touch",
                   }}
                 >
                   <div className="flex gap-2 min-w-max">

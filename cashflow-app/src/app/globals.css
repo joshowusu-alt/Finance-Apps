@@ -167,6 +167,36 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-feature-settings: "kern" 1, "liga" 1;
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+html {
+  overflow-x: hidden;
+  /* Enable smooth iOS momentum scroll on the root */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide native scrollbars on horizontal scroll containers (keep behaviour, remove visual) */
+.scroll-x-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scroll-x-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe-area bottom padding utility — use pb-safe alongside pb-* */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+}
+
+/* Ensure every direct-child of the nav avoids safe area on notchless phones too */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-nav-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+  }
 }
 
 /* Dark mode body inherits bg-app from .dark :root */

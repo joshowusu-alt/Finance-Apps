@@ -123,7 +123,7 @@ export default function YearInReviewPage() {
   const hasData = s.txnCount > 0;
 
   return (
-    <main className="flex min-h-screen" style={{ background: "var(--vn-bg)" }}>
+    <main className="flex min-h-screen w-full max-w-full overflow-x-hidden" style={{ background: "var(--vn-bg)" }}>
       <SidebarNav />
       <div className="flex-1 max-w-3xl mx-auto px-4 py-8 pb-28">
 

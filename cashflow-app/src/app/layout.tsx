@@ -85,7 +85,7 @@ export default function RootLayout({
           </noscript>
           {/* Page content */}
           <ErrorBoundary>
-            <div id="main-content" tabIndex={-1} className="relative z-10 min-h-screen pb-28">
+            <div id="main-content" tabIndex={-1} className="relative z-10 min-h-screen pb-28 w-full max-w-full overflow-x-hidden">
               {children}
             </div>
           </ErrorBoundary>

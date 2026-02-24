@@ -180,8 +180,8 @@ export default function BottomNav() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ duration: 0.28, ease: [0.4, 0.0, 0.2, 1] }}
-              className="fixed bottom-0 left-0 right-0 z-40 rounded-t-3xl pb-28 md:hidden"
-              style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}
+              className="fixed bottom-0 left-0 right-0 z-40 rounded-t-3xl md:hidden"
+              style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)", maxHeight: "85dvh", overflowY: "auto" }}
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={{ top: 0, bottom: 1 }}
@@ -192,7 +192,8 @@ export default function BottomNav() {
               <div className="flex justify-center pt-3 pb-2">
                 <div className="h-1 w-10 rounded-full bg-[var(--vn-border)]" />
               </div>
-              <div className="px-6 py-2">
+              {/* Scrollable content with safe area bottom padding */}
+              <div className="px-6 py-2 pb-28">{/* pb-28 clears the tab bar */}
                 <p className="text-[11px] uppercase tracking-widest font-semibold mb-3" style={{ color: "var(--vn-muted)" }}>All features</p>
                 <div className="grid grid-cols-4 gap-3">
                   {moreItems.map((it) => (
