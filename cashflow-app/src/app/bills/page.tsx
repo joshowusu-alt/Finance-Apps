@@ -49,6 +49,16 @@ export default function BillsPage() {
     enabled: true,
   });
 
+  const DISMISSED_BILLS_KEY = "cashflow_dismissed_bill_suggestions";
+  const [dismissedBillIds, setDismissedBillIds] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(DISMISSED_BILLS_KEY);
+      return stored ? new Set<string>(JSON.parse(stored) as string[]) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  });
+
   useEffect(() => {
     const refresh = () => {
       setPlan(loadPlan());
@@ -86,6 +96,12 @@ export default function BillsPage() {
   const detectedBills = useMemo(
     () => detectRecurringBills(plan.transactions, plan.bills),
     [plan.transactions, plan.bills]
+  );
+
+  // Filter out bills the user has already dismissed (persisted in localStorage)
+  const filteredDetectedBills = useMemo(
+    () => detectedBills.filter((b) => !dismissedBillIds.has(b.id)),
+    [detectedBills, dismissedBillIds]
   );
 
   const billIds = useMemo(() => new Set(plan.bills.map((b) => b.id)), [plan.bills]);
@@ -341,13 +357,20 @@ export default function BillsPage() {
     const updated = { ...plan, bills: [...plan.bills, bill] };
     savePlan(updated);
     setPlan(updated);
+    // Also persist the accepted suggestion as dismissed so it doesn't reappear
+    handleDismissBill(bill.id);
   }
 
   // Handle dismissing a detected bill (store in local storage to not show again)
   function handleDismissBill(billId: string) {
-    // For now, we just let the BillSuggestions component handle the UI state
-    // In a production app, you'd store dismissed IDs in localStorage or the plan
-    console.log("Dismissed bill suggestion:", billId);
+    const updated = new Set(dismissedBillIds);
+    updated.add(billId);
+    setDismissedBillIds(updated);
+    try {
+      localStorage.setItem(DISMISSED_BILLS_KEY, JSON.stringify(Array.from(updated)));
+    } catch {
+      // localStorage unavailable (e.g. private browsing quota)
+    }
   }
 
   return (
@@ -415,9 +438,9 @@ export default function BillsPage() {
             />
 
             {/* Bill Suggestions from transaction history */}
-            {detectedBills.length > 0 && (
+            {filteredDetectedBills.length > 0 && (
               <BillSuggestions
-                detectedBills={detectedBills}
+                detectedBills={filteredDetectedBills}
                 onAccept={handleAcceptBill}
                 onDismiss={handleDismissBill}
               />
