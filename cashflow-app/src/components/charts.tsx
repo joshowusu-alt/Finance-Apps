@@ -216,7 +216,16 @@ export function CashflowProjectionChart({
             y={lowBalanceThreshold}
             stroke="#f43f5e"
             strokeDasharray="4 2"
-            label={{ value: "Low balance", fontSize: 10, fill: "#f43f5e", position: "insideTopLeft" }}
+            label={(props: { viewBox?: { x?: number; y?: number; width?: number } }) => {
+              const vb = props.viewBox ?? {};
+              const x = (vb.x ?? 0) + (vb.width ?? 0) - 4;
+              const y = (vb.y ?? 0) - 5;
+              return (
+                <text x={x} y={y} fill="#f43f5e" fontSize={10} textAnchor="end" fontWeight={600}>
+                  Low balance
+                </text>
+              );
+            }}
           />
         )}
         <Line
