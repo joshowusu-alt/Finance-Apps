@@ -20,6 +20,7 @@ import SplashScreen from "@/components/SplashScreen";
 import QuickAddFAB from "@/components/QuickAddFAB";
 import CommandPalette from "@/components/CommandPalette";
 import PullToRefresh from "@/components/PullToRefresh";
+import SwipeBack from "@/components/SwipeBack";
 import BiometricLock from "@/components/BiometricLock";
 
 const playfair = Playfair_Display({
@@ -94,6 +95,7 @@ export default function RootLayout({
           <BiometricLock />
           <CommandPalette />
           <PullToRefresh />
+          <SwipeBack />
           <QuickAddFAB />
           <BottomNav />
           <InstallPrompt />

@@ -15,6 +15,7 @@ import {
   savePreviousPlan,
   setStorageScope,
 } from "@/lib/storage";
+import { showToast } from "@/components/Toast";
 import { DEFAULT_ALERT_PREFS, loadAlertPreferences, saveAlertPreferences } from "@/lib/alerts";
 import {
   DEFAULT_ONBOARDING_STATE,
@@ -359,7 +360,9 @@ export default function CloudSync() {
       if (localUpdatedMs >= serverUpdatedMs) {
         await pushPlan(localPlan, localPrev, scenarioId);
       } else {
+        // Remote is newer — pull it, but let the user know their local changes were overwritten
         await pullPlan(serverPlan, serverPrev, serverUpdatedMs, scenarioId);
+        showToast("Plan updated from another device — local changes merged.", "info", 6000);
       }
       return;
     }

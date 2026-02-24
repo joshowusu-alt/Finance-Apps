@@ -12,6 +12,8 @@
 import { useEffect } from "react";
 import { loadPlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { getAlerts, loadAlertPreferences } from "@/lib/alerts";
+import { detectAnomalies } from "@/lib/anomalyDetection";
+import { formatMoney } from "@/lib/currency";
 import { fireAlertNotification, isNotificationsEnabled } from "@/lib/pushNotifications";
 
 export default function NotificationScheduler() {
@@ -32,6 +34,18 @@ export default function NotificationScheduler() {
           alert.title,
           alert.description,
           alert.href
+        );
+      }
+
+      // Fire notifications for spending anomalies (rolling-avg excess)
+      const anomalies = detectAnomalies(plan);
+      for (const anomaly of anomalies) {
+        const pct = Math.round((anomaly.ratio - 1) * 100);
+        fireAlertNotification(
+          `anomaly-${anomaly.category}`,
+          `Unusual ${anomaly.category} spend`,
+          `You've spent ${formatMoney(anomaly.currentAmount)} on ${anomaly.category} this period — ${pct}% above your usual ${formatMoney(Math.round(anomaly.avgAmount))}.`,
+          "/insights"
         );
       }
     }
