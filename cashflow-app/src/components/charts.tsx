@@ -29,7 +29,7 @@ import type { CategoryData, SpendingDataPoint } from "@/lib/insightsSnapshot";
 export type { CategoryData, SpendingDataPoint };
 
 // CashflowDataPoint for the projection chart
-export type CashflowDataPoint = { date: string; balance: number; projected: number };
+export type CashflowDataPoint = { date: string; balance: number; projected?: number | undefined };
 
 const PALETTE = [
   "#6366f1",
