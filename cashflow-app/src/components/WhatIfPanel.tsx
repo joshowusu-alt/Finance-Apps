@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * WhatIfPanel
@@ -76,14 +76,14 @@ export default function WhatIfPanel({
         aria-expanded={open}
       >
         <div>
-          <div className="text-sm font-semibold text-[var(--vn-text)]">
+          <div className="text-sm font-semibold text-(--vn-text)">
             What-if scenario
           </div>
-          <div className="text-xs text-[var(--vn-muted)] mt-0.5">
+          <div className="text-xs text-(--vn-muted) mt-0.5">
             Adjust spending to see impact on end balance
           </div>
         </div>
-        <span className="text-xs text-[var(--vn-muted)] shrink-0">{open ? "Hide" : "Show"}</span>
+        <span className="text-xs text-(--vn-muted) shrink-0">{open ? "Hide" : "Show"}</span>
       </button>
 
       {open && (
@@ -94,21 +94,21 @@ export default function WhatIfPanel({
               ? totalAdjustment > 0
                 ? "bg-rose-50 dark:bg-rose-900/15 border-rose-200 dark:border-rose-800"
                 : "bg-emerald-50 dark:bg-emerald-900/15 border-emerald-200 dark:border-emerald-800"
-              : "bg-[var(--vn-surface)] border-[var(--vn-border)]"
+              : "bg-(--vn-surface) border-(--vn-border)"
           }`}>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <div className="text-xs text-[var(--vn-muted)]">Current projected end balance</div>
-                <div className="font-semibold text-[var(--vn-text)] mt-0.5">{formatMoney(projectedEndBalance)}</div>
+                <div className="text-xs text-(--vn-muted)">Current projected end balance</div>
+                <div className="font-semibold text-(--vn-text) mt-0.5">{formatMoney(projectedEndBalance)}</div>
               </div>
               <div>
-                <div className="text-xs text-[var(--vn-muted)]">What-if end balance</div>
+                <div className="text-xs text-(--vn-muted)">What-if end balance</div>
                 <div className={`font-semibold mt-0.5 ${
                   hasAdjustments
                     ? newEndBalance > projectedEndBalance
                       ? "text-emerald-600 dark:text-emerald-400"
                       : "text-rose-600 dark:text-rose-400"
-                    : "text-[var(--vn-text)]"
+                    : "text-(--vn-text)"
                 }`}>
                   {formatMoney(newEndBalance)}
                 </div>
@@ -132,7 +132,7 @@ export default function WhatIfPanel({
           {/* Category sliders */}
           <div className="space-y-5">
             {adjustableCategories.length === 0 && (
-              <div className="text-xs text-[var(--vn-muted)]">
+              <div className="text-xs text-(--vn-muted)">
                 No adjustable categories found for this period.
               </div>
             )}
@@ -148,7 +148,7 @@ export default function WhatIfPanel({
               return (
                 <div key={cat.category}>
                   <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-xs mb-1.5">
-                    <span className="font-medium text-[var(--vn-text)] shrink-0">
+                    <span className="font-medium text-(--vn-text) shrink-0">
                       {LABEL[cat.category] ?? cat.category}
                     </span>
                     <span className={`font-semibold tabular-nums text-right min-w-0 ${
@@ -156,7 +156,7 @@ export default function WhatIfPanel({
                         ? "text-emerald-600 dark:text-emerald-400"
                         : adj > 0
                         ? "text-rose-600 dark:text-rose-400"
-                        : "text-[var(--vn-muted)]"
+                        : "text-(--vn-muted)"
                     }`}>
                       {adj === 0
                         ? `actual ${formatMoney(cat.actual)}`
@@ -174,10 +174,10 @@ export default function WhatIfPanel({
                     onChange={(e) =>
                       handleSlider(cat.category, Number(e.target.value))
                     }
-                    className="w-full accent-[var(--vn-primary)] h-2 rounded-full"
+                    className="w-full accent-(--vn-primary) h-2 rounded-full"
                     aria-label={`Adjust ${LABEL[cat.category] ?? cat.category} spend`}
                   />
-                  <div className="flex justify-between text-[10px] text-[var(--vn-muted)] mt-0.5">
+                  <div className="flex justify-between text-[10px] text-(--vn-muted) mt-0.5">
                     <span>−{formatMoney(maxCut)}</span>
                     <span>current</span>
                     <span>+{formatMoney(maxAdd)}</span>
@@ -191,7 +191,7 @@ export default function WhatIfPanel({
             <button
               type="button"
               onClick={reset}
-              className="mt-4 text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] transition-colors"
+              className="mt-4 text-xs text-(--vn-muted) hover:text-(--vn-text) transition-colors"
             >
               Reset all
             </button>

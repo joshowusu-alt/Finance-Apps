@@ -193,7 +193,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
             style={{ borderBottom: "1px solid var(--vn-border)" }}
           >
             <StepIndicator totalSteps={TOTAL_STEPS} currentStep={step} />
-            <span className="text-xs text-[var(--vn-muted)]">Quick Setup</span>
+            <span className="text-xs text-(--vn-muted)">Quick Setup</span>
           </div>
 
           {/* Step content (scrollable on mobile) */}
@@ -208,8 +208,8 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                 {step === 1 && (
                   <div className="space-y-5">
                     <div>
-                      <h2 className="text-xl font-bold text-[var(--vn-text)]">Where are you based?</h2>
-                      <p className="mt-2 text-sm text-[var(--vn-muted)]">This sets your currency and number format automatically.</p>
+                      <h2 className="text-xl font-bold text-(--vn-text)">Where are you based?</h2>
+                      <p className="mt-2 text-sm text-(--vn-muted)">This sets your currency and number format automatically.</p>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       {POPULAR_COUNTRIES.map((code) => {
@@ -220,13 +220,13 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                             onClick={() => handleCountrySelect(code)}
                             className={`rounded-xl px-3 py-3 text-left transition-all border-2 ${
                               country === code
-                                ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10"
-                                : "border-[var(--vn-border)] hover:border-[var(--vn-primary)]/50"
+                                ? "border-(--vn-primary) bg-(--vn-primary)/10"
+                                : "border-(--vn-border) hover:border-(--vn-primary)/50"
                             }`}
                           >
                             <span className="text-xl">{c.flag}</span>
-                            <div className="text-xs font-medium text-[var(--vn-text)] mt-1 truncate">{c.name}</div>
-                            <div className="text-[10px] text-[var(--vn-muted)]">{CURRENCIES[c.currency].symbol} {c.currency}</div>
+                            <div className="text-xs font-medium text-(--vn-text) mt-1 truncate">{c.name}</div>
+                            <div className="text-[10px] text-(--vn-muted)">{CURRENCIES[c.currency].symbol} {c.currency}</div>
                           </button>
                         );
                       })}
@@ -234,7 +234,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                     {!showAllCountries ? (
                       <button
                         onClick={() => setShowAllCountries(true)}
-                        className="text-xs text-[var(--vn-primary)] hover:underline"
+                        className="text-xs text-(--vn-primary) hover:underline"
                       >
                         Show all countries
                       </button>
@@ -242,7 +242,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                       <select
                         value={country}
                         onChange={(e) => handleCountrySelect(e.target.value as CountryCode)}
-                        className="w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-primary)]"
+                        className="w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-primary)"
                       >
                         {Object.entries(COUNTRIES).map(([code, c]) => (
                           <option key={code} value={code}>
@@ -252,9 +252,9 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                       </select>
                     )}
                     {country in COUNTRIES && (
-                      <div className="flex items-center gap-2 rounded-lg bg-[var(--vn-primary)]/5 px-3 py-2 text-sm">
+                      <div className="flex items-center gap-2 rounded-lg bg-(--vn-primary)/5 px-3 py-2 text-sm">
                         <span className="text-lg">{COUNTRIES[country].flag}</span>
-                        <span className="font-medium text-[var(--vn-text)]">
+                        <span className="font-medium text-(--vn-text)">
                           {CURRENCIES[COUNTRIES[country].currency].symbol} {CURRENCIES[COUNTRIES[country].currency].name}
                         </span>
                       </div>
@@ -266,13 +266,13 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                 {step === 2 && (
                   <div className="space-y-6">
                     <div>
-                      <h2 className="text-xl font-bold text-[var(--vn-text)]">When does your pay cycle start?</h2>
-                      <p className="mt-2 text-sm text-[var(--vn-muted)]">We'll build budget periods around your pay dates.</p>
+                      <h2 className="text-xl font-bold text-(--vn-text)">When does your pay cycle start?</h2>
+                      <p className="mt-2 text-sm text-(--vn-muted)">We'll build budget periods around your pay dates.</p>
                     </div>
 
                     {/* Cadence picker */}
                     <div>
-                      <label className="block text-xs font-semibold text-[var(--vn-muted)] mb-2 uppercase tracking-wider">How often are you paid?</label>
+                      <label className="block text-xs font-semibold text-(--vn-muted) mb-2 uppercase tracking-wider">How often are you paid?</label>
                       <div className="grid grid-cols-3 gap-2">
                         {(["monthly", "biweekly", "weekly"] as PeriodCadence[]).map((c) => (
                           <button
@@ -280,8 +280,8 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                             onClick={() => setPeriodCadence(c)}
                             className={`rounded-xl px-3 py-3 text-sm font-medium transition-all border-2 ${
                               periodCadence === c
-                                ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10"
-                                : "border-[var(--vn-border)] hover:border-[var(--vn-primary)]/50"
+                                ? "border-(--vn-primary) bg-(--vn-primary)/10"
+                                : "border-(--vn-border) hover:border-(--vn-primary)/50"
                             }`}
                           >
                             {c === "monthly" ? "Monthly" : c === "biweekly" ? "Every 2 weeks" : "Weekly"}
@@ -292,7 +292,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
 
                     {/* Start day picker */}
                     <div>
-                      <label className="block text-xs font-semibold text-[var(--vn-muted)] mb-2 uppercase tracking-wider">
+                      <label className="block text-xs font-semibold text-(--vn-muted) mb-2 uppercase tracking-wider">
                         {periodCadence === "monthly" ? "What day of the month do you get paid?" : "What date did your last pay land?"}
                       </label>
                       {periodCadence === "monthly" ? (
@@ -303,8 +303,8 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                               onClick={() => setPeriodStartDay(day)}
                               className={`rounded-lg py-2 text-sm font-medium transition-all ${
                                 periodStartDay === day
-                                  ? "bg-[var(--vn-primary)] text-white shadow-sm"
-                                  : "hover:bg-[var(--vn-primary)]/10 text-[var(--vn-text)]"
+                                  ? "bg-(--vn-primary) text-white shadow-sm"
+                                  : "hover:bg-(--vn-primary)/10 text-(--vn-text)"
                               }`}
                             >
                               {day}
@@ -329,9 +329,9 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                     </div>
 
                     {/* Preview */}
-                    <div className="rounded-lg bg-[var(--vn-primary)]/5 px-4 py-3">
-                      <div className="text-xs font-semibold text-[var(--vn-muted)] mb-1">Your first period will be</div>
-                      <div className="text-sm font-bold text-[var(--vn-text)]">
+                    <div className="rounded-lg bg-(--vn-primary)/5 px-4 py-3">
+                      <div className="text-xs font-semibold text-(--vn-muted) mb-1">Your first period will be</div>
+                      <div className="text-sm font-bold text-(--vn-text)">
                         {(() => {
                           const now = new Date();
                           const start = new Date(now.getFullYear(), now.getMonth(), periodStartDay);
@@ -351,8 +351,8 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                 {step === 3 && (
                   <div className="space-y-6">
                     <div>
-                      <h2 className="text-xl font-bold text-[var(--vn-text)]">What's your monthly take-home pay?</h2>
-                      <p className="mt-2 text-sm text-[var(--vn-muted)]">After tax, what lands in your account each month?</p>
+                      <h2 className="text-xl font-bold text-(--vn-text)">What's your monthly take-home pay?</h2>
+                      <p className="mt-2 text-sm text-(--vn-muted)">After tax, what lands in your account each month?</p>
                     </div>
                     <div className="relative">
                       <span
@@ -380,31 +380,31 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                 {step === 4 && (
                   <div className="space-y-6">
                     <div>
-                      <h2 className="text-xl font-bold text-[var(--vn-text)]">Do you have fixed monthly bills?</h2>
-                      <p className="mt-2 text-sm text-[var(--vn-muted)]">Rent, utilities, phone things due on the same day each month.</p>
+                      <h2 className="text-xl font-bold text-(--vn-text)">Do you have fixed monthly bills?</h2>
+                      <p className="mt-2 text-sm text-(--vn-muted)">Rent, utilities, phone things due on the same day each month.</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <button
                         onClick={() => setHasBills(true)}
                         className={`rounded-2xl p-5 text-left transition-all border-2 ${
                           hasBills === true
-                            ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10"
-                            : "border-[var(--vn-border)] hover:border-[var(--vn-primary)]/50"
+                            ? "border-(--vn-primary) bg-(--vn-primary)/10"
+                            : "border-(--vn-border) hover:border-(--vn-primary)/50"
                         }`}
                       >
                         <div className="text-2xl mb-2">Yes</div>
-                        <div className="text-xs text-[var(--vn-muted)]">We'll add common ones you can edit later</div>
+                        <div className="text-xs text-(--vn-muted)">We'll add common ones you can edit later</div>
                       </button>
                       <button
                         onClick={() => setHasBills(false)}
                         className={`rounded-2xl p-5 text-left transition-all border-2 ${
                           hasBills === false
-                            ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10"
-                            : "border-[var(--vn-border)] hover:border-[var(--vn-primary)]/50"
+                            ? "border-(--vn-primary) bg-(--vn-primary)/10"
+                            : "border-(--vn-border) hover:border-(--vn-primary)/50"
                         }`}
                       >
                         <div className="text-2xl mb-2">No</div>
-                        <div className="text-xs text-[var(--vn-muted)]">Start with just income, add bills later</div>
+                        <div className="text-xs text-(--vn-muted)">Start with just income, add bills later</div>
                       </button>
                     </div>
                   </div>
@@ -414,31 +414,31 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                 {step === 5 && (
                   <div className="space-y-6">
                     <div>
-                      <h2 className="text-xl font-bold text-[var(--vn-text)]">How do you want to use the app?</h2>
-                      <p className="mt-2 text-sm text-[var(--vn-muted)]">You can change this anytime in Settings.</p>
+                      <h2 className="text-xl font-bold text-(--vn-text)">How do you want to use the app?</h2>
+                      <p className="mt-2 text-sm text-(--vn-muted)">You can change this anytime in Settings.</p>
                     </div>
                     <div className="grid grid-cols-1 gap-4">
                       <button
                         onClick={() => setMode("forecast")}
                         className={`rounded-2xl p-5 text-left transition-all border-2 ${
                           mode === "forecast"
-                            ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10"
-                            : "border-[var(--vn-border)] hover:border-[var(--vn-primary)]/50"
+                            ? "border-(--vn-primary) bg-(--vn-primary)/10"
+                            : "border-(--vn-border) hover:border-(--vn-primary)/50"
                         }`}
                       >
-                        <div className="text-base font-semibold text-[var(--vn-text)]">Forecast ahead</div>
-                        <div className="text-xs text-[var(--vn-muted)] mt-1">See projected balance based on your income, bills, and spending rules.</div>
+                        <div className="text-base font-semibold text-(--vn-text)">Forecast ahead</div>
+                        <div className="text-xs text-(--vn-muted) mt-1">See projected balance based on your income, bills, and spending rules.</div>
                       </button>
                       <button
                         onClick={() => setMode("track")}
                         className={`rounded-2xl p-5 text-left transition-all border-2 ${
                           mode === "track"
-                            ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10"
-                            : "border-[var(--vn-border)] hover:border-[var(--vn-primary)]/50"
+                            ? "border-(--vn-primary) bg-(--vn-primary)/10"
+                            : "border-(--vn-border) hover:border-(--vn-primary)/50"
                         }`}
                       >
-                        <div className="text-base font-semibold text-[var(--vn-text)]">Track as I go</div>
-                        <div className="text-xs text-[var(--vn-muted)] mt-1">Log transactions and roll your actual balance forward each period.</div>
+                        <div className="text-base font-semibold text-(--vn-text)">Track as I go</div>
+                        <div className="text-xs text-(--vn-muted) mt-1">Log transactions and roll your actual balance forward each period.</div>
                       </button>
                     </div>
                   </div>

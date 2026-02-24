@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { getPlaidClient } from "@/lib/plaid";
 import { getSQL } from "@/lib/db";
 import { resolveAuth, badRequest, serverError } from "@/lib/apiHelpers";
+import { createRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
+
+const checkExchangeTokenLimit = createRateLimiter(10, 60_000);
 
 export async function POST(req: Request) {
   try {
@@ -12,6 +15,10 @@ export async function POST(req: Request) {
 
     if (!public_token || !auth) {
       return badRequest("Missing public_token or userId");
+    }
+
+    if (!checkExchangeTokenLimit(auth.userId)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const client = getPlaidClient();

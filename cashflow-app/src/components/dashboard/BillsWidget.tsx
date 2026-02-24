@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -50,9 +50,9 @@ export function BillsWidget({ bills, href = "/bills" }: BillsWidgetProps) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
-                        <span className="text-sm font-semibold text-[var(--vn-text)]">Upcoming Bills</span>
+                        <span className="text-sm font-semibold text-(--vn-text)">Upcoming Bills</span>
                     </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[var(--vn-muted)]">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-(--vn-muted)">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
@@ -63,25 +63,25 @@ export function BillsWidget({ bills, href = "/bills" }: BillsWidgetProps) {
                     {nextBill ? (
                         <>
                             <div className="flex items-baseline justify-between w-full mb-1">
-                                <span className="text-sm font-medium text-[var(--vn-text)] truncate mr-2">{nextBill.label}</span>
-                                <span className="text-lg font-bold text-[var(--vn-text)]">{formatMoney(nextBill.amount)}</span>
+                                <span className="text-sm font-medium text-(--vn-text) truncate mr-2">{nextBill.label}</span>
+                                <span className="text-lg font-bold text-(--vn-text)">{formatMoney(nextBill.amount)}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${getDaysUntil(nextBill.date).includes("Overdue") ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300" :
                                     getDaysUntil(nextBill.date).includes("today") ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" :
-                                        "bg-[var(--vn-bg)] text-[var(--vn-muted)]"
+                                        "bg-(--vn-bg) text-(--vn-muted)"
                                     }`}>
                                     {getDaysUntil(nextBill.date)}
                                 </span>
-                                <span className="text-xs text-[var(--vn-muted)]">{prettyDate(nextBill.date)}</span>
+                                <span className="text-xs text-(--vn-muted)">{prettyDate(nextBill.date)}</span>
                             </div>
                         </>
                     ) : (
-                        <div className="text-sm text-[var(--vn-muted)] italic text-center">No upcoming bills</div>
+                        <div className="text-sm text-(--vn-muted) italic text-center">No upcoming bills</div>
                     )}
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-[var(--vn-border)] flex items-center justify-between text-xs text-[var(--vn-muted)] group-hover:text-[var(--vn-primary)] transition-colors">
+                <div className="mt-4 pt-3 border-t border-(--vn-border) flex items-center justify-between text-xs text-(--vn-muted) group-hover:text-(--vn-primary) transition-colors">
                     <span>
                         {otherBillCount > 0 ? `+ ${otherBillCount} other bills queued` : "View bill calendar"}
                     </span>

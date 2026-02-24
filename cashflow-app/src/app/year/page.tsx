@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { loadPlan } from "@/lib/storage";
@@ -91,14 +91,14 @@ function StatCard({
       className="vn-card p-5 flex flex-col gap-1"
     >
       <div className="text-2xl">{emoji}</div>
-      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mt-1">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-(--vn-muted) mt-1">{label}</div>
       <div
         className="text-xl font-bold mt-0.5"
         style={{ color: accent ?? "var(--vn-text)" }}
       >
         {value}
       </div>
-      {sub && <div className="text-xs text-[var(--vn-muted)]">{sub}</div>}
+      {sub && <div className="text-xs text-(--vn-muted)">{sub}</div>}
     </motion.div>
   );
 }
@@ -153,7 +153,7 @@ export default function YearInReviewPage() {
               </select>
             )}
           </div>
-          <p className="text-sm text-[var(--vn-muted)] mt-1">
+          <p className="text-sm text-(--vn-muted) mt-1">
             {hasData ? `${s.txnCount} transactions across ${s.periodCount} period${s.periodCount !== 1 ? "s" : ""}` : "No transaction data for this year yet."}
           </p>
         </motion.div>
@@ -161,7 +161,7 @@ export default function YearInReviewPage() {
         {!hasData ? (
           <div className="vn-card p-10 text-center">
             <div className="text-4xl mb-3">📭</div>
-            <div className="text-[var(--vn-muted)] text-sm">
+            <div className="text-(--vn-muted) text-sm">
               No transactions recorded for {year}. Log some spending to see your year-end summary.
             </div>
           </div>
@@ -175,12 +175,12 @@ export default function YearInReviewPage() {
               className="vn-card p-7 mb-6 text-center"
               style={{ background: "linear-gradient(135deg, var(--vn-surface) 0%, var(--vn-surface-raised, var(--vn-surface)) 100%)" }}
             >
-              <div className="text-xs uppercase tracking-widest text-[var(--vn-muted)] mb-2">Total income {year}</div>
+              <div className="text-xs uppercase tracking-widest text-(--vn-muted) mb-2">Total income {year}</div>
               <div className="text-5xl font-bold" style={{ fontFamily: "var(--font-playfair)", color: "var(--gold, #d4a82a)" }}>
                 {formatMoney(s.income)}
               </div>
-              <div className="mt-3 flex items-center justify-center gap-6 text-sm text-[var(--vn-muted)]">
-                <span>Spent <span className="font-semibold text-[var(--vn-text)]">{formatMoney(s.spending)}</span></span>
+              <div className="mt-3 flex items-center justify-center gap-6 text-sm text-(--vn-muted)">
+                <span>Spent <span className="font-semibold text-(--vn-text)">{formatMoney(s.spending)}</span></span>
                 <span>·</span>
                 <span>Saved <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatMoney(s.savings)}</span></span>
                 <span>·</span>
@@ -214,26 +214,26 @@ export default function YearInReviewPage() {
                 transition={{ delay: 0.4, type: "spring", damping: 22 }}
                 className="vn-card p-5"
               >
-                <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Top 5 where you spent</div>
+                <div className="text-sm font-semibold text-(--vn-text) mb-4">Top 5 where you spent</div>
                 <div className="space-y-3">
                   {s.topMerchants.map(([label, amount], i) => {
                     const pct = s.spending > 0 ? amount / s.spending : 0;
                     return (
                       <div key={label} className="flex items-center gap-3">
-                        <span className="text-xs text-[var(--vn-muted)] w-4 text-right shrink-0">{i + 1}</span>
+                        <span className="text-xs text-(--vn-muted) w-4 text-right shrink-0">{i + 1}</span>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between mb-1">
-                            <span className="text-sm font-medium text-[var(--vn-text)] truncate">{label}</span>
-                            <span className="text-sm font-semibold text-[var(--vn-text)] ml-2 shrink-0">{formatMoney(amount)}</span>
+                            <span className="text-sm font-medium text-(--vn-text) truncate">{label}</span>
+                            <span className="text-sm font-semibold text-(--vn-text) ml-2 shrink-0">{formatMoney(amount)}</span>
                           </div>
-                          <div className="h-1.5 rounded-full bg-[var(--vn-border)]">
+                          <div className="h-1.5 rounded-full bg-(--vn-border)">
                             <div
                               className="h-1.5 rounded-full"
                               style={{ width: `${Math.round(pct * 100)}%`, background: "var(--vn-primary, var(--gold))" }}
                             />
                           </div>
                         </div>
-                        <span className="text-xs text-[var(--vn-muted)] w-10 text-right shrink-0">{Math.round(pct * 100)}%</span>
+                        <span className="text-xs text-(--vn-muted) w-10 text-right shrink-0">{Math.round(pct * 100)}%</span>
                       </div>
                     );
                   })}

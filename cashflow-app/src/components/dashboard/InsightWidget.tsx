@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -50,9 +50,9 @@ export function InsightWidget({ insight, tone = "neutral", href = "/insights" }:
                 <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
                         {getIcon()}
-                        <span className="text-sm font-semibold text-[var(--vn-text)]">Insight</span>
+                        <span className="text-sm font-semibold text-(--vn-text)">Insight</span>
                     </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[var(--vn-muted)]">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-(--vn-muted)">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
@@ -60,12 +60,12 @@ export function InsightWidget({ insight, tone = "neutral", href = "/insights" }:
                 </div>
 
                 <div>
-                    <p className="text-sm font-medium text-[var(--vn-text)] line-clamp-2 md:line-clamp-3">
+                    <p className="text-sm font-medium text-(--vn-text) line-clamp-2 md:line-clamp-3">
                         {insight}
                     </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-[var(--vn-border)] flex items-center gap-2 text-xs text-[var(--vn-muted)] group-hover:text-[var(--vn-primary)] transition-colors">
+                <div className="mt-4 pt-3 border-t border-(--vn-border) flex items-center gap-2 text-xs text-(--vn-muted) group-hover:text-(--vn-primary) transition-colors">
                     <span>View full analysis</span>
                 </div>
             </motion.div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState } from "react";
 import { loadPlan, savePlan } from "@/lib/storage";
@@ -339,7 +339,7 @@ export default function ImportPage() {
                 className={`vn-card p-12 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
                   dragOver
                     ? "border-2 border-blue-400 bg-blue-50 dark:bg-blue-900/20"
-                    : "border-2 border-dashed border-[var(--vn-border)] hover:border-blue-300"
+                    : "border-2 border-dashed border-(--vn-border) hover:border-blue-300"
                 }`}
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -347,9 +347,9 @@ export default function ImportPage() {
                 onDrop={handleDrop}
               >
                 <div className="text-4xl mb-4">📂</div>
-                <p className="font-semibold text-[var(--vn-text)]">Drop your bank file here</p>
-                <p className="text-sm text-[var(--vn-muted)] mt-1">or click to browse</p>
-                <p className="text-xs text-[var(--vn-muted)] mt-3">CSV, OFX, QFX, QBO — Barclays, Chase, Monzo, Revolut, YNAB, Quicken</p>
+                <p className="font-semibold text-(--vn-text)">Drop your bank file here</p>
+                <p className="text-sm text-(--vn-muted) mt-1">or click to browse</p>
+                <p className="text-xs text-(--vn-muted) mt-3">CSV, OFX, QFX, QBO — Barclays, Chase, Monzo, Revolut, YNAB, Quicken</p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -364,8 +364,8 @@ export default function ImportPage() {
             {imported && (
               <div className="vn-card p-8 text-center">
                 <div className="text-4xl mb-3">✅</div>
-                <h2 className="text-lg font-bold text-[var(--vn-text)]">Import complete!</h2>
-                <p className="text-sm text-[var(--vn-muted)] mt-1 mb-4">Your transactions have been added to this period.</p>
+                <h2 className="text-lg font-bold text-(--vn-text)">Import complete!</h2>
+                <p className="text-sm text-(--vn-muted) mt-1 mb-4">Your transactions have been added to this period.</p>
                 <button
                   onClick={() => { setImported(false); setRows([]); setFileName(null); }}
                   className="vn-btn vn-btn-ghost text-sm px-4 py-2"
@@ -378,12 +378,12 @@ export default function ImportPage() {
             {/* Preview table */}
             {rows.length > 0 && (
               <div className="vn-card overflow-hidden">
-                <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--vn-border)]">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-(--vn-border)">
                   <div>
-                    <div className="font-semibold text-[var(--vn-text)]">
+                    <div className="font-semibold text-(--vn-text)">
                       {fileName} — {rows.length} rows
                     </div>
-                    <div className="text-xs text-[var(--vn-muted)] mt-0.5 flex items-center gap-2 flex-wrap">
+                    <div className="text-xs text-(--vn-muted) mt-0.5 flex items-center gap-2 flex-wrap">
                       <span>{selectedCount} selected</span>
                       <span>·</span>
                       <span>{formatMoney(rows.filter(r => r.selected && r.type === "outflow").reduce((s, r) => s + r.amount, 0))} outflows</span>
@@ -406,19 +406,19 @@ export default function ImportPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setRows(prev => prev.map(r => ({ ...r, selected: !r.isDuplicate })))}
-                      className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] px-2 py-1"
+                      className="text-xs text-(--vn-muted) hover:text-(--vn-text) px-2 py-1"
                     >
                       Select non-dupes
                     </button>
                     <button
                       onClick={() => setRows(prev => prev.map(r => ({ ...r, selected: true })))}
-                      className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] px-2 py-1"
+                      className="text-xs text-(--vn-muted) hover:text-(--vn-text) px-2 py-1"
                     >
                       All
                     </button>
                     <button
                       onClick={() => setRows(prev => prev.map(r => ({ ...r, selected: false })))}
-                      className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] px-2 py-1"
+                      className="text-xs text-(--vn-muted) hover:text-(--vn-text) px-2 py-1"
                     >
                       None
                     </button>
@@ -435,7 +435,7 @@ export default function ImportPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-left text-xs text-[var(--vn-muted)] border-b border-[var(--vn-border)] bg-[var(--vn-bg-subtle,var(--vn-bg))]">
+                      <tr className="text-left text-xs text-(--vn-muted) border-b border-(--vn-border) bg-[var(--vn-bg-subtle,var(--vn-bg))]">
                         <th className="px-4 py-2 w-8"><input type="checkbox" checked={selectedCount === visibleRows.length && visibleRows.length > 0} onChange={e => setRows(prev => prev.map(r => (hideDuplicates && r.isDuplicate) ? r : { ...r, selected: e.target.checked }))} /></th>
                         <th className="px-4 py-2">Date</th>
                         <th className="px-4 py-2 min-w-[200px]">Description</th>
@@ -448,7 +448,7 @@ export default function ImportPage() {
                       {visibleRows.map((row) => (
                         <tr
                           key={row.id}
-                          className={`border-b border-[var(--vn-border)] transition-colors ${!row.selected ? "opacity-40" : ""} ${row.isDuplicate ? "bg-amber-50/30 dark:bg-amber-900/10" : ""}`}
+                          className={`border-b border-(--vn-border) transition-colors ${!row.selected ? "opacity-40" : ""} ${row.isDuplicate ? "bg-amber-50/30 dark:bg-amber-900/10" : ""}`}
                         >
                           <td className="px-4 py-2">
                             <input
@@ -457,14 +457,14 @@ export default function ImportPage() {
                               onChange={e => updateRow(row.id, { selected: e.target.checked })}
                             />
                           </td>
-                          <td className="px-4 py-2 text-xs text-[var(--vn-muted)] whitespace-nowrap">{row.date}</td>
+                          <td className="px-4 py-2 text-xs text-(--vn-muted) whitespace-nowrap">{row.date}</td>
                           <td className="px-4 py-2">
                             <div className="flex items-center gap-2">
                               <input
                                 type="text"
                                 value={row.label}
                                 onChange={e => updateRow(row.id, { label: e.target.value })}
-                                className="flex-1 bg-transparent border-none outline-none text-[var(--vn-text)] text-sm focus:bg-[var(--vn-bg)] focus:px-1 rounded min-w-0"
+                                className="flex-1 bg-transparent border-none outline-none text-(--vn-text) text-sm focus:bg-(--vn-bg) focus:px-1 rounded min-w-0"
                               />
                               {row.isDuplicate && (
                                 <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
@@ -480,7 +480,7 @@ export default function ImportPage() {
                             <select
                               value={row.type}
                               onChange={e => updateRow(row.id, { type: e.target.value as CashflowType })}
-                              className="text-xs bg-transparent border border-[var(--vn-border)] rounded px-1 py-0.5"
+                              className="text-xs bg-transparent border border-(--vn-border) rounded px-1 py-0.5"
                             >
                               <option value="outflow">Outflow</option>
                               <option value="income">Income</option>
@@ -492,14 +492,14 @@ export default function ImportPage() {
                               <select
                                 value={row.category}
                                 onChange={e => updateRow(row.id, { category: e.target.value as CashflowCategory })}
-                                className="text-xs bg-transparent border border-[var(--vn-border)] rounded px-1 py-0.5 capitalize"
+                                className="text-xs bg-transparent border border-(--vn-border) rounded px-1 py-0.5 capitalize"
                               >
                                 {CATEGORIES.map(c => (
                                   <option key={c} value={c} className="capitalize">{c}</option>
                                 ))}
                               </select>
                               {row.confidence !== undefined && row.confidence < 50 && (
-                                <span title={`Auto-categorised with ${row.confidence}% confidence`} className="text-[10px] text-[var(--vn-muted)]">~</span>
+                                <span title={`Auto-categorised with ${row.confidence}% confidence`} className="text-[10px] text-(--vn-muted)">~</span>
                               )}
                             </div>
                           </td>
@@ -513,10 +513,10 @@ export default function ImportPage() {
 
             {/* Format tips */}
             <div className="vn-card p-5">
-              <h3 className="text-sm font-semibold text-[var(--vn-text)] mb-3">📋 Supported formats</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[var(--vn-muted)]">
+              <h3 className="text-sm font-semibold text-(--vn-text) mb-3">📋 Supported formats</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-(--vn-muted)">
                 <div>
-                  <div className="font-medium text-[var(--vn-text)] mb-1">CSV auto-detected columns</div>
+                  <div className="font-medium text-(--vn-text) mb-1">CSV auto-detected columns</div>
                   <ul className="space-y-0.5">
                     <li>• Date, Posted Date, Transaction Date</li>
                     <li>• Description, Memo, Payee, Narration</li>
@@ -524,7 +524,7 @@ export default function ImportPage() {
                   </ul>
                 </div>
                 <div>
-                  <div className="font-medium text-[var(--vn-text)] mb-1">OFX / QFX / QBO</div>
+                  <div className="font-medium text-(--vn-text) mb-1">OFX / QFX / QBO</div>
                   <ul className="space-y-0.5">
                     <li>• Quicken, Mint, most UK banks</li>
                     <li>• Full date + payee parsing</li>
@@ -532,7 +532,7 @@ export default function ImportPage() {
                   </ul>
                 </div>
                 <div>
-                  <div className="font-medium text-[var(--vn-text)] mb-1">Date formats</div>
+                  <div className="font-medium text-(--vn-text) mb-1">Date formats</div>
                   <ul className="space-y-0.5">
                     <li>• YYYY-MM-DD (ISO)</li>
                     <li>• DD/MM/YYYY or MM/DD/YYYY</li>

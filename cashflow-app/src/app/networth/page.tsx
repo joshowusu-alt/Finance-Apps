@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -63,7 +63,7 @@ function AccountRow({
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-[var(--vn-text)] truncate">{account.name}</span>
+          <span className="text-sm font-semibold text-(--vn-text) truncate">{account.name}</span>
           {isAuto && (
             <span
               className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
@@ -74,17 +74,17 @@ function AccountRow({
           )}
         </div>
         {account.institution && (
-          <div className="text-[11px] text-[var(--vn-muted)]">{account.institution}</div>
+          <div className="text-[11px] text-(--vn-muted)">{account.institution}</div>
         )}
       </div>
-      <div className="font-semibold tabular-nums text-[var(--vn-text)] text-sm shrink-0">
+      <div className="font-semibold tabular-nums text-(--vn-text) text-sm shrink-0">
         {formatMoney(effectiveAmt)}
       </div>
       {/* Always visible on mobile (opacity-50), full opacity on desktop hover */}
       <div className="flex gap-0.5 ml-1 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity">
         <button
           onClick={() => onEdit(account)}
-          className="p-1.5 rounded-lg text-[var(--vn-muted)] hover:text-[var(--vn-text)] hover:bg-[var(--vn-bg)] active:bg-[var(--vn-bg)] transition-colors"
+          className="p-1.5 rounded-lg text-(--vn-muted) hover:text-(--vn-text) hover:bg-(--vn-bg) active:bg-(--vn-bg) transition-colors"
           aria-label="Edit"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +93,7 @@ function AccountRow({
         </button>
         <button
           onClick={() => onDelete(account.id)}
-          className="p-1.5 rounded-lg text-[var(--vn-muted)] hover:text-[var(--error)] active:text-[var(--error)] hover:bg-[var(--error-soft)] active:bg-[var(--error-soft)] transition-colors"
+          className="p-1.5 rounded-lg text-(--vn-muted) hover:text-[var(--error)] active:text-[var(--error)] hover:bg-[var(--error-soft)] active:bg-[var(--error-soft)] transition-colors"
           aria-label="Delete"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,7 +187,7 @@ function AccountForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-5 vn-card">
-      <h3 className="text-sm font-bold text-[var(--vn-text)]">
+      <h3 className="text-sm font-bold text-(--vn-text)">
         {initial ? "Edit account" : "Add account"}
       </h3>
       {error && <p className="text-xs text-rose-500 dark:text-rose-400">{error}</p>}
@@ -195,22 +195,22 @@ function AccountForm({
       <div className="grid grid-cols-2 gap-3">
         {/* Name */}
         <div className="col-span-2">
-          <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Account name *</label>
+          <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Account name *</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. Monzo Current Account"
-            className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+            className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
           />
         </div>
 
         {/* Type */}
         <div>
-          <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Type *</label>
+          <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Type *</label>
           <select
             value={type}
             onChange={e => handleTypeChange(e.target.value as NetWorthAccountType)}
-            className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+            className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
           >
             <optgroup label="Assets">
               {ASSET_TYPES.map(t => (
@@ -228,7 +228,7 @@ function AccountForm({
         {/* Balance — hidden when auto-linked */}
         {!isAutoLinked && (
           <div>
-            <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Balance *</label>
+            <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Balance *</label>
             <input
               type="number"
               value={balance}
@@ -236,40 +236,40 @@ function AccountForm({
               placeholder="0.00"
               min="0"
               step="0.01"
-              className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+              className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
             />
           </div>
         )}
 
         {/* Institution */}
         <div>
-          <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Institution</label>
+          <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Institution</label>
           <input
             value={institution}
             onChange={e => setInstitution(e.target.value)}
             placeholder="e.g. Monzo, Vanguard"
-            className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+            className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
           />
         </div>
 
         {/* Icon */}
         <div>
-          <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Icon (emoji)</label>
+          <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Icon (emoji)</label>
           <input
             value={icon}
             onChange={e => setIcon(e.target.value)}
             placeholder={TYPE_META[type].icon}
             maxLength={4}
-            className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+            className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
           />
         </div>
       </div>
 
       {/* ── Auto-link section ─────────────────────────────────── */}
       {(isSavingsType || isLiabilityType) && (
-        <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] p-4 space-y-3">
+        <div className="rounded-xl border border-(--vn-border) bg-(--vn-bg) p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-[var(--vn-text)]">
+            <span className="text-sm font-bold text-(--vn-text)">
               {isSavingsType ? "🔄 Auto-sync from savings transfers" : "🔄 Auto-track payments"}
             </span>
             <span
@@ -279,7 +279,7 @@ function AccountForm({
               LIVE
             </span>
           </div>
-          <p className="text-xs text-[var(--vn-muted)]">
+          <p className="text-xs text-(--vn-muted)">
             {isSavingsType
               ? "Link to a savings rule so the balance updates automatically as you record transfers."
               : "Link to a payment rule or bill so card payments automatically reduce this liability."}
@@ -287,11 +287,11 @@ function AccountForm({
 
           {isSavingsType && savingsRules.length > 0 && (
             <div>
-              <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Savings rule</label>
+              <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Savings rule</label>
               <select
                 value={linkedRuleId}
                 onChange={e => { setLinkedRuleId(e.target.value); setLinkedBillId(""); }}
-                className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
               >
                 <option value="">— Not linked (manual) —</option>
                 {savingsRules.map(r => (
@@ -304,11 +304,11 @@ function AccountForm({
           {isLiabilityType && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Payment rule</label>
+                <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Payment rule</label>
                 <select
                   value={linkedRuleId}
                   onChange={e => { setLinkedRuleId(e.target.value); if (e.target.value) setLinkedBillId(""); }}
-                  className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                  className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
                 >
                   <option value="">— None —</option>
                   {paymentRules.map(r => (
@@ -317,11 +317,11 @@ function AccountForm({
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Or bill</label>
+                <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Or bill</label>
                 <select
                   value={linkedBillId}
                   onChange={e => { setLinkedBillId(e.target.value); if (e.target.value) setLinkedRuleId(""); }}
-                  className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                  className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
                 >
                   <option value="">— None —</option>
                   {paymentBills.map(b => (
@@ -336,7 +336,7 @@ function AccountForm({
           {isAutoLinked && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">
+                <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">
                   {isSavingsType ? "Opening balance (£)" : "Current balance owed (£)"}
                 </label>
                 <input
@@ -346,27 +346,27 @@ function AccountForm({
                   placeholder="0.00"
                   min="0"
                   step="0.01"
-                  className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                  className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
                 />
-                <p className="mt-1 text-[10px] text-[var(--vn-muted)]">
+                <p className="mt-1 text-[10px] text-(--vn-muted)">
                   {isSavingsType ? "Amount already in this account" : "Outstanding balance before payments"}
                 </p>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Count transactions from</label>
+                <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Count transactions from</label>
                 <input
                   type="date"
                   value={baseDate}
                   onChange={e => setBaseDate(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                  className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
                 />
-                <p className="mt-1 text-[10px] text-[var(--vn-muted)]">Leave blank to count all</p>
+                <p className="mt-1 text-[10px] text-(--vn-muted)">Leave blank to count all</p>
               </div>
 
               {/* Split % — only relevant for liability linked to a rule */}
               {isLiabilityType && linkedRuleId && (
                 <div className="col-span-2">
-                  <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">
+                  <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">
                     % of rule attributed to this card
                   </label>
                   <div className="flex items-center gap-2 mt-1">
@@ -377,11 +377,11 @@ function AccountForm({
                       min="1"
                       max="100"
                       step="1"
-                      className="w-24 rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+                      className="w-24 rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
                     />
-                    <span className="text-sm text-[var(--vn-muted)]">%</span>
+                    <span className="text-sm text-(--vn-muted)">%</span>
                   </div>
-                  <p className="mt-1 text-[10px] text-[var(--vn-muted)]">
+                  <p className="mt-1 text-[10px] text-(--vn-muted)">
                     Split one budget rule across multiple cards. E.g. two cards sharing a £500 rule: 60% here, 40% on the other.
                   </p>
                 </div>
@@ -393,12 +393,12 @@ function AccountForm({
 
       {/* Notes */}
       <div>
-        <label className="text-xs font-semibold text-[var(--vn-muted)] uppercase tracking-wide">Notes</label>
+        <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Notes</label>
         <input
           value={notes}
           onChange={e => setNotes(e.target.value)}
           placeholder="Optional notes"
-          className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--vn-gold)]"
+          className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-(--vn-gold)"
         />
       </div>
 
@@ -422,7 +422,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
   const val = payload[0].value;
   return (
     <div className="vn-card px-4 py-3 text-sm shadow-xl" style={{ minWidth: 160 }}>
-      <div className="text-xs text-[var(--vn-muted)] mb-1">{label}</div>
+      <div className="text-xs text-(--vn-muted) mb-1">{label}</div>
       <div className={`font-bold tabular-nums text-base ${val >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}>
         {formatMoney(val)}
       </div>
@@ -568,7 +568,7 @@ export default function NetWorthPage() {
   if (!plan) {
     return (
       <main className="min-h-screen flex items-center justify-center">
-        <div className="text-[var(--vn-muted)] text-sm">Loading…</div>
+        <div className="text-(--vn-muted) text-sm">Loading…</div>
       </main>
     );
   }
@@ -687,8 +687,8 @@ export default function NetWorthPage() {
             <section className="vn-card p-6">
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h2 className="text-base font-bold text-[var(--vn-text)]">Assets</h2>
-                  <p className="text-xs text-[var(--vn-muted)] mt-0.5">Everything you own</p>
+                  <h2 className="text-base font-bold text-(--vn-text)">Assets</h2>
+                  <p className="text-xs text-(--vn-muted) mt-0.5">Everything you own</p>
                 </div>
                 <span className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
                   {formatMoney(totalAssets)}
@@ -696,12 +696,12 @@ export default function NetWorthPage() {
               </div>
 
               {assetAccounts.length === 0 ? (
-                <div className="text-center py-8 text-[var(--vn-muted)]">
+                <div className="text-center py-8 text-(--vn-muted)">
                   <div className="text-3xl mb-2">💰</div>
                   <p className="text-sm">No assets added yet</p>
                   <button
                     onClick={() => { setEditAccount(null); setShowForm(true); }}
-                    className="mt-3 text-xs font-semibold text-[var(--vn-gold)] hover:underline"
+                    className="mt-3 text-xs font-semibold text-(--vn-gold) hover:underline"
                   >
                     Add your first asset →
                   </button>
@@ -716,14 +716,14 @@ export default function NetWorthPage() {
                     const subtotal = group.reduce((s, a) => s + effectiveBalance(a), 0);
                     return (
                       <div key={type} className="mb-4 last:mb-0">
-                        <div className="flex items-center justify-between mb-2 pb-1 border-b border-[var(--vn-border)]">
+                        <div className="flex items-center justify-between mb-2 pb-1 border-b border-(--vn-border)">
                           <div className="flex items-center gap-2">
                             <span className="text-sm">{meta.icon}</span>
-                            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]">{meta.label}</span>
+                            <span className="text-xs font-semibold uppercase tracking-wide text-(--vn-muted)">{meta.label}</span>
                           </div>
                           <span className="text-xs font-bold tabular-nums" style={{ color: meta.color }}>{formatMoney(subtotal)}</span>
                         </div>
-                        <div className="divide-y divide-[var(--vn-border)]/50">
+                        <div className="divide-y divide-(--vn-border)/50">
                           {group.map(a => (
                             <AccountRow key={a.id} account={a} effectiveAmt={effectiveBalance(a)} onEdit={handleEditAccount} onDelete={handleDeleteAccount} />
                           ))}
@@ -739,8 +739,8 @@ export default function NetWorthPage() {
             <section className="vn-card p-6">
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h2 className="text-base font-bold text-[var(--vn-text)]">Liabilities</h2>
-                  <p className="text-xs text-[var(--vn-muted)] mt-0.5">Everything you owe</p>
+                  <h2 className="text-base font-bold text-(--vn-text)">Liabilities</h2>
+                  <p className="text-xs text-(--vn-muted) mt-0.5">Everything you owe</p>
                 </div>
                 <span className="text-lg font-bold tabular-nums text-rose-500 dark:text-rose-400">
                   {formatMoney(totalLiabilities)}
@@ -748,12 +748,12 @@ export default function NetWorthPage() {
               </div>
 
               {liabilityAccounts.length === 0 ? (
-                <div className="text-center py-8 text-[var(--vn-muted)]">
+                <div className="text-center py-8 text-(--vn-muted)">
                   <div className="text-3xl mb-2">💳</div>
                   <p className="text-sm">No liabilities added yet</p>
                   <button
                     onClick={() => { setEditAccount(null); setShowForm(true); }}
-                    className="mt-3 text-xs font-semibold text-[var(--vn-gold)] hover:underline"
+                    className="mt-3 text-xs font-semibold text-(--vn-gold) hover:underline"
                   >
                     Add a liability →
                   </button>
@@ -767,14 +767,14 @@ export default function NetWorthPage() {
                     const subtotal = group.reduce((s, a) => s + effectiveBalance(a), 0);
                     return (
                       <div key={type} className="mb-4 last:mb-0">
-                        <div className="flex items-center justify-between mb-2 pb-1 border-b border-[var(--vn-border)]">
+                        <div className="flex items-center justify-between mb-2 pb-1 border-b border-(--vn-border)">
                           <div className="flex items-center gap-2">
                             <span className="text-sm">{meta.icon}</span>
-                            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]">{meta.label}</span>
+                            <span className="text-xs font-semibold uppercase tracking-wide text-(--vn-muted)">{meta.label}</span>
                           </div>
                           <span className="text-xs font-bold tabular-nums" style={{ color: meta.color }}>{formatMoney(subtotal)}</span>
                         </div>
-                        <div className="divide-y divide-[var(--vn-border)]/50">
+                        <div className="divide-y divide-(--vn-border)/50">
                           {group.map(a => (
                             <AccountRow key={a.id} account={a} effectiveAmt={effectiveBalance(a)} onEdit={handleEditAccount} onDelete={handleDeleteAccount} />
                           ))}
@@ -791,13 +791,13 @@ export default function NetWorthPage() {
               <section className="vn-card p-6">
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h2 className="text-base font-bold text-[var(--vn-text)]">Net Worth Over Time</h2>
-                    <p className="text-xs text-[var(--vn-muted)] mt-0.5">
+                    <h2 className="text-base font-bold text-(--vn-text)">Net Worth Over Time</h2>
+                    <p className="text-xs text-(--vn-muted) mt-0.5">
                       {chartData.length} snapshot{chartData.length !== 1 ? "s" : ""} recorded
                     </p>
                   </div>
                   {snapshots.length > 0 && (
-                    <span className="text-xs text-[var(--vn-muted)]">
+                    <span className="text-xs text-(--vn-muted)">
                       Last: {snapshots[snapshots.length - 1].date}
                     </span>
                   )}
@@ -845,22 +845,22 @@ export default function NetWorthPage() {
             {/* ── Snapshot list (when chart not yet available) ─── */}
             {snapshots.length > 0 && chartData.length < 2 && (
               <section className="vn-card p-6">
-                <h2 className="text-base font-bold text-[var(--vn-text)] mb-4">Snapshot history</h2>
+                <h2 className="text-base font-bold text-(--vn-text) mb-4">Snapshot history</h2>
                 <div className="space-y-2">
                   {[...snapshots].reverse().slice(0, 10).map(s => (
-                    <div key={s.id} className="flex items-center justify-between py-2 border-b border-[var(--vn-border)] last:border-0">
-                      <span className="text-sm text-[var(--vn-muted)]">{s.date}</span>
+                    <div key={s.id} className="flex items-center justify-between py-2 border-b border-(--vn-border) last:border-0">
+                      <span className="text-sm text-(--vn-muted)">{s.date}</span>
                       <div className="flex gap-6 text-sm tabular-nums">
                         <span className="text-emerald-600 dark:text-emerald-400">+{formatMoney(s.totalAssets)}</span>
                         <span className="text-rose-500 dark:text-rose-400">−{formatMoney(s.totalLiabilities)}</span>
-                        <span className={`font-bold ${s.netWorth >= 0 ? "text-[var(--vn-text)]" : "text-rose-500 dark:text-rose-400"}`}>
+                        <span className={`font-bold ${s.netWorth >= 0 ? "text-(--vn-text)" : "text-rose-500 dark:text-rose-400"}`}>
                           {formatMoney(s.netWorth)}
                         </span>
                       </div>
                     </div>
                   ))}
                 </div>
-                <p className="mt-3 text-xs text-[var(--vn-muted)]">
+                <p className="mt-3 text-xs text-(--vn-muted)">
                   Add more snapshots over time to see your trend chart.
                 </p>
               </section>
@@ -870,8 +870,8 @@ export default function NetWorthPage() {
             {accounts.length === 0 && !showForm && (
               <div className="vn-card p-10 text-center">
                 <div className="text-4xl mb-3">📊</div>
-                <h2 className="text-lg font-bold text-[var(--vn-text)] mb-1">Build your financial picture</h2>
-                <p className="text-sm text-[var(--vn-muted)] max-w-sm mx-auto mb-6">
+                <h2 className="text-lg font-bold text-(--vn-text) mb-1">Build your financial picture</h2>
+                <p className="text-sm text-(--vn-muted) max-w-sm mx-auto mb-6">
                   Add your savings accounts, investments, property, loans and credit cards to track your total net worth over time.
                 </p>
                 <button

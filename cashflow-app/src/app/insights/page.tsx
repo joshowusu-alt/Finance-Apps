@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState, type ReactNode } from "react";
 import { loadPlan } from "@/lib/storage";
@@ -37,9 +37,9 @@ function SummaryCard({
 }) {
   return (
     <div className="vn-card p-6">
-      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-[var(--vn-text)]">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-[var(--vn-muted)]">{hint}</div> : null}
+      <div className="text-xs uppercase tracking-wide text-(--vn-muted)">{label}</div>
+      <div className="mt-2 text-2xl font-semibold text-(--vn-text)">{value}</div>
+      {hint ? <div className="mt-1 text-xs text-(--vn-muted)">{hint}</div> : null}
     </div>
   );
 }
@@ -68,15 +68,15 @@ function ProgressBar({
         : "#eab308";
   const color = barColor || defaultColor;
   return (
-    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-      <div className="flex items-center justify-between text-xs text-[var(--vn-muted)]">
+    <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+      <div className="flex items-center justify-between text-xs text-(--vn-muted)">
         <span>{label}</span>
-        <span className="font-semibold text-[var(--vn-muted)]">{formatPercent(pct)}</span>
+        <span className="font-semibold text-(--vn-muted)">{formatPercent(pct)}</span>
       </div>
-      <div className="mt-2 h-2 rounded-full bg-[var(--vn-border)]">
+      <div className="mt-2 h-2 rounded-full bg-(--vn-border)">
         <div className="h-2 rounded-full" style={{ width: `${pct * 100}%`, background: color }} />
       </div>
-      {hint ? <div className="mt-2 text-xs text-[var(--vn-muted)]">{hint}</div> : null}
+      {hint ? <div className="mt-2 text-xs text-(--vn-muted)">{hint}</div> : null}
     </div>
   );
 }
@@ -148,8 +148,8 @@ function CollapsibleSection({
         className="flex w-full items-center justify-between gap-4 text-left"
         aria-expanded={open}
       >
-        <span className="text-sm font-semibold text-[var(--vn-text)]">{title}</span>
-        <span className="text-xs text-[var(--vn-muted)]">{open ? "Hide" : "Show"}</span>
+        <span className="text-sm font-semibold text-(--vn-text)">{title}</span>
+        <span className="text-xs text-(--vn-muted)">{open ? "Hide" : "Show"}</span>
       </button>
       {open ? <div className="mt-4">{children}</div> : null}
     </section>
@@ -382,69 +382,69 @@ export default function InsightsPage() {
             <section className="vn-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Quick pulse</div>
-                  <div className="text-sm font-semibold text-[var(--vn-text)]">Key insights at a glance</div>
+                  <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Quick pulse</div>
+                  <div className="text-sm font-semibold text-(--vn-text)">Key insights at a glance</div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowFullInsights((prev) => !prev)}
-                  className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-muted)] hover:opacity-80"
+                  className="rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-muted) hover:opacity-80"
                   aria-expanded={showFullInsights}
                 >
                   {showFullInsights ? "Hide details" : "See more"}
                 </button>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">On track</div>
+                <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-(--vn-muted)">On track</div>
                   <div className={`mt-2 text-lg font-semibold ${paceTone}`}>{paceStatus}</div>
-                  <div className="mt-1 text-xs text-[var(--vn-muted)]">
+                  <div className="mt-1 text-xs text-(--vn-muted)">
                     {formatPercent(spendingProgress)} of budget vs {formatPercent(timeProgress)} time
                   </div>
                 </div>
-                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Lowest point</div>
-                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">
+                <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Lowest point</div>
+                  <div className="mt-2 text-lg font-semibold text-(--vn-text)">
                     {derivedLowest ? formatMoney(derivedLowest.balance) : "N/A"}
                   </div>
-                  <div className="mt-1 text-xs text-[var(--vn-muted)]">
+                  <div className="mt-1 text-xs text-(--vn-muted)">
                     {derivedLowest ? `on ${prettyDate(derivedLowest.date)}` : "No forecast yet"}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Risk days</div>
-                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">
+                <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Risk days</div>
+                  <div className="mt-2 text-lg font-semibold text-(--vn-text)">
                     {derivedRiskDays === 0 ? "None" : `${derivedRiskDays} day${derivedRiskDays === 1 ? "" : "s"}`}
                   </div>
-                  <div className="mt-1 text-xs text-[var(--vn-muted)]">
+                  <div className="mt-1 text-xs text-(--vn-muted)">
                     {derivedRiskDays === 0 ? "Balance stays above minimum" : `First risk ${prettyDate(firstBelowMin?.date)}`}
                   </div>
                 </div>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Health</div>
-                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">{derivedHealth.label}</div>
-                  <div className="mt-1 text-xs text-[var(--vn-muted)]">{derivedHealth.reason}</div>
+                <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Health</div>
+                  <div className="mt-2 text-lg font-semibold text-(--vn-text)">{derivedHealth.label}</div>
+                  <div className="mt-1 text-xs text-(--vn-muted)">{derivedHealth.reason}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Income stability</div>
-                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">{derivedIncomeStability.label}</div>
-                  <div className="mt-1 text-xs text-[var(--vn-muted)]">{derivedIncomeStability.explanation}</div>
+                <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Income stability</div>
+                  <div className="mt-2 text-lg font-semibold text-(--vn-text)">{derivedIncomeStability.label}</div>
+                  <div className="mt-1 text-xs text-(--vn-muted)">{derivedIncomeStability.explanation}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Savings streak</div>
-                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">
+                <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Savings streak</div>
+                  <div className="mt-2 text-lg font-semibold text-(--vn-text)">
                     {derivedSavings.streak} period{derivedSavings.streak === 1 ? "" : "s"}
                   </div>
-                  <div className="mt-1 text-xs text-[var(--vn-muted)]">{derivedSavings.streakExplanation}</div>
+                  <div className="mt-1 text-xs text-(--vn-muted)">{derivedSavings.streakExplanation}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
-                  <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">{derivedSavings.leftoverLabel}</div>
-                  <div className="mt-2 text-lg font-semibold text-[var(--vn-text)]">
+                <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-(--vn-muted)">{derivedSavings.leftoverLabel}</div>
+                  <div className="mt-2 text-lg font-semibold text-(--vn-text)">
                     {formatMoney(derivedSavings.leftoverValue)}
                   </div>
-                  <div className="mt-1 text-xs text-[var(--vn-muted)]">{derivedSavings.explanation}</div>
+                  <div className="mt-1 text-xs text-(--vn-muted)">{derivedSavings.explanation}</div>
                 </div>
               </div>
             </section>
@@ -480,7 +480,7 @@ export default function InsightsPage() {
                           const el = document.getElementById(id);
                           if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                         }}
-                        className="rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors hover:bg-[var(--vn-primary)]/10 hover:text-[var(--vn-primary)] text-[var(--vn-muted)]"
+                        className="rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors hover:bg-(--vn-primary)/10 hover:text-(--vn-primary) text-(--vn-muted)"
                         style={{ minHeight: 32 }}
                       >
                         {label}
@@ -518,12 +518,12 @@ export default function InsightsPage() {
                     })}
                   </div>
                   {overspentCategories.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-[var(--vn-border)]">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)] mb-2">Over-budget categories</div>
+                    <div className="mt-3 pt-3 border-t border-(--vn-border)">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-(--vn-muted) mb-2">Over-budget categories</div>
                       <div className="space-y-1.5">
                         {overspentCategories.map(cat => (
                           <div key={cat.category} className="flex items-center justify-between text-xs">
-                            <span className="capitalize text-[var(--vn-muted)]">{cat.category}</span>
+                            <span className="capitalize text-(--vn-muted)">{cat.category}</span>
                             <span className="font-semibold text-rose-600 dark:text-rose-400">+{formatMoney(cat.actual - cat.budgeted)} over</span>
                           </div>
                         ))}
@@ -552,10 +552,10 @@ export default function InsightsPage() {
                       const delta = card.actual - card.budget;
                       const favorable = card.favorableWhenOver ? delta >= 0 : delta <= 0;
                       return (
-                        <div key={card.label} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 shadow-sm">
-                          <div className="text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]">{card.label}</div>
-                          <div className="mt-1 text-[11px] text-[var(--vn-muted)]">Budget {formatMoney(card.budget)}</div>
-                          <div className="mt-1 text-xl font-semibold text-[var(--vn-text)]">{formatMoney(card.actual)}</div>
+                        <div key={card.label} className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 shadow-sm">
+                          <div className="text-xs font-semibold uppercase tracking-wide text-(--vn-muted)">{card.label}</div>
+                          <div className="mt-1 text-[11px] text-(--vn-muted)">Budget {formatMoney(card.budget)}</div>
+                          <div className="mt-1 text-xl font-semibold text-(--vn-text)">{formatMoney(card.actual)}</div>
                           {delta !== 0 && (
                             <div className={`mt-1 text-xs font-semibold ${favorable ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                               {delta > 0 ? "+" : ""}{formatMoney(delta)}
@@ -568,8 +568,8 @@ export default function InsightsPage() {
 
                   {/* Category Variance Breakdown */}
                   {Object.values(varianceByCategory).filter(Boolean).length > 0 && (
-                    <div className="mb-4 rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)] mb-3">Variance by category</div>
+                    <div className="mb-4 rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-(--vn-muted) mb-3">Variance by category</div>
                       <div className="space-y-2">
                         {Object.values(varianceByCategory)
                           .filter(Boolean)
@@ -581,9 +581,9 @@ export default function InsightsPage() {
                             const favorable = isIncome ? overBudget : !overBudget;
                             return (
                               <div key={v.category} className="flex items-center justify-between text-sm">
-                                <span className="capitalize text-[var(--vn-muted)]">{v.category}</span>
+                                <span className="capitalize text-(--vn-muted)">{v.category}</span>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-xs text-[var(--vn-muted)]">
+                                  <span className="text-xs text-(--vn-muted)">
                                     {formatMoney(v.budgeted)} &rarr; {formatMoney(v.actual)}
                                   </span>
                                   <span className={`text-xs font-semibold min-w-16 text-right ${favorable ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
@@ -628,42 +628,42 @@ export default function InsightsPage() {
                     />
                   </div>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Forecast end balance</div>
-                      <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">{formatMoney(endBalance)}</div>
-                      <div className="mt-1 text-xs text-[var(--vn-muted)]">
+                    <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Forecast end balance</div>
+                      <div className="mt-2 text-xl font-semibold text-(--vn-text)">{formatMoney(endBalance)}</div>
+                      <div className="mt-1 text-xs text-(--vn-muted)">
                         Lowest point {derivedLowest ? formatMoney(derivedLowest.balance) : "N/A"}
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Risk days</div>
-                      <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
+                    <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Risk days</div>
+                      <div className="mt-2 text-xl font-semibold text-(--vn-text)">
                         {derivedRiskDays === 0 ? "None" : `${derivedRiskDays} day${derivedRiskDays === 1 ? "" : "s"}`}
                       </div>
-                      <div className="mt-1 text-xs text-[var(--vn-muted)]">
+                      <div className="mt-1 text-xs text-(--vn-muted)">
                         {firstBelowMin ? `First risk on ${prettyDate(firstBelowMin.date)}` : "Above safe minimum"}
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Projected leftover</div>
-                      <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
+                    <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Projected leftover</div>
+                      <div className="mt-2 text-xl font-semibold text-(--vn-text)">
                         {formatDelta(projectedLeftover)}
                       </div>
-                      <div className="mt-1 text-xs text-[var(--vn-muted)]">
+                      <div className="mt-1 text-xs text-(--vn-muted)">
                         Based on current pace
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] flex items-center">
+                    <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-(--vn-muted) flex items-center">
                         Safe minimum
                         <InfoTooltip text="Your minimum safe balance. Any day the forecast dips below this is flagged as risk." />
                       </div>
-                      <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
+                      <div className="mt-2 text-xl font-semibold text-(--vn-text)">
                         {plan.setup.expectedMinBalance > 0
                           ? formatMoney(plan.setup.expectedMinBalance)
                           : "Not set"}
                       </div>
-                      <div className="mt-1 text-xs text-[var(--vn-muted)]">
+                      <div className="mt-1 text-xs text-(--vn-muted)">
                         {plan.setup.expectedMinBalance > 0
                           ? (derivedLowest && derivedLowest.balance < plan.setup.expectedMinBalance
                             ? "Below minimum"
@@ -673,7 +673,7 @@ export default function InsightsPage() {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Forecast scenarios</div>
+                    <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Forecast scenarios</div>
                     <div className="mt-3 grid gap-4 md:grid-cols-3">
                       {forecastScenarios.map((scenario) => {
                         const tone =
@@ -683,15 +683,15 @@ export default function InsightsPage() {
                         return (
                           <div
                             key={scenario.id}
-                            className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4"
+                            className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4"
                           >
-                            <div className="text-sm font-semibold text-[var(--vn-text)]">{scenario.label}</div>
-                            <div className="mt-2 text-xs text-[var(--vn-muted)]">{scenario.note}</div>
-                            <div className="mt-3 text-xs uppercase tracking-wide text-[var(--vn-muted)]">Projected leftover</div>
-                            <div className="mt-1 text-lg font-semibold text-[var(--vn-text)]">
+                            <div className="text-sm font-semibold text-(--vn-text)">{scenario.label}</div>
+                            <div className="mt-2 text-xs text-(--vn-muted)">{scenario.note}</div>
+                            <div className="mt-3 text-xs uppercase tracking-wide text-(--vn-muted)">Projected leftover</div>
+                            <div className="mt-1 text-lg font-semibold text-(--vn-text)">
                               {formatMoney(scenario.leftover)}
                             </div>
-                            <div className="mt-2 text-xs uppercase tracking-wide text-[var(--vn-muted)]">End balance</div>
+                            <div className="mt-2 text-xs uppercase tracking-wide text-(--vn-muted)">End balance</div>
                             <div className={`mt-1 text-sm font-semibold ${tone}`}>
                               {formatMoney(scenario.endBalance)}
                             </div>
@@ -706,58 +706,58 @@ export default function InsightsPage() {
                   {compareStats ? (
                     <>
                       <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Income change</div>
-                          <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
+                        <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+                          <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Income change</div>
+                          <div className="mt-2 text-xl font-semibold text-(--vn-text)">
                             {formatDelta(baseStats.actualIncome - compareStats.actualIncome)}
                           </div>
                         </div>
-                        <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Spending change</div>
-                          <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
+                        <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+                          <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Spending change</div>
+                          <div className="mt-2 text-xl font-semibold text-(--vn-text)">
                             {formatDelta(baseStats.actualSpending - compareStats.actualSpending)}
                           </div>
                         </div>
-                        <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Savings change</div>
-                          <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
+                        <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+                          <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Savings change</div>
+                          <div className="mt-2 text-xl font-semibold text-(--vn-text)">
                             {formatDelta(baseStats.actualSavings - compareStats.actualSavings)}
                           </div>
                         </div>
-                        <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Leftover change</div>
-                          <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
+                        <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+                          <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Leftover change</div>
+                          <div className="mt-2 text-xl font-semibold text-(--vn-text)">
                             {formatDelta(baseStats.actualLeftover - compareStats.actualLeftover)}
                           </div>
                         </div>
                       </div>
 
                       <div className="mt-4 grid gap-4 md:grid-cols-2">
-                        <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
-                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Top category changes</div>
-                          <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
+                        <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4">
+                          <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Top category changes</div>
+                          <div className="mt-2 space-y-2 text-sm text-(--vn-muted)">
                             {categoryChanges.length === 0 ? (
-                              <div className="text-[var(--vn-muted)]">No category changes.</div>
+                              <div className="text-(--vn-muted)">No category changes.</div>
                             ) : (
                               categoryChanges.map((item) => (
                                 <div key={item.category} className="flex items-center justify-between">
                                   <span className="capitalize">{item.category}</span>
-                                  <span className="font-semibold text-[var(--vn-text)]">{formatDelta(item.delta)}</span>
+                                  <span className="font-semibold text-(--vn-text)">{formatDelta(item.delta)}</span>
                                 </div>
                               ))
                             )}
                           </div>
                         </div>
-                        <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
-                          <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Top merchant changes</div>
-                          <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
+                        <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4">
+                          <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Top merchant changes</div>
+                          <div className="mt-2 space-y-2 text-sm text-(--vn-muted)">
                             {labelChanges.length === 0 ? (
-                              <div className="text-[var(--vn-muted)]">No merchant changes.</div>
+                              <div className="text-(--vn-muted)">No merchant changes.</div>
                             ) : (
                               labelChanges.map((item) => (
                                 <div key={item.label} className="flex items-center justify-between">
                                   <span>{item.label}</span>
-                                  <span className="font-semibold text-[var(--vn-text)]">{formatDelta(item.delta)}</span>
+                                  <span className="font-semibold text-(--vn-text)">{formatDelta(item.delta)}</span>
                                 </div>
                               ))
                             )}
@@ -767,21 +767,21 @@ export default function InsightsPage() {
 
                       {incomeSourceChanges ? (
                         <div className="mt-4 grid gap-4 md:grid-cols-2">
-                          <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
-                            <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">New income sources</div>
-                            <div className="mt-2 space-y-1 text-sm text-[var(--vn-muted)]">
+                          <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4">
+                            <div className="text-xs uppercase tracking-wide text-(--vn-muted)">New income sources</div>
+                            <div className="mt-2 space-y-1 text-sm text-(--vn-muted)">
                               {incomeSourceChanges.newSources.length === 0
-                                ? <div className="text-[var(--vn-muted)]">None this period.</div>
+                                ? <div className="text-(--vn-muted)">None this period.</div>
                                 : incomeSourceChanges.newSources.map((source) => (
                                   <div key={source}>{source}</div>
                                 ))}
                             </div>
                           </div>
-                          <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
-                            <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Missing income sources</div>
-                            <div className="mt-2 space-y-1 text-sm text-[var(--vn-muted)]">
+                          <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4">
+                            <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Missing income sources</div>
+                            <div className="mt-2 space-y-1 text-sm text-(--vn-muted)">
                               {incomeSourceChanges.missingSources.length === 0
-                                ? <div className="text-[var(--vn-muted)]">None missing.</div>
+                                ? <div className="text-(--vn-muted)">None missing.</div>
                                 : incomeSourceChanges.missingSources.map((source) => (
                                   <div key={source}>{source}</div>
                                 ))}
@@ -791,21 +791,21 @@ export default function InsightsPage() {
                       ) : null}
                     </>
                   ) : (
-                    <div className="text-sm text-[var(--vn-muted)]">Select a comparison period to see changes.</div>
+                    <div className="text-sm text-(--vn-muted)">Select a comparison period to see changes.</div>
                   )}
                 </CollapsibleSection>
 
                 <CollapsibleSection id="s-overspend" title="3) Where am I overspending?">
                   {categoryChartData.length > 0 && (
-                    <div className="mb-6 rounded-2xl bg-[var(--vn-surface)] p-6 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-4">Spending by category</div>
+                    <div className="mb-6 rounded-2xl bg-(--vn-surface) p-6 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-(--vn-muted) mb-4">Spending by category</div>
                       <CategoryBreakdownChart data={categoryChartData} height={320} onCategoryClick={(name) => setDrilldownCategory(name.toLowerCase())} />
                     </div>
                   )}
 
                   {/* Spending calendar heat-map */}
-                  <div className="mb-6 rounded-2xl bg-[var(--vn-surface)] p-6 shadow-sm">
-                    <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-4">Daily spend heat-map</div>
+                  <div className="mb-6 rounded-2xl bg-(--vn-surface) p-6 shadow-sm">
+                    <div className="text-xs uppercase tracking-wide text-(--vn-muted) mb-4">Daily spend heat-map</div>
                     <SpendingCalendarHeatmap
                       transactions={plan.transactions}
                       periodStart={basePeriod.start}
@@ -814,52 +814,52 @@ export default function InsightsPage() {
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] flex items-center">Variable cap<InfoTooltip text="Your budgeted limit for flexible spending each period. Anything above this means you're overspending on non-fixed expenses." /></div>
-                      <div className="mt-2 text-xl font-semibold text-[var(--vn-text)]">
+                    <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-(--vn-muted) flex items-center">Variable cap<InfoTooltip text="Your budgeted limit for flexible spending each period. Anything above this means you're overspending on non-fixed expenses." /></div>
+                      <div className="mt-2 text-xl font-semibold text-(--vn-text)">
                         {formatMoney(plan.setup.variableCap)}
                       </div>
-                      <div className="mt-1 text-xs text-[var(--vn-muted)]">
+                      <div className="mt-1 text-xs text-(--vn-muted)">
                         Actual {formatMoney(variableSpend)} ({formatDelta(variableDelta)})
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Top overspent categories</div>
-                      <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
+                    <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Top overspent categories</div>
+                      <div className="mt-2 space-y-2 text-sm text-(--vn-muted)">
                         {overspentCategories.length === 0 ? (
-                          <div className="text-[var(--vn-muted)]">No categories over budget.</div>
+                          <div className="text-(--vn-muted)">No categories over budget.</div>
                         ) : (
                           overspentCategories.slice(0, 4).map((cat) => (
                             <div key={cat.category} className="flex items-center justify-between">
                               <span className="capitalize">{cat.category}</span>
-                              <span className="font-semibold text-[var(--vn-text)]">{formatDelta(cat.variance)}</span>
+                              <span className="font-semibold text-(--vn-text)">{formatDelta(cat.variance)}</span>
                             </div>
                           ))
                         )}
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
-                    <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Biggest overspend items</div>
-                    <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
+                  <div className="mt-4 rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4">
+                    <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Biggest overspend items</div>
+                    <div className="mt-2 space-y-2 text-sm text-(--vn-muted)">
                       {overspendItems.length === 0 ? (
-                        <div className="text-[var(--vn-muted)]">No overspend items.</div>
+                        <div className="text-(--vn-muted)">No overspend items.</div>
                       ) : (
                         overspendItems.map((item) => (
                           <div key={item.id} className="flex items-center justify-between">
                             <span>{item.label}</span>
-                            <span className="font-semibold text-[var(--vn-text)]">{formatMoney(item.amount)}</span>
+                            <span className="font-semibold text-(--vn-text)">{formatMoney(item.amount)}</span>
                           </div>
                         ))
                       )}
                     </div>
                   </div>
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
-                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Budget variance by bill</div>
-                      <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
+                    <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4">
+                      <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Budget variance by bill</div>
+                      <div className="mt-2 space-y-2 text-sm text-(--vn-muted)">
                         {billVariance.length === 0 ? (
-                          <div className="text-[var(--vn-muted)]">No bill variance data.</div>
+                          <div className="text-(--vn-muted)">No bill variance data.</div>
                         ) : (
                           billVariance.map((row) => {
                             const tone = row.variance > 0 ? "text-rose-600 dark:text-rose-400" : "text-green-600 dark:text-green-400";
@@ -873,19 +873,19 @@ export default function InsightsPage() {
                         )}
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
-                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Top merchants</div>
-                      <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
+                    <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4">
+                      <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Top merchants</div>
+                      <div className="mt-2 space-y-2 text-sm text-(--vn-muted)">
                         {merchantRows.length === 0 ? (
-                          <div className="text-[var(--vn-muted)]">No merchant spend recorded.</div>
+                          <div className="text-(--vn-muted)">No merchant spend recorded.</div>
                         ) : (
                           merchantRows.map((row) => (
                             <div key={row.label} className="flex items-center justify-between gap-3">
                               <span className="truncate">{row.label}</span>
-                              <span className="font-semibold text-[var(--vn-text)]">
+                              <span className="font-semibold text-(--vn-text)">
                                 {formatMoney(row.total)}
                                 {compareStats ? (
-                                  <span className="ml-2 text-xs text-[var(--vn-muted)]">
+                                  <span className="ml-2 text-xs text-(--vn-muted)">
                                     ({formatDelta(row.delta)} vs last)
                                   </span>
                                 ) : null}
@@ -900,7 +900,7 @@ export default function InsightsPage() {
 
                 <CollapsibleSection id="s-income" title="4) How stable is my income?">
                   {!hasIncomeData ? (
-                    <div className="text-sm text-[var(--vn-muted)]">
+                    <div className="text-sm text-(--vn-muted)">
                       No income data recorded yet. Add income transactions to see stability metrics.
                     </div>
                   ) : (
@@ -941,15 +941,15 @@ export default function InsightsPage() {
                     />
                   </div>
                   {savingsRateSeries.filter(r => r > 0).length >= 2 && (
-                    <div className="mt-4 rounded-2xl bg-[var(--vn-surface)] p-4">
+                    <div className="mt-4 rounded-2xl bg-(--vn-surface) p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <div className="text-xs text-[var(--vn-muted)]">Savings rate across periods</div>
+                        <div className="text-xs text-(--vn-muted)">Savings rate across periods</div>
                         <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                           {formatPercent(savingsRateSeries[savingsRateSeries.length - 1])} now
                         </div>
                       </div>
                       <Sparkline values={savingsRateSeries} stroke="#22c55e" fill="#22c55e" />
-                      <div className="mt-1 flex justify-between text-[10px] text-[var(--vn-muted)]">
+                      <div className="mt-1 flex justify-between text-[10px] text-(--vn-muted)">
                         <span>{sortedPeriods[0]?.label}</span>
                         <span>{sortedPeriods[sortedPeriods.length - 1]?.label}</span>
                       </div>
@@ -958,9 +958,9 @@ export default function InsightsPage() {
                 </CollapsibleSection>
 
                 <CollapsibleSection id="s-next" title="6) What should I do next?">
-                  <div className="space-y-2 text-sm text-[var(--vn-muted)]">
+                  <div className="space-y-2 text-sm text-(--vn-muted)">
                     {recommendations.map((rec) => (
-                      <div key={rec} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3">
+                      <div key={rec} className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) px-4 py-3">
                         {rec}
                       </div>
                     ))}
@@ -969,8 +969,8 @@ export default function InsightsPage() {
 
                 <CollapsibleSection id="s-compare" title="7) How do periods compare overall?">
                   {periodTrendData.length > 1 && (
-                    <div className="mb-6 rounded-2xl bg-[var(--vn-surface)] p-6 shadow-sm">
-                      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-4">Income vs spending trends</div>
+                    <div className="mb-6 rounded-2xl bg-(--vn-surface) p-6 shadow-sm">
+                      <div className="text-xs uppercase tracking-wide text-(--vn-muted) mb-4">Income vs spending trends</div>
                       <SpendingTrendChart data={periodTrendData} showIncome={true} height={300} />
                     </div>
                   )}
@@ -981,18 +981,18 @@ export default function InsightsPage() {
                       const delta = deltaValue(series.values);
                       const deltaTone = delta >= 0 ? "text-green-600 dark:text-green-400" : "text-rose-600 dark:text-rose-400";
                       return (
-                        <div key={series.key} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
+                        <div key={series.key} className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4">
                           <div className="flex items-start justify-between gap-4">
                             <div>
-                              <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">{series.label}</div>
-                              <div className="mt-1 text-lg font-semibold text-[var(--vn-text)]">{formatMoney(last)}</div>
+                              <div className="text-xs uppercase tracking-wide text-(--vn-muted)">{series.label}</div>
+                              <div className="mt-1 text-lg font-semibold text-(--vn-text)">{formatMoney(last)}</div>
                               <div className={`mt-1 text-xs ${deltaTone}`}>
                                 {delta >= 0 ? "Up" : "Down"} {formatDelta(delta)} vs last period
                               </div>
                             </div>
                             <Sparkline values={series.values} stroke={series.stroke} fill={series.fill} />
                           </div>
-                          <div className="mt-2 text-xs text-[var(--vn-muted)]">
+                          <div className="mt-2 text-xs text-(--vn-muted)">
                             {series.values.length} period(s) tracked
                           </div>
                         </div>
@@ -1000,30 +1000,30 @@ export default function InsightsPage() {
                     })}
                   </div>
 
-                  <div className="mt-4 rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4">
-                    <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)]">Period highlights</div>
-                    <div className="mt-2 space-y-2 text-sm text-[var(--vn-muted)]">
+                  <div className="mt-4 rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4">
+                    <div className="text-xs uppercase tracking-wide text-(--vn-muted)">Period highlights</div>
+                    <div className="mt-2 space-y-2 text-sm text-(--vn-muted)">
                       <div className="flex items-center justify-between">
                         <span>Highest income</span>
-                        <span className="font-semibold text-[var(--vn-text)]">
+                        <span className="font-semibold text-(--vn-text)">
                           {formatMoney(incomePeak.value)} ({periodLabelAt(sortedPeriods, incomePeak.index)})
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Highest spending</span>
-                        <span className="font-semibold text-[var(--vn-text)]">
+                        <span className="font-semibold text-(--vn-text)">
                           {formatMoney(spendingPeak.value)} ({periodLabelAt(sortedPeriods, spendingPeak.index)})
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Best leftover</span>
-                        <span className="font-semibold text-[var(--vn-text)]">
+                        <span className="font-semibold text-(--vn-text)">
                           {formatMoney(bestLeftover.value)} ({periodLabelAt(sortedPeriods, bestLeftover.index)})
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Lowest leftover</span>
-                        <span className="font-semibold text-[var(--vn-text)]">
+                        <span className="font-semibold text-(--vn-text)">
                           {formatMoney(worstLeftover.value)} ({periodLabelAt(sortedPeriods, worstLeftover.index)})
                         </span>
                       </div>
@@ -1041,14 +1041,14 @@ export default function InsightsPage() {
                       return (
                         <div
                           key={card.id}
-                          className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3"
+                          className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-(--vn-border) bg-(--vn-surface) px-4 py-3"
                         >
-                          <div className="font-semibold text-[var(--vn-text)]">{card.label}</div>
+                          <div className="font-semibold text-(--vn-text)">{card.label}</div>
                           <div className="flex items-center gap-2 text-xs">
                             <span className={`rounded-full px-2 py-1 font-semibold ${badge}`}>
                               {card.status.toUpperCase()}
                             </span>
-                            <span className="text-[var(--vn-muted)]">Leftover {formatMoney(card.leftover)}</span>
+                            <span className="text-(--vn-muted)">Leftover {formatMoney(card.leftover)}</span>
                           </div>
                         </div>
                       );
@@ -1058,17 +1058,17 @@ export default function InsightsPage() {
 
                 {crossPeriodVariance && crossPeriodVariance.activeCategories.length > 0 && (
                   <CollapsibleSection title="8) Category trends across periods">
-                    <div className="overflow-x-auto rounded-2xl border border-[var(--vn-border)]">
+                    <div className="overflow-x-auto rounded-2xl border border-(--vn-border)">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-[var(--vn-border)] bg-[var(--vn-bg)]">
-                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]">Category</th>
+                          <tr className="border-b border-(--vn-border) bg-(--vn-bg)">
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-(--vn-muted)">Category</th>
                             {crossPeriodVariance.periodData.map(({ period }) => (
-                              <th key={period.id} className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)] whitespace-nowrap">
+                              <th key={period.id} className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-(--vn-muted) whitespace-nowrap">
                                 {period.label}
                               </th>
                             ))}
-                            <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]">Trend</th>
+                            <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-(--vn-muted)">Trend</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1080,8 +1080,8 @@ export default function InsightsPage() {
                             const trendUp = last > prev * 1.05;
                             const trendDown = last < prev * 0.95;
                             return (
-                              <tr key={cat} className="border-b border-[var(--vn-border)] last:border-0">
-                                <td className="px-4 py-3 font-medium text-[var(--vn-text)] capitalize">{cat}</td>
+                              <tr key={cat} className="border-b border-(--vn-border) last:border-0">
+                                <td className="px-4 py-3 font-medium text-(--vn-text) capitalize">{cat}</td>
                                 {values.map((val, idx) => {
                                   const intensity = maxVal > 0 ? val / maxVal : 0;
                                   const bg = intensity > 0.8 ? "rgba(239,68,68,0.25)" :
@@ -1089,8 +1089,8 @@ export default function InsightsPage() {
                                     intensity > 0.2 ? "rgba(250,204,21,0.15)" :
                                     "transparent";
                                   return (
-                                    <td key={idx} className="px-4 py-3 text-right tabular-nums text-[var(--vn-muted)] text-xs" style={{ background: bg }}>
-                                      {val > 0 ? formatMoney(val) : <span className="text-[var(--vn-muted)]">-</span>}
+                                    <td key={idx} className="px-4 py-3 text-right tabular-nums text-(--vn-muted) text-xs" style={{ background: bg }}>
+                                      {val > 0 ? formatMoney(val) : <span className="text-(--vn-muted)">-</span>}
                                     </td>
                                   );
                                 })}
@@ -1100,7 +1100,7 @@ export default function InsightsPage() {
                                   ) : trendDown ? (
                                     <span className="text-emerald-500 font-bold text-xs">↓ {formatDelta(last - prev)}</span>
                                   ) : (
-                                    <span className="text-[var(--vn-muted)] text-xs">~</span>
+                                    <span className="text-(--vn-muted) text-xs">~</span>
                                   )}
                                 </td>
                               </tr>
@@ -1109,7 +1109,7 @@ export default function InsightsPage() {
                         </tbody>
                       </table>
                     </div>
-                    <p className="text-xs text-[var(--vn-muted)] mt-2">Heat-map shading: darker = higher spend relative to category peak. Trend shows last vs previous period.</p>
+                    <p className="text-xs text-(--vn-muted) mt-2">Heat-map shading: darker = higher spend relative to category peak. Trend shows last vs previous period.</p>
                   </CollapsibleSection>
                 )}
               </>

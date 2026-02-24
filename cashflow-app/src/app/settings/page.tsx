@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -273,18 +273,18 @@ export default function SettingsPage() {
 
             {/* Account */}
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Account</div>
+              <div className="text-sm font-semibold text-(--vn-text) mb-4">Account</div>
               {authLoading ? (
-                <div className="text-sm text-[var(--vn-muted)]">Loading...</div>
+                <div className="text-sm text-(--vn-muted)">Loading...</div>
               ) : user ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--vn-primary)]/15 text-[var(--vn-primary)] font-semibold text-sm">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-(--vn-primary)/15 text-(--vn-primary) font-semibold text-sm">
                       {(user.email?.[0] ?? "U").toUpperCase()}
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-[var(--vn-text)]">{user.email}</div>
-                      <div className="text-xs text-[var(--vn-muted)]">Signed in · Cloud sync active</div>
+                      <div className="text-sm font-medium text-(--vn-text)">{user.email}</div>
+                      <div className="text-xs text-(--vn-muted)">Signed in · Cloud sync active</div>
                     </div>
                   </div>
                   <button
@@ -299,7 +299,7 @@ export default function SettingsPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="text-sm text-[var(--vn-muted)]">
+                  <div className="text-sm text-(--vn-muted)">
                     Sign in to back up your data to the cloud and sync across devices.
                   </div>
                   <Link
@@ -313,12 +313,12 @@ export default function SettingsPage() {
             </div>
 
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Appearance</div>
+              <div className="text-sm font-semibold text-(--vn-text) mb-4">Appearance</div>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-[var(--vn-text)]">Dark Mode</div>
-                    <div className="text-xs text-[var(--vn-muted)]">Toggle between light and dark themes</div>
+                    <div className="text-sm font-medium text-(--vn-text)">Dark Mode</div>
+                    <div className="text-xs text-(--vn-muted)">Toggle between light and dark themes</div>
                   </div>
                   <ThemeToggle />
                 </div>
@@ -326,19 +326,19 @@ export default function SettingsPage() {
             </div>
 
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Regional Settings</div>
+              <div className="text-sm font-semibold text-(--vn-text) mb-4">Regional Settings</div>
               <CurrencySelector />
             </div>
 
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">As of Date</div>
-              <div className="text-xs text-[var(--vn-muted)] mb-4">
+              <div className="text-sm font-semibold text-(--vn-text) mb-4">As of Date</div>
+              <div className="text-xs text-(--vn-muted) mb-4">
                 Controls the reference date for filtering transactions and calculating time progress
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-[var(--vn-muted)] mb-2">
+                  <label className="block text-xs font-medium text-(--vn-muted) mb-2">
                     Current As of Date
                   </label>
                   <div className="flex flex-wrap items-center gap-2">
@@ -365,7 +365,7 @@ export default function SettingsPage() {
                     onChange={handleToggleAutoUpdate}
                     className="rounded"
                   />
-                  <label htmlFor="auto-update-date" className="text-sm text-[var(--vn-muted)]">
+                  <label htmlFor="auto-update-date" className="text-sm text-(--vn-muted)">
                     Auto-update to today on app load (recommended)
                   </label>
                 </div>
@@ -373,8 +373,8 @@ export default function SettingsPage() {
             </div>
 
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-[var(--vn-text)] mb-2">Expected Minimum Balance</div>
-              <div className="text-xs text-[var(--vn-muted)] mb-4">
+              <div className="text-sm font-semibold text-(--vn-text) mb-2">Expected Minimum Balance</div>
+              <div className="text-xs text-(--vn-muted) mb-4">
                 Your safety-net balance. Any day your projected balance dips below this amount will be flagged as a warning on the Timeline and Dashboard.
               </div>
               <div className="flex items-center gap-2">
@@ -406,7 +406,7 @@ export default function SettingsPage() {
                 )}
               </div>
               {plan.setup.expectedMinBalance > 0 && (
-                <div className="mt-2 text-xs text-[var(--vn-muted)]">
+                <div className="mt-2 text-xs text-(--vn-muted)">
                   Currently set to {formatMoney(plan.setup.expectedMinBalance)}
                 </div>
               )}
@@ -414,7 +414,7 @@ export default function SettingsPage() {
 
             <div className="vn-card p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="text-sm font-semibold text-[var(--vn-text)]">Periods</div>
+                <div className="text-sm font-semibold text-(--vn-text)">Periods</div>
                 <button
                   onClick={handleAddPeriod}
                   className="vn-btn vn-btn-primary text-xs px-3 py-1.5"
@@ -424,24 +424,24 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-3">
                 {plan.periods.length === 0 ? (
-                  <div className="text-[var(--vn-muted)] text-xs">No periods yet. Add one to get started.</div>
+                  <div className="text-(--vn-muted) text-xs">No periods yet. Add one to get started.</div>
                 ) : (
                   plan.periods.map((period) => (
                     <div
                       key={period.id}
                       className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${period.id === plan.setup.selectedPeriodId
-                        ? "bg-[var(--vn-primary)]/10 border border-[var(--vn-primary)]/30"
-                        : "bg-[var(--vn-bg)] border border-[var(--vn-border)]"
+                        ? "bg-(--vn-primary)/10 border border-(--vn-primary)/30"
+                        : "bg-(--vn-bg) border border-(--vn-border)"
                         }`}
                     >
                       <div className="flex-1">
-                        <div className="font-semibold text-[var(--vn-text)]">
+                        <div className="font-semibold text-(--vn-text)">
                           {period.label}
                           {period.id === plan.setup.selectedPeriodId && (
-                            <span className="ml-2 text-xs text-[var(--vn-primary)]">(Active)</span>
+                            <span className="ml-2 text-xs text-(--vn-primary)">(Active)</span>
                           )}
                         </div>
-                        <div className="text-xs text-[var(--vn-muted)]">
+                        <div className="text-xs text-(--vn-muted)">
                           {period.start} to {period.end}
                         </div>
                       </div>
@@ -468,13 +468,13 @@ export default function SettingsPage() {
             </div>
 
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Period Overrides</div>
-              <div className="text-xs text-[var(--vn-muted)] mb-4">
+              <div className="text-sm font-semibold text-(--vn-text) mb-4">Period Overrides</div>
+              <div className="text-xs text-(--vn-muted) mb-4">
                 Customize specific periods without affecting base rules
               </div>
 
               {plan.periods.length === 0 ? (
-                <div className="text-[var(--vn-muted)] text-xs">Add periods first to manage overrides.</div>
+                <div className="text-(--vn-muted) text-xs">Add periods first to manage overrides.</div>
               ) : (
                 <div className="space-y-4">
                   {plan.periods.map((period) => {
@@ -484,8 +484,8 @@ export default function SettingsPage() {
                       plan.periodRuleOverrides.some((o) => o.periodId === period.id);
 
                     return (
-                      <details key={period.id} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3">
-                        <summary className="cursor-pointer font-semibold text-[var(--vn-text)] flex items-center justify-between">
+                      <details key={period.id} className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) px-4 py-3">
+                        <summary className="cursor-pointer font-semibold text-(--vn-text) flex items-center justify-between">
                           <span>
                             {period.label}
                             {hasOverrides && (
@@ -497,7 +497,7 @@ export default function SettingsPage() {
                         <div className="mt-4 space-y-4">
                           {/* Starting Balance Override */}
                           <div>
-                            <label className="block text-xs font-medium text-[var(--vn-muted)] mb-2">
+                            <label className="block text-xs font-medium text-(--vn-muted) mb-2">
                               Starting Balance Override
                             </label>
                             <div className="flex items-center gap-2">
@@ -528,14 +528,14 @@ export default function SettingsPage() {
                           {/* Disabled Bills */}
                           {plan.bills.length > 0 && (
                             <div>
-                              <div className="text-xs font-medium text-[var(--vn-muted)] mb-2">
+                              <div className="text-xs font-medium text-(--vn-muted) mb-2">
                                 Disabled Bills for this Period
                               </div>
                               <div className="space-y-2 max-h-48 overflow-y-auto">
                                 {plan.bills.map((bill) => {
                                   const isDisabled = disabledBills.includes(bill.id);
                                   return (
-                                    <div key={bill.id} className="flex items-center gap-2 p-2 rounded bg-[var(--vn-bg)]">
+                                    <div key={bill.id} className="flex items-center gap-2 p-2 rounded bg-(--vn-bg)">
                                       <input
                                         type="checkbox"
                                         id={`bill-${period.id}-${bill.id}`}
@@ -545,7 +545,7 @@ export default function SettingsPage() {
                                       />
                                       <label
                                         htmlFor={`bill-${period.id}-${bill.id}`}
-                                        className="text-xs text-[var(--vn-muted)] flex-1 cursor-pointer"
+                                        className="text-xs text-(--vn-muted) flex-1 cursor-pointer"
                                       >
                                         {bill.label} ({formatMoney(bill.amount)})
                                       </label>
@@ -559,7 +559,7 @@ export default function SettingsPage() {
                           {/* Income Rule Overrides */}
                           {plan.incomeRules.length > 0 && (
                             <div>
-                              <div className="text-xs font-medium text-[var(--vn-muted)] mb-2">
+                              <div className="text-xs font-medium text-(--vn-muted) mb-2">
                                 Disabled Income Rules for this Period
                               </div>
                               <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -567,7 +567,7 @@ export default function SettingsPage() {
                                   const ruleOverride = getRuleOverride(period.id, rule.id, "income");
                                   const isDisabled = ruleOverride?.enabled === false;
                                   return (
-                                    <div key={rule.id} className="flex items-center gap-2 p-2 rounded bg-[var(--vn-bg)]">
+                                    <div key={rule.id} className="flex items-center gap-2 p-2 rounded bg-(--vn-bg)">
                                       <input
                                         type="checkbox"
                                         id={`income-${period.id}-${rule.id}`}
@@ -577,7 +577,7 @@ export default function SettingsPage() {
                                       />
                                       <label
                                         htmlFor={`income-${period.id}-${rule.id}`}
-                                        className="text-xs text-[var(--vn-muted)] flex-1 cursor-pointer"
+                                        className="text-xs text-(--vn-muted) flex-1 cursor-pointer"
                                       >
                                         {rule.label} ({formatMoney(rule.amount)} {rule.cadence})
                                       </label>
@@ -591,7 +591,7 @@ export default function SettingsPage() {
                           {/* Outflow Rule Overrides */}
                           {plan.outflowRules.length > 0 && (
                             <div>
-                              <div className="text-xs font-medium text-[var(--vn-muted)] mb-2">
+                              <div className="text-xs font-medium text-(--vn-muted) mb-2">
                                 Disabled Outflow Rules for this Period
                               </div>
                               <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -599,7 +599,7 @@ export default function SettingsPage() {
                                   const ruleOverride = getRuleOverride(period.id, rule.id, "outflow");
                                   const isDisabled = ruleOverride?.enabled === false;
                                   return (
-                                    <div key={rule.id} className="flex items-center gap-2 p-2 rounded bg-[var(--vn-bg)]">
+                                    <div key={rule.id} className="flex items-center gap-2 p-2 rounded bg-(--vn-bg)">
                                       <input
                                         type="checkbox"
                                         id={`outflow-${period.id}-${rule.id}`}
@@ -609,7 +609,7 @@ export default function SettingsPage() {
                                       />
                                       <label
                                         htmlFor={`outflow-${period.id}-${rule.id}`}
-                                        className="text-xs text-[var(--vn-muted)] flex-1 cursor-pointer"
+                                        className="text-xs text-(--vn-muted) flex-1 cursor-pointer"
                                       >
                                         {rule.label} ({formatMoney(rule.amount)} {rule.cadence})
                                       </label>
@@ -629,8 +629,8 @@ export default function SettingsPage() {
 
             {/* ── Privacy & Security ────────────────────────────────────── */}
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-[var(--vn-text)] mb-1">Privacy &amp; Security</div>
-              <p className="text-xs text-[var(--vn-muted)] mb-4">
+              <div className="text-sm font-semibold text-(--vn-text) mb-1">Privacy &amp; Security</div>
+              <p className="text-xs text-(--vn-muted) mb-4">
                 Lock the app with a 4-digit PIN. On supported devices, you can also unlock with Face ID or Touch ID.
               </p>
               {lockEnabled ? (
@@ -646,8 +646,8 @@ export default function SettingsPage() {
                       Disable lock
                     </button>
                   </div>
-                  <div className="pt-2 border-t border-[var(--vn-border)]">
-                    <div className="text-xs text-[var(--vn-muted)] mb-2">Register biometrics (Face ID / Touch ID)</div>
+                  <div className="pt-2 border-t border-(--vn-border)">
+                    <div className="text-xs text-(--vn-muted) mb-2">Register biometrics (Face ID / Touch ID)</div>
                     <button
                       type="button"
                       onClick={handleRegisterBiometric}
@@ -664,7 +664,7 @@ export default function SettingsPage() {
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs text-[var(--vn-muted)] mb-1">New PIN (4 digits)</label>
+                      <label className="block text-xs text-(--vn-muted) mb-1">New PIN (4 digits)</label>
                       <input
                         type="password"
                         inputMode="numeric"
@@ -676,7 +676,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-[var(--vn-muted)] mb-1">Confirm PIN</label>
+                      <label className="block text-xs text-(--vn-muted) mb-1">Confirm PIN</label>
                       <input
                         type="password"
                         inputMode="numeric"
@@ -704,13 +704,13 @@ export default function SettingsPage() {
 
             {/* ── Notifications ─────────────────────────────────────────── */}
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-[var(--vn-text)] mb-1">Notifications</div>
-              <p className="text-xs text-[var(--vn-muted)] mb-4">
+              <div className="text-sm font-semibold text-(--vn-text) mb-1">Notifications</div>
+              <p className="text-xs text-(--vn-muted) mb-4">
                 Get a browser notification when low balance risk, missed income, or large bills are detected — fires when you open or return to the app.
               </p>
 
               {!isNotificationsSupported() ? (
-                <div className="text-xs text-[var(--vn-muted)] rounded-xl bg-[var(--vn-surface)] p-3">
+                <div className="text-xs text-(--vn-muted) rounded-xl bg-(--vn-surface) p-3">
                   Browser notifications are not supported in this context.
                 </div>
               ) : notifPermission === "denied" ? (
@@ -720,10 +720,10 @@ export default function SettingsPage() {
               ) : (
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <div className="text-sm text-[var(--vn-text)]">
+                    <div className="text-sm text-(--vn-text)">
                       {notifEnabled ? "Notifications are on" : "Notifications are off"}
                     </div>
-                    <div className="text-xs text-[var(--vn-muted)] mt-0.5">
+                    <div className="text-xs text-(--vn-muted) mt-0.5">
                       {notifPermission === "granted"
                         ? "Permission granted — alerts fire on tab focus"
                         : "Permission not yet granted"}
@@ -734,8 +734,8 @@ export default function SettingsPage() {
                     onClick={notifEnabled ? handleDisableNotifications : handleEnableNotifications}
                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                       notifEnabled
-                        ? "bg-[var(--vn-accent)] focus:ring-[var(--vn-accent)]"
-                        : "bg-[var(--vn-border)] focus:ring-[var(--vn-border)]"
+                        ? "bg-(--vn-accent) focus:ring-(--vn-accent)"
+                        : "bg-(--vn-border) focus:ring-(--vn-border)"
                     }`}
                     role="switch"
                     aria-checked={notifEnabled}
@@ -751,15 +751,15 @@ export default function SettingsPage() {
             </div>
 
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">About</div>
+              <div className="text-sm font-semibold text-(--vn-text) mb-4">About</div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-[var(--vn-muted)]">Version</span>
-                  <span className="font-medium text-[var(--vn-text)]">1.0.1 (Build {(process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString()).slice(0, 16).replace("T", " ")})</span>
+                  <span className="text-(--vn-muted)">Version</span>
+                  <span className="font-medium text-(--vn-text)">1.0.1 (Build {(process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString()).slice(0, 16).replace("T", " ")})</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[var(--vn-muted)]">App Name</span>
-                  <span className="font-medium text-[var(--vn-text)]">{branding.name}</span>
+                  <span className="text-(--vn-muted)">App Name</span>
+                  <span className="font-medium text-(--vn-text)">{branding.name}</span>
                 </div>
               </div>
               <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--vn-border)" }}>
@@ -787,13 +787,13 @@ export default function SettingsPage() {
             className="vn-card max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-[var(--vn-text)] mb-4">
+            <h2 className="text-lg font-semibold text-(--vn-text) mb-4">
               {editingPeriod ? "Edit Period" : "Add Period"}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-muted) mb-1">
                   Label *
                 </label>
                 <input
@@ -806,7 +806,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-muted) mb-1">
                   Start Date *
                 </label>
                 <input
@@ -818,7 +818,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-muted)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-muted) mb-1">
                   End Date *
                 </label>
                 <input

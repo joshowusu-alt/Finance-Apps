@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -191,8 +191,8 @@ export default function PlanPage() {
                 <button
                   onClick={() => setPlanMode("manual")}
                   className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all border ${planMode === "manual"
-                    ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10 text-[var(--vn-primary)]"
-                    : "border-[var(--vn-border)] text-[var(--vn-muted)] hover:border-[var(--vn-primary)]/40"
+                    ? "border-(--vn-primary) bg-(--vn-primary)/10 text-(--vn-primary)"
+                    : "border-(--vn-border) text-(--vn-muted) hover:border-(--vn-primary)/40"
                     }`}
                 >
                   Manual Planning
@@ -200,8 +200,8 @@ export default function PlanPage() {
                 <button
                   onClick={() => setPlanMode("adaptive")}
                   className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all border ${planMode === "adaptive"
-                    ? "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10 text-[var(--vn-primary)]"
-                    : "border-[var(--vn-border)] text-[var(--vn-muted)] hover:border-[var(--vn-primary)]/40"
+                    ? "border-(--vn-primary) bg-(--vn-primary)/10 text-(--vn-primary)"
+                    : "border-(--vn-border) text-(--vn-muted) hover:border-(--vn-primary)/40"
                     }`}
                 >
                   Adaptive Rollover
@@ -210,32 +210,32 @@ export default function PlanPage() {
               {planMode === "adaptive" && (
                 <div className="mt-3">
                   {!prevPeriod ? (
-                    <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] px-4 py-4 text-sm text-[var(--vn-muted)]">
+                    <div className="rounded-xl border border-(--vn-border) bg-(--vn-bg) px-4 py-4 text-sm text-(--vn-muted)">
                       No previous period found. Complete your first period to unlock Adaptive Rollover.
                     </div>
                   ) : !adaptiveSuggestions || (adaptiveSuggestions.income.length === 0 && adaptiveSuggestions.outflow.length === 0 && adaptiveSuggestions.bills.length === 0) ? (
-                    <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] px-4 py-4 text-sm text-[var(--vn-muted)]">
+                    <div className="rounded-xl border border-(--vn-border) bg-(--vn-bg) px-4 py-4 text-sm text-(--vn-muted)">
                       No transactions recorded in {prevPeriod.label} yet. Add transactions to see adaptive suggestions.
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      <div className="text-xs text-[var(--vn-muted)]">
-                        Showing actuals from <span className="font-semibold text-[var(--vn-text)]">{prevPeriod.label}</span>.
-                        Applying will override rule amounts for <span className="font-semibold text-[var(--vn-text)]">{period.label}</span> only — global rules stay unchanged.
+                      <div className="text-xs text-(--vn-muted)">
+                        Showing actuals from <span className="font-semibold text-(--vn-text)">{prevPeriod.label}</span>.
+                        Applying will override rule amounts for <span className="font-semibold text-(--vn-text)">{period.label}</span> only — global rules stay unchanged.
                       </div>
 
                       {/* Income rows */}
                       {adaptiveSuggestions.income.length > 0 && (
-                        <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] overflow-hidden">
-                          <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[var(--vn-muted)] border-b border-[var(--vn-border)]">Income</div>
+                        <div className="rounded-xl border border-(--vn-border) bg-(--vn-bg) overflow-hidden">
+                          <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-(--vn-muted) border-b border-(--vn-border)">Income</div>
                           {adaptiveSuggestions.income.map((s) => {
                             const delta = s.actual - s.budget;
                             return (
-                              <div key={s.ruleId} className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-[var(--vn-border)] last:border-0">
-                                <span className="text-sm font-medium text-[var(--vn-text)] min-w-0 truncate">{s.label}</span>
+                              <div key={s.ruleId} className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-(--vn-border) last:border-0">
+                                <span className="text-sm font-medium text-(--vn-text) min-w-0 truncate">{s.label}</span>
                                 <div className="flex items-center gap-3 shrink-0 text-xs">
-                                  <span className="text-[var(--vn-muted)]">Budget {formatMoney(s.budget)}</span>
-                                  <span className="font-semibold text-[var(--vn-text)]">Actual {formatMoney(s.actual)}</span>
+                                  <span className="text-(--vn-muted)">Budget {formatMoney(s.budget)}</span>
+                                  <span className="font-semibold text-(--vn-text)">Actual {formatMoney(s.actual)}</span>
                                   {delta !== 0 && (
                                     <span className={`font-semibold ${delta > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                                       {delta > 0 ? "+" : ""}{formatMoney(delta)}
@@ -250,16 +250,16 @@ export default function PlanPage() {
 
                       {/* Outflow rule rows */}
                       {adaptiveSuggestions.outflow.length > 0 && (
-                        <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] overflow-hidden">
-                          <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[var(--vn-muted)] border-b border-[var(--vn-border)]">Recurring Outflows</div>
+                        <div className="rounded-xl border border-(--vn-border) bg-(--vn-bg) overflow-hidden">
+                          <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-(--vn-muted) border-b border-(--vn-border)">Recurring Outflows</div>
                           {adaptiveSuggestions.outflow.map((s) => {
                             const delta = s.actual - s.budget;
                             return (
-                              <div key={s.ruleId} className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-[var(--vn-border)] last:border-0">
-                                <span className="text-sm font-medium text-[var(--vn-text)] min-w-0 truncate">{s.label}</span>
+                              <div key={s.ruleId} className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-(--vn-border) last:border-0">
+                                <span className="text-sm font-medium text-(--vn-text) min-w-0 truncate">{s.label}</span>
                                 <div className="flex items-center gap-3 shrink-0 text-xs">
-                                  <span className="text-[var(--vn-muted)]">Budget {formatMoney(s.budget)}</span>
-                                  <span className="font-semibold text-[var(--vn-text)]">Actual {formatMoney(s.actual)}</span>
+                                  <span className="text-(--vn-muted)">Budget {formatMoney(s.budget)}</span>
+                                  <span className="font-semibold text-(--vn-text)">Actual {formatMoney(s.actual)}</span>
                                   {delta !== 0 && (
                                     <span className={`font-semibold ${delta <= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                                       {delta > 0 ? "+" : ""}{formatMoney(delta)}
@@ -274,19 +274,19 @@ export default function PlanPage() {
 
                       {/* Bills rows (read-only, can't override amount) */}
                       {adaptiveSuggestions.bills.length > 0 && (
-                        <div className="rounded-xl border border-[var(--vn-border)] bg-[var(--vn-bg)] overflow-hidden">
-                          <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[var(--vn-muted)] border-b border-[var(--vn-border)] flex items-center justify-between">
+                        <div className="rounded-xl border border-(--vn-border) bg-(--vn-bg) overflow-hidden">
+                          <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-(--vn-muted) border-b border-(--vn-border) flex items-center justify-between">
                             <span>Committed Bills</span>
                             <span className="text-[9px] normal-case font-normal">(amounts fixed)</span>
                           </div>
                           {adaptiveSuggestions.bills.map((s) => {
                             const delta = s.actual - s.budget;
                             return (
-                              <div key={s.ruleId} className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-[var(--vn-border)] last:border-0">
-                                <span className="text-sm font-medium text-[var(--vn-text)] min-w-0 truncate">{s.label}</span>
+                              <div key={s.ruleId} className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-(--vn-border) last:border-0">
+                                <span className="text-sm font-medium text-(--vn-text) min-w-0 truncate">{s.label}</span>
                                 <div className="flex items-center gap-3 shrink-0 text-xs">
-                                  <span className="text-[var(--vn-muted)]">Budget {formatMoney(s.budget)}</span>
-                                  <span className="font-semibold text-[var(--vn-text)]">Actual {formatMoney(s.actual)}</span>
+                                  <span className="text-(--vn-muted)">Budget {formatMoney(s.budget)}</span>
+                                  <span className="font-semibold text-(--vn-text)">Actual {formatMoney(s.actual)}</span>
                                   {delta !== 0 && (
                                     <span className={`font-semibold ${delta <= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                                       {delta > 0 ? "+" : ""}{formatMoney(delta)}
@@ -316,7 +316,7 @@ export default function PlanPage() {
                           className={`w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all border ${
                             applyStatus === "applied"
                               ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300"
-                              : "border-[var(--vn-primary)] bg-[var(--vn-primary)]/10 text-[var(--vn-primary)] hover:bg-[var(--vn-primary)]/20"
+                              : "border-(--vn-primary) bg-(--vn-primary)/10 text-(--vn-primary) hover:bg-(--vn-primary)/20"
                           }`}
                         >
                           {applyStatus === "applied" ? "✓ Applied to this period" : `Apply ${prevPeriod.label} actuals to ${period.label}`}
@@ -332,26 +332,26 @@ export default function PlanPage() {
             <div className="vn-card p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
-                  <div className="text-sm font-bold text-[var(--vn-text)]">Plan Income</div>
-                  <div className="text-xs text-[var(--vn-muted)]">Expected income this period</div>
+                  <div className="text-sm font-bold text-(--vn-text)">Plan Income</div>
+                  <div className="text-xs text-(--vn-muted)">Expected income this period</div>
                 </div>
                 <Link href="/income" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
                   Edit income
                 </Link>
               </div>
-              <div className="text-2xl font-bold text-[var(--vn-success)] mb-4">{formatMoney(totalIncome)}</div>
+              <div className="text-2xl font-bold text-(--vn-success) mb-4">{formatMoney(totalIncome)}</div>
 
               {plan.incomeRules.filter((r) => r.enabled).length === 0 ? (
-                <div className="text-sm text-[var(--vn-muted)]">No income rules set up yet.</div>
+                <div className="text-sm text-(--vn-muted)">No income rules set up yet.</div>
               ) : (
                 <div className="space-y-2">
                   {plan.incomeRules.filter((r) => r.enabled).map((rule) => (
-                    <div key={rule.id} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
+                    <div key={rule.id} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-(--vn-bg)">
                       <div className="min-w-0">
-                        <div className="text-sm font-medium text-[var(--vn-text)] truncate">{rule.label}</div>
-                        <div className="text-xs text-[var(--vn-muted)]">{cadenceLabel(rule.cadence)}</div>
+                        <div className="text-sm font-medium text-(--vn-text) truncate">{rule.label}</div>
+                        <div className="text-xs text-(--vn-muted)">{cadenceLabel(rule.cadence)}</div>
                       </div>
-                      <div className="text-sm font-semibold text-[var(--vn-text)] shrink-0">{formatMoney(rule.amount)}</div>
+                      <div className="text-sm font-semibold text-(--vn-text) shrink-0">{formatMoney(rule.amount)}</div>
                     </div>
                   ))}
                 </div>
@@ -362,26 +362,26 @@ export default function PlanPage() {
             <div className="vn-card p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
-                  <div className="text-sm font-bold text-[var(--vn-text)]">Committed Bills</div>
-                  <div className="text-xs text-[var(--vn-muted)]">Fixed obligations this period</div>
+                  <div className="text-sm font-bold text-(--vn-text)">Committed Bills</div>
+                  <div className="text-xs text-(--vn-muted)">Fixed obligations this period</div>
                 </div>
                 <Link href="/bills" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
                   Edit bills
                 </Link>
               </div>
-              <div className="text-2xl font-bold text-[var(--vn-text)] mb-4">{formatMoney(totalBills)}</div>
+              <div className="text-2xl font-bold text-(--vn-text) mb-4">{formatMoney(totalBills)}</div>
 
               {upcomingOutflows.length === 0 ? (
-                <div className="text-sm text-[var(--vn-muted)]">No upcoming bills.</div>
+                <div className="text-sm text-(--vn-muted)">No upcoming bills.</div>
               ) : (
                 <div className="space-y-2">
                   {upcomingOutflows.map((bill) => (
-                    <div key={bill.id} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
+                    <div key={bill.id} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-(--vn-bg)">
                       <div className="min-w-0">
-                        <div className="text-sm font-medium text-[var(--vn-text)] truncate">{bill.label}</div>
-                        <div className="text-xs text-[var(--vn-muted)]">Due {prettyDate(bill.date)}</div>
+                        <div className="text-sm font-medium text-(--vn-text) truncate">{bill.label}</div>
+                        <div className="text-xs text-(--vn-muted)">Due {prettyDate(bill.date)}</div>
                       </div>
-                      <div className="text-sm font-semibold text-[var(--vn-text)] shrink-0">{formatMoney(bill.amount)}</div>
+                      <div className="text-sm font-semibold text-(--vn-text) shrink-0">{formatMoney(bill.amount)}</div>
                     </div>
                   ))}
                 </div>
@@ -392,8 +392,8 @@ export default function PlanPage() {
             <div className="vn-card p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
-                  <div className="text-sm font-bold text-[var(--vn-text)]">Recurring Outflows</div>
-                  <div className="text-xs text-[var(--vn-muted)]">Flexible and protected spending (monthly)</div>
+                  <div className="text-sm font-bold text-(--vn-text)">Recurring Outflows</div>
+                  <div className="text-xs text-(--vn-muted)">Flexible and protected spending (monthly)</div>
                 </div>
                 <Link href="/bills" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
                   Edit allocations
@@ -407,25 +407,25 @@ export default function PlanPage() {
                   { label: "Buffer", value: allocations.buffer },
                   { label: "Other", value: allocations.other },
                 ].filter((row) => row.value > 0).map((row) => (
-                  <div key={row.label} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
-                    <div className="text-sm font-medium text-[var(--vn-text)] min-w-0 truncate">{row.label}</div>
-                    <div className="text-sm font-semibold text-[var(--vn-text)] shrink-0">{formatMoney(row.value)}</div>
+                  <div key={row.label} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-(--vn-bg)">
+                    <div className="text-sm font-medium text-(--vn-text) min-w-0 truncate">{row.label}</div>
+                    <div className="text-sm font-semibold text-(--vn-text) shrink-0">{formatMoney(row.value)}</div>
                   </div>
                 ))}
-                <div className="flex items-start justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)] border border-[var(--vn-border)]">
+                <div className="flex items-start justify-between gap-3 rounded-xl px-4 py-3 bg-(--vn-bg) border border-(--vn-border)">
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-[var(--vn-muted)]">Expected Min Balance</div>
+                    <div className="text-sm font-medium text-(--vn-muted)">Expected Min Balance</div>
                     {!expectedMinIsSet && (
-                      <div className="text-xs text-[var(--vn-muted)]">Set a minimum to flag risky days</div>
+                      <div className="text-xs text-(--vn-muted)">Set a minimum to flag risky days</div>
                     )}
                   </div>
-                  <div className={`text-sm font-semibold shrink-0 ${expectedMinIsSet ? "text-[var(--vn-text)]" : "text-[var(--vn-muted)]"}`}>
+                  <div className={`text-sm font-semibold shrink-0 ${expectedMinIsSet ? "text-(--vn-text)" : "text-(--vn-muted)"}`}>
                     {expectedMinIsSet ? formatMoney(expectedMin) : "Not set"}
                   </div>
                 </div>
               </div>
               {Object.values(allocations).every((v) => v === 0) && (
-                <div className="mt-2 text-sm text-[var(--vn-muted)]">No allocations set up yet. Add outflow rules to see them here.</div>
+                <div className="mt-2 text-sm text-(--vn-muted)">No allocations set up yet. Add outflow rules to see them here.</div>
               )}
             </div>
 
@@ -433,28 +433,28 @@ export default function PlanPage() {
             <div className="vn-card p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
-                  <div className="text-sm font-bold text-[var(--vn-text)]">Total Budgeted Outflows</div>
-                  <div className="text-xs text-[var(--vn-muted)]">Committed bills + recurring outflows this period</div>
+                  <div className="text-sm font-bold text-(--vn-text)">Total Budgeted Outflows</div>
+                  <div className="text-xs text-(--vn-muted)">Committed bills + recurring outflows this period</div>
                 </div>
                 <Link href="/bills" className="vn-btn vn-btn-ghost text-xs self-end sm:self-auto">
                   View details
                 </Link>
               </div>
-              <div className="text-2xl font-bold text-[var(--vn-text)] mb-4">{formatMoney(totalBills + totalAllocations)}</div>
+              <div className="text-2xl font-bold text-(--vn-text) mb-4">{formatMoney(totalBills + totalAllocations)}</div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
+                <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-(--vn-bg)">
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-[var(--vn-text)]">Committed Bills</div>
-                    <div className="text-xs text-[var(--vn-muted)]">{plan.bills.filter((b) => b.enabled).length} bill{plan.bills.filter((b) => b.enabled).length === 1 ? '' : 's'}</div>
+                    <div className="text-sm font-medium text-(--vn-text)">Committed Bills</div>
+                    <div className="text-xs text-(--vn-muted)">{plan.bills.filter((b) => b.enabled).length} bill{plan.bills.filter((b) => b.enabled).length === 1 ? '' : 's'}</div>
                   </div>
-                  <div className="text-sm font-semibold text-[var(--vn-text)] shrink-0">{formatMoney(totalBills)}</div>
+                  <div className="text-sm font-semibold text-(--vn-text) shrink-0">{formatMoney(totalBills)}</div>
                 </div>
-                <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[var(--vn-bg)]">
+                <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-(--vn-bg)">
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-[var(--vn-text)]">Recurring Outflows</div>
-                    <div className="text-xs text-[var(--vn-muted)]">{plan.outflowRules.filter((r) => r.enabled).length} rule{plan.outflowRules.filter((r) => r.enabled).length === 1 ? '' : 's'}</div>
+                    <div className="text-sm font-medium text-(--vn-text)">Recurring Outflows</div>
+                    <div className="text-xs text-(--vn-muted)">{plan.outflowRules.filter((r) => r.enabled).length} rule{plan.outflowRules.filter((r) => r.enabled).length === 1 ? '' : 's'}</div>
                   </div>
-                  <div className="text-sm font-semibold text-[var(--vn-text)] shrink-0">{formatMoney(totalAllocations)}</div>
+                  <div className="text-sm font-semibold text-(--vn-text) shrink-0">{formatMoney(totalAllocations)}</div>
                 </div>
               </div>
             </div>
@@ -463,51 +463,51 @@ export default function PlanPage() {
             <div className={`vn-card p-6 border ${riskConfig.bg}`}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
-                  <div className="text-sm font-bold text-[var(--vn-text)]">Period Outlook</div>
-                  <div className="text-xs text-[var(--vn-muted)]">Where you&apos;ll land this period</div>
+                  <div className="text-sm font-bold text-(--vn-text)">Period Outlook</div>
+                  <div className="text-xs text-(--vn-muted)">Where you&apos;ll land this period</div>
                 </div>
                 <span className={`text-xs font-bold px-3 py-1.5 rounded-full self-end sm:self-auto ${riskConfig.color} ${riskConfig.bg}`}>
                   {riskConfig.label}
                 </span>
               </div>
-              <div className="text-xs text-[var(--vn-muted)] -mt-1">{derived.health.reason}</div>
+              <div className="text-xs text-(--vn-muted) -mt-1">{derived.health.reason}</div>
 
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--vn-muted)]">Expected income</span>
-                  <span className="font-semibold text-[var(--vn-success)]">+{formatMoney(totalIncome)}</span>
+                  <span className="text-(--vn-muted)">Expected income</span>
+                  <span className="font-semibold text-(--vn-success)">+{formatMoney(totalIncome)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--vn-muted)]">Committed bills</span>
-                  <span className="font-semibold text-[var(--vn-text)]">-{formatMoney(totalBills)}</span>
+                  <span className="text-(--vn-muted)">Committed bills</span>
+                  <span className="font-semibold text-(--vn-text)">-{formatMoney(totalBills)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--vn-muted)]">Recurring outflows</span>
-                  <span className="font-semibold text-[var(--vn-text)]">-{formatMoney(totalAllocations)}</span>
+                  <span className="text-(--vn-muted)">Recurring outflows</span>
+                  <span className="font-semibold text-(--vn-text)">-{formatMoney(totalAllocations)}</span>
                 </div>
-                <div className="h-px bg-[var(--vn-border)]" />
+                <div className="h-px bg-(--vn-border)" />
                 <div className="flex justify-between text-sm font-semibold">
-                  <span className="text-[var(--vn-muted)]">Total budgeted outflows</span>
-                  <span className="text-[var(--vn-text)]">-{formatMoney(totalBills + totalAllocations)}</span>
+                  <span className="text-(--vn-muted)">Total budgeted outflows</span>
+                  <span className="text-(--vn-text)">-{formatMoney(totalBills + totalAllocations)}</span>
                 </div>
-                <div className="h-px bg-[var(--vn-border)]" />
+                <div className="h-px bg-(--vn-border)" />
                 <div className="flex justify-between text-sm">
-                  <span className="font-semibold text-[var(--vn-text)]">Remaining / Unallocated</span>
-                  <span className={`font-bold ${remaining >= 0 ? "text-[var(--vn-success)]" : "text-red-500"}`}>
+                  <span className="font-semibold text-(--vn-text)">Remaining / Unallocated</span>
+                  <span className={`font-bold ${remaining >= 0 ? "text-(--vn-success)" : "text-red-500"}`}>
                     {formatMoney(remaining)}
                   </span>
                 </div>
-                <div className="h-px bg-[var(--vn-border)]" />
+                <div className="h-px bg-(--vn-border)" />
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--vn-muted)]">Projected lowest balance</span>
-                  <span className={`font-semibold ${lowestBalance >= expectedMin ? "text-[var(--vn-text)]" : "text-red-500"}`}>
+                  <span className="text-(--vn-muted)">Projected lowest balance</span>
+                  <span className={`font-semibold ${lowestBalance >= expectedMin ? "text-(--vn-text)" : "text-red-500"}`}>
                     {formatMoney(lowestBalance)}
-                    <span className="text-xs text-[var(--vn-muted)] ml-1">({prettyDate(derived.cashflow.lowest.date)})</span>
+                    <span className="text-xs text-(--vn-muted) ml-1">({prettyDate(derived.cashflow.lowest.date)})</span>
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--vn-muted)]">Expected minimum</span>
-                  <span className={`font-semibold ${expectedMinIsSet ? "text-[var(--vn-text)]" : "text-[var(--vn-muted)]"}`}>
+                  <span className="text-(--vn-muted)">Expected minimum</span>
+                  <span className={`font-semibold ${expectedMinIsSet ? "text-(--vn-text)" : "text-(--vn-muted)"}`}>
                     {expectedMinIsSet ? formatMoney(expectedMin) : "Not set"}
                   </span>
                 </div>

@@ -13,8 +13,11 @@ import {
 import { defaultDateRange } from "@/lib/dateUtils";
 import { mapPlaidCategory, mapPlaidType } from "@/lib/plaidCategories";
 import { PLAN, type Plan, type Transaction } from "@/data/plan";
+import { createRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
+
+const checkSyncLimit = createRateLimiter(5, 60_000);
 
 export async function POST(req: Request) {
   try {
@@ -23,6 +26,10 @@ export async function POST(req: Request) {
 
     if (!auth) {
       return unauthorized("Missing authentication");
+    }
+
+    if (!checkSyncLimit(auth.userId)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const { plan, prevPlan, scenarioId } = await loadActivePlan(auth, PLAN);

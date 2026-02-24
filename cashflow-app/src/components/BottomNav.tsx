@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -199,7 +199,7 @@ export default function BottomNav() {
               }}
             >
               <div className="flex justify-center pt-3 pb-2">
-                <div className="h-1 w-10 rounded-full bg-[var(--vn-border)]" />
+                <div className="h-1 w-10 rounded-full bg-(--vn-border)" />
               </div>
               {/* Scrollable content with safe area bottom padding */}
               <div className="px-6 py-2 pb-28">{/* pb-28 clears the tab bar */}
@@ -210,7 +210,7 @@ export default function BottomNav() {
                       key={it.href}
                       href={it.href}
                       onClick={() => setShowMore(false)}
-                      className="flex flex-col items-center gap-1 rounded-2xl py-3 px-1 transition-colors hover:bg-[var(--vn-bg)]"
+                      className="flex flex-col items-center gap-1 rounded-2xl py-3 px-1 transition-colors hover:bg-(--vn-bg)"
                     >
                     <div className="relative">
                       {it.icon(isActive(it.href))}
@@ -223,7 +223,7 @@ export default function BottomNav() {
                         </span>
                       )}
                     </div>
-                      <span className={`text-[11px] font-semibold leading-tight text-center ${isActive(it.href) ? "text-[var(--vn-primary)]" : "text-[var(--vn-text)]"}`}>
+                      <span className={`text-[11px] font-semibold leading-tight text-center ${isActive(it.href) ? "text-(--vn-primary)" : "text-(--vn-text)"}`}>
                         {it.label}
                       </span>
                       {it.desc && (
@@ -308,7 +308,7 @@ export default function BottomNav() {
                     >
                       {it.icon(active)}
                       {it.href === "/insights" && isOverspending && !active && (
-                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 border border-[var(--vn-surface)]" />
+                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 border border-(--vn-surface)" />
                       )}
                     </motion.span>
                     <span

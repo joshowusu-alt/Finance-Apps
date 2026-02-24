@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { Products, CountryCode } from "plaid";
 import { getPlaidClient } from "@/lib/plaid";
 import { resolveAuth, badRequest, serverError } from "@/lib/apiHelpers";
+import { createRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
+
+const checkLinkTokenLimit = createRateLimiter(10, 60_000);
 
 export async function POST(req: Request) {
   try {
@@ -12,6 +15,10 @@ export async function POST(req: Request) {
 
     if (!auth) {
       return badRequest("Missing userId");
+    }
+
+    if (!checkLinkTokenLimit(auth.userId)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const client = getPlaidClient();

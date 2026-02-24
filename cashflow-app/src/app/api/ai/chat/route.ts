@@ -8,27 +8,11 @@ import {
 } from "@/lib/apiHelpers";
 import { buildAIContext, formatContextForPrompt } from "@/lib/aiContext";
 import { PLAN } from "@/data/plan";
+import { createRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
-// Simple in-memory rate limiting
-const rateLimits = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 20;
-const RATE_WINDOW = 60 * 1000;
-
-function checkRateLimit(identifier: string): boolean {
-  const now = Date.now();
-  const limit = rateLimits.get(identifier);
-
-  if (!limit || now > limit.resetTime) {
-    rateLimits.set(identifier, { count: 1, resetTime: now + RATE_WINDOW });
-    return true;
-  }
-
-  if (limit.count >= RATE_LIMIT) return false;
-  limit.count++;
-  return true;
-}
+const checkRateLimit = createRateLimiter(20, 60_000);
 
 export async function POST(req: Request) {
   try {

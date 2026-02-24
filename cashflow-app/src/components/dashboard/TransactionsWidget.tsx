@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -29,24 +29,24 @@ export function TransactionsWidget({ transactions, href = "/transactions" }: Tra
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
                     </div>
-                    <span className="text-sm font-semibold text-[var(--vn-text)]">Recent Activity</span>
+                    <span className="text-sm font-semibold text-(--vn-text)">Recent Activity</span>
                 </div>
-                <Link href={href} className="text-xs font-semibold text-[var(--vn-primary)] hover:underline">
+                <Link href={href} className="text-xs font-semibold text-(--vn-primary) hover:underline">
                     View All
                 </Link>
             </div>
 
             <div className="flex-1 space-y-3">
                 {transactions.length === 0 ? (
-                    <div className="text-sm text-[var(--vn-muted)] italic py-2">No recent transactions.</div>
+                    <div className="text-sm text-(--vn-muted) italic py-2">No recent transactions.</div>
                 ) : (
                     transactions.slice(0, 3).map((t) => (
                         <div key={t.id} className="flex justify-between items-center group cursor-default">
                             <div className="flex flex-col">
-                                <span className="text-sm font-medium text-[var(--vn-text)] truncate max-w-[120px]">{t.merchant || "Unknown"}</span>
-                                <span className="text-xs text-[var(--vn-muted)]">{prettyDate(t.date)}</span>
+                                <span className="text-sm font-medium text-(--vn-text) truncate max-w-[120px]">{t.merchant || "Unknown"}</span>
+                                <span className="text-xs text-(--vn-muted)">{prettyDate(t.date)}</span>
                             </div>
-                            <span className="text-sm font-semibold text-[var(--vn-text)]">
+                            <span className="text-sm font-semibold text-(--vn-text)">
                                 {formatMoney(t.amount)}
                             </span>
                         </div>
@@ -55,11 +55,11 @@ export function TransactionsWidget({ transactions, href = "/transactions" }: Tra
             </div>
 
             {transactions.length > 0 && (
-                <div className="mt-4 pt-3 border-t border-[var(--vn-border)]">
+                <div className="mt-4 pt-3 border-t border-(--vn-border)">
                     <Link href={href} className="block w-full">
                         <motion.div
                             whileHover={{ x: 2 }}
-                            className="flex items-center justify-between text-xs text-[var(--vn-muted)] hover:text-[var(--vn-primary)] transition-colors"
+                            className="flex items-center justify-between text-xs text-(--vn-muted) hover:text-(--vn-primary) transition-colors"
                         >
                             <span>{transactions.length > 3 ? `+ ${transactions.length - 3} more this period` : "See full history"}</span>
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

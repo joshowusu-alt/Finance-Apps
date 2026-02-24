@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -174,7 +174,7 @@ export default function BiometricLock() {
           <div className="text-xl font-bold" style={{ fontFamily: "var(--font-playfair)", color: "var(--vn-text)" }}>
             Velanovo
           </div>
-          <div className="text-xs text-[var(--vn-muted)] mt-1">Enter your PIN to continue</div>
+          <div className="text-xs text-(--vn-muted) mt-1">Enter your PIN to continue</div>
         </div>
 
         {/* PIN dots */}

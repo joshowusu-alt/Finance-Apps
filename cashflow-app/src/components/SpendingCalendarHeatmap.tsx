@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * SpendingCalendarHeatmap
@@ -95,14 +95,14 @@ export default function SpendingCalendarHeatmap({
 
   return (
     <div>
-      <div className="text-xs font-medium text-[var(--vn-muted)] mb-3">
+      <div className="text-xs font-medium text-(--vn-muted) mb-3">
         {formatMonthYear(periodStart)}
       </div>
 
       {/* Day-of-week header */}
       <div className="grid grid-cols-7 gap-1 mb-1">
         {DAY_LABELS.map((d) => (
-          <div key={d} className="text-center text-[10px] text-[var(--vn-muted)]">
+          <div key={d} className="text-center text-[10px] text-(--vn-muted)">
             {d}
           </div>
         ))}
@@ -132,7 +132,7 @@ export default function SpendingCalendarHeatmap({
             <div
               key={date}
               className={`relative aspect-square rounded-lg flex flex-col items-center justify-center cursor-default transition-all ${
-                isToday ? "ring-1 ring-[var(--vn-primary)]" : ""
+                isToday ? "ring-1 ring-(--vn-primary)" : ""
               } ${isFuture ? "opacity-30" : ""}`}
               style={{
                 background:
@@ -146,14 +146,14 @@ export default function SpendingCalendarHeatmap({
               onTouchEnd={() => setTimeout(() => setHovered(null), 2000)}
               title={spend > 0 ? `${date}: ${formatMoney(spend)}` : date}
             >
-              <span className="text-[9px] font-medium text-[var(--vn-text)] leading-none">
+              <span className="text-[9px] font-medium text-(--vn-text) leading-none">
                 {formatDayNumber(date)}
               </span>
 
               {/* Hover / tap tooltip */}
               {hovered === date && spend > 0 && (
                 <div
-                  className={`absolute z-10 bottom-full mb-1 whitespace-nowrap rounded-xl bg-[var(--vn-surface)] border border-[var(--vn-border)] shadow-lg px-2 py-1 text-[10px] text-[var(--vn-text)] pointer-events-none ${tooltipPos}`}
+                  className={`absolute z-10 bottom-full mb-1 whitespace-nowrap rounded-xl bg-(--vn-surface) border border-(--vn-border) shadow-lg px-2 py-1 text-[10px] text-(--vn-text) pointer-events-none ${tooltipPos}`}
                 >
                   {date}: {formatMoney(spend)}
                 </div>
@@ -165,7 +165,7 @@ export default function SpendingCalendarHeatmap({
 
       {/* Legend */}
       <div className="flex items-center gap-2 mt-3 justify-end">
-        <span className="text-[10px] text-[var(--vn-muted)]">Low</span>
+        <span className="text-[10px] text-(--vn-muted)">Low</span>
         {[0.1, 0.3, 0.55, 0.75, 0.95].map((f) => (
           <div
             key={f}
@@ -173,7 +173,7 @@ export default function SpendingCalendarHeatmap({
             style={{ background: `rgba(220,38,38,${(0.08 + f * 0.72).toFixed(2)})` }}
           />
         ))}
-        <span className="text-[10px] text-[var(--vn-muted)]">High</span>
+        <span className="text-[10px] text-(--vn-muted)">High</span>
       </div>
     </div>
   );

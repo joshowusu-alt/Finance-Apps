@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -226,16 +226,16 @@ export default function CommandPalette() {
               >
                 {/* Search input */}
                 <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
-                  <span className="text-base text-[var(--vn-muted)]">🔍</span>
+                  <span className="text-base text-(--vn-muted)">🔍</span>
                   <input
                     ref={inputRef}
                     type="text"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
                     placeholder="Search pages, actions, transactions…"
-                    className="flex-1 bg-transparent outline-none text-[var(--vn-text)] text-sm placeholder:text-[var(--vn-muted)]"
+                    className="flex-1 bg-transparent outline-none text-(--vn-text) text-sm placeholder:text-(--vn-muted)"
                   />
-                  <kbd className="hidden sm:inline-flex items-center gap-1 text-[10px] text-[var(--vn-muted)] bg-white/5 rounded px-1.5 py-0.5 border border-white/10 select-none">
+                  <kbd className="hidden sm:inline-flex items-center gap-1 text-[10px] text-(--vn-muted) bg-white/5 rounded px-1.5 py-0.5 border border-white/10 select-none">
                     Esc
                   </kbd>
                 </div>
@@ -243,14 +243,14 @@ export default function CommandPalette() {
                 {/* Results list */}
                 <div ref={listRef} className="max-h-[55vh] overflow-y-auto py-1">
                   {groups.size === 0 && (
-                    <div className="px-5 py-8 text-center text-sm text-[var(--vn-muted)]">
+                    <div className="px-5 py-8 text-center text-sm text-(--vn-muted)">
                       No results for &ldquo;{query}&rdquo;
                     </div>
                   )}
 
                   {[...groups.entries()].map(([group, items]) => (
                     <div key={group}>
-                      <div className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-[var(--vn-muted)]">
+                      <div className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-(--vn-muted)">
                         {group}
                       </div>
                       {items.map(item => {
@@ -262,8 +262,8 @@ export default function CommandPalette() {
                             data-index={idx}
                             className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
                               isActive
-                                ? "bg-[var(--vn-primary)]/15 text-[var(--vn-text)]"
-                                : "hover:bg-white/5 text-[var(--vn-text)]"
+                                ? "bg-(--vn-primary)/15 text-(--vn-text)"
+                                : "hover:bg-white/5 text-(--vn-text)"
                             }`}
                             onMouseEnter={() => setActiveIndex(idx)}
                             onClick={() => executeItem(item)}
@@ -272,13 +272,13 @@ export default function CommandPalette() {
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-medium truncate">{item.label}</div>
                               {item.description && (
-                                <div className="text-[11px] text-[var(--vn-muted)] truncate mt-0.5">
+                                <div className="text-[11px] text-(--vn-muted) truncate mt-0.5">
                                   {item.description}
                                 </div>
                               )}
                             </div>
                             {isActive && (
-                              <kbd className="shrink-0 text-[10px] text-[var(--vn-muted)] bg-white/5 rounded px-1.5 py-0.5 border border-white/10">
+                              <kbd className="shrink-0 text-[10px] text-(--vn-muted) bg-white/5 rounded px-1.5 py-0.5 border border-white/10">
                                 ↵
                               </kbd>
                             )}
@@ -290,7 +290,7 @@ export default function CommandPalette() {
                 </div>
 
                 {/* Footer hint */}
-                <div className="px-4 py-2.5 border-t border-white/10 flex items-center gap-4 text-[10px] text-[var(--vn-muted)]">
+                <div className="px-4 py-2.5 border-t border-white/10 flex items-center gap-4 text-[10px] text-(--vn-muted)">
                   <span><kbd className="bg-white/5 rounded px-1 border border-white/10">↑↓</kbd> navigate</span>
                   <span><kbd className="bg-white/5 rounded px-1 border border-white/10">↵</kbd> open</span>
                   <span><kbd className="bg-white/5 rounded px-1 border border-white/10">Esc</kbd> close</span>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -53,26 +53,26 @@ export default function AnomalyAlerts({ anomalies }: Props) {
         className="vn-card overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--vn-border)]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-(--vn-border)">
           <div>
-            <div className="text-sm font-bold text-[var(--vn-text)] flex items-center gap-2">
+            <div className="text-sm font-bold text-(--vn-text) flex items-center gap-2">
               <span>⚠️</span>
               <span>Spending Anomalies</span>
             </div>
-            <div className="text-xs text-[var(--vn-muted)] mt-0.5">
+            <div className="text-xs text-(--vn-muted) mt-0.5">
               Categories running above their 3-period average
             </div>
           </div>
           <Link
             href="/insights"
-            className="text-xs font-semibold text-[var(--vn-primary)] hover:underline whitespace-nowrap"
+            className="text-xs font-semibold text-(--vn-primary) hover:underline whitespace-nowrap"
           >
             Details →
           </Link>
         </div>
 
         {/* Anomaly rows */}
-        <div className="divide-y divide-[var(--vn-border)]">
+        <div className="divide-y divide-(--vn-border)">
           {anomalies.map((a) => (
             <div key={a.category} className="px-5 py-3 flex items-center gap-4">
               {/* Emoji icon */}
@@ -83,7 +83,7 @@ export default function AnomalyAlerts({ anomalies }: Props) {
               {/* Label + bar */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-[var(--vn-text)]">
+                  <span className="text-sm font-medium text-(--vn-text)">
                     {CATEGORY_LABELS[a.category] ?? a.category}
                   </span>
                   <span className={`text-xs font-bold tabular-nums ${ratioLabel(a.ratio)}`}>
@@ -92,10 +92,10 @@ export default function AnomalyAlerts({ anomalies }: Props) {
                 </div>
 
                 {/* Visual ratio bar */}
-                <div className="relative h-1.5 rounded-full bg-[var(--vn-border)]">
+                <div className="relative h-1.5 rounded-full bg-(--vn-border)">
                   {/* Avg marker */}
                   <div
-                    className="absolute top-0 bottom-0 w-0.5 bg-[var(--vn-muted)] rounded-full opacity-60"
+                    className="absolute top-0 bottom-0 w-0.5 bg-(--vn-muted) rounded-full opacity-60"
                     style={{ left: `${Math.min(95, (1 / a.ratio) * 95)}%` }}
                   />
                   {/* Fill */}
@@ -107,7 +107,7 @@ export default function AnomalyAlerts({ anomalies }: Props) {
                   />
                 </div>
 
-                <div className="flex justify-between text-[10px] mt-1 text-[var(--vn-muted)]">
+                <div className="flex justify-between text-[10px] mt-1 text-(--vn-muted)">
                   <span>
                     {formatMoney(a.currentAmount)} this period
                   </span>

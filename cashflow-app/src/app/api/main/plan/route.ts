@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { Plan } from "@/data/plan";
 import { MAIN_COOKIE_NAME, saveMainPlan, ensureMainPlan } from "@/lib/mainStore";
+import { createRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
+
+const checkPlanLimit = createRateLimiter(30, 60_000);
 
 async function getToken() {
   const cookieStore = await cookies();
@@ -26,6 +29,10 @@ export async function PUT(req: Request) {
   const token = await getToken();
   if (!token) {
     return NextResponse.json({ error: "Missing main token." }, { status: 401 });
+  }
+
+  if (!checkPlanLimit(token)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
   let plan: Plan | null = null;

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { loadPlan } from "@/lib/storage";
@@ -212,8 +212,8 @@ export default function EnvelopesPage() {
             {totalIncome === 0 && (
               <div className="vn-card p-6 text-center">
                 <div className="text-3xl mb-2">💡</div>
-                <div className="text-sm font-semibold text-[var(--vn-text)]">No income recorded yet</div>
-                <div className="text-xs text-[var(--vn-muted)] mt-1">
+                <div className="text-sm font-semibold text-(--vn-text)">No income recorded yet</div>
+                <div className="text-xs text-(--vn-muted) mt-1">
                   Add an income transaction for this period to start allocating it to envelopes.
                 </div>
               </div>
@@ -222,19 +222,19 @@ export default function EnvelopesPage() {
             {/* Allocation progress bar */}
             {totalIncome > 0 && (
               <div className="vn-card p-4">
-                <div className="flex justify-between text-xs text-[var(--vn-muted)] mb-2">
+                <div className="flex justify-between text-xs text-(--vn-muted) mb-2">
                   <span>Allocation progress</span>
                   <span>{Math.min(100, Math.round((totalAllocated / totalIncome) * 100))}%</span>
                 </div>
-                <div className="h-3 rounded-full bg-[var(--vn-border)] overflow-hidden">
+                <div className="h-3 rounded-full bg-(--vn-border) overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
-                      totalAllocated > totalIncome ? "bg-rose-400" : isFullyAllocated ? "bg-emerald-400" : "bg-[var(--vn-primary)]"
+                      totalAllocated > totalIncome ? "bg-rose-400" : isFullyAllocated ? "bg-emerald-400" : "bg-(--vn-primary)"
                     }`}
                     style={{ width: `${Math.min(100, (totalAllocated / totalIncome) * 100)}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[11px] mt-1.5 text-[var(--vn-muted)]">
+                <div className="flex justify-between text-[11px] mt-1.5 text-(--vn-muted)">
                   <span>{formatMoney(totalAllocated)} allocated</span>
                   <span>{formatMoney(totalIncome)} total</span>
                 </div>
@@ -260,8 +260,8 @@ export default function EnvelopesPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-xl">{emoji}</span>
                         <div>
-                          <div className="text-sm font-semibold text-[var(--vn-text)]">{label}</div>
-                          <div className="text-[11px] text-[var(--vn-muted)]">{description}</div>
+                          <div className="text-sm font-semibold text-(--vn-text)">{label}</div>
+                          <div className="text-[11px] text-(--vn-muted)">{description}</div>
                         </div>
                       </div>
                       {isOver && (
@@ -275,7 +275,7 @@ export default function EnvelopesPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <button
                         onClick={() => nudge(category, -10)}
-                        className="w-8 h-8 rounded-lg bg-[var(--vn-bg)] border border-[var(--vn-border)] text-[var(--vn-text)] font-bold flex items-center justify-center hover:bg-[var(--vn-surface)] transition-colors"
+                        className="w-8 h-8 rounded-lg bg-(--vn-bg) border border-(--vn-border) text-(--vn-text) font-bold flex items-center justify-center hover:bg-(--vn-surface) transition-colors"
                       >
                         −
                       </button>
@@ -288,12 +288,12 @@ export default function EnvelopesPage() {
                           onChange={e => setEditValue(e.target.value)}
                           onBlur={commitEdit}
                           onKeyDown={e => e.key === "Enter" && commitEdit()}
-                          className="flex-1 text-center text-base font-semibold bg-[var(--vn-bg)] border border-[var(--vn-primary)] rounded-lg px-2 py-1 outline-none text-[var(--vn-text)]"
+                          className="flex-1 text-center text-base font-semibold bg-(--vn-bg) border border-(--vn-primary) rounded-lg px-2 py-1 outline-none text-(--vn-text)"
                         />
                       ) : (
                         <button
                           onClick={() => startEdit(category)}
-                          className="flex-1 text-center text-base font-semibold text-[var(--vn-text)] hover:text-[var(--vn-primary)] transition-colors py-1 rounded-lg hover:bg-[var(--vn-bg)]"
+                          className="flex-1 text-center text-base font-semibold text-(--vn-text) hover:text-(--vn-primary) transition-colors py-1 rounded-lg hover:bg-(--vn-bg)"
                         >
                           {formatMoney(allocated)}
                         </button>
@@ -301,7 +301,7 @@ export default function EnvelopesPage() {
 
                       <button
                         onClick={() => nudge(category, 10)}
-                        className="w-8 h-8 rounded-lg bg-[var(--vn-bg)] border border-[var(--vn-border)] text-[var(--vn-text)] font-bold flex items-center justify-center hover:bg-[var(--vn-surface)] transition-colors"
+                        className="w-8 h-8 rounded-lg bg-(--vn-bg) border border-(--vn-border) text-(--vn-text) font-bold flex items-center justify-center hover:bg-(--vn-surface) transition-colors"
                       >
                         +
                       </button>
@@ -310,7 +310,7 @@ export default function EnvelopesPage() {
                     {/* Spent progress bar */}
                     {allocated > 0 && (
                       <>
-                        <div className="h-2 rounded-full bg-[var(--vn-border)] overflow-hidden mb-1.5">
+                        <div className="h-2 rounded-full bg-(--vn-border) overflow-hidden mb-1.5">
                           <div
                             className={`h-full rounded-full transition-all duration-500 ${
                               isOver ? "bg-rose-400" : fillPct > 80 ? "bg-amber-400" : "bg-emerald-400"
@@ -318,7 +318,7 @@ export default function EnvelopesPage() {
                             style={{ width: `${fillPct}%` }}
                           />
                         </div>
-                        <div className="flex justify-between text-[11px] text-[var(--vn-muted)]">
+                        <div className="flex justify-between text-[11px] text-(--vn-muted)">
                           <span>Spent {formatMoney(spent)}</span>
                           <span className={remaining < 0 ? "text-rose-500 dark:text-rose-400 font-semibold" : "text-emerald-600 dark:text-emerald-400"}>
                             {remaining < 0 ? `${formatMoney(Math.abs(remaining))} over` : `${formatMoney(remaining)} left`}
@@ -342,7 +342,7 @@ export default function EnvelopesPage() {
               <div className="flex justify-end">
                 <button
                   onClick={resetAll}
-                  className="text-xs text-[var(--vn-muted)] hover:text-rose-500 transition-colors"
+                  className="text-xs text-(--vn-muted) hover:text-rose-500 transition-colors"
                 >
                   Reset all allocations
                 </button>
@@ -350,10 +350,10 @@ export default function EnvelopesPage() {
             )}
 
             {/* Explainer */}
-            <div className="vn-card p-5 text-xs text-[var(--vn-muted)] space-y-1.5">
-              <div className="font-semibold text-[var(--vn-text)] text-sm mb-2">How envelope budgeting works</div>
+            <div className="vn-card p-5 text-xs text-(--vn-muted) space-y-1.5">
+              <div className="font-semibold text-(--vn-text) text-sm mb-2">How envelope budgeting works</div>
               <p>Allocate your total income across spending categories so every pound has a job.</p>
-              <p>When <strong className="text-[var(--vn-text)]">Unallocated = £0</strong>, you have a zero-based budget — nothing is left unplanned.</p>
+              <p>When <strong className="text-(--vn-text)">Unallocated = £0</strong>, you have a zero-based budget — nothing is left unplanned.</p>
               <p>Actual spending is pulled from your transactions automatically. Amounts are saved per period.</p>
             </div>
           </section>

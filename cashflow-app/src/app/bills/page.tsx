@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { getActiveScenarioUpdatedAt, loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
@@ -395,33 +395,33 @@ export default function BillsPage() {
 
             <div className="grid gap-6 md:grid-cols-3">
               <div className="vn-card p-5">
-                <div className="text-xs font-medium text-[var(--vn-muted)] mb-1">Total Budgeted Outflows</div>
-                <div className="text-xl font-bold text-[var(--vn-text)]">{formatMoney(budgetedOutflows)}</div>
+                <div className="text-xs font-medium text-(--vn-muted) mb-1">Total Budgeted Outflows</div>
+                <div className="text-xl font-bold text-(--vn-text)">{formatMoney(budgetedOutflows)}</div>
                 <div className="mt-2 space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-[var(--vn-muted)]">Bills</span>
-                    <span className="font-medium text-[var(--vn-text)]">{formatMoney(budgetedBillsPortion)}</span>
+                    <span className="text-(--vn-muted)">Bills</span>
+                    <span className="font-medium text-(--vn-text)">{formatMoney(budgetedBillsPortion)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-[var(--vn-muted)]">Recurring outflows</span>
-                    <span className="font-medium text-[var(--vn-text)]">{formatMoney(budgetedAllocationsPortion)}</span>
+                    <span className="text-(--vn-muted)">Recurring outflows</span>
+                    <span className="font-medium text-(--vn-text)">{formatMoney(budgetedAllocationsPortion)}</span>
                   </div>
                 </div>
               </div>
               <div className="vn-card p-5">
-                <div className="text-xs font-medium text-[var(--vn-muted)] mb-1">Total Actual Outflows</div>
-                <div className="text-xl font-bold text-[var(--vn-text)]">{formatMoney(actualOutflows)}</div>
+                <div className="text-xs font-medium text-(--vn-muted) mb-1">Total Actual Outflows</div>
+                <div className="text-xl font-bold text-(--vn-text)">{formatMoney(actualOutflows)}</div>
                 <div className="mt-2 space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-[var(--vn-muted)]">Bills</span>
-                    <span className="font-medium text-[var(--vn-text)]">{formatMoney(actualBillsPortion)}</span>
+                    <span className="text-(--vn-muted)">Bills</span>
+                    <span className="font-medium text-(--vn-text)">{formatMoney(actualBillsPortion)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-[var(--vn-muted)]">Recurring outflows</span>
-                    <span className="font-medium text-[var(--vn-text)]">{formatMoney(actualAllocationsPortion)}</span>
+                    <span className="text-(--vn-muted)">Recurring outflows</span>
+                    <span className="font-medium text-(--vn-text)">{formatMoney(actualAllocationsPortion)}</span>
                   </div>
                 </div>
-                <div className="mt-1 text-[10px] text-[var(--vn-muted)]">{prettyDate(period.start)} – {prettyDate(period.end)}</div>
+                <div className="mt-1 text-[10px] text-(--vn-muted)">{prettyDate(period.start)} – {prettyDate(period.end)}</div>
               </div>
               <StatCard
                 label="Upcoming outflows"
@@ -449,7 +449,7 @@ export default function BillsPage() {
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold text-[var(--vn-text)]">Committed Bills</div>
+                  <div className="text-sm font-semibold text-(--vn-text)">Committed Bills</div>
                   <button
                     onClick={handleAddBill}
                     className="vn-btn vn-btn-primary text-xs px-4 py-2.5"
@@ -459,18 +459,18 @@ export default function BillsPage() {
                 </div>
                 <div className="mt-4 space-y-3 text-sm">
                   {plan.bills.length === 0 ? (
-                    <div className="text-[var(--vn-muted)] text-xs">No bills yet. Add one to get started.</div>
+                    <div className="text-(--vn-muted) text-xs">No bills yet. Add one to get started.</div>
                   ) : (
                     plan.bills.map((bill) => (
                       <div
                         key={bill.id}
                         className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${bill.enabled && !disabledBills.has(bill.id)
-                          ? "bg-[var(--vn-surface)] border border-[var(--vn-border)]"
-                          : "bg-[var(--vn-bg)]/60 opacity-60"
+                          ? "bg-(--vn-surface) border border-(--vn-border)"
+                          : "bg-(--vn-bg)/60 opacity-60"
                           }`}
                       >
                         <div className="flex-1">
-                          <div className="font-semibold text-[var(--vn-text)]">
+                          <div className="font-semibold text-(--vn-text)">
                             {bill.label}
                             {(() => {
                               const chg = priceChanges.get(bill.id);
@@ -490,17 +490,17 @@ export default function BillsPage() {
                               );
                             })()}
                           </div>
-                          <div className="text-xs text-[var(--vn-muted)]">
+                          <div className="text-xs text-(--vn-muted)">
                             Due day {bill.dueDay} • {bill.category}
                             {!bill.enabled && " • Disabled"}
                             {disabledBills.has(bill.id) && " • Disabled for period"}
                           </div>
                         </div>
-                        <div className="font-semibold text-[var(--vn-text)]">{formatMoney(bill.amount)}</div>
+                        <div className="font-semibold text-(--vn-text)">{formatMoney(bill.amount)}</div>
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleToggleEnabled(bill.id)}
-                            className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] p-2 min-w-10 min-h-10 flex items-center justify-center"
+                            className="text-xs text-(--vn-muted) hover:text-(--vn-text) p-2 min-w-10 min-h-10 flex items-center justify-center"
                             title={bill.enabled ? "Disable" : "Enable"}
                           >
                             {bill.enabled ? "👁️" : "👁️‍🗨️"}
@@ -526,7 +526,7 @@ export default function BillsPage() {
 
               <div className="vn-card p-6">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold text-[var(--vn-text)]">Recurring Outflows</div>
+                  <div className="text-sm font-semibold text-(--vn-text)">Recurring Outflows</div>
                   <button
                     onClick={handleAddOutflow}
                     className="vn-btn vn-btn-primary text-xs px-4 py-2.5"
@@ -536,28 +536,28 @@ export default function BillsPage() {
                 </div>
                 <div className="mt-4 space-y-3 text-sm">
                   {plan.outflowRules.length === 0 ? (
-                    <div className="text-[var(--vn-muted)] text-xs">No outflow rules yet. Add one to get started.</div>
+                    <div className="text-(--vn-muted) text-xs">No outflow rules yet. Add one to get started.</div>
                   ) : (
                     plan.outflowRules.map((rule) => (
                       <div
                         key={rule.id}
                         className={`flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg ${rule.enabled
-                          ? "bg-[var(--vn-surface)] border border-[var(--vn-border)]"
-                          : "bg-[var(--vn-bg)]/60 opacity-60"
+                          ? "bg-(--vn-surface) border border-(--vn-border)"
+                          : "bg-(--vn-bg)/60 opacity-60"
                           }`}
                       >
                         <div className="flex-1">
-                          <div className="font-semibold text-[var(--vn-text)]">{rule.label}</div>
-                          <div className="text-xs text-[var(--vn-muted)]">
+                          <div className="font-semibold text-(--vn-text)">{rule.label}</div>
+                          <div className="text-xs text-(--vn-muted)">
                             {rule.cadence} • {rule.category}
                             {!rule.enabled && " • Disabled"}
                           </div>
                         </div>
-                        <div className="font-semibold text-[var(--vn-text)]">{formatMoney(rule.amount)}</div>
+                        <div className="font-semibold text-(--vn-text)">{formatMoney(rule.amount)}</div>
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleToggleOutflowEnabled(rule.id)}
-                            className="text-xs text-[var(--vn-muted)] hover:text-[var(--vn-text)] p-2 min-w-10 min-h-10 flex items-center justify-center"
+                            className="text-xs text-(--vn-muted) hover:text-(--vn-text) p-2 min-w-10 min-h-10 flex items-center justify-center"
                             title={rule.enabled ? "Disable" : "Enable"}
                           >
                             {rule.enabled ? "👁️" : "👁️‍🗨️"}
@@ -583,18 +583,18 @@ export default function BillsPage() {
             </div>
 
             <details className="vn-card p-6">
-              <summary className="cursor-pointer text-sm font-semibold text-[var(--vn-text)]">
+              <summary className="cursor-pointer text-sm font-semibold text-(--vn-text)">
                 Budget vs actual by bill
               </summary>
               <div className="mt-4 text-sm">
-                <div className="hidden grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 text-[11px] uppercase tracking-wide text-[var(--vn-muted)] sm:grid">
+                <div className="hidden grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 text-[11px] uppercase tracking-wide text-(--vn-muted) sm:grid">
                   <div>Bill</div>
                   <div className="text-right">Budget</div>
                   <div className="text-right">Actual</div>
                   <div className="text-right">Variance</div>
                 </div>
                 {budgetVsActualBills.length === 0 ? (
-                  <div className="text-[var(--vn-muted)]">No active bills for this period.</div>
+                  <div className="text-(--vn-muted)">No active bills for this period.</div>
                 ) : (
                   <div className="mt-3 max-h-[65vh] space-y-3 overflow-auto pr-2">
                     {budgetVsActualBills.map((item) => {
@@ -604,20 +604,20 @@ export default function BillsPage() {
                           ? "1 item"
                           : `${item.transactions.length} items`;
                       return (
-                        <details key={item.id} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3">
+                        <details key={item.id} className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) px-4 py-3">
                           <summary className="grid cursor-pointer list-none items-center gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
                             <div>
-                              <div className="font-semibold text-[var(--vn-text)]">{item.label}</div>
-                              <div className="text-xs text-[var(--vn-muted)]">{countLabel}</div>
+                              <div className="font-semibold text-(--vn-text)">{item.label}</div>
+                              <div className="text-xs text-(--vn-muted)">{countLabel}</div>
                             </div>
-                            <div className="flex items-center justify-between text-[var(--vn-muted)] sm:block sm:text-right">
-                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
+                            <div className="flex items-center justify-between text-(--vn-muted) sm:block sm:text-right">
+                              <span className="text-[10px] uppercase tracking-wide text-(--vn-muted) sm:hidden">
                                 Budget
                               </span>
                               <span>{formatMoney(item.budgeted)}</span>
                             </div>
-                            <div className="flex items-center justify-between text-[var(--vn-text)] sm:block sm:text-right">
-                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
+                            <div className="flex items-center justify-between text-(--vn-text) sm:block sm:text-right">
+                              <span className="text-[10px] uppercase tracking-wide text-(--vn-muted) sm:hidden">
                                 Actual
                               </span>
                               <span>{formatMoney(item.actual)}</span>
@@ -625,25 +625,25 @@ export default function BillsPage() {
                             <div
                               className={`flex items-center justify-between font-semibold ${variance.tone} sm:block sm:text-right`}
                             >
-                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
+                              <span className="text-[10px] uppercase tracking-wide text-(--vn-muted) sm:hidden">
                                 Variance
                               </span>
                               <span>{variance.label}</span>
                             </div>
                           </summary>
-                          <div className="mt-3 border-t border-[var(--vn-border)] pt-3 text-xs text-[var(--vn-muted)]">
+                          <div className="mt-3 border-t border-(--vn-border) pt-3 text-xs text-(--vn-muted)">
                             {item.transactions.length === 0 ? (
-                              <div className="text-[var(--vn-muted)]">No bill transactions recorded.</div>
+                              <div className="text-(--vn-muted)">No bill transactions recorded.</div>
                             ) : (
                               <div className="space-y-2">
-                                <div className="flex items-center justify-between text-[10px] uppercase tracking-wide text-[var(--vn-muted)]">
+                                <div className="flex items-center justify-between text-[10px] uppercase tracking-wide text-(--vn-muted)">
                                   <span>Actual breakdown</span>
                                   <span>
                                     {item.transactions.length} item{item.transactions.length === 1 ? "" : "s"} -{" "}
                                     {formatMoney(item.actual)}
                                   </span>
                                 </div>
-                                <div className="grid grid-cols-[96px_1fr_auto] gap-2 text-[10px] uppercase tracking-wide text-[var(--vn-muted)]">
+                                <div className="grid grid-cols-[96px_1fr_auto] gap-2 text-[10px] uppercase tracking-wide text-(--vn-muted)">
                                   <div>Date</div>
                                   <div>Details</div>
                                   <div className="text-right">Amount</div>
@@ -652,16 +652,16 @@ export default function BillsPage() {
                                   {item.transactions.map((txn) => (
                                     <div
                                       key={txn.id}
-                                      className="grid grid-cols-[96px_1fr_auto] items-start gap-2 rounded-xl bg-[var(--vn-surface)] px-3 py-2"
+                                      className="grid grid-cols-[96px_1fr_auto] items-start gap-2 rounded-xl bg-(--vn-surface) px-3 py-2"
                                     >
-                                      <div className="text-[11px] text-[var(--vn-muted)]">{prettyDate(txn.date)}</div>
+                                      <div className="text-[11px] text-(--vn-muted)">{prettyDate(txn.date)}</div>
                                       <div>
-                                        <div className="text-sm text-[var(--vn-text)]">{txn.label}</div>
+                                        <div className="text-sm text-(--vn-text)">{txn.label}</div>
                                         {txn.notes ? (
-                                          <div className="text-[11px] text-[var(--vn-muted)]">{txn.notes}</div>
+                                          <div className="text-[11px] text-(--vn-muted)">{txn.notes}</div>
                                         ) : null}
                                       </div>
-                                      <div className="text-right text-sm font-semibold text-[var(--vn-text)]">
+                                      <div className="text-right text-sm font-semibold text-(--vn-text)">
                                         {formatMoney(txn.amount)}
                                       </div>
                                     </div>
@@ -679,18 +679,18 @@ export default function BillsPage() {
             </details>
 
             <details className="vn-card p-6">
-              <summary className="cursor-pointer text-sm font-semibold text-[var(--vn-text)]">
+              <summary className="cursor-pointer text-sm font-semibold text-(--vn-text)">
                 Budget vs actual by outflow
               </summary>
               <div className="mt-4 text-sm">
-                <div className="hidden grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 text-[11px] uppercase tracking-wide text-[var(--vn-muted)] sm:grid">
+                <div className="hidden grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 text-[11px] uppercase tracking-wide text-(--vn-muted) sm:grid">
                   <div>Outflow</div>
                   <div className="text-right">Budget</div>
                   <div className="text-right">Actual</div>
                   <div className="text-right">Variance</div>
                 </div>
                 {budgetVsActualOutflows.length === 0 ? (
-                  <div className="text-[var(--vn-muted)]">No outflow rules yet.</div>
+                  <div className="text-(--vn-muted)">No outflow rules yet.</div>
                 ) : (
                   <div className="mt-3 max-h-[65vh] space-y-3 overflow-auto pr-2">
                     {budgetVsActualOutflows.map((item) => {
@@ -700,20 +700,20 @@ export default function BillsPage() {
                           ? "1 item"
                           : `${item.transactions.length} items`;
                       return (
-                        <details key={item.id} className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] px-4 py-3">
+                        <details key={item.id} className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) px-4 py-3">
                           <summary className="grid cursor-pointer list-none items-center gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
                             <div>
-                              <div className="font-semibold text-[var(--vn-text)]">{item.label}</div>
-                              <div className="text-xs text-[var(--vn-muted)]">{countLabel}</div>
+                              <div className="font-semibold text-(--vn-text)">{item.label}</div>
+                              <div className="text-xs text-(--vn-muted)">{countLabel}</div>
                             </div>
-                            <div className="flex items-center justify-between text-[var(--vn-muted)] sm:block sm:text-right">
-                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
+                            <div className="flex items-center justify-between text-(--vn-muted) sm:block sm:text-right">
+                              <span className="text-[10px] uppercase tracking-wide text-(--vn-muted) sm:hidden">
                                 Budget
                               </span>
                               <span>{formatMoney(item.budgeted)}</span>
                             </div>
-                            <div className="flex items-center justify-between text-[var(--vn-text)] sm:block sm:text-right">
-                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
+                            <div className="flex items-center justify-between text-(--vn-text) sm:block sm:text-right">
+                              <span className="text-[10px] uppercase tracking-wide text-(--vn-muted) sm:hidden">
                                 Actual
                               </span>
                               <span>{formatMoney(item.actual)}</span>
@@ -721,27 +721,27 @@ export default function BillsPage() {
                             <div
                               className={`flex items-center justify-between font-semibold ${variance.tone} sm:block sm:text-right`}
                             >
-                              <span className="text-[10px] uppercase tracking-wide text-[var(--vn-muted)] sm:hidden">
+                              <span className="text-[10px] uppercase tracking-wide text-(--vn-muted) sm:hidden">
                                 Variance
                               </span>
                               <span>{variance.label}</span>
                             </div>
                           </summary>
-                          <div className="mt-3 border-t border-[var(--vn-border)] pt-3 text-xs text-[var(--vn-muted)]">
+                          <div className="mt-3 border-t border-(--vn-border) pt-3 text-xs text-(--vn-muted)">
                             {item.transactions.length === 0 ? (
-                              <div className="text-[var(--vn-muted)]">No outflow transactions recorded.</div>
+                              <div className="text-(--vn-muted)">No outflow transactions recorded.</div>
                             ) : (
                               <div className="space-y-2">
                                 {item.transactions.map((txn) => (
                                   <div key={txn.id} className="flex items-start justify-between gap-3">
                                     <div>
-                                      <div className="text-[var(--vn-text)]">{txn.label}</div>
-                                      <div className="text-[11px] text-[var(--vn-muted)]">
+                                      <div className="text-(--vn-text)">{txn.label}</div>
+                                      <div className="text-[11px] text-(--vn-muted)">
                                         {prettyDate(txn.date)}
                                         {txn.notes ? ` - ${txn.notes}` : ""}
                                       </div>
                                     </div>
-                                    <div className="font-semibold text-[var(--vn-text)]">{formatMoney(txn.amount)}</div>
+                                    <div className="font-semibold text-(--vn-text)">{formatMoney(txn.amount)}</div>
                                   </div>
                                 ))}
                               </div>
@@ -768,13 +768,13 @@ export default function BillsPage() {
             className="vn-card max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-[var(--vn-text)] mb-4">
+            <h2 className="text-lg font-semibold text-(--vn-text) mb-4">
               {editingBill ? "Edit Bill" : "Add Bill"}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-text) mb-1">
                   Label *
                 </label>
                 <input
@@ -787,7 +787,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-text) mb-1">
                   Amount *
                 </label>
                 <input
@@ -801,7 +801,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-text) mb-1">
                   Due Day (1-31) *
                 </label>
                 <input
@@ -816,7 +816,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-text) mb-1">
                   Category *
                 </label>
                 <select
@@ -840,7 +840,7 @@ export default function BillsPage() {
                   checked={formData.enabled ?? true}
                   onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
                 />
-                <label htmlFor="enabled" className="text-sm text-[var(--vn-text)]">
+                <label htmlFor="enabled" className="text-sm text-(--vn-text)">
                   Enabled
                 </label>
               </div>
@@ -873,13 +873,13 @@ export default function BillsPage() {
             className="vn-card max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-[var(--vn-text)] mb-4">
+            <h2 className="text-lg font-semibold text-(--vn-text) mb-4">
               {editingOutflow ? "Edit Outflow Rule" : "Add Outflow Rule"}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-text) mb-1">
                   Label *
                 </label>
                 <input
@@ -892,7 +892,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-text) mb-1">
                   Amount ({getCurrencySymbol()}) *
                 </label>
                 <input
@@ -906,7 +906,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-text) mb-1">
                   Cadence *
                 </label>
                 <select
@@ -921,7 +921,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-text) mb-1">
                   Seed Date *
                 </label>
                 <input
@@ -933,7 +933,7 @@ export default function BillsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--vn-text)] mb-1">
+                <label className="block text-xs font-medium text-(--vn-text) mb-1">
                   Category *
                 </label>
                 <select
@@ -957,7 +957,7 @@ export default function BillsPage() {
                   checked={outflowFormData.enabled ?? true}
                   onChange={(e) => setOutflowFormData({ ...outflowFormData, enabled: e.target.checked })}
                 />
-                <label htmlFor="outflow-enabled" className="text-sm text-[var(--vn-text)]">
+                <label htmlFor="outflow-enabled" className="text-sm text-(--vn-text)">
                   Enabled
                 </label>
               </div>

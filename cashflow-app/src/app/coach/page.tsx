@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -141,7 +141,7 @@ function renderMessage(content: string, isStreaming: boolean): React.ReactNode {
     <div className="space-y-1">
       {rendered}
       {isStreaming && (
-        <span className="inline-block w-[2px] h-[1em] bg-[var(--vn-muted)] ml-0.5 align-middle animate-pulse" />
+        <span className="inline-block w-[2px] h-[1em] bg-(--vn-muted) ml-0.5 align-middle animate-pulse" />
       )}
     </div>
   );
@@ -583,15 +583,15 @@ export default function CoachPage() {
                 className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                   msg.role === "user"
                     ? "text-white rounded-br-md" 
-                    : "bg-[var(--vn-surface)] border border-[var(--vn-border)] text-[var(--vn-text)] rounded-bl-md"
+                    : "bg-(--vn-surface) border border-(--vn-border) text-(--vn-text) rounded-bl-md"
                 }
                 style={msg.role === "user" ? { background: "linear-gradient(135deg, #a8731a, #d4a843)" } : undefined}`}
               >
                 {isStreamingMsg && !msg.content ? (
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-[var(--vn-muted)] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 bg-[var(--vn-muted)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 bg-[var(--vn-muted)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <div className="w-2 h-2 bg-(--vn-muted) rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-2 h-2 bg-(--vn-muted) rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-2 h-2 bg-(--vn-muted) rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                   </div>
                 ) : (
                   <div>
@@ -619,13 +619,13 @@ export default function CoachPage() {
 
         return (
           <div className="px-4 pb-2">
-            <p className="text-xs text-[var(--vn-muted)] mb-2">{label}</p>
+            <p className="text-xs text-(--vn-muted) mb-2">{label}</p>
             <div className="flex flex-wrap gap-2">
               {chips.map(q => (
                 <button
                   key={q}
                   onClick={() => sendMessage(q)}
-                  className="text-xs px-3 py-1.5 min-h-9 bg-[var(--vn-bg)] text-[var(--vn-text)] rounded-full hover:border-[var(--vn-gold)]/60 transition-colors border border-[var(--vn-border)]"
+                  className="text-xs px-3 py-1.5 min-h-9 bg-(--vn-bg) text-(--vn-text) rounded-full hover:border-(--vn-gold)/60 transition-colors border border-(--vn-border)"
                 >
                   {q}
                 </button>
@@ -636,7 +636,7 @@ export default function CoachPage() {
       })()}
 
       {/* Input */}
-      <div className="p-3 border-t border-[var(--vn-border)] bg-[var(--vn-surface)]">
+      <div className="p-3 border-t border-(--vn-border) bg-(--vn-surface)">
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -646,7 +646,7 @@ export default function CoachPage() {
             onKeyDown={handleKeyDown}
             placeholder="Ask about your finances..."
             disabled={isLoading}
-            className="flex-1 px-4 py-2.5 bg-[var(--vn-bg)] text-[var(--vn-text)] rounded-xl text-sm placeholder:text-[var(--vn-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--vn-gold)]/50"
+            className="flex-1 px-4 py-2.5 bg-(--vn-bg) text-(--vn-text) rounded-xl text-sm placeholder:text-(--vn-muted) focus:outline-none focus:ring-2 focus:ring-(--vn-gold)/50"
           />
           <button
             onClick={() => sendMessage()}

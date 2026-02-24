@@ -15,6 +15,7 @@ import { getAlerts, loadAlertPreferences } from "@/lib/alerts";
 import { detectAnomalies } from "@/lib/anomalyDetection";
 import { formatMoney } from "@/lib/currency";
 import { fireAlertNotification, isNotificationsEnabled } from "@/lib/pushNotifications";
+import type { SavingsGoal } from "@/data/plan";
 
 export default function NotificationScheduler() {
   useEffect(() => {
@@ -47,6 +48,35 @@ export default function NotificationScheduler() {
           `You've spent ${formatMoney(anomaly.currentAmount)} on ${anomaly.category} this period — ${pct}% above your usual ${formatMoney(Math.round(anomaly.avgAmount))}.`,
           "/insights"
         );
+      }
+
+      // Fire milestone notifications for savings goals (25 / 50 / 75 / 100 %)
+      const MILESTONE_COOLDOWN = 30 * 24 * 60 * 60 * 1000; // 30 days
+      const MILESTONES = [25, 50, 75, 100] as const;
+      for (const goal of (plan.savingsGoals ?? []) as SavingsGoal[]) {
+        if (!goal.targetAmount || goal.targetAmount <= 0) continue;
+
+        // Include any linked transaction amounts
+        const linked = ((plan.transactions ?? []) as Array<{ goalId?: string; amount: number }>)
+          .filter((t) => t.goalId === goal.id)
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        const progressPct = ((goal.currentAmount + linked) / goal.targetAmount) * 100;
+
+        for (const milestone of MILESTONES) {
+          if (progressPct >= milestone) {
+            const isComplete = milestone === 100;
+            fireAlertNotification(
+              `goal-milestone-${goal.id}-${milestone}`,
+              isComplete
+                ? `🎉 ${goal.name} goal complete!`
+                : `${goal.name} is ${milestone}% funded`,
+              `You've saved ${formatMoney(Math.round(goal.currentAmount + linked))} of your ${formatMoney(goal.targetAmount)} ${goal.name} target.`,
+              "/goals",
+              MILESTONE_COOLDOWN
+            );
+          }
+        }
       }
     }
 

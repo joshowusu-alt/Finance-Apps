@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { formatMoney } from "@/lib/currency";
@@ -44,7 +44,7 @@ export default function TransactionTriage({ transactions, onRecategorise, onDism
       <div className="flex items-center justify-between mb-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-[var(--vn-text)]">Categorise Transactions</span>
+            <span className="text-sm font-semibold text-(--vn-text)">Categorise Transactions</span>
             <span
               className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
               style={{ background: "rgba(212,168,67,0.15)", color: "var(--gold, #d4a843)" }}

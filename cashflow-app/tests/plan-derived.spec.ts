@@ -72,7 +72,7 @@ const basePlan = {
 
 async function seedStorage(page: any, plan: any) {
   await page.addInitScript(
-    ({ plan, scenarioState, planKey, scenarioKey, currencyKey }) => {
+    ({ plan, scenarioState, planKey, scenarioKey, currencyKey }: { plan: unknown; scenarioState: unknown; planKey: string; scenarioKey: string; currencyKey: string }) => {
       localStorage.setItem(currencyKey, "GBP");
       localStorage.setItem(scenarioKey, JSON.stringify(scenarioState));
       localStorage.setItem(planKey, JSON.stringify(plan));
@@ -83,7 +83,7 @@ async function seedStorage(page: any, plan: any) {
 
 async function applyPlanUpdate(page: any, plan: any) {
   await page.evaluate(
-    ({ plan, planKey }) => {
+    ({ plan, planKey }: { plan: unknown; planKey: string }) => {
       localStorage.setItem(planKey, JSON.stringify(plan));
       window.dispatchEvent(new Event("cashflow:plan-updated"));
     },

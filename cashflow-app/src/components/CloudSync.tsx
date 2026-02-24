@@ -46,6 +46,7 @@ import {
   setCloudServerUpdatedAt,
   setCloudSyncAt,
 } from "@/lib/cloudSyncState";
+import { getOutbox, addToOutbox, removeFromOutbox } from "@/lib/offlineOutbox";
 
 type CloudPlanRow = {
   plan_json: Plan | string | null;
@@ -279,6 +280,7 @@ export default function CloudSync() {
 
     syncInFlight.current = true;
     try {
+      await replayOutbox();
       await syncScenarios();
       await syncPlan();
       await syncPreferences();
@@ -380,21 +382,51 @@ export default function CloudSync() {
   async function pushPlan(plan: Plan, prev: Plan | null, scenarioId: string) {
     if (!user || !supabase) return;
     const nowIso = new Date().toISOString();
-    await supabase.from("user_plans").upsert(
-      {
-        user_id: user.id,
-        scenario_id: scenarioId,
-        plan_json: plan,
-        prev_plan_json: prev,
-        updated_at: nowIso,
-      },
-      { onConflict: "user_id,scenario_id" }
-    );
+    const row = {
+      user_id: user.id,
+      scenario_id: scenarioId,
+      plan_json: plan,
+      prev_plan_json: prev,
+      updated_at: nowIso,
+    };
+
+    const { error } = await supabase
+      .from("user_plans")
+      .upsert(row, { onConflict: "user_id,scenario_id" });
+
+    if (error) {
+      // Network or auth failure — queue for later replay
+      addToOutbox({ type: "plan", payload: row });
+      console.warn("CloudSync: push failed, queued to outbox", error.message);
+      return;
+    }
 
     const updatedMs = parseStamp(nowIso);
     setCloudPlanHash(scenarioId, hashValue(plan));
     setCloudServerSyncedAt(scenarioId, updatedMs);
     setCloudServerUpdatedAt(scenarioId, updatedMs);
+  }
+
+  /** Replay any queued outbox entries from previous offline sessions. */
+  async function replayOutbox() {
+    if (!user || !supabase) return;
+    const entries = getOutbox();
+    if (!entries.length) return;
+
+    for (const entry of entries) {
+      try {
+        if (entry.type === "plan") {
+          const { error } = await supabase
+            .from("user_plans")
+            .upsert(entry.payload, { onConflict: "user_id,scenario_id" });
+          if (!error) {
+            removeFromOutbox(entry.id);
+          }
+        }
+      } catch {
+        // Leave in outbox for next cycle
+      }
+    }
   }
 
   async function pullPlan(plan: Plan, prev: Plan | null, updatedMs: number, scenarioId: string) {

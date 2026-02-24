@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -253,7 +253,7 @@ function ProgressBar({ value, max, favorable }: { value: number; max: number; fa
       : "bg-rose-500 dark:bg-rose-400"
     : "bg-blue-500 dark:bg-blue-400";
   return (
-    <div className="mt-1.5 h-1.5 rounded-full bg-[var(--vn-border)] overflow-hidden">
+    <div className="mt-1.5 h-1.5 rounded-full bg-(--vn-border) overflow-hidden">
       <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
     </div>
   );
@@ -325,32 +325,32 @@ function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }:
         return (
           <div
             key={card.key}
-            className={`rounded-2xl border bg-[var(--vn-surface)] p-4 shadow-sm transition-colors ${
+            className={`rounded-2xl border bg-(--vn-surface) p-4 shadow-sm transition-colors ${
               hasTxns ? "cursor-pointer hover:border-(--accent) dark:hover:border-(--accent)" : ""
-            } ${expanded ? "border-(--accent) dark:border-(--accent)" : "border-[var(--vn-border)]"}`}
+            } ${expanded ? "border-(--accent) dark:border-(--accent)" : "border-(--vn-border)"}`}
             onClick={() => hasTxns && setExpandedCard(expanded ? null : card.key)}
             role={hasTxns ? "button" : undefined}
             tabIndex={hasTxns ? 0 : undefined}
             onKeyDown={(e) => { if (hasTxns && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setExpandedCard(expanded ? null : card.key); } }}
           >
             <div className="flex items-center justify-between">
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--vn-muted)]">{card.label}</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-(--vn-muted)">{card.label}</div>
               {hasTxns && (
-                <svg className={`w-3.5 h-3.5 text-[var(--vn-muted)] transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                <svg className={`w-3.5 h-3.5 text-(--vn-muted) transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               )}
             </div>
-            <div className="mt-1 text-[11px] text-[var(--vn-muted)]">Budget {fmt(card.budget)}</div>
+            <div className="mt-1 text-[11px] text-(--vn-muted)">Budget {fmt(card.budget)}</div>
             {card.breakdown.length > 0 && (
               <div className="mt-0.5 space-y-0">
                 {card.breakdown.filter((b) => b.value > 0).map((b) => (
-                  <div key={b.name} className="flex justify-between text-[10px] text-[var(--vn-muted)]">
+                  <div key={b.name} className="flex justify-between text-[10px] text-(--vn-muted)">
                     <span>{b.name}</span>
                     <span>{fmt(b.value)}</span>
                   </div>
                 ))}
               </div>
             )}
-            <div className="mt-1 text-xl font-semibold text-[var(--vn-text)]">{fmt(card.actual)}</div>
+            <div className="mt-1 text-xl font-semibold text-(--vn-text)">{fmt(card.actual)}</div>
 
             {/* Progress bar */}
             {card.budget > 0 && <ProgressBar value={card.actual} max={card.budget} favorable={card.favorableWhenOver} />}
@@ -374,23 +374,23 @@ function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }:
 
             {/* Drill-down transaction list */}
             {expanded && card.txns.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-[var(--vn-border)] space-y-1.5 max-h-48 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="mt-3 pt-3 border-t border-(--vn-border) space-y-1.5 max-h-48 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                 {card.txns.slice(0, 20).map((txn) => (
                   <div key={txn.id} className="flex items-center justify-between text-[11px]">
                     <div className="flex items-center gap-1.5 min-w-0">
                       {card.key === "spending" && !txn.linkedBillId && !txn.linkedRuleId && (
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Unbudgeted" />
                       )}
-                      <span className="truncate text-[var(--vn-muted)]">{txn.label}</span>
+                      <span className="truncate text-(--vn-muted)">{txn.label}</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                      <span className="font-medium text-[var(--vn-text)]">{fmt(txn.amount)}</span>
+                      <span className="font-medium text-(--vn-text)">{fmt(txn.amount)}</span>
                       {card.key === "spending" && !txn.linkedBillId && !txn.linkedRuleId && onLink && (
                         linkingTxnId === txn.id ? (
                           <select
                             autoFocus
                             defaultValue=""
-                            className="text-[10px] border border-amber-300 dark:border-amber-600 rounded px-1 py-0.5 bg-[var(--vn-surface)] text-[var(--vn-text)] max-w-[110px]"
+                            className="text-[10px] border border-amber-300 dark:border-amber-600 rounded px-1 py-0.5 bg-(--vn-surface) text-(--vn-text) max-w-[110px]"
                             onChange={(e) => {
                               const [type, id] = e.target.value.split(":");
                               if (type && id) { onLink(txn.id, type as "bill" | "rule", id); setLinkingTxnId(null); }
@@ -412,7 +412,7 @@ function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }:
                   </div>
                 ))}
                 {card.txns.length > 20 && (
-                  <div className="text-[10px] text-[var(--vn-muted)] text-center">+{card.txns.length - 20} more</div>
+                  <div className="text-[10px] text-(--vn-muted) text-center">+{card.txns.length - 20} more</div>
                 )}
               </div>
             )}
@@ -1091,7 +1091,7 @@ export default function TransactionsPage() {
   }
 
   if (!period) {
-    return <div className="px-6 py-10 text-[var(--vn-muted)]">Loading...</div>;
+    return <div className="px-6 py-10 text-(--vn-muted)">Loading...</div>;
   }
 
   return (
@@ -1116,25 +1116,25 @@ export default function TransactionsPage() {
 
             {/* Add Transaction Form */}
             <div className="vn-card p-6">
-              <div className="text-sm font-semibold text-[var(--vn-text)] mb-4">Add transaction</div>
+              <div className="text-sm font-semibold text-(--vn-text) mb-4">Add transaction</div>
               <form onSubmit={handleAddTransaction} className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="text-xs font-semibold text-[var(--vn-muted)]">Date</label>
+                    <label className="text-xs font-semibold text-(--vn-muted)">Date</label>
                     <input
                       type="date"
                       value={newTransaction.date}
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, date: e.target.value })
                       }
-                      className={`mt-1 w-full rounded-lg border bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)] ${errors.date ? "border-red-500 ring-1 ring-red-500" : "border-[var(--vn-border)]"
+                      className={`mt-1 w-full rounded-lg border bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)] ${errors.date ? "border-red-500 ring-1 ring-red-500" : "border-(--vn-border)"
                         }`}
                     />
                     <FormError message={errors.date} />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-[var(--vn-muted)]">Label</label>
+                    <label className="text-xs font-semibold text-(--vn-muted)">Label</label>
                     <input
                       type="text"
                       placeholder="e.g., Grocery shopping"
@@ -1142,14 +1142,14 @@ export default function TransactionsPage() {
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, label: e.target.value })
                       }
-                      className={`mt-1 w-full rounded-lg border bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] ${errors.label ? "border-red-500 ring-1 ring-red-500" : "border-[var(--vn-border)]"
+                      className={`mt-1 w-full rounded-lg border bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] ${errors.label ? "border-red-500 ring-1 ring-red-500" : "border-(--vn-border)"
                         }`}
                     />
                     <FormError message={errors.label} />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-[var(--vn-muted)]">Amount ({getCurrency()})</label>
+                    <label className="text-xs font-semibold text-(--vn-muted)">Amount ({getCurrency()})</label>
                     <input
                       type="number"
                       placeholder="0.00"
@@ -1159,14 +1159,14 @@ export default function TransactionsPage() {
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, amount: e.target.value })
                       }
-                      className={`mt-1 w-full rounded-lg border bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] ${errors.amount ? "border-red-500 ring-1 ring-red-500" : "border-[var(--vn-border)]"
+                      className={`mt-1 w-full rounded-lg border bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] ${errors.amount ? "border-red-500 ring-1 ring-red-500" : "border-(--vn-border)"
                         }`}
                     />
                     <FormError message={errors.amount} />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-[var(--vn-muted)]">Type</label>
+                    <label className="text-xs font-semibold text-(--vn-muted)">Type</label>
                     <select
                       value={newTransaction.type}
                       onChange={(e) => {
@@ -1181,7 +1181,7 @@ export default function TransactionsPage() {
                         });
                         setNewCategoryTouched(false);
                       }}
-                      className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                      className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                     >
                       <option value="income">Income</option>
                       <option value="outflow">Outflow</option>
@@ -1190,7 +1190,7 @@ export default function TransactionsPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-[var(--vn-muted)]">Category</label>
+                    <label className="text-xs font-semibold text-(--vn-muted)">Category</label>
                     <select
                       value={newTransaction.category}
                       onChange={(e) => {
@@ -1203,7 +1203,7 @@ export default function TransactionsPage() {
                         });
                         setNewCategoryTouched(true);
                       }}
-                      className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                      className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                     >
                       {categoryOptionsForType(newTransaction.type).map((category) => (
                         <option key={category} value={category}>
@@ -1212,7 +1212,7 @@ export default function TransactionsPage() {
                       ))}
                     </select>
                     {categorySuggestion ? (
-                      <p className="mt-1 text-xs text-[var(--vn-muted)]">
+                      <p className="mt-1 text-xs text-(--vn-muted)">
                         {shouldAutoApplyCategory ? "Auto-categorized" : "Suggested"}:{" "}
                         {formatCategoryLabel(categorySuggestion.category)}{" "}
                         {categoryConfidenceLabel ? `(${categoryConfidenceLabel} confidence)` : ""}
@@ -1223,7 +1223,7 @@ export default function TransactionsPage() {
 
                   {newTransaction.type === "income" ? (
                     <div>
-                      <label className="text-xs font-semibold text-[var(--vn-muted)]">Income source</label>
+                      <label className="text-xs font-semibold text-(--vn-muted)">Income source</label>
                       <select
                         value={resolveSuggestedId(newTransaction.linkedRuleId, incomeSuggestion)}
                         onChange={(e) =>
@@ -1232,7 +1232,7 @@ export default function TransactionsPage() {
                             linkedRuleId: e.target.value ? e.target.value : null,
                           })
                         }
-                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                       >
                         <option value="">Unassigned</option>
                         {plan.incomeRules
@@ -1244,7 +1244,7 @@ export default function TransactionsPage() {
                           ))}
                       </select>
                       {incomeSuggestionLabel ? (
-                        <p className="mt-1 text-xs text-[var(--vn-muted)]">
+                        <p className="mt-1 text-xs text-(--vn-muted)">
                           Suggested: {incomeSuggestionLabel}
                           {newTransaction.linkedRuleId === undefined ? " (auto-selected)" : ""}
                         </p>
@@ -1254,7 +1254,7 @@ export default function TransactionsPage() {
 
                   {newTransaction.type === "transfer" ? (
                     <div>
-                      <label className="text-xs font-semibold text-[var(--vn-muted)]">Savings target</label>
+                      <label className="text-xs font-semibold text-(--vn-muted)">Savings target</label>
                       <select
                         value={resolveSuggestedId(newTransaction.linkedRuleId, transferRuleId)}
                         onChange={(e) =>
@@ -1263,7 +1263,7 @@ export default function TransactionsPage() {
                             linkedRuleId: e.target.value ? e.target.value : null,
                           })
                         }
-                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                       >
                         <option value="">Unassigned</option>
                         {transferRuleOptions.length === 0 ? (
@@ -1276,7 +1276,7 @@ export default function TransactionsPage() {
                           ))
                         )}
                       </select>
-                      <p className="mt-1 text-xs text-[var(--vn-muted)]">
+                      <p className="mt-1 text-xs text-(--vn-muted)">
                         Suggested: {transferRuleLabel}
                         {newTransaction.linkedRuleId === undefined ? " (auto-selected)" : ""}
                       </p>
@@ -1285,7 +1285,7 @@ export default function TransactionsPage() {
 
                   {newTransaction.type === "transfer" && plan && plan.savingsGoals && plan.savingsGoals.length > 0 ? (
                     <div>
-                      <label className="text-xs font-semibold text-[var(--vn-muted)]">Link to goal (optional)</label>
+                      <label className="text-xs font-semibold text-(--vn-muted)">Link to goal (optional)</label>
                       <select
                         value={newTransaction.goalId ?? ""}
                         onChange={(e) =>
@@ -1294,7 +1294,7 @@ export default function TransactionsPage() {
                             goalId: e.target.value || null,
                           })
                         }
-                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                       >
                         <option value="">No goal</option>
                         {plan.savingsGoals.map((g) => (
@@ -1308,7 +1308,7 @@ export default function TransactionsPage() {
 
                   {newTransaction.type === "outflow" && isBillCategory(newTransaction.category) ? (
                     <div>
-                      <label className="text-xs font-semibold text-[var(--vn-muted)]">
+                      <label className="text-xs font-semibold text-(--vn-muted)">
                         {newTransaction.category === "giving" ? "Giving target" : "Bill"}
                       </label>
                       <select
@@ -1319,7 +1319,7 @@ export default function TransactionsPage() {
                             linkedBillId: e.target.value ? e.target.value : null,
                           })
                         }
-                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                       >
                         <option value="">Unassigned</option>
                         {billOptions.map((bill) => (
@@ -1329,16 +1329,16 @@ export default function TransactionsPage() {
                         ))}
                       </select>
                       {billSuggestionLabel ? (
-                        <p className="mt-1 text-xs text-[var(--vn-muted)]">
+                        <p className="mt-1 text-xs text-(--vn-muted)">
                           This looks like your {billSuggestionLabel}{" "}
                           {newTransaction.category === "giving" ? "giving" : "payment"}.
                           {newTransaction.linkedBillId === undefined ? " (auto-selected)" : ""}
                         </p>
                       ) : null}
                       {!billSuggestionLabel && recurringBillSuggestion ? (
-                        <div className="mt-2 rounded-lg border border-indigo-100 dark:border-indigo-400/40 bg-indigo-50/70 dark:bg-indigo-900/20 px-3 py-2 text-xs text-[var(--vn-muted)]">
-                          <div className="font-semibold text-[var(--vn-text)]">Recurring pattern detected</div>
-                          <div className="mt-1 text-[var(--vn-muted)]">
+                        <div className="mt-2 rounded-lg border border-indigo-100 dark:border-indigo-400/40 bg-indigo-50/70 dark:bg-indigo-900/20 px-3 py-2 text-xs text-(--vn-muted)">
+                          <div className="font-semibold text-(--vn-text)">Recurring pattern detected</div>
+                          <div className="mt-1 text-(--vn-muted)">
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {(recurringBillSuggestion as any).merchantName} | {formatMoney((recurringBillSuggestion as any).averageAmount)} |{" "}
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -1350,7 +1350,7 @@ export default function TransactionsPage() {
                             type="button"
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onClick={handleCreateBillForNewTransaction as any}
-                            className="mt-2 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-400/40 bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-9 font-semibold text-indigo-600 dark:text-indigo-300 hover:border-indigo-300 hover:text-indigo-700 dark:hover:border-indigo-300"
+                            className="mt-2 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-400/40 bg-(--vn-surface) px-3 py-1.5 text-xs min-h-9 font-semibold text-indigo-600 dark:text-indigo-300 hover:border-indigo-300 hover:text-indigo-700 dark:hover:border-indigo-300"
                           >
                             Create bill
                           </button>
@@ -1360,7 +1360,7 @@ export default function TransactionsPage() {
                         <button
                           type="button"
                           onClick={handleCreateBillForNewTransaction}
-                          className="mt-2 inline-flex items-center rounded-md border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-9 font-semibold text-[var(--vn-muted)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                          className="mt-2 inline-flex items-center rounded-md border border-(--vn-border) bg-(--vn-surface) px-3 py-1.5 text-xs min-h-9 font-semibold text-(--vn-muted) hover:border-[var(--accent)] hover:text-[var(--accent)]"
                         >
                           Create bill from this transaction
                         </button>
@@ -1372,7 +1372,7 @@ export default function TransactionsPage() {
                     isFreeTextCategory(newTransaction.category) &&
                     outflowRuleOptions.length > 0 ? (
                     <div>
-                      <label className="text-xs font-semibold text-[var(--vn-muted)]">Outflow rule (optional)</label>
+                      <label className="text-xs font-semibold text-(--vn-muted)">Outflow rule (optional)</label>
                       <select
                         value={resolveSuggestedId(newTransaction.linkedRuleId, outflowRuleSuggestion)}
                         onChange={(e) =>
@@ -1381,7 +1381,7 @@ export default function TransactionsPage() {
                             linkedRuleId: e.target.value ? e.target.value : null,
                           })
                         }
-                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                       >
                         <option value="">Unassigned</option>
                         {outflowRuleOptions.map((rule) => (
@@ -1391,7 +1391,7 @@ export default function TransactionsPage() {
                         ))}
                       </select>
                       {outflowSuggestionLabel ? (
-                        <p className="mt-1 text-xs text-[var(--vn-muted)]">
+                        <p className="mt-1 text-xs text-(--vn-muted)">
                           Suggested: {outflowSuggestionLabel}
                           {newTransaction.linkedRuleId === undefined ? " (auto-selected)" : ""}
                         </p>
@@ -1400,7 +1400,7 @@ export default function TransactionsPage() {
                   ) : null}
 
                   <div>
-                    <label className="text-xs font-semibold text-[var(--vn-muted)]">
+                    <label className="text-xs font-semibold text-(--vn-muted)">
                       {newTransaction.type === "outflow" && isFreeTextCategory(newTransaction.category)
                         ? "Details (free text)"
                         : "Notes (optional)"}
@@ -1412,7 +1412,7 @@ export default function TransactionsPage() {
                       onChange={(e) =>
                         setNewTransaction({ ...newTransaction, notes: e.target.value })
                       }
-                      className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
+                      className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
                     />
                   </div>
                 </div>
@@ -1441,7 +1441,7 @@ export default function TransactionsPage() {
             {/* Transactions List */}
             <div className="vn-card p-6">
               <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
-                <div className="text-sm font-semibold text-[var(--vn-text)]">
+                <div className="text-sm font-semibold text-(--vn-text)">
                   Transactions ({periodTransactions.length})
                   {bulkMode && selectedIds.size > 0 && (
                     <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
@@ -1454,7 +1454,7 @@ export default function TransactionsPage() {
                     <>
                       <button
                         onClick={() => setBulkMode(true)}
-                        className="rounded-lg bg-[var(--vn-surface)] border border-[var(--vn-border)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-text)] hover:bg-[var(--vn-bg)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Enable bulk selection mode"
                       >
@@ -1462,7 +1462,7 @@ export default function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToCSV(periodTransactions, period.label)}
-                        className="rounded-lg bg-[var(--vn-surface)] border border-[var(--vn-border)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-text)] hover:bg-[var(--vn-bg)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to CSV"
                       >
@@ -1470,7 +1470,7 @@ export default function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToExcel(periodTransactions, period.label)}
-                        className="rounded-lg bg-[var(--vn-surface)] border border-[var(--vn-border)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-text)] hover:bg-[var(--vn-bg)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to Excel"
                       >
@@ -1478,7 +1478,7 @@ export default function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToPDF(periodTransactions, period.label, period.start, period.end)}
-                        className="rounded-lg bg-[var(--vn-surface)] border border-[var(--vn-border)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-text)] hover:bg-[var(--vn-bg)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to PDF"
                       >
@@ -1489,14 +1489,14 @@ export default function TransactionsPage() {
                     <>
                       <button
                         onClick={handleBulkExport}
-                        className="rounded-lg bg-[var(--vn-surface)] border border-[var(--vn-border)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-text)] hover:bg-[var(--vn-bg)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={selectedIds.size === 0}
                       >
                         Export Selected
                       </button>
                       <button
                         onClick={handleBulkDelete}
-                        className="rounded-lg bg-[var(--vn-surface)] border border-rose-200 dark:border-rose-500/40 px-3 py-1.5 text-xs min-h-10 font-semibold text-rose-700 dark:text-rose-200 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-rose-200 dark:border-rose-500/40 px-3 py-1.5 text-xs min-h-10 font-semibold text-rose-700 dark:text-rose-200 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={selectedIds.size === 0}
                       >
                         Delete Selected
@@ -1506,7 +1506,7 @@ export default function TransactionsPage() {
                           setBulkMode(false);
                           setSelectedIds(new Set());
                         }}
-                        className="rounded-lg bg-[var(--vn-surface)] border border-[var(--vn-border)] px-3 py-1.5 text-xs min-h-10 font-semibold text-[var(--vn-text)] hover:bg-[var(--vn-bg)] transition-colors"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors"
                       >
                         Cancel
                       </button>
@@ -1518,14 +1518,14 @@ export default function TransactionsPage() {
               {/* Search and Filters */}
               <div className="mb-4 space-y-3">
                 {bulkMode && periodTransactions.length > 0 && (
-                  <div className="flex items-center gap-2 pb-2 border-b border-[var(--vn-border)]">
+                  <div className="flex items-center gap-2 pb-2 border-b border-(--vn-border)">
                     <input
                       type="checkbox"
                       checked={selectedIds.size === periodTransactions.length}
                       onChange={toggleSelectAll}
                       className="h-4 w-4 rounded border-slate-300 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                     />
-                    <label className="text-sm text-[var(--vn-muted)]">
+                    <label className="text-sm text-(--vn-muted)">
                       Select all ({periodTransactions.length})
                     </label>
                   </div>
@@ -1536,12 +1536,12 @@ export default function TransactionsPage() {
                     placeholder="Search transactions..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
+                    className="rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
                   />
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value as CashflowType | "all")}
-                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                    className="rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                   >
                     <option value="all">All types</option>
                     <option value="income">Income</option>
@@ -1551,7 +1551,7 @@ export default function TransactionsPage() {
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value as CashflowCategory | "all")}
-                    className="rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                    className="rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                   >
                     <option value="all">All categories</option>
                     <option value="income">Income</option>
@@ -1566,7 +1566,7 @@ export default function TransactionsPage() {
               </div>
 
               {periodTransactions.length === 0 ? (
-                <div className="mt-4 rounded-xl bg-[var(--vn-surface)] p-8">
+                <div className="mt-4 rounded-xl bg-(--vn-surface) p-8">
                   <EmptyState
                     icon={searchQuery || filterType !== "all" || filterCategory !== "all" ? "🔍" : "📝"}
                     title={searchQuery || filterType !== "all" || filterCategory !== "all" ? "No matching transactions" : "No transactions yet"}
@@ -1610,7 +1610,7 @@ export default function TransactionsPage() {
                             className="absolute left-0 top-0 w-full pb-2"
                             style={{ transform: `translateY(${virtualRow.start}px)` }}
                           >
-                            <div className="rounded-2xl border border-[var(--vn-border)] bg-[var(--vn-surface)] p-4 flex items-start gap-3">
+                            <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 flex items-start gap-3">
                               {bulkMode && (
                                 <input
                                   type="checkbox"
@@ -1624,29 +1624,29 @@ export default function TransactionsPage() {
                                 <div className="flex-1 min-w-0 space-y-3">
                                   <div className="grid gap-3 sm:grid-cols-2">
                                     <div>
-                                      <label className="text-xs font-semibold text-[var(--vn-muted)]">Date</label>
+                                      <label className="text-xs font-semibold text-(--vn-muted)">Date</label>
                                       <input
                                         type="date"
                                         value={editTransaction.date}
                                         onChange={(e) =>
                                           setEditTransaction({ ...editTransaction, date: e.target.value })
                                         }
-                                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                       />
                                     </div>
                                     <div>
-                                      <label className="text-xs font-semibold text-[var(--vn-muted)]">Label</label>
+                                      <label className="text-xs font-semibold text-(--vn-muted)">Label</label>
                                       <input
                                         type="text"
                                         value={editTransaction.label}
                                         onChange={(e) =>
                                           setEditTransaction({ ...editTransaction, label: e.target.value })
                                         }
-                                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                       />
                                     </div>
                                     <div>
-                                      <label className="text-xs font-semibold text-[var(--vn-muted)]">Amount ({getCurrency()})</label>
+                                      <label className="text-xs font-semibold text-(--vn-muted)">Amount ({getCurrency()})</label>
                                       <input
                                         type="number"
                                         step="0.01"
@@ -1655,11 +1655,11 @@ export default function TransactionsPage() {
                                         onChange={(e) =>
                                           setEditTransaction({ ...editTransaction, amount: e.target.value })
                                         }
-                                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                       />
                                     </div>
                                     <div>
-                                      <label className="text-xs font-semibold text-[var(--vn-muted)]">Type</label>
+                                      <label className="text-xs font-semibold text-(--vn-muted)">Type</label>
                                       <select
                                         value={editTransaction.type}
                                         onChange={(e) => {
@@ -1674,7 +1674,7 @@ export default function TransactionsPage() {
                                           });
                                           setEditCategoryTouched(false);
                                         }}
-                                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                       >
                                         <option value="income">Income</option>
                                         <option value="outflow">Outflow</option>
@@ -1682,7 +1682,7 @@ export default function TransactionsPage() {
                                       </select>
                                     </div>
                                     <div>
-                                      <label className="text-xs font-semibold text-[var(--vn-muted)]">Category</label>
+                                      <label className="text-xs font-semibold text-(--vn-muted)">Category</label>
                                       <select
                                         value={editTransaction.category}
                                         onChange={(e) => {
@@ -1695,7 +1695,7 @@ export default function TransactionsPage() {
                                           });
                                           setEditCategoryTouched(true);
                                         }}
-                                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                       >
                                         {categoryOptionsForType(editTransaction.type).map((category) => (
                                           <option key={category} value={category}>
@@ -1704,7 +1704,7 @@ export default function TransactionsPage() {
                                         ))}
                                       </select>
                                       {editCategorySuggestion ? (
-                                        <p className="mt-1 text-xs text-[var(--vn-muted)]">
+                                        <p className="mt-1 text-xs text-(--vn-muted)">
                                           {shouldAutoApplyEditCategory ? "Auto-categorized" : "Suggested"}:{" "}
                                           {formatCategoryLabel(editCategorySuggestion.category)}{" "}
                                           {editCategoryConfidenceLabel ? `(${editCategoryConfidenceLabel} confidence)` : ""}
@@ -1714,7 +1714,7 @@ export default function TransactionsPage() {
                                     </div>
                                     {editTransaction.type === "income" ? (
                                       <div>
-                                        <label className="text-xs font-semibold text-[var(--vn-muted)]">Income source</label>
+                                        <label className="text-xs font-semibold text-(--vn-muted)">Income source</label>
                                         <select
                                           value={resolveSuggestedId(editTransaction.linkedRuleId, editIncomeSuggestion)}
                                           onChange={(e) =>
@@ -1723,7 +1723,7 @@ export default function TransactionsPage() {
                                               linkedRuleId: e.target.value ? e.target.value : null,
                                             })
                                           }
-                                          className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                          className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                         >
                                           <option value="">Unassigned</option>
                                           {plan.incomeRules
@@ -1735,7 +1735,7 @@ export default function TransactionsPage() {
                                             ))}
                                         </select>
                                         {editIncomeSuggestionLabel ? (
-                                          <p className="mt-1 text-xs text-[var(--vn-muted)]">
+                                          <p className="mt-1 text-xs text-(--vn-muted)">
                                             Suggested: {editIncomeSuggestionLabel}
                                             {editTransaction.linkedRuleId === undefined ? " (auto-selected)" : ""}
                                           </p>
@@ -1745,7 +1745,7 @@ export default function TransactionsPage() {
 
                                     {editTransaction.type === "transfer" ? (
                                       <div>
-                                        <label className="text-xs font-semibold text-[var(--vn-muted)]">Savings target</label>
+                                        <label className="text-xs font-semibold text-(--vn-muted)">Savings target</label>
                                         <select
                                           value={resolveSuggestedId(editTransaction.linkedRuleId, transferRuleId)}
                                           onChange={(e) =>
@@ -1754,7 +1754,7 @@ export default function TransactionsPage() {
                                               linkedRuleId: e.target.value ? e.target.value : null,
                                             })
                                           }
-                                          className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                          className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                         >
                                           <option value="">Unassigned</option>
                                           {transferRuleOptions.length === 0 ? (
@@ -1767,7 +1767,7 @@ export default function TransactionsPage() {
                                             ))
                                           )}
                                         </select>
-                                        <p className="mt-1 text-xs text-[var(--vn-muted)]">
+                                        <p className="mt-1 text-xs text-(--vn-muted)">
                                           Suggested: {transferRuleLabel}
                                           {editTransaction.linkedRuleId === undefined ? " (auto-selected)" : ""}
                                         </p>
@@ -1776,7 +1776,7 @@ export default function TransactionsPage() {
 
                                     {editTransaction.type === "transfer" && plan && plan.savingsGoals && plan.savingsGoals.length > 0 ? (
                                       <div>
-                                        <label className="text-xs font-semibold text-[var(--vn-muted)]">Link to goal (optional)</label>
+                                        <label className="text-xs font-semibold text-(--vn-muted)">Link to goal (optional)</label>
                                         <select
                                           value={editTransaction.goalId ?? ""}
                                           onChange={(e) =>
@@ -1785,7 +1785,7 @@ export default function TransactionsPage() {
                                               goalId: e.target.value || null,
                                             })
                                           }
-                                          className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                          className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                         >
                                           <option value="">No goal</option>
                                           {plan.savingsGoals.map((g) => (
@@ -1799,7 +1799,7 @@ export default function TransactionsPage() {
 
                                     {editTransaction.type === "outflow" && isBillCategory(editTransaction.category) ? (
                                       <div>
-                                        <label className="text-xs font-semibold text-[var(--vn-muted)]">
+                                        <label className="text-xs font-semibold text-(--vn-muted)">
                                           {editTransaction.category === "giving" ? "Giving target" : "Bill"}
                                         </label>
                                         <select
@@ -1810,7 +1810,7 @@ export default function TransactionsPage() {
                                               linkedBillId: e.target.value ? e.target.value : null,
                                             })
                                           }
-                                          className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                          className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                         >
                                           <option value="">Unassigned</option>
                                           {editBillOptions.map((bill) => (
@@ -1820,16 +1820,16 @@ export default function TransactionsPage() {
                                           ))}
                                         </select>
                                         {editBillSuggestionLabel ? (
-                                          <p className="mt-1 text-xs text-[var(--vn-muted)]">
+                                          <p className="mt-1 text-xs text-(--vn-muted)">
                                             This looks like your {editBillSuggestionLabel}{" "}
                                             {editTransaction.category === "giving" ? "giving" : "payment"}.
                                             {editTransaction.linkedBillId === undefined ? " (auto-selected)" : ""}
                                           </p>
                                         ) : null}
                                         {!editBillSuggestionLabel && editRecurringBillSuggestion ? (
-                                          <div className="mt-2 rounded-lg border border-indigo-100 dark:border-indigo-400/40 bg-indigo-50/70 dark:bg-indigo-900/20 px-3 py-2 text-xs text-[var(--vn-muted)]">
-                                            <div className="font-semibold text-[var(--vn-text)]">Recurring pattern detected</div>
-                                            <div className="mt-1 text-[var(--vn-muted)]">
+                                          <div className="mt-2 rounded-lg border border-indigo-100 dark:border-indigo-400/40 bg-indigo-50/70 dark:bg-indigo-900/20 px-3 py-2 text-xs text-(--vn-muted)">
+                                            <div className="font-semibold text-(--vn-text)">Recurring pattern detected</div>
+                                            <div className="mt-1 text-(--vn-muted)">
                                               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                               {(editRecurringBillSuggestion as any).merchantName} | {formatMoney((editRecurringBillSuggestion as any).averageAmount)} |{" "}
                                               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -1841,7 +1841,7 @@ export default function TransactionsPage() {
                                               type="button"
                                               // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                               onClick={handleCreateBillForEditTransaction as any}
-                                              className="mt-2 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-400/40 bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-9 font-semibold text-indigo-600 dark:text-indigo-300 hover:border-indigo-300 hover:text-indigo-700 dark:hover:border-indigo-300"
+                                              className="mt-2 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-400/40 bg-(--vn-surface) px-3 py-1.5 text-xs min-h-9 font-semibold text-indigo-600 dark:text-indigo-300 hover:border-indigo-300 hover:text-indigo-700 dark:hover:border-indigo-300"
                                             >
                                               Create bill
                                             </button>
@@ -1851,7 +1851,7 @@ export default function TransactionsPage() {
                                           <button
                                             type="button"
                                             onClick={handleCreateBillForEditTransaction}
-                                            className="mt-2 inline-flex items-center rounded-md border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-1.5 text-xs min-h-9 font-semibold text-[var(--vn-muted)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                                            className="mt-2 inline-flex items-center rounded-md border border-(--vn-border) bg-(--vn-surface) px-3 py-1.5 text-xs min-h-9 font-semibold text-(--vn-muted) hover:border-[var(--accent)] hover:text-[var(--accent)]"
                                           >
                                             Create bill from this transaction
                                           </button>
@@ -1863,7 +1863,7 @@ export default function TransactionsPage() {
                                       isFreeTextCategory(editTransaction.category) &&
                                       editOutflowRuleOptions.length > 0 ? (
                                       <div>
-                                        <label className="text-xs font-semibold text-[var(--vn-muted)]">Outflow rule (optional)</label>
+                                        <label className="text-xs font-semibold text-(--vn-muted)">Outflow rule (optional)</label>
                                         <select
                                           value={resolveSuggestedId(editTransaction.linkedRuleId, editOutflowRuleSuggestion)}
                                           onChange={(e) =>
@@ -1872,7 +1872,7 @@ export default function TransactionsPage() {
                                               linkedRuleId: e.target.value ? e.target.value : null,
                                             })
                                           }
-                                          className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                          className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                         >
                                           <option value="">Unassigned</option>
                                           {editOutflowRuleOptions.map((rule) => (
@@ -1882,7 +1882,7 @@ export default function TransactionsPage() {
                                           ))}
                                         </select>
                                         {editOutflowSuggestionLabel ? (
-                                          <p className="mt-1 text-xs text-[var(--vn-muted)]">
+                                          <p className="mt-1 text-xs text-(--vn-muted)">
                                             Suggested: {editOutflowSuggestionLabel}
                                             {editTransaction.linkedRuleId === undefined ? " (auto-selected)" : ""}
                                           </p>
@@ -1891,7 +1891,7 @@ export default function TransactionsPage() {
                                     ) : null}
 
                                     <div>
-                                      <label className="text-xs font-semibold text-[var(--vn-muted)]">
+                                      <label className="text-xs font-semibold text-(--vn-muted)">
                                         {editTransaction.type === "outflow" && isFreeTextCategory(editTransaction.category)
                                           ? "Details (free text)"
                                           : "Notes (optional)"}
@@ -1902,7 +1902,7 @@ export default function TransactionsPage() {
                                         onChange={(e) =>
                                           setEditTransaction({ ...editTransaction, notes: e.target.value })
                                         }
-                                        className="mt-1 w-full rounded-lg border border-[var(--vn-border)] bg-[var(--vn-surface)] px-3 py-2 text-sm text-[var(--vn-text)] focus:outline-none focus:border-[var(--accent)]"
+                                        className="mt-1 w-full rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) focus:outline-none focus:border-[var(--accent)]"
                                       />
                                     </div>
                                   </div>
@@ -1915,7 +1915,7 @@ export default function TransactionsPage() {
                                     </button>
                                     <button
                                       onClick={cancelEdit}
-                                      className="rounded-xl border border-[var(--vn-border)] px-4 py-2 text-xs min-h-[44px] font-semibold text-[var(--vn-muted)] hover:bg-[var(--vn-bg)]"
+                                      className="rounded-xl border border-(--vn-border) px-4 py-2 text-xs min-h-[44px] font-semibold text-(--vn-muted) hover:bg-(--vn-bg)"
                                     >
                                       Cancel
                                     </button>
@@ -1927,13 +1927,13 @@ export default function TransactionsPage() {
                                   <div className="flex items-start gap-3">
                                     <MerchantLogo merchantName={txn.label} size="sm" />
                                     <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-1.5 text-sm font-semibold text-[var(--vn-text)]">
+                                      <div className="flex items-center gap-1.5 text-sm font-semibold text-(--vn-text)">
                                         <span className="truncate">{txn.label}</span>
                                         {txn.type === "outflow" && txn.category !== "savings" && !txn.linkedBillId && !txn.linkedRuleId && (
                                           <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0" title="Unbudgeted spending" />
                                         )}
                                       </div>
-                                      <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-[var(--vn-muted)]">
+                                      <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-(--vn-muted)">
                                         <span className="whitespace-nowrap">{formatNice(txn.date)}</span>
                                         <span className="text-slate-300">·</span>
                                         <span className="capitalize">{txn.category}</span>
@@ -1952,33 +1952,33 @@ export default function TransactionsPage() {
                                       </span>
                                       <button
                                         onClick={() => handleEditTransaction(txn)}
-                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-[var(--vn-muted)] hover:text-[var(--vn-text)] transition-colors"
+                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-(--vn-muted) hover:text-(--vn-text) transition-colors"
                                       >
                                         Edit
                                       </button>
                                       <button
                                         onClick={() => handleDeleteTransaction(txn.id)}
-                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-[var(--vn-muted)] hover:text-rose-600 transition-colors"
+                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-(--vn-muted) hover:text-rose-600 transition-colors"
                                       >
                                         Delete
                                       </button>
                                     </div>
                                   </div>
                                   {/* Mobile footer: amount + actions (< sm) */}
-                                  <div className="mt-2.5 flex items-center justify-between border-t border-[var(--vn-border)] pt-2.5 sm:hidden">
+                                  <div className="mt-2.5 flex items-center justify-between border-t border-(--vn-border) pt-2.5 sm:hidden">
                                     <span className={`text-sm font-semibold ${txn.type === "income" ? "text-green-600" : txn.type === "transfer" ? "text-sky-600" : "text-rose-600"}`}>
                                       {txn.type === "income" ? "+" : txn.type === "transfer" ? "T" : "−"}{formatMoney(txn.amount)}
                                     </span>
                                     <div className="flex items-center gap-1">
                                       <button
                                         onClick={() => handleEditTransaction(txn)}
-                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-[var(--vn-muted)] hover:text-[var(--vn-text)] transition-colors"
+                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-(--vn-muted) hover:text-(--vn-text) transition-colors"
                                       >
                                         Edit
                                       </button>
                                       <button
                                         onClick={() => handleDeleteTransaction(txn.id)}
-                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-[var(--vn-muted)] hover:text-rose-600 transition-colors"
+                                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-xs font-semibold text-(--vn-muted) hover:text-rose-600 transition-colors"
                                       >
                                         Delete
                                       </button>

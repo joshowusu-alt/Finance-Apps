@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { motion, useSpring, useTransform, AnimatePresence, type Variants } from "framer-motion";
@@ -376,7 +376,7 @@ export default function HomePage() {
                         </div>
                         <div className="relative h-2 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }}>
                           {/* Time elapsed bar (background) */}
-                          <div className="absolute inset-y-0 left-0 rounded-full bg-[var(--vn-border)]" style={{ width: `${Math.round(timeProgress * 100)}%` }} />
+                          <div className="absolute inset-y-0 left-0 rounded-full bg-(--vn-border)" style={{ width: `${Math.round(timeProgress * 100)}%` }} />
                           {/* Spending progress bar (foreground — animated fill) */}
                           <motion.div
                             className={`absolute inset-y-0 left-0 rounded-full`}
@@ -413,17 +413,17 @@ export default function HomePage() {
 
             {/* Onboarding Panel */}
             {!resolvedOnboarding.dismissed && (
-              <motion.div variants={fadeUp} className="vn-card p-6 border-l-4 border-l-[var(--vn-primary)]">
+              <motion.div variants={fadeUp} className="vn-card p-6 border-l-4 border-l-(--vn-primary)">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <div className="text-sm font-bold text-[var(--vn-text)]">Getting started</div>
-                    <div className="mt-1 text-xs text-[var(--vn-muted)]">
+                    <div className="text-sm font-bold text-(--vn-text)">Getting started</div>
+                    <div className="mt-1 text-xs text-(--vn-muted)">
                       {completedCount} of {onboardingTasks.length} steps done
                     </div>
                   </div>
                   <button
                     onClick={handleDismissOnboarding}
-                    className="text-xs font-semibold text-[var(--vn-muted)] hover:text-[var(--vn-text)] transition-colors"
+                    className="text-xs font-semibold text-(--vn-muted) hover:text-(--vn-text) transition-colors"
                   >
                     Dismiss
                   </button>
@@ -440,7 +440,7 @@ export default function HomePage() {
                     Quick setup
                   </button>
                 </div>
-                <div className="mt-2 text-xs text-[var(--vn-muted)]">
+                <div className="mt-2 text-xs text-(--vn-muted)">
                   Explore a prefilled plan to see insights immediately. You can reset to a blank plan anytime.
                 </div>
 
@@ -448,7 +448,7 @@ export default function HomePage() {
                   {onboardingTasks.filter(t => !t.done).slice(0, 3).map((task) => (
                     <div
                       key={task.id}
-                      className="flex items-center justify-between gap-3 rounded-xl px-4 py-2 bg-[var(--vn-bg)]"
+                      className="flex items-center justify-between gap-3 rounded-xl px-4 py-2 bg-(--vn-bg)"
                     >
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input
@@ -456,18 +456,18 @@ export default function HomePage() {
                           checked={task.done}
                           onChange={(e) => handleToggleTask(task.id, e.target.checked)}
                           disabled={task.autoDone}
-                          className="w-4 h-4 accent-[var(--vn-primary)] rounded"
+                          className="w-4 h-4 accent-(--vn-primary) rounded"
                         />
-                        <span className="text-sm font-medium text-[var(--vn-text)]">{task.label}</span>
+                        <span className="text-sm font-medium text-(--vn-text)">{task.label}</span>
                       </label>
-                      <Link href={task.href} className="text-xs font-semibold text-[var(--vn-primary)]">Go</Link>
+                      <Link href={task.href} className="text-xs font-semibold text-(--vn-primary)">Go</Link>
                     </div>
                   ))}
                   {onboardingTasks.filter(t => !t.done).length > 3 && (
-                    <div className="text-xs text-center text-[var(--vn-muted)] mt-2">...and {onboardingTasks.filter(t => !t.done).length - 3} more</div>
+                    <div className="text-xs text-center text-(--vn-muted) mt-2">...and {onboardingTasks.filter(t => !t.done).length - 3} more</div>
                   )}
                   {onboardingTasks.every(t => t.done) && (
-                    <div className="text-sm text-[var(--vn-success)] font-medium text-center py-2">🎉 You&apos;re all set! Dismiss this card to clear space.</div>
+                    <div className="text-sm text-(--vn-success) font-medium text-center py-2">🎉 You&apos;re all set! Dismiss this card to clear space.</div>
                   )}
                 </div>
               </motion.div>
@@ -477,8 +477,8 @@ export default function HomePage() {
             {subscriptionNudge && (
               <motion.div variants={fadeUp} className="vn-card p-4 border-l-4 border-l-amber-400 flex items-center justify-between gap-4">
                 <div>
-                  <div className="text-sm font-semibold text-[var(--vn-text)]">💡 Subscription review</div>
-                  <div className="text-xs text-[var(--vn-muted)] mt-0.5">
+                  <div className="text-sm font-semibold text-(--vn-text)">💡 Subscription review</div>
+                  <div className="text-xs text-(--vn-muted) mt-0.5">
                     {subscriptionNudge.count} subscription{subscriptionNudge.count > 1 ? "s" : ""} worth reviewing — {formatMoney(subscriptionNudge.totalMonthly)}/month
                   </div>
                 </div>
@@ -490,23 +490,23 @@ export default function HomePage() {
             <motion.div variants={fadeUp} className="vn-card p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-sm font-bold text-[var(--vn-text)]">Cashflow Forecast</div>
-                  <div className="text-xs text-[var(--vn-muted)] mb-1">Projected balance for next 30 days</div>
+                  <div className="text-sm font-bold text-(--vn-text)">Cashflow Forecast</div>
+                  <div className="text-xs text-(--vn-muted) mb-1">Projected balance for next 30 days</div>
                   {/* Legend */}
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="flex items-center gap-1 text-[10px] text-[var(--vn-muted)]">
-                      <span className="inline-block w-6 h-0.5 bg-[var(--vn-primary)] rounded" />
+                    <span className="flex items-center gap-1 text-[10px] text-(--vn-muted)">
+                      <span className="inline-block w-6 h-0.5 bg-(--vn-primary) rounded" />
                       Budget (Planned)
                     </span>
                     {derived.cashflow.actualsDaily.length > 0 && (
-                      <span className="flex items-center gap-1 text-[10px] text-[var(--vn-muted)]">
-                        <span className="inline-block w-6 h-0.5 border-t-2 border-dashed border-[var(--vn-secondary)]" />
+                      <span className="flex items-center gap-1 text-[10px] text-(--vn-muted)">
+                        <span className="inline-block w-6 h-0.5 border-t-2 border-dashed border-(--vn-secondary)" />
                         Actuals (Recorded)
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="text-xs font-bold px-2 py-1 rounded bg-[var(--vn-bg)] text-[var(--vn-text)]">
+                <div className="text-xs font-bold px-2 py-1 rounded bg-(--vn-bg) text-(--vn-text)">
                   End: {formatMoney(endingBalance)}
                 </div>
               </div>
@@ -610,23 +610,23 @@ export default function HomePage() {
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowClosePeriod(false)}>
             <div className="vn-card p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
-              <div className="text-base font-bold text-[var(--vn-text)] mb-1">Close Period</div>
-              <div className="text-xs text-[var(--vn-muted)] mb-4">{period.label}</div>
+              <div className="text-base font-bold text-(--vn-text) mb-1">Close Period</div>
+              <div className="text-xs text-(--vn-muted) mb-4">{period.label}</div>
               <div className="space-y-2 text-sm mb-4">
-                <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Income</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(actualIncome)}</span></div>
-                <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Spending</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(actualSpending)}</span></div>
-                <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Savings</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(actualSavings)}</span></div>
-                <div className="flex justify-between border-t border-[var(--vn-border)] pt-2"><span className="font-semibold text-[var(--vn-text)]">Leftover</span><span className={`font-bold ${actualLeftover >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}>{formatMoney(actualLeftover)}</span></div>
-                <div className="flex justify-between"><span className="text-[var(--vn-muted)]">Forecast end balance</span><span className="font-medium text-[var(--vn-text)]">{formatMoney(endingBalance)}</span></div>
+                <div className="flex justify-between"><span className="text-(--vn-muted)">Income</span><span className="font-medium text-(--vn-text)">{formatMoney(actualIncome)}</span></div>
+                <div className="flex justify-between"><span className="text-(--vn-muted)">Spending</span><span className="font-medium text-(--vn-text)">{formatMoney(actualSpending)}</span></div>
+                <div className="flex justify-between"><span className="text-(--vn-muted)">Savings</span><span className="font-medium text-(--vn-text)">{formatMoney(actualSavings)}</span></div>
+                <div className="flex justify-between border-t border-(--vn-border) pt-2"><span className="font-semibold text-(--vn-text)">Leftover</span><span className={`font-bold ${actualLeftover >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}>{formatMoney(actualLeftover)}</span></div>
+                <div className="flex justify-between"><span className="text-(--vn-muted)">Forecast end balance</span><span className="font-medium text-(--vn-text)">{formatMoney(endingBalance)}</span></div>
               </div>
               {nextPeriod ? (
                 <>
-                  <label className="flex items-center gap-2 text-sm text-[var(--vn-text)] cursor-pointer mb-4">
-                    <input type="checkbox" checked={carryForward} onChange={e => setCarryForward(e.target.checked)} className="accent-[var(--vn-primary)] w-4 h-4" />
+                  <label className="flex items-center gap-2 text-sm text-(--vn-text) cursor-pointer mb-4">
+                    <input type="checkbox" checked={carryForward} onChange={e => setCarryForward(e.target.checked)} className="accent-(--vn-primary) w-4 h-4" />
                     Carry balance ({formatMoney(endingBalance)}) to <strong className="ml-0.5">{nextPeriod.label}</strong>
                   </label>
                   {!carryForward && (
-                    <div className="text-xs text-[var(--vn-muted)] mb-4">Next period will use your default starting balance ({formatMoney(plan.setup.startingBalance)}).</div>
+                    <div className="text-xs text-(--vn-muted) mb-4">Next period will use your default starting balance ({formatMoney(plan.setup.startingBalance)}).</div>
                   )}
                   <div className="flex gap-2">
                     <button onClick={doClose} className="vn-btn vn-btn-primary flex-1 text-sm">Close &amp; Advance →</button>

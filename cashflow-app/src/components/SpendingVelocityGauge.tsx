@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * SpendingVelocityGauge
@@ -99,8 +99,8 @@ export default function SpendingVelocityGauge({
       : null;
 
   return (
-    <div className="rounded-2xl bg-[var(--vn-surface)] p-4 shadow-sm">
-      <div className="text-xs uppercase tracking-wide text-[var(--vn-muted)] mb-3">
+    <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
+      <div className="text-xs uppercase tracking-wide text-(--vn-muted) mb-3">
         Spending velocity
       </div>
 
@@ -157,7 +157,7 @@ export default function SpendingVelocityGauge({
             fontSize={10}
             fontWeight="600"
             fill="currentColor"
-            className="fill-[var(--vn-text)]"
+            className="fill-(--vn-text)"
           >
             {pct}%
           </text>
@@ -166,20 +166,20 @@ export default function SpendingVelocityGauge({
         {/* Stats */}
         <div className="flex-1 min-w-0">
           <div className={`text-sm font-semibold ${statusColor}`}>{statusLabel}</div>
-          <div className="mt-1 text-xs text-[var(--vn-muted)]">
-            <span className="font-medium text-[var(--vn-text)]">{formatMoney(actualDailyRate)}/day</span>
+          <div className="mt-1 text-xs text-(--vn-muted)">
+            <span className="font-medium text-(--vn-text)">{formatMoney(actualDailyRate)}/day</span>
             {" "}actual vs{" "}
-            <span className="font-medium text-[var(--vn-text)]">{formatMoney(budgetDailyRate)}/day</span>
+            <span className="font-medium text-(--vn-text)">{formatMoney(budgetDailyRate)}/day</span>
             {" "}budget
           </div>
           {projectedSpend !== null && daysElapsed > 1 && (
-            <div className="mt-1.5 text-xs text-[var(--vn-muted)]">
+            <div className="mt-1.5 text-xs text-(--vn-muted)">
               Projected:{" "}
               <span
                 className={
                   projectedSpend > budgetSpend * 1.05
                     ? "font-semibold text-rose-600 dark:text-rose-400"
-                    : "font-medium text-[var(--vn-text)]"
+                    : "font-medium text-(--vn-text)"
                 }
               >
                 {formatMoney(projectedSpend)}
@@ -192,7 +192,7 @@ export default function SpendingVelocityGauge({
             </div>
           )}
           {daysRemaining > 0 && budgetDailyRate > 0 && (
-            <div className="mt-1 text-xs text-[var(--vn-muted)]">
+            <div className="mt-1 text-xs text-(--vn-muted)">
               {daysRemaining}d left · budget{" "}
               {formatMoney(budgetDailyRate)}/day
             </div>
