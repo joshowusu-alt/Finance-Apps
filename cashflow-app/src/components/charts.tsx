@@ -4,8 +4,9 @@
  * charts.tsx — Recharts wrappers styled with vn- design tokens.
  *
  * Exports:
- *   CategoryBreakdownChart  — horizontal bar chart, click-to-drilldown
- *   SpendingTrendChart      — income bars + spending area across periods
+ *   CategoryBreakdownChart    — horizontal bar chart, click-to-drilldown
+ *   SpendingTrendChart        — income bars + spending area across periods
+ *   CashflowProjectionChart   — balance + projected lines with threshold alert
  */
 
 import {
@@ -19,9 +20,16 @@ import {
   ComposedChart,
   Area,
   CartesianGrid,
+  Line,
+  ReferenceLine,
 } from "recharts";
 import { formatMoney } from "@/lib/currency";
 import type { CategoryData, SpendingDataPoint } from "@/lib/insightsSnapshot";
+
+export type { CategoryData, SpendingDataPoint };
+
+// CashflowDataPoint for the projection chart
+export type CashflowDataPoint = { date: string; balance: number; projected: number };
 
 const PALETTE = [
   "#6366f1",
@@ -135,7 +143,7 @@ export function SpendingTrendChart({
           tickLine={false}
         />
         <Tooltip
-          formatter={(value: number | undefined, name: string) => [formatMoney(value ?? 0), name]}
+          formatter={(value: number | undefined, name: string | undefined) => [formatMoney(value ?? 0), name ?? ""]}
           contentStyle={tooltipStyle}
         />
         {showIncome && (
@@ -162,6 +170,79 @@ export function SpendingTrendChart({
           isAnimationActive
           animationDuration={600}
         />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Cashflow Projection Chart
+// ---------------------------------------------------------------------------
+
+export function CashflowProjectionChart({
+  data,
+  showProjection = true,
+  height = 280,
+  lowBalanceThreshold,
+}: {
+  data: CashflowDataPoint[];
+  showProjection?: boolean;
+  height?: number;
+  lowBalanceThreshold?: number;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <ComposedChart data={data} margin={{ top: 4, right: 16, left: 4, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--vn-border)" strokeOpacity={0.6} />
+        <XAxis
+          dataKey="date"
+          tick={{ fontSize: 10, fill: "var(--vn-muted)" }}
+          axisLine={false}
+          tickLine={false}
+          interval="preserveStartEnd"
+        />
+        <YAxis
+          tickFormatter={(v: number) => formatMoney(v)}
+          tick={{ fontSize: 10, fill: "var(--vn-muted)" }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip
+          formatter={(value: number | undefined, name: string | undefined) => [formatMoney(value ?? 0), name ?? ""]}
+          contentStyle={tooltipStyle}
+        />
+        {lowBalanceThreshold !== undefined && (
+          <ReferenceLine
+            y={lowBalanceThreshold}
+            stroke="#f43f5e"
+            strokeDasharray="4 2"
+            label={{ value: "Low balance", fontSize: 10, fill: "#f43f5e", position: "insideTopLeft" }}
+          />
+        )}
+        <Line
+          type="monotone"
+          dataKey="balance"
+          name="Balance"
+          stroke="#6366f1"
+          strokeWidth={2.5}
+          dot={{ r: 3, fill: "#6366f1", strokeWidth: 0 }}
+          activeDot={{ r: 5 }}
+          isAnimationActive
+          animationDuration={600}
+        />
+        {showProjection && (
+          <Line
+            type="monotone"
+            dataKey="projected"
+            name="Projected"
+            stroke="#a5b4fc"
+            strokeWidth={1.5}
+            strokeDasharray="5 3"
+            dot={false}
+            isAnimationActive
+            animationDuration={600}
+          />
+        )}
       </ComposedChart>
     </ResponsiveContainer>
   );
