@@ -16,6 +16,7 @@ import { MerchantLogo } from "@/components/MerchantLogo";
 import { FormError } from "@/components/FormError";
 import type { Transaction, CashflowCategory, CashflowType, Plan, BillTemplate } from "@/data/plan";
 import { normalizeText, splitTokens } from "@/lib/textUtils";
+import TransactionTriage from "@/components/TransactionTriage";
 
 
 function formatNice(iso: string) {
@@ -471,6 +472,16 @@ export default function TransactionsPage() {
     if (!plan) return null;
     return getPeriod(plan, plan.setup.selectedPeriodId);
   }, [plan]);
+
+  // Outflow transactions needing a more specific category (uncategorised from Plaid)
+  const triage = useMemo(
+    () =>
+      plan.transactions
+        .filter((t) => t.type === "outflow" && t.category === "other")
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(0, 8),
+    [plan.transactions]
+  );
 
   const budgetVsActual = useMemo(() => {
     if (!plan || !period) return null;
@@ -980,6 +991,15 @@ export default function TransactionsPage() {
     }
   }
 
+  function handleQuickCategory(id: string, category: CashflowCategory) {
+    const updated = {
+      ...plan,
+      transactions: plan.transactions.map((t) => (t.id === id ? { ...t, category } : t)),
+    };
+    savePlan(updated);
+    setPlan(updated);
+  }
+
   function handleCreateBillForNewTransaction() {
     const result = ensureBillFromDraft(newTransaction, recurringBillSuggestion ?? undefined);
     if (!result) return;
@@ -1085,6 +1105,14 @@ export default function TransactionsPage() {
               <h1 className="text-2xl font-bold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Transactions</h1>
               <div className="mt-2 text-sm text-white/55">Add what really happened.</div>
             </div>
+
+            {/* Triage: Plaid-imported transactions that need a specific category */}
+            {triage.length > 0 && (
+              <TransactionTriage
+                transactions={triage}
+                onRecategorise={handleQuickCategory}
+              />
+            )}
 
             {/* Add Transaction Form */}
             <div className="vn-card p-6">

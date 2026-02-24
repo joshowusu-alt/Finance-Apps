@@ -380,6 +380,7 @@ export default function CoachPage() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [modelName, setModelName] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -439,6 +440,10 @@ export default function CoachPage() {
 
       if (!res.ok || !res.body) throw new Error("request failed");
 
+      // Capture AI model name from response header
+      const model = res.headers.get("X-AI-Model");
+      if (model) setModelName(model);
+
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -486,6 +491,7 @@ export default function CoachPage() {
         return prev;
       });
     } catch {
+      setModelName("Local");
       const content = financial
         ? generateLocalResponse(text, financial.ctx, financial.expectedMinBalance)
         : "Sorry, I couldn't process your request. Please try again.";
@@ -527,7 +533,13 @@ export default function CoachPage() {
           </div>
           <div>
             <h1 className="font-semibold text-sm">Financial Coach</h1>
-            <p className="text-xs text-white/80">Powered by your data</p>
+            <p className="text-xs text-white/80">
+              {modelName === "Local"
+                ? "Local mode · no AI key"
+                : modelName
+                ? `${modelName} · Powered by your data`
+                : "Powered by your data"}
+            </p>
           </div>
         </div>
         <button

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { detectRecurringBills } from "@/lib/billDetection";
 import type { Period } from "@/data/plan";
 
 type NavItem = {
@@ -128,6 +129,7 @@ export default function BottomNav() {
   const [periods, setPeriods] = useState<Period[]>([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState<number>(0);
   const [isOverspending, setIsOverspending] = useState(false);
+  const [billSuggestionCount, setBillSuggestionCount] = useState(0);
 
   useEffect(() => {
     const refresh = () => {
@@ -140,6 +142,13 @@ export default function BottomNav() {
         const income = txns.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
         const outflows = txns.filter((t) => t.type === "outflow").reduce((s, t) => s + t.amount, 0);
         setIsOverspending(income > 0 && outflows > income * 0.9);
+        try {
+          const dismissed = new Set<string>(
+            JSON.parse(localStorage.getItem("cashflow_dismissed_bill_suggestions") ?? "[]") as string[]
+          );
+          const detected = detectRecurringBills(plan.transactions ?? [], plan.bills ?? []);
+          setBillSuggestionCount(detected.filter((b) => !dismissed.has(b.id)).length);
+        } catch { /* ignore */ }
       } catch { /* ignore */ }
     };
     refresh();
@@ -203,7 +212,17 @@ export default function BottomNav() {
                       onClick={() => setShowMore(false)}
                       className="flex flex-col items-center gap-1 rounded-2xl py-3 px-1 transition-colors hover:bg-[var(--vn-bg)]"
                     >
+                    <div className="relative">
                       {it.icon(isActive(it.href))}
+                      {it.href === "/bills" && billSuggestionCount > 0 && (
+                        <span
+                          className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-2"
+                          style={{ background: "#d4a843", borderColor: "var(--vn-surface)" }}
+                        >
+                          {billSuggestionCount}
+                        </span>
+                      )}
+                    </div>
                       <span className={`text-[11px] font-semibold leading-tight text-center ${isActive(it.href) ? "text-[var(--vn-primary)]" : "text-[var(--vn-text)]"}`}>
                         {it.label}
                       </span>

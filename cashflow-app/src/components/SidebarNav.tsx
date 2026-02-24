@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { VelanovoLogo } from "./VelanovoLogo";
 import { useEffect, useState } from "react";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { detectRecurringBills } from "@/lib/billDetection";
 import type { Period } from "@/data/plan";
 
 // Sidebar navigation component
@@ -156,6 +157,7 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
   const [displayLabel, setDisplayLabel] = useState(periodLabel || "");
   const [displayStart, setDisplayStart] = useState(periodStart || "");
   const [displayEnd, setDisplayEnd] = useState(periodEnd || "");
+  const [billSuggestionCount, setBillSuggestionCount] = useState(0);
 
   useEffect(() => {
     const refresh = () => {
@@ -169,6 +171,13 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
           setDisplayStart(sel.start);
           setDisplayEnd(sel.end);
         }
+        try {
+          const dismissed = new Set<string>(
+            JSON.parse(localStorage.getItem("cashflow_dismissed_bill_suggestions") ?? "[]") as string[]
+          );
+          const detected = detectRecurringBills(plan.transactions ?? [], plan.bills ?? []);
+          setBillSuggestionCount(detected.filter((b) => !dismissed.has(b.id)).length);
+        } catch { /* ignore */ }
       } catch { /* ignore SSR */ }
     };
     refresh();
@@ -252,6 +261,14 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
                   {item.icon}
+                  {item.href === "/bills" && billSuggestionCount > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 min-w-[14px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold text-white"
+                      style={{ background: "#d4a843" }}
+                    >
+                      {billSuggestionCount}
+                    </span>
+                  )}
                 </motion.span>
                 <span className="relative z-10 text-[13px] tracking-[-0.01em]">{item.label}</span>
               </motion.div>
