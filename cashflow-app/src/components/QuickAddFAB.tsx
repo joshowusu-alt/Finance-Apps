@@ -209,7 +209,7 @@ export default function QuickAddFAB() {
                 placeholder="Description"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
-                className="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                className="w-full rounded-lg px-3 py-2 text-sm outline-none placeholder:text-[var(--vn-muted)]"
                 style={{ background: "var(--vn-surface-raised)", color: "var(--vn-text)", border: "1px solid var(--vn-border)" }}
               />
 
@@ -221,7 +221,7 @@ export default function QuickAddFAB() {
                   placeholder="Amount"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="flex-1 rounded-lg px-3 py-2 text-sm outline-none"
+                  className="flex-1 rounded-lg px-3 py-2 text-sm outline-none placeholder:text-[var(--vn-muted)]"
                   style={{ background: "var(--vn-surface-raised)", color: "var(--vn-text)", border: "1px solid var(--vn-border)" }}
                 />
                 <select

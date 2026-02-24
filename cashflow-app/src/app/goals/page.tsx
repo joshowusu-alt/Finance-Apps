@@ -333,7 +333,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave, tran
                 <div className="flex items-center gap-3">
                     <span className="text-2xl">{goal.icon || "🎯"}</span>
                     <div>
-                        <h3 className="font-semibold text-slate-800 dark:text-white">{goal.name}</h3>
+                        <h3 className="font-semibold text-[var(--vn-text)]">{goal.name}</h3>
                         <p className="text-sm text-[var(--vn-muted)]">
                             {isComplete ? "🎉 Goal reached!" : `${formatMoney(remaining)} to go`}
                         </p>

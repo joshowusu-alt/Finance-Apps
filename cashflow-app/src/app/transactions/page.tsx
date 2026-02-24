@@ -383,13 +383,13 @@ function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }:
                       <span className="truncate text-[var(--vn-muted)]">{txn.label}</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                      <span className="font-medium text-slate-800 dark:text-slate-200">{fmt(txn.amount)}</span>
+                      <span className="font-medium text-[var(--vn-text)]">{fmt(txn.amount)}</span>
                       {card.key === "spending" && !txn.linkedBillId && !txn.linkedRuleId && onLink && (
                         linkingTxnId === txn.id ? (
                           <select
                             autoFocus
                             defaultValue=""
-                            className="text-[10px] border border-amber-300 dark:border-amber-600 rounded px-1 py-0.5 bg-[var(--vn-surface)] text-slate-700 dark:text-slate-300 max-w-[110px]"
+                            className="text-[10px] border border-amber-300 dark:border-amber-600 rounded px-1 py-0.5 bg-[var(--vn-surface)] text-[var(--vn-text)] max-w-[110px]"
                             onChange={(e) => {
                               const [type, id] = e.target.value.split(":");
                               if (type && id) { onLink(txn.id, type as "bill" | "rule", id); setLinkingTxnId(null); }

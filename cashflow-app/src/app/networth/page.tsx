@@ -190,7 +190,7 @@ function AccountForm({
       <h3 className="text-sm font-bold text-[var(--vn-text)]">
         {initial ? "Edit account" : "Add account"}
       </h3>
-      {error && <p className="text-xs text-rose-500">{error}</p>}
+      {error && <p className="text-xs text-rose-500 dark:text-rose-400">{error}</p>}
 
       <div className="grid grid-cols-2 gap-3">
         {/* Name */}
@@ -423,7 +423,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
   return (
     <div className="vn-card px-4 py-3 text-sm shadow-xl" style={{ minWidth: 160 }}>
       <div className="text-xs text-[var(--vn-muted)] mb-1">{label}</div>
-      <div className={`font-bold tabular-nums text-base ${val >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
+      <div className={`font-bold tabular-nums text-base ${val >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}>
         {formatMoney(val)}
       </div>
     </div>
@@ -641,7 +641,7 @@ export default function NetWorthPage() {
               <div className="col-span-2 sm:col-span-1 vn-stat-card">
                 <p className="vn-label mb-2">Total Net Worth</p>
                 <p
-                  className={`text-3xl font-bold tabular-nums tracking-tight ${netWorth >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}
+                  className={`text-3xl font-bold tabular-nums tracking-tight ${netWorth >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}
                   style={{ fontVariantNumeric: "tabular-nums" }}
                 >
                   {formatMoney(netWorth)}
@@ -657,7 +657,7 @@ export default function NetWorthPage() {
               </div>
               <div className="vn-stat-card min-w-0">
                 <p className="vn-label mb-2">Total Liabilities</p>
-                <p className="text-xl sm:text-2xl font-bold tabular-nums text-rose-500 tracking-tight break-all">
+                <p className="text-xl sm:text-2xl font-bold tabular-nums text-rose-500 dark:text-rose-400 tracking-tight break-all">
                   {formatMoney(totalLiabilities)}
                 </p>
                 <p className="vn-subtext mt-1">{liabilityAccounts.length} account{liabilityAccounts.length !== 1 ? "s" : ""}</p>
@@ -742,7 +742,7 @@ export default function NetWorthPage() {
                   <h2 className="text-base font-bold text-[var(--vn-text)]">Liabilities</h2>
                   <p className="text-xs text-[var(--vn-muted)] mt-0.5">Everything you owe</p>
                 </div>
-                <span className="text-lg font-bold tabular-nums text-rose-500">
+                <span className="text-lg font-bold tabular-nums text-rose-500 dark:text-rose-400">
                   {formatMoney(totalLiabilities)}
                 </span>
               </div>
@@ -852,8 +852,8 @@ export default function NetWorthPage() {
                       <span className="text-sm text-[var(--vn-muted)]">{s.date}</span>
                       <div className="flex gap-6 text-sm tabular-nums">
                         <span className="text-emerald-600 dark:text-emerald-400">+{formatMoney(s.totalAssets)}</span>
-                        <span className="text-rose-500">−{formatMoney(s.totalLiabilities)}</span>
-                        <span className={`font-bold ${s.netWorth >= 0 ? "text-[var(--vn-text)]" : "text-rose-500"}`}>
+                        <span className="text-rose-500 dark:text-rose-400">−{formatMoney(s.totalLiabilities)}</span>
+                        <span className={`font-bold ${s.netWorth >= 0 ? "text-[var(--vn-text)]" : "text-rose-500 dark:text-rose-400"}`}>
                           {formatMoney(s.netWorth)}
                         </span>
                       </div>
