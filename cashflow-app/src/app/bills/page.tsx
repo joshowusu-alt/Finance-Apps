@@ -101,8 +101,13 @@ export default function BillsPage() {
 
   // Filter out bills the user has already dismissed (persisted in localStorage)
   const filteredDetectedBills = useMemo(
-    () => detectedBills.filter((b) => !dismissedBillIds.has(b.id)),
-    [detectedBills, dismissedBillIds]
+    () =>
+      detectedBills.filter(
+        (b) =>
+          !dismissedBillIds.has(b.id) &&
+          b.confidence >= (plan.setup.billDetectionMinConfidence ?? 50)
+      ),
+    [detectedBills, dismissedBillIds, plan.setup.billDetectionMinConfidence]
   );
 
   const billIds = useMemo(() => new Set(plan.bills.map((b) => b.id)), [plan.bills]);
@@ -703,6 +708,20 @@ export default function BillsPage() {
                               </span>
                               <span>{variance.label}</span>
                             </div>
+                            {item.budgeted > 0 && (
+                              <div className="col-span-full mt-1 h-1.5 rounded-full overflow-hidden bg-(--vn-border)">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 ${
+                                    item.actual > item.budgeted
+                                      ? "bg-rose-500"
+                                      : item.actual / item.budgeted > 0.8
+                                        ? "bg-amber-400"
+                                        : "bg-emerald-500"
+                                  }`}
+                                  style={{ width: `${Math.min((item.actual / item.budgeted) * 100, 100)}%` }}
+                                />
+                              </div>
+                            )}
                           </summary>
                           <div className="mt-3 border-t border-(--vn-border) pt-3 text-xs text-(--vn-muted)">
                             {item.transactions.length === 0 ? (
@@ -799,6 +818,20 @@ export default function BillsPage() {
                               </span>
                               <span>{variance.label}</span>
                             </div>
+                            {item.budgeted > 0 && (
+                              <div className="col-span-full mt-1 h-1.5 rounded-full overflow-hidden bg-(--vn-border)">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 ${
+                                    item.actual > item.budgeted
+                                      ? "bg-rose-500"
+                                      : item.actual / item.budgeted > 0.8
+                                        ? "bg-amber-400"
+                                        : "bg-emerald-500"
+                                  }`}
+                                  style={{ width: `${Math.min((item.actual / item.budgeted) * 100, 100)}%` }}
+                                />
+                              </div>
+                            )}
                           </summary>
                           <div className="mt-3 border-t border-(--vn-border) pt-3 text-xs text-(--vn-muted)">
                             {item.transactions.length === 0 ? (

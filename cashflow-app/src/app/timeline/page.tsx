@@ -246,6 +246,12 @@ export default function TimelinePage() {
             </div>
 
             <div className="rounded-2xl border border-(--vn-border) overflow-hidden" style={{ background: "var(--vn-surface)" }}>
+              {rows.every((r) => !r.income && !r.outflow) && (
+                <div className="px-4 py-3 text-sm border-b border-(--vn-border)" style={{ background: "rgba(245,158,11,0.08)" }}>
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">No scheduled events this period.</span>
+                  {" "}<span className="text-(--vn-muted) text-xs">Add bills or recurring outflows on the <a href="/bills" className="underline">Bills</a> page to see them here.</span>
+                </div>
+              )}
               {/* Header */}
               <div className="grid grid-cols-[1fr_auto] px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-(--vn-muted)" style={{ background: "var(--vn-bg)" }}>
                 <div>Date / Event</div>

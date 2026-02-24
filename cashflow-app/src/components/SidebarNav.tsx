@@ -201,6 +201,20 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
     }
   }
 
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select") return;
+      if (e.key !== "[" && e.key !== "]") return;
+      const idx = periods.findIndex((p) => p.id === selectedPeriodId);
+      if (idx === -1) return;
+      if (e.key === "[" && idx > 0) handlePeriodChange(periods[idx - 1].id);
+      if (e.key === "]" && idx < periods.length - 1) handlePeriodChange(periods[idx + 1].id);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [periods, selectedPeriodId]);
+
   return (
     <aside
       className="hidden lg:flex flex-col gap-5 self-start sticky top-5 overflow-hidden"
@@ -305,6 +319,11 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
         {(displayStart || periodStart) && (displayEnd || periodEnd) && (
           <div className="text-[11px] mt-1.5" style={{ color: "rgba(240,237,232,0.4)" }}>
             {(displayStart || periodStart)} → {(displayEnd || periodEnd)}
+          </div>
+        )}
+        {periods.length > 1 && (
+          <div className="text-[10px] mt-1" style={{ color: "rgba(240,237,232,0.25)" }}>
+            [ / ] to switch
           </div>
         )}
       </div>

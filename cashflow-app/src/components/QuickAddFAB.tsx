@@ -13,7 +13,8 @@ import { useState } from "react";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { useHaptic } from "@/lib/useHaptic";
 import { suggestCategory } from "@/lib/categorization";
-import type { CashflowCategory, CashflowType } from "@/data/plan";
+import { formatMoney } from "@/lib/currency";
+import type { CashflowCategory, CashflowType, SavingsGoal } from "@/data/plan";
 
 // Voice transcript → form fields
 function parseVoice(raw: string): { label: string; amount: string; type: CashflowType } {
@@ -56,6 +57,7 @@ export default function QuickAddFAB() {
   const [category, setCategory] = useState<CashflowCategory>("other");
   const [date, setDate] = useState(today());
   const [saved, setSaved] = useState(false);
+  const [goalPrompt, setGoalPrompt] = useState<{ txnId: string; amount: number; goals: SavingsGoal[] } | null>(null);
   const [listening, setListening] = useState(false);
   const [voiceHint, setVoiceHint] = useState("");
 
@@ -103,6 +105,7 @@ export default function QuickAddFAB() {
     setCategory("other");
     setDate(today());
     setSaved(false);
+    setGoalPrompt(null);
   }
 
   function close() {
@@ -115,23 +118,46 @@ export default function QuickAddFAB() {
     if (!label.trim() || isNaN(amt) || amt <= 0) return;
 
     const plan = loadPlan();
+    const txnId = generateId();
+    const txnCategory: CashflowCategory = type === "income" ? "income" : category;
     const updated = {
       ...plan,
       transactions: [
         ...(plan.transactions ?? []),
-        {
-          id: generateId(),
-          date,
-          label: label.trim(),
-          amount: amt,
-          type,
-          category: type === "income" ? ("income" as CashflowCategory) : category,
-        },
+        { id: txnId, date, label: label.trim(), amount: amt, type, category: txnCategory },
       ],
     };
     savePlan(updated);
     window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
     haptic(12);
+
+    const isSavings = txnCategory === "savings" || type === "transfer";
+    const activeGoals = (plan.savingsGoals ?? []).filter(
+      (g) => !g.status || g.status === "active"
+    );
+    if (isSavings && activeGoals.length > 0) {
+      setGoalPrompt({ txnId, amount: amt, goals: activeGoals });
+      return;
+    }
+    setSaved(true);
+    setTimeout(close, 900);
+  }
+
+  function handleGoalLink(goalId: string | null) {
+    if (goalId && goalPrompt) {
+      const plan = loadPlan();
+      const transactions = plan.transactions.map((t) =>
+        t.id === goalPrompt.txnId ? { ...t, goalId } : t
+      );
+      const savingsGoals = (plan.savingsGoals ?? []).map((g) =>
+        g.id === goalId
+          ? { ...g, currentAmount: g.currentAmount + goalPrompt.amount }
+          : g
+      );
+      savePlan({ ...plan, transactions, savingsGoals });
+      window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+    }
+    setGoalPrompt(null);
     setSaved(true);
     setTimeout(close, 900);
   }
@@ -281,6 +307,57 @@ export default function QuickAddFAB() {
               </div>
 
               </div>{/* end scrollable content */}
+
+              {/* Goal-link prompt — overlays the form after a savings save */}
+              {goalPrompt && (
+                <div
+                  className="absolute inset-0 flex flex-col rounded-t-2xl px-5 pb-8 overflow-y-auto"
+                  style={{ background: "var(--vn-surface)", paddingTop: "20px" }}
+                >
+                  <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
+                  <div className="space-y-3">
+                    <div className="text-base font-semibold" style={{ color: "var(--vn-text)" }}>
+                      Link to a savings goal?
+                    </div>
+                    <p className="text-xs" style={{ color: "var(--vn-muted)" }}>
+                      {formatMoney(goalPrompt.amount)} saved. Optionally attribute it to one of your active goals to track progress.
+                    </p>
+                    {goalPrompt.goals.map((g) => {
+                      const pct = g.targetAmount > 0
+                        ? Math.min((g.currentAmount / g.targetAmount) * 100, 100)
+                        : 0;
+                      return (
+                        <button
+                          key={g.id}
+                          onClick={() => handleGoalLink(g.id)}
+                          className="w-full flex items-center gap-3 rounded-xl p-3 text-left transition-opacity active:opacity-70"
+                          style={{ background: "var(--vn-surface-raised)", border: "1px solid var(--vn-border)" }}
+                        >
+                          <span className="text-xl shrink-0">{g.icon ?? "\uD83C\uDFAF"}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold truncate" style={{ color: "var(--vn-text)" }}>
+                              {g.name}
+                            </div>
+                            <div className="text-xs" style={{ color: "var(--vn-muted)" }}>
+                              {formatMoney(g.currentAmount)} / {formatMoney(g.targetAmount)}
+                            </div>
+                            <div className="mt-1 h-1 rounded-full overflow-hidden" style={{ background: "var(--vn-border)" }}>
+                              <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => handleGoalLink(null)}
+                      className="w-full py-3 rounded-xl text-sm min-h-[44px]"
+                      style={{ background: "var(--vn-surface-raised)", color: "var(--vn-muted)" }}
+                    >
+                      Skip — don’t link
+                    </button>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </>
         )}

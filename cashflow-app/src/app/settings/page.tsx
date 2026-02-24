@@ -751,6 +751,36 @@ export default function SettingsPage() {
             </div>
 
             <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-(--vn-text) mb-1">Bill Detection Sensitivity</div>
+              <p className="text-xs text-(--vn-muted) mb-5">
+                Only show bill suggestions above this confidence level. Lower = more suggestions; higher = only clearly recurring patterns.
+              </p>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min={20}
+                  max={85}
+                  step={5}
+                  value={plan.setup.billDetectionMinConfidence ?? 50}
+                  onChange={(e) => {
+                    const updated = { ...plan, setup: { ...plan.setup, billDetectionMinConfidence: Number(e.target.value) } };
+                    savePlan(updated);
+                    setPlan(updated);
+                  }}
+                  className="flex-1"
+                  style={{ accentColor: "var(--gold)" }}
+                />
+                <span className="text-sm font-bold text-(--vn-text) w-12 text-right shrink-0">
+                  {plan.setup.billDetectionMinConfidence ?? 50}%
+                </span>
+              </div>
+              <div className="flex justify-between text-[10px] text-(--vn-muted) mt-1">
+                <span>More suggestions</span>
+                <span>Fewer, clearer patterns</span>
+              </div>
+            </div>
+
+            <div className="vn-card p-6">
               <div className="text-sm font-semibold text-(--vn-text) mb-4">About</div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">

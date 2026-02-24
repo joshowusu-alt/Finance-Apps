@@ -112,6 +112,7 @@ export type PlanSetup = {
   rollForwardBalance: boolean;
   expectedMinBalance: number;
   variableCap: number;
+  billDetectionMinConfidence?: number;
 };
 
 export type SavingsGoal = {
