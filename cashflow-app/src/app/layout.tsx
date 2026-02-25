@@ -12,6 +12,7 @@ import AIAssistant from "@/components/AIAssistant";
 import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { AuthProvider } from "@/contexts/AuthContext";
 import CloudSync from "@/components/CloudSync";
+import OfflineOutboxBadge from "@/components/OfflineOutboxBadge";
 import AppWatermark from "@/components/AppWatermark";
 import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
@@ -70,6 +71,7 @@ export default function RootLayout({
         <AuthProvider>
           <ConfirmProvider>
           <CloudSync />
+          <OfflineOutboxBadge />
           <ThemeInitializer />
           <BrandInitializer />
           <a href="#main-content" className="skip-link">

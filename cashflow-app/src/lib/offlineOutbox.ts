@@ -6,6 +6,8 @@
  * in chronological order before issuing new pushes.
  */
 
+export const SYNC_RETRY_EVENT = "cashflow_sync_retry";
+
 const OUTBOX_KEY = "cashflow_offline_outbox_v1";
 
 export type OutboxPlanEntry = {

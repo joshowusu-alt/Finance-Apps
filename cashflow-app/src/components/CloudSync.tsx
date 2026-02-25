@@ -46,7 +46,7 @@ import {
   setCloudServerUpdatedAt,
   setCloudSyncAt,
 } from "@/lib/cloudSyncState";
-import { getOutbox, addToOutbox, removeFromOutbox } from "@/lib/offlineOutbox";
+import { getOutbox, addToOutbox, removeFromOutbox, SYNC_RETRY_EVENT } from "@/lib/offlineOutbox";
 
 type CloudPlanRow = {
   plan_json: Plan | string | null;
@@ -251,10 +251,12 @@ export default function CloudSync() {
     const handleFocus = () => queueSync();
     const handlePlanUpdate = () => queueSync();
     const handlePrefsUpdate = () => queueSync();
+    const handleRetry = () => queueSync();
 
     window.addEventListener("focus", handleFocus);
     window.addEventListener(PLAN_UPDATED_EVENT, handlePlanUpdate);
     window.addEventListener(PREFS_UPDATED_EVENT, handlePrefsUpdate);
+    window.addEventListener(SYNC_RETRY_EVENT, handleRetry);
     const intervalId = window.setInterval(queueSync, 30000);
 
     queueSync();
@@ -263,6 +265,7 @@ export default function CloudSync() {
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener(PLAN_UPDATED_EVENT, handlePlanUpdate);
       window.removeEventListener(PREFS_UPDATED_EVENT, handlePrefsUpdate);
+      window.removeEventListener(SYNC_RETRY_EVENT, handleRetry);
       window.clearInterval(intervalId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
