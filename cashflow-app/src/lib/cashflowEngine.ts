@@ -138,6 +138,36 @@ export function getStartingBalance(plan: Plan, periodId: number) {
   return start;
 }
 
+/**
+ * Compute the actual starting balance for a period based purely on real
+ * logged transactions — not the budget plan.  For the first period we fall
+ * back to the configured starting balance.  For every subsequent period we
+ * chain the actual ending balance forward so income logged in one period
+ * feeds through as the opening balance of the next.
+ */
+export function getActualsStartingBalance(plan: Plan, periodId: number): number {
+  const ordered = [...plan.periods].sort((a, b) => a.id - b.id);
+  if (!ordered.length) return plan.setup.startingBalance;
+
+  const currentIdx = ordered.findIndex((p) => p.id === periodId);
+  // First period — use configured starting balance as the anchor
+  if (currentIdx <= 0) return plan.setup.startingBalance;
+
+  // Chain actual transaction totals across all prior periods
+  let bal = plan.setup.startingBalance;
+  for (let i = 0; i < currentIdx; i++) {
+    const p = ordered[i];
+    const txns = plan.transactions.filter((t) => t.date >= p.start && t.date <= p.end);
+    const periodIncome = txns.reduce((s, t) => s + (t.type === "income" ? t.amount : 0), 0);
+    const periodOut = txns.reduce(
+      (s, t) => s + (t.type === "outflow" || t.type === "transfer" ? t.amount : 0),
+      0
+    );
+    bal = money(bal + periodIncome - periodOut);
+  }
+  return bal;
+}
+
 function applyOverrides(ruleId: string, period: Period, overrides: CashflowOverride[]) {
   return overrides.filter((o) => o.ruleId === ruleId && o.date >= period.start && o.date <= period.end);
 }
@@ -551,7 +581,10 @@ export function buildActualsTimeline(
   return days.map((date) => {
     const todays = byDate.get(date) ?? [];
     const income = money(todays.reduce((s, t) => s + (t.type === "income" ? t.amount : 0), 0));
-    const outflow = money(todays.reduce((s, t) => s + (t.type === "outflow" ? t.amount : 0), 0));
+    // transfers (e.g. savings moves) leave the account — include them as outflows
+    const outflow = money(
+      todays.reduce((s, t) => s + (t.type === "outflow" || t.type === "transfer" ? t.amount : 0), 0)
+    );
     const label = todays.length
       ? todays.length === 1
         ? todays[0].label || "Transaction"

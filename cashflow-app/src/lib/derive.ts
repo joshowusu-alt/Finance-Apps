@@ -5,6 +5,7 @@ import {
   generateEvents,
   getPeriod,
   getStartingBalance,
+  getActualsStartingBalance,
   minPoint,
   type TimelineRow,
 } from "@/lib/cashflowEngine";
@@ -190,8 +191,12 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
   const expectedMin = plan.setup.expectedMinBalance;
   const daily = buildDaily(rows, expectedMin);
 
-  // Actuals — only what the user has recorded as transactions, up to today
-  const actualsRows = buildActualsTimeline(plan, resolvedPeriodId, startingBalance);
+  // Actuals — driven purely by real logged transactions.
+  // Start from the previous period's actual ending balance (chained from
+  // setup.startingBalance) so the actuals line is independent of the budget
+  // starting balance and salary double-counting is avoided.
+  const actualsStart = getActualsStartingBalance(plan, resolvedPeriodId);
+  const actualsRows = buildActualsTimeline(plan, resolvedPeriodId, actualsStart);
   const actualsDaily = buildDaily(actualsRows, expectedMin);
   const lowestRow = minPoint(rows);
   const lowest = lowestRow
