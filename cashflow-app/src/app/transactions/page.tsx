@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { loadPlan, savePlan } from "@/lib/storage";
 import { getPeriod, generateEvents } from "@/lib/cashflowEngine";
@@ -441,6 +442,7 @@ export default function TransactionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<CashflowType | "all">("all");
   const [filterCategory, setFilterCategory] = useState<CashflowCategory | "all">("all");
+  const [showFilters, setShowFilters] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState(false);
   const [newCategoryTouched, setNewCategoryTouched] = useState(false);
@@ -1516,7 +1518,7 @@ export default function TransactionsPage() {
               </div>
 
               {/* Search and Filters */}
-              <div className="mb-4 space-y-3">
+              <div className="mb-4 space-y-2">
                 {bulkMode && periodTransactions.length > 0 && (
                   <div className="flex items-center gap-2 pb-2 border-b border-(--vn-border)">
                     <input
@@ -1530,14 +1532,38 @@ export default function TransactionsPage() {
                     </label>
                   </div>
                 )}
-                <div className="grid gap-3 sm:grid-cols-3">
+                {/* Search bar + mobile filter toggle chip */}
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
                     placeholder="Search transactions..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
+                    className="flex-1 min-w-0 rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
                   />
+                  {/* Filter chip — visible on mobile only */}
+                  <button
+                    onClick={() => setShowFilters(f => !f)}
+                    aria-expanded={showFilters}
+                    className={`sm:hidden shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg border text-sm transition-colors ${
+                      (filterType !== "all" || filterCategory !== "all")
+                        ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/10 font-medium"
+                        : "border-(--vn-border) text-(--vn-muted) bg-(--vn-surface)"
+                    }`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
+                      <path d="M14 2H2l4.5 5.25V13l3-1.5V7.25L14 2z"/>
+                    </svg>
+                    {(filterType !== "all" || filterCategory !== "all")
+                      ? <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[var(--accent)] text-[10px] text-white font-bold">
+                          {(filterType !== "all" ? 1 : 0) + (filterCategory !== "all" ? 1 : 0)}
+                        </span>
+                      : <span>Filters</span>
+                    }
+                  </button>
+                </div>
+                {/* Filter selects: collapsible on mobile (via showFilters), always shown on sm+ */}
+                <div className={`grid-cols-2 gap-2 sm:grid sm:grid-cols-2 ${showFilters ? "grid" : "hidden sm:grid"}`}>
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value as CashflowType | "all")}
@@ -1588,6 +1614,19 @@ export default function TransactionsPage() {
                         : undefined
                     }
                   />
+                  {/* Import CTA: show only when there are genuinely no transactions */}
+                  {!searchQuery && filterType === "all" && filterCategory === "all" && (
+                    <div className="mt-5 flex flex-col items-center gap-3">
+                      <Link
+                        href="/import"
+                        className="inline-flex items-center gap-2 rounded-lg border border-(--vn-border) bg-(--vn-surface) px-4 py-2 text-sm font-medium text-(--vn-text) shadow-sm hover:bg-(--vn-bg) transition-colors"
+                      >
+                        <span>📂</span>
+                        Import from bank statement
+                        <span className="text-(--vn-muted) text-xs">CSV / OFX / QFX</span>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="mt-4">

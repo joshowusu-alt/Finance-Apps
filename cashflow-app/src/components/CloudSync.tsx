@@ -259,6 +259,26 @@ export default function CloudSync() {
     window.addEventListener(SYNC_RETRY_EVENT, handleRetry);
     const intervalId = window.setInterval(queueSync, 30000);
 
+    // Supabase Realtime — push-based sync when another device updates the plan
+    // Falls back gracefully to polling if Realtime is not enabled for the table.
+    const realtimeChannel = supabase
+      .channel(`user-plan-realtime:${user.id}`)
+      .on(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "postgres_changes" as any,
+        {
+          event: "*",
+          schema: "public",
+          table: "user_plans",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          // Another device pushed a change — pull it in immediately
+          queueSync();
+        }
+      )
+      .subscribe();
+
     queueSync();
 
     return () => {
@@ -267,6 +287,7 @@ export default function CloudSync() {
       window.removeEventListener(PREFS_UPDATED_EVENT, handlePrefsUpdate);
       window.removeEventListener(SYNC_RETRY_EVENT, handleRetry);
       window.clearInterval(intervalId);
+      supabase.removeChannel(realtimeChannel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, user?.id]);
