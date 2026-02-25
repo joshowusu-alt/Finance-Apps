@@ -70,45 +70,53 @@ export function CategoryBreakdownChart({
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart
-        layout="vertical"
-        data={chartData}
-        margin={{ top: 0, right: 24, left: 4, bottom: 0 }}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onClick={(payload: any) => {
-          const name = payload?.activePayload?.[0]?.payload?.name as string | undefined;
-          if (onCategoryClick && name) onCategoryClick(name);
-        }}
-        style={{ cursor: onCategoryClick ? "pointer" : "default" }}
-      >
-        <XAxis
-          type="number"
-          tickFormatter={(v: number) => formatMoney(v)}
-          tick={{ fontSize: 11, fill: "var(--vn-muted)" }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <YAxis
-          type="category"
-          dataKey="name"
-          width={84}
-          tick={{ fontSize: 12, fill: "var(--vn-text)" }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <Tooltip
-          formatter={(value: number | undefined) => [formatMoney(value ?? 0), "Spend"]}
-          contentStyle={tooltipStyle}
-          cursor={{ fill: "rgba(100,100,100,.07)" }}
-        />
-        <Bar dataKey="value" radius={[0, 4, 4, 0]} isAnimationActive animationDuration={600}>
-          {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.fill} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    // touch-action: manipulation prevents the browser stealing the tap for scroll
+    <div style={{ touchAction: "manipulation" }}>
+      <ResponsiveContainer width="100%" height={height}>
+        <BarChart
+          layout="vertical"
+          data={chartData}
+          margin={{ top: 0, right: 24, left: 4, bottom: 0 }}
+        >
+          <XAxis
+            type="number"
+            tickFormatter={(v: number) => formatMoney(v)}
+            tick={{ fontSize: 11, fill: "var(--vn-muted)" }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            type="category"
+            dataKey="name"
+            width={84}
+            tick={{ fontSize: 12, fill: "var(--vn-text)" }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <Tooltip
+            formatter={(value: number | undefined) => [formatMoney(value ?? 0), "Spend"]}
+            contentStyle={tooltipStyle}
+            cursor={{ fill: "rgba(100,100,100,.07)" }}
+          />
+          <Bar
+            dataKey="value"
+            radius={[0, 4, 4, 0]}
+            isAnimationActive
+            animationDuration={600}
+            style={{ cursor: onCategoryClick ? "pointer" : "default" }}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onClick={(data: any) => {
+              const name = data?.name as string | undefined;
+              if (onCategoryClick && name) onCategoryClick(name);
+            }}
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.fill} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 

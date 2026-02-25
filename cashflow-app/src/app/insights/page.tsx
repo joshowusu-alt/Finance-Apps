@@ -800,6 +800,7 @@ export default function InsightsPage() {
                     <div className="mb-6 rounded-2xl bg-(--vn-surface) p-6 shadow-sm">
                       <div className="text-xs uppercase tracking-wide text-(--vn-muted) mb-4">Spending by category</div>
                       <CategoryBreakdownChart data={categoryChartData} height={320} onCategoryClick={(name) => setDrilldownCategory(name.toLowerCase())} />
+                      <p className="mt-2 text-[11px] text-(--vn-muted) text-center">Tap a bar to see transactions</p>
                     </div>
                   )}
 
