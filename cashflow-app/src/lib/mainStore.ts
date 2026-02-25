@@ -129,3 +129,30 @@ export async function resetMainPlan(token: string) {
   await saveMainPlan(token, plan);
   return plan;
 }
+
+/**
+ * Save a plan when you already know the tokenHash (e.g. resolved via join token).
+ * Used by the household sharing plan API route.
+ */
+export async function saveMainPlanByHash(tokenHash: string, plan: Plan, prevPlan?: Plan | null) {
+  const sql = getSQL();
+  const now = new Date();
+  const planJson = JSON.stringify(plan);
+  const prevJson = prevPlan ? JSON.stringify(prevPlan) : null;
+
+  await sql`
+    UPDATE main_plans
+    SET prev_plan_json = plan_json, plan_json = ${planJson}, updated_at = ${now}, last_seen_at = ${now}
+    WHERE token_hash = ${tokenHash}
+  `;
+
+  if (prevJson && prevJson !== planJson) {
+    await sql`
+      UPDATE main_plans
+      SET prev_plan_json = ${prevJson}
+      WHERE token_hash = ${tokenHash}
+    `;
+  }
+
+  return now.getTime();
+}

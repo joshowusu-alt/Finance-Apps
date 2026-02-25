@@ -13,8 +13,9 @@ import { useState } from "react";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { useHaptic } from "@/lib/useHaptic";
 import { suggestCategory } from "@/lib/categorization";
+import { suggestBillId } from "@/lib/billLinking";
 import { formatMoney } from "@/lib/currency";
-import type { CashflowCategory, CashflowType, SavingsGoal } from "@/data/plan";
+import type { CashflowCategory, CashflowType, SavingsGoal, BillTemplate } from "@/data/plan";
 
 // Voice transcript → form fields
 function parseVoice(raw: string): { label: string; amount: string; type: CashflowType } {
@@ -58,6 +59,7 @@ export default function QuickAddFAB() {
   const [date, setDate] = useState(today());
   const [saved, setSaved] = useState(false);
   const [goalPrompt, setGoalPrompt] = useState<{ txnId: string; amount: number; goals: SavingsGoal[] } | null>(null);
+  const [billPrompt, setBillPrompt] = useState<{ txnId: string; bill: BillTemplate } | null>(null);
   const [listening, setListening] = useState(false);
   const [voiceHint, setVoiceHint] = useState("");
 
@@ -106,6 +108,7 @@ export default function QuickAddFAB() {
     setDate(today());
     setSaved(false);
     setGoalPrompt(null);
+    setBillPrompt(null);
   }
 
   function close() {
@@ -131,6 +134,18 @@ export default function QuickAddFAB() {
     window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
     haptic(12);
 
+    // Check for bill match on outflow transactions
+    if (type === "outflow" && (plan.bills ?? []).length > 0) {
+      const matchedBillId = suggestBillId(label.trim(), "", plan.bills);
+      if (matchedBillId) {
+        const matchedBill = plan.bills.find((b) => b.id === matchedBillId);
+        if (matchedBill) {
+          setBillPrompt({ txnId, bill: matchedBill });
+          return;
+        }
+      }
+    }
+
     const isSavings = txnCategory === "savings" || type === "transfer";
     const activeGoals = (plan.savingsGoals ?? []).filter(
       (g) => !g.status || g.status === "active"
@@ -139,6 +154,20 @@ export default function QuickAddFAB() {
       setGoalPrompt({ txnId, amount: amt, goals: activeGoals });
       return;
     }
+    setSaved(true);
+    setTimeout(close, 900);
+  }
+
+  function handleBillLink(billId: string | null) {
+    if (billId && billPrompt) {
+      const plan = loadPlan();
+      const transactions = plan.transactions.map((t) =>
+        t.id === billPrompt.txnId ? { ...t, linkedBillId: billId } : t
+      );
+      savePlan({ ...plan, transactions });
+      window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+    }
+    setBillPrompt(null);
     setSaved(true);
     setTimeout(close, 900);
   }
@@ -358,7 +387,45 @@ export default function QuickAddFAB() {
                   </div>
                 </div>
               )}
-            </motion.div>
+              {/* Bill-link prompt — overlays the form after a bill-category save */}
+              {billPrompt && (
+                <div
+                  className="absolute inset-0 flex flex-col rounded-t-2xl px-5 pb-8 overflow-y-auto"
+                  style={{ background: "var(--vn-surface)", paddingTop: "20px" }}
+                >
+                  <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
+                  <div className="space-y-3">
+                    <div className="text-base font-semibold" style={{ color: "var(--vn-text)" }}>
+                      Link to a bill?
+                    </div>
+                    <p className="text-xs" style={{ color: "var(--vn-muted)" }}>
+                      This looks like <span className="font-medium">{billPrompt.bill.label}</span> ({formatMoney(billPrompt.bill.amount)}/mo). Link this transaction so it counts against that bill's budget?
+                    </p>
+                    <button
+                      onClick={() => handleBillLink(billPrompt.bill.id)}
+                      className="w-full flex items-center gap-3 rounded-xl p-3 text-left transition-opacity active:opacity-70"
+                      style={{ background: "var(--vn-surface-raised)", border: "1px solid var(--vn-border)" }}
+                    >
+                      <span className="text-xl shrink-0">🧾</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold truncate" style={{ color: "var(--vn-text)" }}>
+                          {billPrompt.bill.label}
+                        </div>
+                        <div className="text-xs" style={{ color: "var(--vn-muted)" }}>
+                          {formatMoney(billPrompt.bill.amount)} / month · day {billPrompt.bill.dueDay}
+                        </div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleBillLink(null)}
+                      className="w-full py-3 rounded-xl text-sm min-h-[44px]"
+                      style={{ background: "var(--vn-surface-raised)", color: "var(--vn-muted)" }}
+                    >
+                      Skip — don't link
+                    </button>
+                  </div>
+                </div>
+              )}            </motion.div>
           </>
         )}
       </AnimatePresence>

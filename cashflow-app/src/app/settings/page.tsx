@@ -5,13 +5,14 @@ import Link from "next/link";
 import SidebarNav from "@/components/SidebarNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelector from "@/components/CurrencySelector";
-import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { loadPlan, savePlan, savePlanFromRemote, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import { resetWizard } from "@/lib/onboarding";
 import { loadBranding } from "@/lib/branding";
 import { useAuth } from "@/contexts/AuthContext";
 import { isLockEnabled, enableLock, disableLock, registerBiometric } from "@/components/BiometricLock";
-import type { Period, PeriodOverride, PeriodRuleOverride } from "@/data/plan";
+import { CF_JOIN_TOKEN_KEY } from "@/lib/sharingConstants";
+import type { Period, PeriodOverride, PeriodRuleOverride, Plan } from "@/data/plan";
 import {
   isNotificationsSupported,
   getNotificationPermission,
@@ -21,6 +22,11 @@ import {
   disableNotifications,
   resetNotificationCooldowns,
 } from "@/lib/pushNotifications";
+
+/** Return today as YYYY-MM-DD */
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export default function SettingsPage() {
   const [plan, setPlan] = useState(() => loadPlan());
@@ -33,6 +39,141 @@ export default function SettingsPage() {
   });
   const [branding] = useState(() => loadBranding());
   const { user, loading: authLoading, signOut } = useAuth();
+
+  // ── Balance calculator (Item 1) ────────────────────────────────────────────
+  const [calcPeriodId, setCalcPeriodId] = useState<number | null>(null);
+  const [calcCurrentBalance, setCalcCurrentBalance] = useState("");
+
+  function calcImpliedStartBalance(period: Period, currentBalance: number): number {
+    const today = todayISO();
+    const txns = (plan.transactions ?? []).filter(
+      (t) => t.date >= period.start && t.date <= today
+    );
+    const net = txns.reduce((sum, t) => {
+      if (t.type === "income") return sum + t.amount;
+      return sum - t.amount; // outflow, transfer, savings
+    }, 0);
+    return currentBalance - net;
+  }
+
+  function handleApplyCalcBalance(period: Period) {
+    const val = parseFloat(calcCurrentBalance);
+    if (isNaN(val)) return;
+    const implied = calcImpliedStartBalance(period, val);
+    handleSetStartingBalance(period.id, implied);
+    setCalcPeriodId(null);
+    setCalcCurrentBalance("");
+  }
+
+  // ── Household sharing (Item 3) ─────────────────────────────────────────────
+  const [householdShareCode, setHouseholdShareCode] = useState("");
+  const [householdJoinInput, setHouseholdJoinInput] = useState("");
+  const [householdMsg, setHouseholdMsg] = useState("");
+  const [householdLoading, setHouseholdLoading] = useState(false);
+  const [joinedToken, setJoinedToken] = useState<string | null>(
+    typeof window !== "undefined" ? window.localStorage.getItem(CF_JOIN_TOKEN_KEY) : null
+  );
+
+  async function handleGenerateShareCode() {
+    setHouseholdLoading(true);
+    setHouseholdMsg("");
+    try {
+      const res = await fetch("/api/shared", { method: "POST", credentials: "include" });
+      if (!res.ok) throw new Error(await res.text());
+      const { shareCode } = (await res.json()) as { shareCode: string };
+      setHouseholdShareCode(shareCode);
+    } catch (e) {
+      setHouseholdMsg(`Error: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
+      setHouseholdLoading(false);
+    }
+  }
+
+  async function handleJoinPlan() {
+    const code = householdJoinInput.trim().toUpperCase();
+    if (!code) return;
+    setHouseholdLoading(true);
+    setHouseholdMsg("");
+    try {
+      const joinRes = await fetch("/api/shared/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      if (!joinRes.ok) {
+        const body = (await joinRes.json()) as { error?: string };
+        throw new Error(body.error ?? "Invalid code");
+      }
+      const { joinToken } = (await joinRes.json()) as { joinToken: string };
+      window.localStorage.setItem(CF_JOIN_TOKEN_KEY, joinToken);
+      setJoinedToken(joinToken);
+
+      // Pull shared plan immediately
+      const planRes = await fetch("/api/main/plan", {
+        method: "GET",
+        credentials: "include",
+        headers: { "X-Join-Token": joinToken },
+      });
+      if (planRes.ok) {
+        const data = (await planRes.json()) as { plan?: Plan; prevPlan?: Plan | null; updatedAt?: number };
+        if (data.plan) {
+          savePlanFromRemote(data.plan, data.prevPlan ?? null, data.updatedAt);
+          setPlan(loadPlan());
+          window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+          setHouseholdMsg("Joined! Shared plan loaded. Both devices now share this plan.");
+        }
+      }
+      setHouseholdJoinInput("");
+    } catch (e) {
+      setHouseholdMsg(`Error: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
+      setHouseholdLoading(false);
+    }
+  }
+
+  async function handleHouseholdSync() {
+    const token = joinedToken;
+    if (!token) return;
+    setHouseholdLoading(true);
+    setHouseholdMsg("");
+    try {
+      // Push local changes first
+      const currentPlan = loadPlan();
+      await fetch("/api/main/plan", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", "X-Join-Token": token },
+        body: JSON.stringify({ plan: currentPlan }),
+      });
+      // Pull latest
+      const res = await fetch("/api/main/plan", {
+        method: "GET",
+        credentials: "include",
+        headers: { "X-Join-Token": token },
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { plan?: Plan; prevPlan?: Plan | null; updatedAt?: number };
+        if (data.plan) {
+          savePlanFromRemote(data.plan, data.prevPlan ?? null, data.updatedAt);
+          setPlan(loadPlan());
+          window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+          setHouseholdMsg("Synced with shared plan ✓");
+        }
+      }
+    } catch (e) {
+      setHouseholdMsg(`Sync error: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
+      setHouseholdLoading(false);
+    }
+  }
+
+  function handleLeaveSharedPlan() {
+    if (!confirm("Leave the shared household plan? Your local plan will remain.")) return;
+    window.localStorage.removeItem(CF_JOIN_TOKEN_KEY);
+    setJoinedToken(null);
+    setHouseholdShareCode("");
+    setHouseholdMsg("Left shared plan.");
+  }
 
   // ── Lock / Biometric state ────────────────────────────────────────────────
   const [lockEnabled, setLockEnabled] = useState(() =>
@@ -312,6 +453,97 @@ export default function SettingsPage() {
               )}
             </div>
 
+            {/* Household & Sharing */}
+            <div className="vn-card p-6">
+              <div className="text-sm font-semibold text-(--vn-text) mb-1">Household &amp; Sharing</div>
+              <div className="text-xs text-(--vn-muted) mb-4">Share your budget plan with a partner — both devices will sync to the same plan.</div>
+
+              {joinedToken ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 p-3 rounded-xl text-sm" style={{ background: "var(--vn-surface-raised)", border: "1px solid var(--vn-border)" }}>
+                    <span className="text-emerald-500">✓</span>
+                    <span className="text-(--vn-text) font-medium">Joined a shared household plan</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleHouseholdSync}
+                      disabled={householdLoading}
+                      className="vn-btn vn-btn-primary text-sm flex-1 disabled:opacity-50"
+                    >
+                      {householdLoading ? "Syncing…" : "Sync now"}
+                    </button>
+                    <button
+                      onClick={handleLeaveSharedPlan}
+                      className="vn-btn vn-btn-ghost text-sm text-red-500"
+                    >
+                      Leave
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {/* Share section */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-medium text-(--vn-text)">Generate a share code</div>
+                    <div className="text-xs text-(--vn-muted)">Share this code with your partner so they can join and sync your plan.</div>
+                    {householdShareCode ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "var(--vn-surface-raised)", border: "1px solid var(--vn-border)" }}>
+                          <span className="text-xl font-mono font-bold tracking-widest text-(--vn-text) flex-1">{householdShareCode}</span>
+                          <button
+                            onClick={() => { navigator.clipboard?.writeText(householdShareCode); setHouseholdMsg("Code copied!"); setTimeout(() => setHouseholdMsg(""), 2000); }}
+                            className="text-xs vn-btn vn-btn-ghost px-3 py-1.5"
+                          >
+                            Copy
+                          </button>
+                        </div>
+                        <button onClick={() => setHouseholdShareCode("")} className="text-xs text-(--vn-muted) hover:text-(--vn-text)">
+                          Hide code
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleGenerateShareCode}
+                        disabled={householdLoading}
+                        className="vn-btn vn-btn-primary text-sm disabled:opacity-50"
+                      >
+                        {householdLoading ? "Generating…" : "Share my plan"}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="border-t border-(--vn-border)" />
+
+                  {/* Join section */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-medium text-(--vn-text)">Join a partner's plan</div>
+                    <div className="text-xs text-(--vn-muted)">Enter the 6-character code your partner shared with you.</div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={householdJoinInput}
+                        onChange={(e) => setHouseholdJoinInput(e.target.value.toUpperCase())}
+                        placeholder="ABCD12"
+                        maxLength={8}
+                        className="vn-input text-sm flex-1 font-mono tracking-widest"
+                      />
+                      <button
+                        onClick={handleJoinPlan}
+                        disabled={householdLoading || !householdJoinInput.trim()}
+                        className="vn-btn vn-btn-primary text-sm disabled:opacity-50"
+                      >
+                        {householdLoading ? "Joining…" : "Join"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {householdMsg && (
+                <p className="mt-3 text-xs text-(--vn-muted) rounded-lg px-3 py-2" style={{ background: "var(--vn-surface-raised)" }}>{householdMsg}</p>
+              )}
+            </div>
+
             <div className="vn-card p-6">
               <div className="text-sm font-semibold text-(--vn-text) mb-4">Appearance</div>
               <div className="space-y-4">
@@ -523,6 +755,48 @@ export default function SettingsPage() {
                                 </button>
                               )}
                             </div>
+                            {/* Balance calculator helper */}
+                            {calcPeriodId === period.id ? (
+                              <div className="mt-2 flex flex-col gap-2 rounded-lg p-3 text-xs" style={{ background: "var(--vn-surface-raised)", border: "1px solid var(--vn-border)" }}>
+                                <div className="font-medium text-(--vn-text)">Back-calculate from today's bank balance</div>
+                                <div className="text-(--vn-muted)">Enter your current bank balance and we'll work out what the period's opening balance should have been.</div>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    autoFocus
+                                    type="number"
+                                    step="0.01"
+                                    value={calcCurrentBalance}
+                                    onChange={(e) => setCalcCurrentBalance(e.target.value)}
+                                    placeholder="Current bank balance"
+                                    className="vn-input text-sm flex-1"
+                                  />
+                                  <button
+                                    onClick={() => handleApplyCalcBalance(period)}
+                                    className="vn-btn vn-btn-primary text-xs px-3 py-2"
+                                  >
+                                    Apply
+                                  </button>
+                                  <button
+                                    onClick={() => { setCalcPeriodId(null); setCalcCurrentBalance(""); }}
+                                    className="text-xs text-(--vn-muted) hover:text-(--vn-text)"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                                {calcCurrentBalance && !isNaN(parseFloat(calcCurrentBalance)) && (
+                                  <div className="text-(--vn-muted)">
+                                    Implied opening balance: <span className="font-semibold text-(--vn-text)">{formatMoney(calcImpliedStartBalance(period, parseFloat(calcCurrentBalance)))}</span>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => { setCalcPeriodId(period.id); setCalcCurrentBalance(""); }}
+                                className="mt-2 text-xs text-(--vn-primary) hover:underline"
+                              >
+                                💡 Calculate from today's bank balance
+                              </button>
+                            )}
                           </div>
 
                           {/* Disabled Bills */}
