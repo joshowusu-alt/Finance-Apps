@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import MergeConflictModal from "@/components/MergeConflictModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import type { Plan } from "@/data/plan";
@@ -203,11 +204,23 @@ function applyPreferences(prefs: ReturnType<typeof normalizePreferences>, stamp?
   }
 }
 
+type ConflictState = {
+  localPlan: Plan;
+  remotePlan: Plan;
+  localUpdatedAt: string;
+  remoteUpdatedAt: string;
+  scenarioId: string;
+};
+
+/** 30-minute window: if BOTH devices changed within this span, treat as a simultaneous conflict */
+const CONFLICT_WINDOW_MS = 30 * 60 * 1000;
+
 export default function CloudSync() {
   const { user, loading } = useAuth();
   const supabase = createClient();
   const syncInFlight = useRef(false);
   const syncQueued = useRef(false);
+  const [pendingConflict, setPendingConflict] = useState<ConflictState | null>(null);
 
   useEffect(() => {
     if (loading || !supabase) return;
@@ -383,12 +396,26 @@ export default function CloudSync() {
     }
 
     if (serverChanged && localDirty) {
+      const timeDiff = Math.abs(localUpdatedMs - serverUpdatedMs);
+      // Both sides edited recently → simultaneous conflict; ask the user
+      if (timeDiff < CONFLICT_WINDOW_MS && localUpdatedMs > 0 && serverUpdatedMs > 0) {
+        const localIso = new Date(localUpdatedMs).toISOString();
+        const remoteIso = new Date(serverUpdatedMs).toISOString();
+        setPendingConflict({
+          localPlan,
+          remotePlan: serverPlan,
+          localUpdatedAt: localIso,
+          remoteUpdatedAt: remoteIso,
+          scenarioId,
+        });
+        return; // hold — will resolve via modal
+      }
+      // One side is clearly older — auto-resolve by timestamp
       if (localUpdatedMs >= serverUpdatedMs) {
         await pushPlan(localPlan, localPrev, scenarioId);
       } else {
-        // Remote is newer — pull it, but let the user know their local changes were overwritten
         await pullPlan(serverPlan, serverPrev, serverUpdatedMs, scenarioId);
-        showToast("Plan updated from another device — local changes merged.", "info", 6000);
+        showToast("Plan updated from another device.", "info", 4000);
       }
       return;
     }
@@ -557,5 +584,33 @@ export default function CloudSync() {
     }
   }
 
+  async function handleKeepLocal() {
+    if (!pendingConflict || !user) return;
+    const localPlan = loadPlan();
+    const localPrev = loadPreviousPlan();
+    await pushPlan(localPlan, localPrev, pendingConflict.scenarioId);
+    setPendingConflict(null);
+  }
+
+  async function handleKeepRemote() {
+    if (!pendingConflict) return;
+    const remoteMs = parseStamp(pendingConflict.remoteUpdatedAt);
+    await pullPlan(pendingConflict.remotePlan, null, remoteMs, pendingConflict.scenarioId);
+    showToast("Plan updated from other device.", "info", 3000);
+    setPendingConflict(null);
+  }
+
+  if (pendingConflict) {
+    return (
+      <MergeConflictModal
+        localPlan={pendingConflict.localPlan}
+        remotePlan={pendingConflict.remotePlan}
+        localUpdatedAt={pendingConflict.localUpdatedAt}
+        remoteUpdatedAt={pendingConflict.remoteUpdatedAt}
+        onKeepLocal={handleKeepLocal}
+        onKeepRemote={handleKeepRemote}
+      />
+    );
+  }
   return null;
 }

@@ -445,6 +445,8 @@ export default function TransactionsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState(false);
+  const [swipeMap, setSwipeMap] = useState<Record<string, number>>({});
+  const swipeTouchStartRef = useRef<{ id: string; x: number } | null>(null);
   const [newCategoryTouched, setNewCategoryTouched] = useState(false);
 
   const [editCategoryTouched, setEditCategoryTouched] = useState(false);
@@ -1092,6 +1094,27 @@ export default function TransactionsPage() {
     showToast("Transaction linked", "success");
   }
 
+  function onSwipeTouchStart(e: React.TouchEvent, id: string) {
+    swipeTouchStartRef.current = { id, x: e.touches[0].clientX };
+  }
+
+  function onSwipeTouchMove(e: React.TouchEvent, id: string) {
+    if (!swipeTouchStartRef.current || swipeTouchStartRef.current.id !== id) return;
+    const delta = swipeTouchStartRef.current.x - e.touches[0].clientX;
+    if (delta < 0) return; // no right-swipe
+    setSwipeMap((prev) => ({ ...prev, [id]: Math.min(delta, 120) }));
+  }
+
+  function onSwipeTouchEnd(id: string) {
+    const offset = swipeMap[id] ?? 0;
+    if (offset > 72) {
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(50);
+      handleDeleteTransaction(id);
+    }
+    setSwipeMap((prev) => { const n = { ...prev }; delete n[id]; return n; });
+    swipeTouchStartRef.current = null;
+  }
+
   if (!period) {
     return <div className="px-6 py-10 text-(--vn-muted)">Loading...</div>;
   }
@@ -1649,7 +1672,27 @@ export default function TransactionsPage() {
                             className="absolute left-0 top-0 w-full pb-2"
                             style={{ transform: `translateY(${virtualRow.start}px)` }}
                           >
-                            <div className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 flex items-start gap-3">
+                            <div className="relative overflow-hidden rounded-2xl">
+                              <div
+                                className="absolute inset-y-0 right-0 flex items-center justify-end pr-5 rounded-2xl bg-red-500"
+                                aria-hidden
+                                style={{
+                                  width: `${Math.min((swipeMap[txn.id] ?? 0) * 1.4, 100)}px`,
+                                  transition: (swipeMap[txn.id] ?? 0) > 0 ? 'none' : 'width 0.2s ease-out',
+                                }}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                              </div>
+                            <div
+                              className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 flex items-start gap-3"
+                              style={{
+                                transform: `translateX(${-(swipeMap[txn.id] ?? 0)}px)`,
+                                transition: (swipeMap[txn.id] ?? 0) > 0 ? 'none' : 'transform 0.2s ease-out',
+                              }}
+                              onTouchStart={(e) => onSwipeTouchStart(e, txn.id)}
+                              onTouchMove={(e) => onSwipeTouchMove(e, txn.id)}
+                              onTouchEnd={() => onSwipeTouchEnd(txn.id)}
+                            >
                               {bulkMode && (
                                 <input
                                   type="checkbox"
@@ -2026,6 +2069,7 @@ export default function TransactionsPage() {
                                 </div>
                               )}
                             </div>
+                            </div>{/* end swipe wrapper */}
                           </div>
                         );
                       })}

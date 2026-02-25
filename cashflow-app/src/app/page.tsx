@@ -245,6 +245,14 @@ export default function HomePage() {
 
   const spendingAnomalies = useMemo(() => detectAnomalies(plan), [plan]);
 
+  const showDay1Banner = useMemo(() => {
+    const w = loadWizardState();
+    if (!w.completed || !w.completedAt) return false;
+    const ageMs = Date.now() - new Date(w.completedAt).getTime();
+    if (ageMs > 3 * 24 * 60 * 60 * 1000) return false;
+    return plan.transactions.length === 0;
+  }, [plan.transactions.length]);
+
   function handleQuickSetupComplete(builtPlan: Plan) {
     savePlan(builtPlan);
     setOnboarding(resetOnboarding());
@@ -410,6 +418,36 @@ export default function HomePage() {
                 )}
               </div>
             </motion.header>
+
+            {/* Day-1 quick-start banner */}
+            {showDay1Banner && (
+              <motion.div variants={fadeUp} className="vn-card p-5">
+                <div className="text-sm font-bold text-(--vn-text) mb-0.5">Your plan is ready — log your first transactions</div>
+                <div className="text-xs text-(--vn-muted) mb-4">Add income, a bill payment, or import a bank export to start tracking against your budget.</div>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    { label: "Log income", href: "/transactions", icon: "M12 4v16m8-8H4", color: "var(--vn-success)" },
+                    { label: "Log payment", href: "/transactions", icon: "M20 12H4", color: "var(--vn-error)" },
+                    { label: "Import CSV", href: "/transactions", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12", color: "var(--accent)" },
+                  ].map((c) => (
+                    <Link key={c.label} href={c.href}
+                      className="rounded-xl p-3 text-center transition-opacity hover:opacity-80"
+                      style={{ background: "var(--vn-bg)", border: "1px solid var(--vn-border)" }}
+                    >
+                      <div
+                        className="mx-auto mb-1.5 flex h-8 w-8 items-center justify-center rounded-lg"
+                        style={{ background: `color-mix(in srgb, ${c.color} 12%, transparent)` }}
+                      >
+                        <svg className="h-4 w-4" style={{ color: c.color }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                          <path d={c.icon} />
+                        </svg>
+                      </div>
+                      <div className="text-xs font-semibold" style={{ color: "var(--vn-text)" }}>{c.label}</div>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {/* Onboarding Panel */}
             {!resolvedOnboarding.dismissed && (

@@ -1,10 +1,22 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useBranding } from "@/hooks/useBranding";
+import { requestNotificationPermission, isNotificationsEnabled } from "@/lib/pushNotifications";
 
 export function InsightsStep() {
   const brand = useBranding();
+  const [notifState, setNotifState] = useState<"idle" | "granted" | "denied">("idle");
+
+  useEffect(() => {
+    if (isNotificationsEnabled()) setNotifState("granted");
+  }, []);
+
+  async function enableNotifications() {
+    const granted = await requestNotificationPermission();
+    setNotifState(granted ? "granted" : "denied");
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -156,6 +168,43 @@ export function InsightsStep() {
             <div className="text-[10px]" style={{ color: "var(--vn-muted)" }}>{item.desc}</div>
           </motion.div>
         ))}
+      </motion.div>
+
+      {/* Notifications opt-in */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.5 }}
+        className="rounded-2xl p-4 flex items-center gap-3"
+        style={{ background: "var(--vn-bg)", border: "1px solid var(--vn-border)" }}
+      >
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+          style={{ background: "color-mix(in srgb, var(--vn-warning) 12%, transparent)" }}
+        >
+          <svg className="h-5 w-5" style={{ color: "var(--vn-warning)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold" style={{ color: "var(--vn-text)" }}>
+            {notifState === "granted" ? "Alerts enabled ✓" : "Get bill & balance alerts"}
+          </div>
+          <div className="text-xs mt-0.5" style={{ color: "var(--vn-muted)" }}>
+            {notifState === "granted"
+              ? "You'll be notified before bills are due and when balances dip."
+              : "\"Rent due tomorrow\", \"Balance running low\" — straight to your phone."}
+          </div>
+        </div>
+        {notifState !== "granted" && (
+          <button
+            onClick={enableNotifications}
+            className="shrink-0 rounded-xl px-3 py-2 text-xs font-semibold transition-opacity hover:opacity-80"
+            style={{ background: "var(--accent)", color: "#fff" }}
+          >
+            Enable
+          </button>
+        )}
       </motion.div>
     </div>
   );
