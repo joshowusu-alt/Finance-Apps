@@ -80,6 +80,7 @@ export default function HomePage() {
   const [carryForward, setCarryForward] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [mountTime] = useState(() => Date.now());
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -248,10 +249,10 @@ export default function HomePage() {
   const showDay1Banner = useMemo(() => {
     const w = loadWizardState();
     if (!w.completed || !w.completedAt) return false;
-    const ageMs = Date.now() - new Date(w.completedAt).getTime();
+    const ageMs = mountTime - new Date(w.completedAt).getTime();
     if (ageMs > 3 * 24 * 60 * 60 * 1000) return false;
     return plan.transactions.length === 0;
-  }, [plan.transactions.length]);
+  }, [plan.transactions.length, mountTime]);
 
   function handleQuickSetupComplete(builtPlan: Plan) {
     savePlan(builtPlan);
