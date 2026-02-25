@@ -1685,13 +1685,14 @@ export default function TransactionsPage() {
                               </div>
                             <div
                               className="rounded-2xl border border-(--vn-border) bg-(--vn-surface) p-4 flex items-start gap-3"
-                              style={{
-                                transform: `translateX(${-(swipeMap[txn.id] ?? 0)}px)`,
-                                transition: (swipeMap[txn.id] ?? 0) > 0 ? 'none' : 'transform 0.2s ease-out',
-                              }}
                               onTouchStart={(e) => onSwipeTouchStart(e, txn.id)}
                               onTouchMove={(e) => onSwipeTouchMove(e, txn.id)}
                               onTouchEnd={() => onSwipeTouchEnd(txn.id)}
+                              style={{
+                                transform: `translateX(${-(swipeMap[txn.id] ?? 0)}px)`,
+                                transition: (swipeMap[txn.id] ?? 0) > 0 ? 'none' : 'transform 0.2s ease-out',
+                                touchAction: 'pan-y',
+                              }}
                             >
                               {bulkMode && (
                                 <input

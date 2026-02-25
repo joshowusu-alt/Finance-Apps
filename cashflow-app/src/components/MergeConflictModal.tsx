@@ -92,14 +92,14 @@ export default function MergeConflictModal({
         <div className="px-5 py-4">
           {/* Column headers */}
           <div className="grid grid-cols-3 gap-2 pb-2 mb-1 border-b border-(--vn-border)">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-(--vn-muted)"></span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-(--vn-muted)"></span>
             <div className="text-center">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-(--vn-muted)">This device</div>
-              <div className="text-[10px] text-(--vn-muted) mt-0.5">{fmt(localUpdatedAt)}</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-(--vn-muted)">This device</div>
+              <div className="text-xs text-(--vn-muted) mt-0.5">{fmt(localUpdatedAt)}</div>
             </div>
             <div className="text-center">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-(--vn-muted)">Other device</div>
-              <div className="text-[10px] text-(--vn-muted) mt-0.5">{fmt(remoteUpdatedAt)}</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-(--vn-muted)">Other device</div>
+              <div className="text-xs text-(--vn-muted) mt-0.5">{fmt(remoteUpdatedAt)}</div>
             </div>
           </div>
 
