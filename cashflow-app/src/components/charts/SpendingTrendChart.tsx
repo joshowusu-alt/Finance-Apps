@@ -17,17 +17,12 @@ type Props = {
 };
 
 export function SpendingTrendChart({ data, showIncome = false, height = 300 }: Props) {
-  const [isDark, setIsDark] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 640);
 
   useEffect(() => {
-    // Check if dark mode
-    const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
-    setIsDark(isDarkMode);
-
     // Check for mobile
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
     window.addEventListener("resize", checkMobile);
 
     // Listen for theme changes

@@ -4,13 +4,12 @@ import {
   buildTimeline,
   buildHybridTimeline,
   buildActualsTimeline,
-  minPoint,
   getStartingBalance,
   getSavingsTransferReconciliation,
   getVarianceByCategory,
 } from "../cashflowEngine";
 import { deriveApp } from "@/lib/derive";
-import { PLAN, SAMPLE_PLAN, PLAN_VERSION, Plan } from "@/data/plan";
+import { SAMPLE_PLAN, PLAN_VERSION, Plan } from "@/data/plan";
 
 type PlanPatch = Omit<Partial<Plan>, "setup"> & { setup?: Partial<Plan["setup"]> };
 

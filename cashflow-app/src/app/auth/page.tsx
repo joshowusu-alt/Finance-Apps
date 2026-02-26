@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { createClient, supabaseConfigured } from "@/lib/supabase/client";
+import Link from "next/link";
 import { VelanovoLogo } from "@/components/VelanovoLogo";
 import { useBranding } from "@/hooks/useBranding";
 
@@ -370,13 +371,13 @@ export default function AuthPage() {
 
           {/* Guest mode link */}
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/"
               className="text-xs transition-colors hover:underline"
               style={{ color: "var(--vn-muted)" }}
             >
               Continue without an account (data stored locally only)
-            </a>
+            </Link>
           </div>
         </div>
       </motion.div>

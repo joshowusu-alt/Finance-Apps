@@ -176,21 +176,6 @@ function matchesPattern(text: string, patterns: RegExp[]): boolean {
     return patterns.some((pattern) => pattern.test(text));
 }
 
-// Calculate similarity score between two strings (Jaccard index)
-function similarityScore(text1: string, text2: string): number {
-    const tokens1 = new Set(tokenize(text1));
-    const tokens2 = new Set(tokenize(text2));
-
-    if (tokens1.size === 0 || tokens2.size === 0) return 0;
-
-    let intersection = 0;
-    tokens1.forEach((token) => {
-        if (tokens2.has(token)) intersection++;
-    });
-
-    const union = tokens1.size + tokens2.size - intersection;
-    return union > 0 ? intersection / union : 0;
-}
 
 export type CategorySuggestion = {
     category: CashflowCategory;

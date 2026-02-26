@@ -32,6 +32,7 @@ export async function POST(req: Request) {
           access_token: connection.access_token,
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const accounts = response.data.accounts.map((account: any) => ({
           id: account.account_id,
           itemId: connection.item_id,
@@ -49,14 +50,16 @@ export async function POST(req: Request) {
         }));
 
         allAccounts.push(...accounts);
-      } catch (error: any) {
-        console.error(`Error fetching accounts for item ${connection.item_id}:`, error.message);
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : String(error);
+        console.error(`Error fetching accounts for item ${connection.item_id}:`, msg);
       }
     }
 
     return NextResponse.json({ accounts: allAccounts });
-  } catch (error: any) {
-    console.error("Error fetching accounts:", error.response?.data || error.message);
-    return serverError("Failed to fetch accounts", error.message);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Error fetching accounts:", msg);
+    return serverError("Failed to fetch accounts", msg);
   }
 }

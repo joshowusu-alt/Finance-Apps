@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { loadPlan, loadPreviousPlan, savePlanFromRemote, setStorageScope } from "@/lib/storage";
-import type { Plan } from "@/data/plan";
+import { loadPlan, loadPreviousPlan, setStorageScope } from "@/lib/storage";
 
 type MigrationStatus = "idle" | "loading" | "success" | "error";
 
@@ -88,7 +87,7 @@ export default function MigratePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20">
                 <h1 className="text-2xl font-bold text-white mb-2">📦 Migrate Your Data</h1>
                 <p className="text-slate-300 text-sm mb-6">
@@ -105,7 +104,7 @@ export default function MigratePage() {
                 {status === "idle" && (
                     <button
                         onClick={handleMigrate}
-                        className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-2xl shadow-lg hover:from-emerald-600 hover:to-teal-600 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                        className="w-full py-4 px-6 bg-linear-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-2xl shadow-lg hover:from-emerald-600 hover:to-teal-600 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                     >
                         🚀 Migrate to Cloud
                     </button>

@@ -21,10 +21,11 @@ type Props = {
 };
 
 // Custom active shape for hover effect
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const renderActiveShape = (props: any) => {
   const {
     cx, cy, innerRadius, outerRadius, startAngle, endAngle,
-    fill, payload, percent, value
+    fill
   } = props;
 
   return (
@@ -64,13 +65,10 @@ export function DonutChart({
   centerLabel,
   centerValue,
 }: Props) {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
-    setIsDark(isDarkMode);
-
     const observer = new MutationObserver(() => {
       const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
       setIsDark(darkMode);
@@ -84,7 +82,7 @@ export function DonutChart({
     return () => observer.disconnect();
   }, []);
 
-  const onPieEnter = useCallback((_: any, index: number) => {
+  const onPieEnter = useCallback((_: unknown, index: number) => {
     setActiveIndex(index);
   }, []);
 
@@ -101,10 +99,13 @@ export function DonutChart({
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
   // Custom legend with click functionality
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderCustomLegend = (props: any) => {
     const { payload } = props;
+    if (!payload) return null;
     return (
       <div className="flex flex-wrap justify-center gap-3 pt-4">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {payload.map((entry: any, index: number) => {
           const percent = total > 0 ? ((entry.payload.value / total) * 100).toFixed(1) : 0;
           return (

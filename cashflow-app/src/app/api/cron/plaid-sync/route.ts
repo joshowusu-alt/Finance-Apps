@@ -119,6 +119,7 @@ export async function GET(request: Request) {
           : planRow.plan_json;
 
       // Fetch transactions from each Plaid connection for this user
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const plaidTransactions: any[] = [];
       for (const conn of userConnections) {
         try {
@@ -128,11 +129,12 @@ export async function GET(request: Request) {
             end_date: range.endDate,
           });
           plaidTransactions.push(...response.data.transactions);
-        } catch (plaidErr: any) {
+        } catch (plaidErr: unknown) {
           // Log per-connection failures but keep going for other connections
+          const msg = plaidErr instanceof Error ? plaidErr.message : String(plaidErr);
           console.error(
             `[cron/plaid-sync] Plaid fetch failed for item ${conn.item_id} (user ${userId}):`,
-            plaidErr?.response?.data?.error_message ?? plaidErr.message,
+            msg,
           );
         }
       }
@@ -189,10 +191,11 @@ export async function GET(request: Request) {
         imported: toAdd.length,
         total: updatedPlan.transactions.length,
       });
-    } catch (userErr: any) {
+    } catch (userErr: unknown) {
       // Isolate per-user failures so one bad account doesn't abort the run
-      console.error(`[cron/plaid-sync] Error processing user ${userId}:`, userErr.message);
-      results.push({ userId, imported: 0, total: 0, error: userErr.message });
+      const msg = userErr instanceof Error ? userErr.message : String(userErr);
+      console.error(`[cron/plaid-sync] Error processing user ${userId}:`, msg);
+      results.push({ userId, imported: 0, total: 0, error: msg });
     }
   }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -69,7 +69,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               transition={{ delay: 0.4, duration: 0.4 }}
               className="text-sm text-(--text-secondary) mb-8 leading-relaxed"
             >
-              We encountered an unexpected error. Don't worry, your data is safe.
+              We encountered an unexpected error. Don&apos;t worry, your data is safe.
               Try refreshing the page or contact support if the problem persists.
             </motion.p>
 
@@ -157,7 +157,7 @@ export function PageErrorBoundary({ children }: { children: React.ReactNode }) {
             </h2>
 
             <p className="text-sm text-(--text-secondary) mb-6">
-              This page encountered an error and couldn't load properly.
+              This page encountered an error and couldn&apos;t load properly.
             </p>
 
             <button

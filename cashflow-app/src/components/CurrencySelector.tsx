@@ -42,9 +42,9 @@ export default function CurrencySelector() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     setCountryState(getCountry());
     setCurrencyState(getCurrency());
+    setMounted(true);
   }, []);
 
   const handleCountryChange = (newCountry: CountryCode) => {

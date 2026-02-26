@@ -43,6 +43,7 @@ export async function POST(req: Request) {
 
     const client = getPlaidClient();
     const range = defaultDateRange();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const plaidTransactions: any[] = [];
 
     for (const connection of connections) {
@@ -53,16 +54,18 @@ export async function POST(req: Request) {
           end_date: endDate || range.endDate,
         });
         plaidTransactions.push(...response.data.transactions);
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : String(error);
         console.error(
           `Error fetching transactions for item ${connection.item_id}:`,
-          error.message,
+          msg,
         );
       }
     }
 
     // Convert Plaid transactions to Plan Transaction format
-    const newTransactions: Transaction[] = plaidTransactions.map((tx) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newTransactions: Transaction[] = plaidTransactions.map((tx: any) => ({
       id: `plaid-${tx.transaction_id}`,
       date: tx.date,
       label: tx.merchant_name || tx.name,
@@ -123,11 +126,12 @@ export async function POST(req: Request) {
       total: updatedPlan.transactions.length,
       updatedAt,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
     console.error(
       "Error syncing transactions:",
-      error.response?.data || error.message,
+      msg,
     );
-    return serverError("Failed to sync transactions", error.message);
+    return serverError("Failed to sync transactions", msg);
   }
 }

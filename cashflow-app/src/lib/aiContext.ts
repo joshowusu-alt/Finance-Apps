@@ -6,7 +6,7 @@
  * bill detection systems.
  */
 
-import type { Plan, Transaction, CashflowCategory, Period } from "@/data/plan";
+import type { Plan } from "@/data/plan";
 import {
     generateEvents,
     getPeriod,
@@ -17,7 +17,7 @@ import {
 } from "@/lib/cashflowEngine";
 import { detectSubscriptions } from "@/lib/subscriptionDetection";
 import { formatMoney } from "@/lib/currency";
-import { toUtcDay, dayDiff, clamp } from "@/lib/dateUtils";
+import { dayDiff, clamp } from "@/lib/dateUtils";
 
 // ============================================================================
 // Types
@@ -453,10 +453,7 @@ export function buildAIContext(plan: Plan): AIFinancialContext {
     // Detect spending pattern (front-loaded, back-loaded, or even)
     const firstHalfEnd = period.start.slice(0, 8) + String(Math.floor(periodDays / 2) + parseInt(period.start.slice(-2))).padStart(2, "0");
     const firstHalfEvents = events.filter(e => e.date <= firstHalfEnd && e.type === "outflow");
-    const secondHalfEvents = events.filter(e => e.date > firstHalfEnd && e.type === "outflow");
     const firstHalfTotal = firstHalfEvents.reduce((sum, e) => sum + e.amount, 0);
-    const secondHalfTotal = secondHalfEvents.reduce((sum, e) => sum + e.amount, 0);
-
     let spendingPattern: "front-loaded" | "back-loaded" | "even" = "even";
     if (budgetOutflows > 0) {
         const firstHalfRatio = firstHalfTotal / budgetOutflows;

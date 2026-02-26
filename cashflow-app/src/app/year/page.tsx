@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import type { Plan } from "@/data/plan";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell
+  ResponsiveContainer
 } from "recharts";
 import { CategoryBreakdownChart } from "@/components/charts";
 import { formatMoney as fmtChart } from "@/lib/currency";

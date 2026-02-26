@@ -179,7 +179,7 @@ export default function ImportPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [rows, setRows] = useState<ParsedRow[]>([]);
-  const [headers, setHeaders] = useState<string[]>([]);
+  const [_headers, setHeaders] = useState<string[]>([]);
   const [imported, setImported] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);

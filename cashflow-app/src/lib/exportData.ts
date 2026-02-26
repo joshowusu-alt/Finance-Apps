@@ -79,7 +79,6 @@ export async function exportToPDF(
   doc.text(`${brand.name} - Transaction Report`, 14, y);
   if (brand.tagline) {
     doc.setFontSize(10);
-  const summaryStart = y + 28;
     doc.text(brand.tagline, 14, y + 12);
     y += 8;
   }

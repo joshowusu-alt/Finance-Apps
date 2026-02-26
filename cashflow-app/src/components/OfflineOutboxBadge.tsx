@@ -10,7 +10,7 @@ import { PLAN_UPDATED_EVENT } from "@/lib/storage";
  * Tapping "Retry" dispatches SYNC_RETRY_EVENT which CloudSync listens to.
  */
 export default function OfflineOutboxBadge() {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(() => typeof window !== "undefined" ? getOutbox().length : 0);
   const [retrying, setRetrying] = useState(false);
 
   function refresh() {
@@ -18,7 +18,6 @@ export default function OfflineOutboxBadge() {
   }
 
   useEffect(() => {
-    refresh();
 
     // Re-check whenever the plan updates (outbox may have flushed)
     window.addEventListener(PLAN_UPDATED_EVENT, refresh);

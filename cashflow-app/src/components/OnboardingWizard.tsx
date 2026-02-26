@@ -267,7 +267,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-xl font-bold text-(--vn-text)">When does your pay cycle start?</h2>
-                      <p className="mt-2 text-sm text-(--vn-muted)">We'll build budget periods around your pay dates.</p>
+                      <p className="mt-2 text-sm text-(--vn-muted)">We&apos;ll build budget periods around your pay dates.</p>
                     </div>
 
                     {/* Cadence picker */}
@@ -351,7 +351,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                 {step === 3 && (
                   <div className="space-y-6">
                     <div>
-                      <h2 className="text-xl font-bold text-(--vn-text)">What's your monthly take-home pay?</h2>
+                      <h2 className="text-xl font-bold text-(--vn-text)">What&apos;s your monthly take-home pay?</h2>
                       <p className="mt-2 text-sm text-(--vn-muted)">After tax, what lands in your account each month?</p>
                     </div>
                     <div className="relative">
@@ -393,7 +393,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
                         }`}
                       >
                         <div className="text-2xl mb-2">Yes</div>
-                        <div className="text-xs text-(--vn-muted)">We'll add common ones you can edit later</div>
+                        <div className="text-xs text-(--vn-muted)">We&apos;ll add common ones you can edit later</div>
                       </button>
                       <button
                         onClick={() => setHasBills(false)}

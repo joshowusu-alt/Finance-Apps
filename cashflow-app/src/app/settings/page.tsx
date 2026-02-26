@@ -516,7 +516,7 @@ export default function SettingsPage() {
 
                   {/* Join section */}
                   <div className="space-y-2">
-                    <div className="text-xs font-medium text-(--vn-text)">Join a partner's plan</div>
+                    <div className="text-xs font-medium text-(--vn-text)">Join a partner&apos;s plan</div>
                     <div className="text-xs text-(--vn-muted)">Enter the 6-character code your partner shared with you.</div>
                     <div className="flex gap-2">
                       <input
@@ -758,8 +758,8 @@ export default function SettingsPage() {
                             {/* Balance calculator helper */}
                             {calcPeriodId === period.id ? (
                               <div className="mt-2 flex flex-col gap-2 rounded-lg p-3 text-xs" style={{ background: "var(--vn-surface-raised)", border: "1px solid var(--vn-border)" }}>
-                                <div className="font-medium text-(--vn-text)">Back-calculate from today's bank balance</div>
-                                <div className="text-(--vn-muted)">Enter your current bank balance and we'll work out what the period's opening balance should have been.</div>
+                                <div className="font-medium text-(--vn-text)">Back-calculate from today&apos;s bank balance</div>
+                                <div className="text-(--vn-muted)">Enter your current bank balance and we&apos;ll work out what the period&apos;s opening balance should have been.</div>
                                 <div className="flex items-center gap-2">
                                   <input
                                     autoFocus
@@ -794,7 +794,7 @@ export default function SettingsPage() {
                                 onClick={() => { setCalcPeriodId(period.id); setCalcCurrentBalance(""); }}
                                 className="mt-2 text-xs text-(--vn-primary) hover:underline"
                               >
-                                💡 Calculate from today's bank balance
+                                💡 Calculate from today&apos;s bank balance
                               </button>
                             )}
                           </div>

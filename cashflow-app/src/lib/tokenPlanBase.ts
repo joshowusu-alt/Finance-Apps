@@ -45,7 +45,7 @@ export function createBlankPlan(): Plan {
 }
 
 /** Safely parse plan from Postgres (handles JSONB objects & TEXT strings). */
-export function parsePlan(raw: any, fallback?: () => Plan): Plan {
+export function parsePlan(raw: unknown, fallback?: () => Plan): Plan {
   try {
     if (typeof raw === "string") return JSON.parse(raw) as Plan;
     return raw as Plan;

@@ -70,7 +70,7 @@ const basePlan = {
   savingsGoals: [],
 };
 
-async function seedStorage(page: any, plan: any) {
+async function seedStorage(page: import("@playwright/test").Page, plan: Record<string, unknown>) {
   await page.addInitScript(
     ({ plan, scenarioState, planKey, scenarioKey, currencyKey }: { plan: unknown; scenarioState: unknown; planKey: string; scenarioKey: string; currencyKey: string }) => {
       localStorage.setItem(currencyKey, "GBP");
@@ -81,7 +81,7 @@ async function seedStorage(page: any, plan: any) {
   );
 }
 
-async function applyPlanUpdate(page: any, plan: any) {
+async function applyPlanUpdate(page: import("@playwright/test").Page, plan: Record<string, unknown>) {
   await page.evaluate(
     ({ plan, planKey }: { plan: unknown; planKey: string }) => {
       localStorage.setItem(planKey, JSON.stringify(plan));

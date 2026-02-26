@@ -31,9 +31,9 @@ export default function PlaidLink({ userId, onSuccess, onExit }: PlaidLinkProps)
 
         const data = await response.json();
         setLinkToken(data.link_token);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error creating link token:", err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
@@ -63,9 +63,9 @@ export default function PlaidLink({ userId, onSuccess, onExit }: PlaidLinkProps)
         if (onSuccess) {
           onSuccess();
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error exchanging token:", err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
@@ -76,7 +76,7 @@ export default function PlaidLink({ userId, onSuccess, onExit }: PlaidLinkProps)
   const config = {
     token: linkToken,
     onSuccess: onPlaidSuccess,
-    onExit: (err: any) => {
+    onExit: (err: unknown) => {
       if (err) {
         console.error("Plaid Link exited with error:", err);
       }

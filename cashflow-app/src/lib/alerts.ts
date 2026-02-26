@@ -4,7 +4,7 @@ import { getStorageScope } from "@/lib/storage";
 import { touchPreferencesUpdatedAt } from "@/lib/preferencesSync";
 import { normalizeText } from "@/lib/textUtils";
 import { formatMoney } from "@/lib/currency";
-import { toUtcDay, addDaysISO, dayDiff } from "@/lib/dateUtils";
+import { addDaysISO, dayDiff } from "@/lib/dateUtils";
 
 export const ALERT_PREFS_UPDATED_EVENT = "cashflow:alerts-updated";
 

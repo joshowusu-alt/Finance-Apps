@@ -334,7 +334,7 @@ export default function HomePage() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setShowClosePeriod(true)}
-                      className="text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-1.5 rounded-lg transition-colors"
+                      className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
                       style={{ color: "rgba(240,237,232,0.65)", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
                     >
                       Close Period
@@ -403,7 +403,8 @@ export default function HomePage() {
                     )}
 
                     <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10">
-                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${derived.health.label === "Healthy"
+                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                          derived.health.label === "Healthy"
                           ? "bg-emerald-900/30 text-emerald-300"
                           : derived.health.label === "Watch"
                             ? "bg-amber-900/30 text-amber-300"

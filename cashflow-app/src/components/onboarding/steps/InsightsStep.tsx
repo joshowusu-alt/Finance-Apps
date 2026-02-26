@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useBranding } from "@/hooks/useBranding";
 import { requestNotificationPermission, isNotificationsEnabled } from "@/lib/pushNotifications";
@@ -9,9 +9,10 @@ export function InsightsStep() {
   const brand = useBranding();
   const [notifState, setNotifState] = useState<"idle" | "granted" | "denied">("idle");
 
-  useEffect(() => {
-    if (isNotificationsEnabled()) setNotifState("granted");
-  }, []);
+  useState(() => {
+    if (typeof window !== "undefined" && isNotificationsEnabled()) setNotifState("granted");
+    return true;
+  });
 
   async function enableNotifications() {
     const granted = await requestNotificationPermission();

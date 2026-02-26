@@ -151,7 +151,6 @@ function migrateDefaultScopeToUser(targetScope: string) {
       copied += 1;
     }
   }
-  // eslint-disable-next-line no-console
   console.log(`[CloudSync] Migrated ${copied} keys from default → ${targetScope}`);
 }
 

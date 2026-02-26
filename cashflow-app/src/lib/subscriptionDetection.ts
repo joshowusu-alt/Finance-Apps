@@ -212,8 +212,6 @@ export function detectSubscriptions(
       return isSubscriptionCandidate(bill, extraText);
     })
     .map((bill) => {
-      const key = normalizeMerchant(bill.merchantName);
-      const extraText = merchantText.get(key) ?? "";
       const monthlyCost = frequencyToMonthly(bill.averageAmount, bill.frequency);
       const annualCost = monthlyCost * 12;
       const lastChargeDate = getLastChargeDate(bill.occurrences);

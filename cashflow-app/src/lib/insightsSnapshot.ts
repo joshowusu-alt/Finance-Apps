@@ -13,7 +13,7 @@ import { suggestBillId } from "@/lib/billLinking";
 import { formatMoney } from "@/lib/currency";
 import { normalizeText, splitTokens } from "@/lib/textUtils";
 import type { CashflowCategory, Plan, Transaction } from "@/data/plan";
-import { toUtcDay, dayDiff, clamp, average, stdDev } from "@/lib/dateUtils";
+import { dayDiff, clamp, average, stdDev } from "@/lib/dateUtils";
 
 export type PeriodStats = {
   period: ReturnType<typeof getPeriod>;

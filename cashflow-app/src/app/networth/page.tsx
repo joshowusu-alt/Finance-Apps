@@ -183,8 +183,6 @@ function AccountForm({
     setLinkedRuleShare("100");
   }
 
-  const allTypes = [...ASSET_TYPES, ...LIABILITY_TYPES];
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-5 vn-card">
       <h3 className="text-sm font-bold text-(--vn-text)">

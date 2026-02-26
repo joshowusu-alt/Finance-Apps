@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { loadPlan, savePlan } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
-import type { Plan, SavingsGoal, OutflowRule, Transaction } from "@/data/plan";
+import type { SavingsGoal, OutflowRule, Transaction } from "@/data/plan";
 import { getPeriod } from "@/lib/cashflowEngine";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { toast } from "@/components/Toast";
@@ -142,8 +142,9 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave, tran
         setIsEditing(false);
     };
 
+    const [now] = useState(() => Date.now());
     const daysUntilTarget = goal.targetDate
-        ? Math.max(0, Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+        ? Math.max(0, Math.ceil((new Date(goal.targetDate).getTime() - now) / (1000 * 60 * 60 * 24)))
         : null;
 
     const weeklyNeeded = daysUntilTarget && daysUntilTarget > 0 && remaining > 0

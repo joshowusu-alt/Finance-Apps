@@ -399,7 +399,7 @@ export default function QuickAddFAB() {
                       Link to a bill?
                     </div>
                     <p className="text-xs" style={{ color: "var(--vn-muted)" }}>
-                      This looks like <span className="font-medium">{billPrompt.bill.label}</span> ({formatMoney(billPrompt.bill.amount)}/mo). Link this transaction so it counts against that bill's budget?
+                      This looks like <span className="font-medium">{billPrompt.bill.label}</span> ({formatMoney(billPrompt.bill.amount)}/mo). Link this transaction so it counts against that bill&apos;s budget?
                     </p>
                     <button
                       onClick={() => handleBillLink(billPrompt.bill.id)}
@@ -421,7 +421,7 @@ export default function QuickAddFAB() {
                       className="w-full py-3 rounded-xl text-sm min-h-[44px]"
                       style={{ background: "var(--vn-surface-raised)", color: "var(--vn-muted)" }}
                     >
-                      Skip — don't link
+                      Skip — don&apos;t link
                     </button>
                   </div>
                 </div>

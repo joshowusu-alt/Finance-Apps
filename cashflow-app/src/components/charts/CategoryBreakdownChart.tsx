@@ -1,7 +1,7 @@
 "use client";
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { chartColors, formatCurrency, getCategoryColor, getTextColor, getMutedColor, getGridColor } from "@/lib/chartConfig";
+import { chartColors, formatCurrency, getCategoryColor, getTextColor, getGridColor } from "@/lib/chartConfig";
 import { useEffect, useState } from "react";
 
 export type CategoryData = {
@@ -17,16 +17,12 @@ type Props = {
 };
 
 export function CategoryBreakdownChart({ data, height = 300, onCategoryClick }: Props) {
-  const [isDark, setIsDark] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 640);
 
   useEffect(() => {
-    const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
-    setIsDark(isDarkMode);
-
     // Check for mobile
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
     window.addEventListener("resize", checkMobile);
 
     const observer = new MutationObserver(() => {

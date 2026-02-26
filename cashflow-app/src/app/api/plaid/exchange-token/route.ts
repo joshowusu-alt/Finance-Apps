@@ -98,8 +98,9 @@ export async function POST(req: Request) {
         subtype: a.subtype,
       })),
     });
-  } catch (error: any) {
-    console.error("Error exchanging token:", error.response?.data || error.message);
-    return serverError("Failed to exchange token", error.message);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Error exchanging token:", msg);
+    return serverError("Failed to exchange token", msg);
   }
 }

@@ -38,6 +38,7 @@ export async function POST(req: Request) {
           end_date: endDate || range.endDate,
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const converted = response.data.transactions.map((tx: any) => {
           const merchantName = tx.merchant_name || tx.name || "";
           const suggestion = suggestCategory(merchantName, tx.name);
@@ -62,10 +63,11 @@ export async function POST(req: Request) {
         });
 
         allTransactions.push(...converted);
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : String(error);
         console.error(
           `Error fetching transactions for item ${connection.item_id}:`,
-          error.message,
+          msg,
         );
       }
     }
@@ -75,8 +77,9 @@ export async function POST(req: Request) {
     );
 
     return NextResponse.json({ transactions: allTransactions });
-  } catch (error: any) {
-    console.error("Error fetching transactions:", error.response?.data || error.message);
-    return serverError("Failed to fetch transactions", error.message);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Error fetching transactions:", msg);
+    return serverError("Failed to fetch transactions", msg);
   }
 }

@@ -71,7 +71,7 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
         const data = await response.json();
         setAccounts(data.accounts || []);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error loading accounts:", err);
     }
   };
@@ -113,9 +113,10 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
       if (onSyncComplete) {
         onSyncComplete();
       }
-    } catch (err: any) {
-      setError(err.message);
-      showToast(err.message || "Failed to sync transactions", "error");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      showToast(msg || "Failed to sync transactions", "error");
     } finally {
       setSyncing(false);
     }

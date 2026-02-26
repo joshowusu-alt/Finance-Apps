@@ -98,7 +98,7 @@ export default function ToastContainer() {
       aria-live="polite"
     >
       <AnimatePresence mode="popLayout">
-        {displayToasts.map((toast, index) => (
+        {displayToasts.map((toast) => (
           <motion.div
             key={toast.id}
             layout

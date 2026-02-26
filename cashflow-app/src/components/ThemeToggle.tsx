@@ -8,8 +8,8 @@ export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     setTheme(getTheme());
+    setMounted(true);
   }, []);
 
   const handleToggle = () => {

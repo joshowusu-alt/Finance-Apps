@@ -122,13 +122,10 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
 }
 
 export function BillSuggestions({ detectedBills, onAccept, onDismiss, className = "" }: Props) {
-    const [isDark, setIsDark] = useState(false);
+    const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
     const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
     useEffect(() => {
-        const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
-        setIsDark(isDarkMode);
-
         const observer = new MutationObserver(() => {
             const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
             setIsDark(darkMode);

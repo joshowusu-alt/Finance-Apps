@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { getUpcomingEvents, getPeriod } from "@/lib/cashflowEngine";
+import { getUpcomingEvents } from "@/lib/cashflowEngine";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
 import { useDerived } from "@/lib/useDerived";

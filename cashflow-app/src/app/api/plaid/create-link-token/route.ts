@@ -32,8 +32,9 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ link_token: response.data.link_token });
-  } catch (error: any) {
-    console.error("Error creating link token:", error.response?.data || error.message);
-    return serverError("Failed to create link token", error.message);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Error creating link token:", msg);
+    return serverError("Failed to create link token", msg);
   }
 }

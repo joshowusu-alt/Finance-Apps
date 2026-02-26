@@ -12,7 +12,7 @@ import { prettyDate, formatUpdatedAt, formatVariance } from "@/lib/formatUtils";
 import { splitTokens, matchesTokens } from "@/lib/textUtils";
 import { SimpleStatCard as StatCard } from "@/components/Card";
 import type { Transaction, BillTemplate, OutflowRule, Recurrence, CashflowCategory } from "@/data/plan";
-import type { DetectedBill } from "@/lib/billDetection";
+
 
 function matchBill(txn: Transaction, label: string, id: string) {
   const tokens = Array.from(

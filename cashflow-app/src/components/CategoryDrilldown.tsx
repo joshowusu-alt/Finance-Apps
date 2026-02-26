@@ -25,12 +25,9 @@ export function CategoryDrilldown({
     budgeted,
     periodLabel,
 }: Props) {
-    const [isDark, setIsDark] = useState(false);
+    const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
 
     useEffect(() => {
-        const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
-        setIsDark(isDarkMode);
-
         const observer = new MutationObserver(() => {
             const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
             setIsDark(darkMode);
