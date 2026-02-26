@@ -114,6 +114,7 @@ const moreItems: NavItem[] = [
   { href: "/income", label: "Income", desc: "Income rules", icon: () => <span className="text-lg">💰</span> },
   { href: "/goals", label: "Goals", desc: "Save targets", icon: () => <span className="text-lg">🎯</span> },
   { href: "/networth", label: "Net Worth", desc: "Financial position", icon: () => <span className="text-lg">📊</span> },
+  { href: "/envelopes", label: "Envelopes", desc: "Zero-based budgets", icon: () => <span className="text-lg">✉️</span> },
   { href: "/import", label: "Import", desc: "Upload data", icon: () => <span className="text-lg">📂</span> },
   { href: "/year", label: "Year Review", desc: "Annual summary", icon: () => <span className="text-lg">🌟</span> },
   { href: "/coach", label: "Coach", desc: "AI advisor", icon: () => <span className="text-lg">🤖</span> },
@@ -213,17 +214,17 @@ export default function BottomNav() {
                       onClick={() => setShowMore(false)}
                       className="flex flex-col items-center gap-1 rounded-2xl py-3 px-1 transition-colors hover:bg-(--vn-bg)"
                     >
-                    <div className="relative">
-                      {it.icon(isActive(it.href))}
-                      {it.href === "/bills" && billSuggestionCount > 0 && (
-                        <span
-                          className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-2"
-                          style={{ background: "#d4a843", borderColor: "var(--vn-surface)" }}
-                        >
-                          {billSuggestionCount}
-                        </span>
-                      )}
-                    </div>
+                      <div className="relative">
+                        {it.icon(isActive(it.href))}
+                        {it.href === "/bills" && billSuggestionCount > 0 && (
+                          <span
+                            className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-2"
+                            style={{ background: "#d4a843", borderColor: "var(--vn-surface)" }}
+                          >
+                            {billSuggestionCount}
+                          </span>
+                        )}
+                      </div>
                       <span className={`text-[11px] font-semibold leading-tight text-center ${isActive(it.href) ? "text-(--vn-primary)" : "text-(--vn-text)"}`}>
                         {it.label}
                       </span>
