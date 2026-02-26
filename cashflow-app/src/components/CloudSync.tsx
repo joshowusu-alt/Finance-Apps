@@ -395,6 +395,13 @@ export default function CloudSync() {
       return;
     }
 
+    // Fresh sign-in on a new browser: no sync baseline exists.
+    // Always prefer server data to avoid overwriting real data with a blank plan.
+    if (!hasBaseline && serverRow?.plan_json) {
+      await pullPlan(serverPlan, serverPrev, serverUpdatedMs, scenarioId);
+      return;
+    }
+
     if (serverChanged && localDirty) {
       const timeDiff = Math.abs(localUpdatedMs - serverUpdatedMs);
       // Both sides edited recently → simultaneous conflict; ask the user
@@ -527,6 +534,12 @@ export default function CloudSync() {
         setCloudPrefsServerUpdatedAt(serverUpdatedMs);
         setCloudPrefsSyncedAt(serverUpdatedMs);
       }
+      return;
+    }
+
+    // Fresh sign-in on a new browser: prefer server prefs over local defaults.
+    if (!hasBaseline && normalizedServer) {
+      await pullPreferences(normalizedServer, serverUpdatedMs);
       return;
     }
 

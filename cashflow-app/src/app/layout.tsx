@@ -23,6 +23,7 @@ import CommandPalette from "@/components/CommandPalette";
 import PullToRefresh from "@/components/PullToRefresh";
 import SwipeBack from "@/components/SwipeBack";
 import BiometricLock from "@/components/BiometricLock";
+import UpdateBanner from "@/components/UpdateBanner";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -70,40 +71,41 @@ export default function RootLayout({
         <SplashScreen />
         <AuthProvider>
           <ConfirmProvider>
-          <CloudSync />
-          <OfflineOutboxBadge />
-          <ThemeInitializer />
-          <BrandInitializer />
-          <a href="#main-content" className="skip-link">
-            Skip to content
-          </a>
-          <AppWatermark />
-          <ServiceWorkerRegistrar />
-          <NotificationScheduler />
-          <noscript>
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontFamily: 'sans-serif' }}>
-              <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>JavaScript Required</h1>
-              <p>Velanovo requires JavaScript to run. Please enable it in your browser settings.</p>
-            </div>
-          </noscript>
-          {/* Page content */}
-          <ErrorBoundary>
-            <div id="main-content" tabIndex={-1} className="relative z-10 min-h-screen pb-28 w-full max-w-full overflow-x-hidden">
-              {children}
-            </div>
-          </ErrorBoundary>
+            <CloudSync />
+            <UpdateBanner />
+            <OfflineOutboxBadge />
+            <ThemeInitializer />
+            <BrandInitializer />
+            <a href="#main-content" className="skip-link">
+              Skip to content
+            </a>
+            <AppWatermark />
+            <ServiceWorkerRegistrar />
+            <NotificationScheduler />
+            <noscript>
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontFamily: 'sans-serif' }}>
+                <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>JavaScript Required</h1>
+                <p>Velanovo requires JavaScript to run. Please enable it in your browser settings.</p>
+              </div>
+            </noscript>
+            {/* Page content */}
+            <ErrorBoundary>
+              <div id="main-content" tabIndex={-1} className="relative z-10 min-h-screen pb-28 w-full max-w-full overflow-x-hidden">
+                {children}
+              </div>
+            </ErrorBoundary>
 
-          {/* Persistent bottom navigation */}
-          <BiometricLock />
-          <CommandPalette />
-          <PullToRefresh />
-          <SwipeBack />
-          <QuickAddFAB />
-          <BottomNav />
-          <InstallPrompt />
-          <ReviewAccessLink />
-          <AIAssistant />
-          <ToastContainer />
+            {/* Persistent bottom navigation */}
+            <BiometricLock />
+            <CommandPalette />
+            <PullToRefresh />
+            <SwipeBack />
+            <QuickAddFAB />
+            <BottomNav />
+            <InstallPrompt />
+            <ReviewAccessLink />
+            <AIAssistant />
+            <ToastContainer />
           </ConfirmProvider>
         </AuthProvider>
       </body>

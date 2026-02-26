@@ -488,10 +488,20 @@ export function loadPlan(): Plan {
   const today = todayISO();
   if (shouldAutoUpdate && next.setup.asOfDate !== today) {
     next.setup.asOfDate = today;
-    // Update localStorage with new date
-    const updated = JSON.stringify(next);
-    window.localStorage.setItem(key, updated);
-    planCache = { key, raw: updated, plan: next };
+  }
+
+  // Auto-advance to the period that contains today so the user always
+  // sees the current period when opening the app.
+  const currentPeriod = next.periods.find(p => today >= p.start && today <= p.end);
+  if (currentPeriod && currentPeriod.id !== next.setup.selectedPeriodId) {
+    next.setup.selectedPeriodId = currentPeriod.id;
+  }
+
+  // Persist any changes (asOfDate or selectedPeriodId)
+  const updatedRaw = JSON.stringify(next);
+  if (updatedRaw !== raw) {
+    window.localStorage.setItem(key, updatedRaw);
+    planCache = { key, raw: updatedRaw, plan: next };
   } else {
     planCache = { key, raw: window.localStorage.getItem(key), plan: next };
   }

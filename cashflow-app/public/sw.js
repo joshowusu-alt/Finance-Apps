@@ -1,6 +1,6 @@
-const STATIC_CACHE = "cashflow-static-v3";
-const RUNTIME_CACHE = "cashflow-runtime-v3";
-const OLD_CACHES = ["cashflow-static-v1", "cashflow-runtime-v1", "cashflow-static-v2", "cashflow-runtime-v2"];
+const STATIC_CACHE = "cashflow-static-v4";
+const RUNTIME_CACHE = "cashflow-runtime-v4";
+const OLD_CACHES = ["cashflow-static-v1", "cashflow-runtime-v1", "cashflow-static-v2", "cashflow-runtime-v2", "cashflow-static-v3", "cashflow-runtime-v3"];
 
 const OFFLINE_PAGE = "/offline.html";
 
@@ -81,16 +81,17 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets: cache-first with network fallback
+  // Static assets: network-first to avoid stale JS bundles after deploys
   if (url.pathname.startsWith("/_next/") || url.pathname.startsWith("/icon-") || url.pathname.startsWith("/apple-touch-icon")) {
     event.respondWith(
-      caches.match(request).then((cached) =>
-        cached ||
-        fetch(request).then((response) => {
-          const copy = response.clone();
-          caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
-          return response;
-        }).catch(() => new Response("", { status: 503, statusText: "Offline" }))
+      fetch(request).then((response) => {
+        const copy = response.clone();
+        caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+        return response;
+      }).catch(() =>
+        caches.match(request).then((cached) =>
+          cached || new Response("", { status: 503, statusText: "Offline" })
+        )
       )
     );
     return;
@@ -106,4 +107,11 @@ self.addEventListener("fetch", (event) => {
       })
       .catch(() => caches.match(request))
   );
+});
+
+// Allow the UpdateBanner (or global-error page) to force-activate a new SW
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });

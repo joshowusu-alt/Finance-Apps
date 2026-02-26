@@ -18,13 +18,13 @@ const LETTERS = "Velanovo".split("");
 
 // Particles: {left offset from centre, delay, size (px), duration}
 const PARTICLES: { left: string; delay: string; size: number; dur: string }[] = [
-  { left: "calc(50% - 38px)", delay: "0.9s",  size: 2.5, dur: "2.3s" },
-  { left: "calc(50% + 14px)", delay: "1.3s",  size: 2,   dur: "2.0s" },
-  { left: "calc(50% - 10px)", delay: "0.6s",  size: 3,   dur: "2.6s" },
-  { left: "calc(50% + 36px)", delay: "1.6s",  size: 2,   dur: "1.9s" },
-  { left: "calc(50% - 22px)", delay: "1.1s",  size: 2,   dur: "2.4s" },
-  { left: "calc(50% + 24px)", delay: "0.4s",  size: 3,   dur: "2.1s" },
-  { left: "calc(50% -  2px)", delay: "1.9s",  size: 1.5, dur: "1.8s" },
+  { left: "calc(50% - 38px)", delay: "0.9s", size: 2.5, dur: "2.3s" },
+  { left: "calc(50% + 14px)", delay: "1.3s", size: 2, dur: "2.0s" },
+  { left: "calc(50% - 10px)", delay: "0.6s", size: 3, dur: "2.6s" },
+  { left: "calc(50% + 36px)", delay: "1.6s", size: 2, dur: "1.9s" },
+  { left: "calc(50% - 22px)", delay: "1.1s", size: 2, dur: "2.4s" },
+  { left: "calc(50% + 24px)", delay: "0.4s", size: 3, dur: "2.1s" },
+  { left: "calc(50% -  2px)", delay: "1.9s", size: 1.5, dur: "1.8s" },
 ];
 
 export default function SplashScreen() {
@@ -46,8 +46,15 @@ export default function SplashScreen() {
     // Allow all letter-stagger + particles to finish before exit
     const exitTimer = setTimeout(() => setPhase("exit"), 2300);
     const goneTimer = setTimeout(() => setPhase("gone"), 3100);
-    return () => { clearTimeout(exitTimer); clearTimeout(goneTimer); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    // Safety: force-remove splash via DOM after 5s in case React fails
+    const safetyTimer = setTimeout(() => {
+      const el = document.getElementById("vn-splash-overlay");
+      if (el) el.remove();
+    }, 5000);
+
+    return () => { clearTimeout(exitTimer); clearTimeout(goneTimer); clearTimeout(safetyTimer); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (phase === "gone") return null;
@@ -58,10 +65,19 @@ export default function SplashScreen() {
         /* ── Exit ───────────────────────────── */
         @keyframes vn-exit {
           from { opacity: 1; transform: scale(1); }
-          to   { opacity: 0; transform: scale(1.04); }
+          to   { opacity: 0; transform: scale(1.04); pointer-events: none; }
         }
         .vn-splash-exit {
           animation: vn-exit 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+        }
+
+        /* ── CSS-only safety: auto-hide after 4s even if JS fails ── */
+        @keyframes vn-force-hide {
+          0%, 90% { opacity: 1; pointer-events: auto; }
+          100%    { opacity: 0; pointer-events: none; visibility: hidden; }
+        }
+        #vn-splash-overlay {
+          animation: vn-force-hide 4s ease-in-out forwards;
         }
 
         /* ── Monogram ────────────────────────── */
@@ -115,6 +131,7 @@ export default function SplashScreen() {
       `}</style>
 
       <div
+        id="vn-splash-overlay"
         className={phase === "exit" ? "vn-splash-exit" : ""}
         style={{
           position: "fixed",
