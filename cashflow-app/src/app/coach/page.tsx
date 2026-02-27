@@ -365,19 +365,34 @@ function generateLocalResponse(
 }
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const INITIAL_MESSAGE: Message = {
+  id: "welcome",
+  role: "assistant",
+  content:
+    "Hey there! I'm your financial coach — I can see your budget, spending patterns, and forecasts. Ask me anything about your money, or tap a suggestion below.",
+};
+
+const CHAT_STORAGE_KEY = "vn_chat_history";
+
+// ---------------------------------------------------------------------------
 // Coach Page Component
 // ---------------------------------------------------------------------------
 
 export default function CoachPage() {
   const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content:
-        "Hey there! I'm your financial coach — I can see your budget, spending patterns, and forecasts. Ask me anything about your money, or tap a suggestion below.",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window === "undefined") return [INITIAL_MESSAGE];
+    try {
+      const saved = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (saved) return JSON.parse(saved) as Message[];
+    } catch {
+      // ignore malformed storage
+    }
+    return [INITIAL_MESSAGE];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [modelName, setModelName] = useState<string | null>(null);
@@ -391,6 +406,19 @@ export default function CoachPage() {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Persist conversation to localStorage whenever messages change
+  useEffect(() => {
+    if (messages.length > 1) {
+      try {
+        // Keep last 50 messages to avoid storage bloat
+        const toSave = messages.slice(-50);
+        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(toSave));
+      } catch {
+        // ignore storage errors (e.g. private browsing quota)
+      }
+    }
+  }, [messages]);
 
   const getFinancialContext = useCallback((): {
     ctx: AIFinancialContext;
@@ -543,17 +571,19 @@ export default function CoachPage() {
           </div>
         </div>
         <button
-          onClick={() =>
+          onClick={() => {
+            try { localStorage.removeItem(CHAT_STORAGE_KEY); } catch { /* ignore */ }
             setMessages([
               {
                 id: "welcome-new",
                 role: "assistant",
                 content: "Fresh start! What would you like to know about your finances?",
               },
-            ])
-          }
+            ]);
+          }}
           className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
-          aria-label="New conversation"
+          aria-label="Clear conversation"
+          title="Clear conversation"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

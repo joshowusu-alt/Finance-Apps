@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, createContext, useContext, ReactNode, useCallback } from "react";
+import { useState, createContext, useContext, ReactNode, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 interface ConfirmDialogOptions {
     title: string;
@@ -35,6 +36,18 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             setResolvePromise(() => resolve);
         });
     }, []);
+
+    const trapRef = useFocusTrap(!!dialog);
+
+    useEffect(() => {
+        if (!dialog) return;
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === "Escape") handleCancel();
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => document.removeEventListener("keydown", handleEsc);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dialog]);
 
     const handleConfirm = () => {
         resolvePromise?.(true);
@@ -70,9 +83,12 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label={dialog.title}
                             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm"
                         >
-                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 mx-4">
+                            <div ref={trapRef} className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 mx-4">
                                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                                     {dialog.title}
                                 </h3>

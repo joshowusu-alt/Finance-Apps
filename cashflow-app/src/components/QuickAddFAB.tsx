@@ -9,12 +9,13 @@
  */
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { useHaptic } from "@/lib/useHaptic";
 import { suggestCategory } from "@/lib/categorization";
 import { suggestBillId } from "@/lib/billLinking";
 import { formatMoney } from "@/lib/currency";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import type { CashflowCategory, CashflowType, SavingsGoal, BillTemplate } from "@/data/plan";
 
 // Voice transcript → form fields
@@ -62,6 +63,18 @@ export default function QuickAddFAB() {
   const [billPrompt, setBillPrompt] = useState<{ txnId: string; bill: BillTemplate } | null>(null);
   const [listening, setListening] = useState(false);
   const [voiceHint, setVoiceHint] = useState("");
+
+  const trapRef = useFocusTrap(open);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   function startVoice() {
     type SpeechRec = {
@@ -219,7 +232,11 @@ export default function QuickAddFAB() {
 
             {/* Sheet */}
             <motion.div
+              ref={trapRef}
               key="fab-sheet"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Quick Add Transaction"
               className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl flex flex-col pt-3"
               style={{ background: "var(--vn-surface)", maxHeight: "85dvh" }}
               initial={{ y: "100%" }}

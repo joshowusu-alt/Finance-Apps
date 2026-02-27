@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import type { Transaction, CashflowCategory } from "@/data/plan";
 import { useDarkMode } from "@/hooks/useDarkMode";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { getCategoryColor, getTextColor, getMutedColor } from "@/lib/chartConfig";
 import { formatMoney } from "@/lib/currency";
 import { prettyDate } from "@/lib/formatUtils";
@@ -41,6 +42,8 @@ export function CategoryDrilldown({
     const variance = budgeted ? totalSpent - budgeted : 0;
     const variancePercent = budgeted ? ((variance / budgeted) * 100).toFixed(1) : 0;
     const isOverBudget = variance > 0;
+
+    const trapRef = useFocusTrap(isOpen);
 
     // Group transactions by date
     const groupedByDate = useMemo(() => {
@@ -85,6 +88,10 @@ export function CategoryDrilldown({
 
                     {/* Modal */}
                     <motion.div
+                        ref={trapRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={`${category} transactions`}
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}

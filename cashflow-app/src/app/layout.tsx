@@ -17,6 +17,7 @@ import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import UpdateBanner from "@/components/UpdateBanner";
 // Browser-only overlay components (lazy, ssr: false) — see ClientOverlays.tsx
 import ClientOverlays from "@/components/ClientOverlays";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -61,6 +62,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${playfair.variable} ${jakarta.variable} min-h-screen font-sans transition-colors duration-200 overflow-x-hidden`} style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
+        <PostHogProvider>
         <AuthProvider>
           <ConfirmProvider>
             <CloudSync />
@@ -94,6 +96,7 @@ export default function RootLayout({
             <ClientOverlays />
           </ConfirmProvider>
         </AuthProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

@@ -17,6 +17,7 @@ import SubscriptionDashboard from "@/components/SubscriptionDashboard";
 import InfoTooltip from "@/components/InfoTooltip";
 import { useDerived } from "@/lib/useDerived";
 import { prettyDate, formatPercent } from "@/lib/formatUtils";
+import { track } from "@/lib/analytics";
 
 function formatDelta(value: number) {
   if (value === 0) return "0";
@@ -287,10 +288,12 @@ export default function InsightsPage() {
   }, [plan.transactions, sortedPeriods]);
 
   function handleExportInsightsCsv() {
+    track("insights_export", { format: "csv" });
     downloadInsightsCsv(snapshot, derivedForPeriod);
   }
 
   function handleDownloadInsightsPdf() {
+    track("insights_export", { format: "pdf" });
     downloadInsightsPdf(snapshot, derivedForPeriod);
   }
 

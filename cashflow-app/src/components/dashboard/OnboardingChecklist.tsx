@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useEffect } from "react";
+import { track } from "@/lib/analytics";
 
 interface OnboardingTask {
   id: string;
@@ -37,6 +38,7 @@ export function OnboardingChecklist({
 
   useEffect(() => {
     if (!allDone) return;
+    track("onboarding_completed");
     const id = setTimeout(() => onDismiss?.(), 4_000);
     return () => clearTimeout(id);
   }, [allDone, onDismiss]);

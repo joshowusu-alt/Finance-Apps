@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { track } from "@/lib/analytics";
 
 export default function AIAssistant() {
     const pathname = usePathname();
@@ -13,6 +14,7 @@ export default function AIAssistant() {
         <Link
             href="/coach"
             aria-label="Open Financial Coach"
+            onClick={() => track("ai_chat_opened")}
             style={{
                 position: "fixed",
                 bottom: "9.5rem",

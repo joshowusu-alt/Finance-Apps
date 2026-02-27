@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { loadPlan } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import type { Transaction } from "@/data/plan";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -80,6 +81,8 @@ export default function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  const trapRef = useFocusTrap(open);
 
   // ── Keyboard shortcut ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -222,6 +225,10 @@ export default function CommandPalette() {
               transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               <div
+                ref={trapRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Command palette"
                 className="rounded-2xl overflow-hidden shadow-2xl"
                 style={{
                   background: "var(--vn-surface, #1e2535)",

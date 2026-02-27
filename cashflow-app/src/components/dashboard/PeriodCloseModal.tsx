@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import type { Plan, Period } from "@/data/plan";
 import { formatMoney } from "@/lib/currency";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 interface PeriodCloseModalProps {
   plan: Plan;
@@ -35,12 +37,26 @@ export function PeriodCloseModal({
 }: PeriodCloseModalProps) {
   const nextPeriod = plan.periods.find((p) => p.id === period.id + 1);
 
+  const trapRef = useFocusTrap(true);
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
+
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Close Period"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
       onClick={onClose}
     >
       <div
+        ref={trapRef}
         className="vn-card p-6 w-full max-w-sm shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >

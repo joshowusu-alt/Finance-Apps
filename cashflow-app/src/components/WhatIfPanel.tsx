@@ -10,8 +10,9 @@
  * projected end balance, and vice versa.
  */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { formatMoney } from "@/lib/currency";
+import { track } from "@/lib/analytics";
 
 type CategoryItem = {
   category: string;
@@ -42,6 +43,18 @@ export default function WhatIfPanel({
 }: Props) {
   const [open, setOpen] = useState(true);
 
+  // Track panel open on mount (defaults open) and on user toggle to open
+  useEffect(() => {
+    track("whatif_panel_opened");
+  }, []);
+
+  function handleToggleOpen() {
+    setOpen((p) => {
+      if (!p) track("whatif_panel_opened");
+      return !p;
+    });
+  }
+
   // adjustments: delta from current projected spend per category (negative = saving money)
   const [adjustments, setAdjustments] = useState<Record<string, number>>({});
 
@@ -71,7 +84,7 @@ export default function WhatIfPanel({
     <div className="vn-card p-6">
       <button
         type="button"
-        onClick={() => setOpen((p) => !p)}
+        onClick={handleToggleOpen}
         className="flex w-full items-center justify-between gap-4 text-left"
         aria-expanded={open}
       >

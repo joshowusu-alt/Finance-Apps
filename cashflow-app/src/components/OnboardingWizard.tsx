@@ -11,6 +11,7 @@ import { IncomeInputStep } from "./onboarding/steps/IncomeInputStep";
 import { HasBillsStep } from "./onboarding/steps/HasBillsStep";
 import { ModeStep } from "./onboarding/steps/ModeStep";
 import { completeWizard, buildPlanFromWizard } from "@/lib/onboarding";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { createSamplePlan } from "@/data/plan";
 import type { Plan, PeriodCadence } from "@/data/plan";
 import {
@@ -65,6 +66,8 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
   const [mode, setMode] = useState<"forecast" | "track" | null>(null);
 
   const currencySymbol = CURRENCIES[COUNTRIES[country]?.currency ?? "USD"]?.symbol ?? "$";
+
+  const trapRef = useFocusTrap(true);
 
   const shouldReduceMotion = useReducedMotion();
   const reducedMotionOverride = shouldReduceMotion
@@ -158,6 +161,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
         aria-label="Quick setup"
       >
         <div
+          ref={trapRef}
           className="relative w-full max-w-lg max-h-[90dvh] rounded-3xl shadow-2xl flex flex-col"
           style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}
         >

@@ -1,5 +1,6 @@
 "use client";
 
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { formatMoney } from "@/lib/currency";
 import type { Plan } from "@/data/plan";
 
@@ -56,6 +57,8 @@ export default function MergeConflictModal({
   const local = summaryOf(localPlan);
   const remote = summaryOf(remotePlan);
 
+  const trapRef = useFocusTrap(true);
+
   function fmt(iso: string) {
     try {
       return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", month: "short", day: "numeric" });
@@ -66,10 +69,14 @@ export default function MergeConflictModal({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Sync conflict"
       className="fixed inset-0 z-[9998] flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
     >
       <div
+        ref={trapRef}
         className="w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
         style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}
       >
