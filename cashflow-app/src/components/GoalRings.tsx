@@ -52,6 +52,12 @@ function Ring({ goal, transactions }: { goal: SavingsGoal; transactions: Transac
       {/* Ring SVG */}
       <div className="relative" aria-label={`${goal.icon ?? ""}${goal.name}: ${Math.round(pct * 100)}% complete`}>
         <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">
+          <defs>
+            <linearGradient id={`ring-grad-${goal.id}`} x1="0" y1="0" x2={`${CX * 2}`} y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor={color} />
+              <stop offset="100%" stopColor={color} stopOpacity={0.45} />
+            </linearGradient>
+          </defs>
           {/* Track */}
           <circle
             cx={CX}
@@ -67,7 +73,7 @@ function Ring({ goal, transactions }: { goal: SavingsGoal; transactions: Transac
             cy={CX}
             r={R}
             fill="none"
-            stroke={isComplete ? "#4FAF7B" : color}
+            stroke={isComplete ? "#4FAF7B" : `url(#ring-grad-${goal.id})`}
             strokeWidth="6"
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
@@ -84,6 +90,17 @@ function Ring({ goal, transactions }: { goal: SavingsGoal; transactions: Transac
             aria-hidden="true"
           >
             {isComplete ? "✓" : (goal.icon ?? "🎯")}
+          </text>
+          <text
+            x={CX}
+            y={CX + 14}
+            textAnchor="middle"
+            fontSize="9"
+            fontWeight="700"
+            fill={color}
+            style={{ fontFamily: "var(--font-jakarta, sans-serif)" }}
+          >
+            {Math.round(Math.min(pct, 1) * 100)}%
           </text>
         </svg>
 

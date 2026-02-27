@@ -54,9 +54,9 @@ export default function SpendingVelocityGauge({
     return Math.min(actualDailyRate / (2 * budgetDailyRate), 1);
   }, [actualDailyRate, budgetDailyRate]);
 
-  // Gauge spans from 210° to 330° (= 120° of arc)
-  const START_DEG = 210;
-  const END_DEG = 330;
+  // Gauge spans from 195° to 345° (= 150° of arc)
+  const START_DEG = 195;
+  const END_DEG = 345;
   const RANGE_DEG = END_DEG - START_DEG;
 
   const needleDeg = START_DEG + fraction * RANGE_DEG;
@@ -73,10 +73,8 @@ export default function SpendingVelocityGauge({
   const gaugeColor =
     zoneFraction <= 0.5 ? "#22c55e" : zoneFraction <= 0.65 ? "#eab308" : "#ef4444";
 
-  // Needle tip
-  const tip = polarToXY(cx, cy, needleR, needleDeg);
-  const base1 = polarToXY(cx, cy, 6, needleDeg + 90);
-  const base2 = polarToXY(cx, cy, 6, needleDeg - 90);
+  // Needle is drawn pointing straight up (0°) and CSS-rotated to needleDeg
+  // tip at (cx, cy - needleR) = (60, 14); bases at (cx±6, cy) = (66,56) and (54,56)
 
   // Budget marker
   const budgetOuter = polarToXY(cx, cy, outerR + 4, budgetDeg);
@@ -139,11 +137,16 @@ export default function SpendingVelocityGauge({
             strokeLinecap="round"
           />
 
-          {/* Needle */}
+          {/* Needle — drawn at 0° (straight up), CSS-rotated to needleDeg */}
           <polygon
-            points={`${tip.x},${tip.y} ${base1.x},${base1.y} ${base2.x},${base2.y}`}
+            points={`${cx},${cy - needleR} ${cx + 6},${cy} ${cx - 6},${cy}`}
             fill={gaugeColor}
             opacity={0.95}
+            style={{
+              transform: `rotate(${needleDeg}deg)`,
+              transformOrigin: `${cx}px ${cy}px`,
+              transition: "transform 0.55s cubic-bezier(0.34, 1.2, 0.64, 1)",
+            }}
           />
 
           {/* Center dot */}

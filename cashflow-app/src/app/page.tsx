@@ -19,6 +19,7 @@ import {
 import { ALERT_PREFS_UPDATED_EVENT } from "@/lib/alerts";
 import SidebarNav from "@/components/SidebarNav";
 import { formatMoney } from "@/lib/currency";
+import { prettyDate } from "@/lib/formatUtils";
 import { VelanovoLogo } from "@/components/VelanovoLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 import { CashflowProjectionChart } from "@/components/charts";
@@ -265,7 +266,16 @@ export default function HomePage() {
                 <div>
                   <h1 className="text-2xl font-semibold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Dashboard</h1>
                   <div className="mt-1 text-sm text-white/45">
-                    {formatPeriodLabel(period.label)} Overview
+                    {formatPeriodLabel(period.label)}
+                    {period && (
+                      <>
+                        {" · "}
+                        <span className="text-white/35">{prettyDate(period.start)} – {prettyDate(period.end)}</span>
+                        {daysRemaining > 0 && (
+                          <span className="ml-2 text-white/25 text-xs">{daysRemaining}d left</span>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mt-3 md:mt-0">
@@ -338,6 +348,22 @@ export default function HomePage() {
                           <span>{Math.round(spendingProgress * 100)}% spent</span>
                           <span>{Math.round(timeProgress * 100)}% of period</span>
                         </div>
+                      </div>
+                    )}
+
+                    {/* 3-stat summary strip */}
+                    {hasData && (
+                      <div className="grid grid-cols-3 gap-3 mt-3 pt-3 border-t border-white/10 text-center">
+                        {([
+                          { label: "Income",  value: actualIncome,   color: "text-emerald-300" },
+                          { label: "Spent",   value: actualSpending,  color: "text-rose-400" },
+                          { label: "Saved",   value: actualSavings,   color: "text-sky-300" },
+                        ] as const).map(({ label, value, color }) => (
+                          <div key={label}>
+                            <div className="text-[10px] uppercase tracking-widest text-white/40">{label}</div>
+                            <div className={`text-sm font-semibold tabular-nums mt-0.5 ${color}`}>{formatMoney(value)}</div>
+                          </div>
+                        ))}
                       </div>
                     )}
 
@@ -466,7 +492,7 @@ export default function HomePage() {
 
               {/* 4. Spending velocity gauge */}
               {daysElapsed > 0 && budgetSpending > 0 && (
-                <motion.div className="h-full md:col-span-3" whileHover={{ y: -2, transition: { duration: 0.18 } }}>
+                <motion.div className="h-full md:col-span-2" whileHover={{ y: -2, transition: { duration: 0.18 } }}>
                   <SpendingVelocityGauge
                     actualSpend={actualSpending}
                     budgetSpend={budgetSpending}

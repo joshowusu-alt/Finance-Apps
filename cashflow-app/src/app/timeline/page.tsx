@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { savePlan } from "@/lib/storage";
 import { generateEvents, getStartingBalance } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
@@ -9,6 +9,7 @@ import type { CashflowCategory, CashflowType } from "@/data/plan";
 import { useDerived } from "@/lib/useDerived";
 import { formatMoney } from "@/lib/currency";
 import { getDisplayLocale } from "@/lib/formatUtils";
+import { CashflowProjectionChart } from "@/components/charts/CashflowProjectionChart";
 
 function formatNice(iso: string) {
   const locale = getDisplayLocale();
@@ -81,6 +82,13 @@ export default function TimelinePage() {
       });
   }, [baseEvents, plan.eventOverrides]);
   const hasStartingOverride = typeof periodOverride?.startingBalance === "number";
+
+  const todayRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (todayRef.current) {
+      todayRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
 
   const lowestPoint = derived.cashflow.lowest;
   const lowestBelowMin =
@@ -245,6 +253,17 @@ export default function TimelinePage() {
               </div>
             </div>
 
+            {/* Balance trajectory chart */}
+            {rows && rows.length > 0 && (
+              <div className="vn-card p-4 mb-4">
+                <div className="vn-label text-(--vn-muted) mb-3">Balance trajectory</div>
+                <CashflowProjectionChart
+                  data={rows.map((r) => ({ date: r.date, balance: r.balance }))}
+                  height={180}
+                />
+              </div>
+            )}
+
             <div className="rounded-2xl border border-(--vn-border) overflow-hidden" style={{ background: "var(--vn-surface)" }}>
               {rows.every((r) => !r.income && !r.outflow) && (
                 <div className="px-4 py-3 text-sm border-b border-(--vn-border)" style={{ background: "rgba(245,158,11,0.08)" }}>
@@ -259,10 +278,13 @@ export default function TimelinePage() {
               </div>
 
               <div className="max-h-[60vh] overflow-y-auto divide-y" style={{ borderColor: "var(--vn-border)" }}>
-                {rows.map((r) => (
+                {rows.map((r) => {
+                  const isToday = r.date === new Date().toISOString().slice(0, 10);
+                  return (
                   <div
                     key={r.date}
-                    className="grid grid-cols-[1fr_auto] gap-x-3 items-center px-4 py-2.5"
+                    ref={isToday ? todayRef : null}
+                    className={`grid grid-cols-[1fr_auto] gap-x-3 items-center px-4 py-2.5${isToday ? " border-l-2 border-l-(--vn-primary) bg-(--vn-surface)" : ""}`}
                   >
                     {/* Left: date + label + amounts */}
                     <div className="min-w-0">
@@ -288,7 +310,8 @@ export default function TimelinePage() {
                       {formatMoney(r.balance)}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

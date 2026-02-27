@@ -36,13 +36,18 @@ export function TransactionsWidget({ transactions, href = "/transactions" }: Tra
                 ) : (
                     transactions.slice(0, 3).map((t) => (
                         <div key={t.id} className="flex justify-between items-center group cursor-default">
-                            <div className="flex flex-col">
-                                <span className="text-sm font-medium text-(--vn-text) truncate max-w-[120px]">{t.label || "Unknown"}</span>
-                                <span className="text-xs text-(--vn-muted)">{prettyDate(t.date)}</span>
+                            <div className="flex items-center justify-between gap-2 w-full min-w-0">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium text-(--vn-text) truncate">{t.label || "Unknown"}</div>
+                                <div className="text-xs text-(--vn-muted)">
+                                  {prettyDate(t.date)}
+                                  {t.category && <> &middot; <span className={t.type === "income" ? "text-emerald-500" : "text-(--vn-muted)"}>{t.category}</span></>}
+                                </div>
+                              </div>
+                              <span className={`text-sm font-semibold shrink-0 tabular-nums ${t.type === "income" ? "text-emerald-400" : "text-(--vn-text)"}`}>
+                                {t.type === "income" ? "+" : "−"}{formatMoney(Math.abs(t.amount))}
+                              </span>
                             </div>
-                            <span className="text-sm font-semibold text-(--vn-text)">
-                                {formatMoney(t.amount)}
-                            </span>
                         </div>
                     ))
                 )}

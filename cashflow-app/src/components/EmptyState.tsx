@@ -37,13 +37,12 @@ export default function EmptyState({
       {/* Icon or Illustration */}
       {illustration ? (
         <motion.div
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
+          initial={{ scale: 0.75, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.8 }}
           transition={{
-            delay: 0.2,
-            type: "spring",
-            stiffness: 200,
-            damping: 15,
+            delay: 0.15,
+            duration: 0.32,
+            ease: [0.4, 0.0, 0.2, 1],
           }}
           className="mb-6"
         >
@@ -51,13 +50,12 @@ export default function EmptyState({
         </motion.div>
       ) : (
         <motion.div
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
+          initial={{ scale: 0.75, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.8 }}
           transition={{
-            delay: 0.2,
-            type: "spring",
-            stiffness: 200,
-            damping: 15,
+            delay: 0.15,
+            duration: 0.32,
+            ease: [0.4, 0.0, 0.2, 1],
           }}
           className="text-7xl mb-6 opacity-80"
         >

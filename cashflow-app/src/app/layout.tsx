@@ -1,7 +1,7 @@
 import "./globals.css";
 import "../styles/velanovo.css";
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import BottomNav from "@/components/BottomNav";
 import ReviewAccessLink from "@/components/ReviewAccessLink";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -25,9 +25,9 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-const jakarta = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-jakarta",
   display: "swap",
 });

@@ -104,12 +104,12 @@ function IconMore(active: boolean) {
 const primaryItems: NavItem[] = [
   { href: "/", label: "Home", icon: IconHome },
   { href: "/plan", label: "Budget", icon: IconPlan },
-  { href: "/timeline", label: "Calendar", icon: IconTimeline },
+  { href: "/transactions", label: "Transactions", icon: () => <span className="text-lg">💳</span> },
   { href: "/insights", label: "Insights", icon: IconInsights },
 ];
 
 const moreItems: NavItem[] = [
-  { href: "/transactions", label: "Transactions", desc: "Log expenses", icon: () => <span className="text-lg">💳</span> },
+  { href: "/timeline", label: "Calendar", desc: "Cashflow timeline", icon: IconTimeline },
   { href: "/bills", label: "Bills", desc: "Recurring bills", icon: () => <span className="text-lg">📄</span> },
   { href: "/income", label: "Income", desc: "Income rules", icon: () => <span className="text-lg">💰</span> },
   { href: "/goals", label: "Goals", desc: "Save targets", icon: () => <span className="text-lg">🎯</span> },

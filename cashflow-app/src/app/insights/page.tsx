@@ -350,29 +350,25 @@ export default function InsightsPage() {
                       ))}
                   </select>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={handleExportInsightsCsv}
-                    className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-semibold transition-colors hover:opacity-90"
-                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(240,237,232,0.8)" }}
-                  >
-                    Export insights (CSV)
-                  </button>
-                  <button
-                    onClick={handleDownloadInsightsPdf}
-                    className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-semibold transition-colors hover:opacity-90"
-                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(240,237,232,0.8)" }}
-                  >
-                    Download insights report (PDF)
-                  </button>
-                  <button
-                    onClick={() => downloadPlanPdf(plan, baseStats.period.id)}
-                    className="rounded-lg px-3 py-1.5 text-xs min-h-10 font-semibold transition-colors hover:opacity-90"
-                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(240,237,232,0.8)" }}
-                  >
-                    Download plan report (PDF)
-                  </button>
-                </div>
+                <details className="relative group">
+                  <summary className="list-none cursor-pointer flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white/75 hover:text-white hover:bg-white/10 transition-all border border-white/15 select-none">
+                    Export
+                    <svg className="w-3 h-3 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </summary>
+                  <div className="absolute right-0 top-full mt-1.5 rounded-xl border border-(--vn-border) bg-(--vn-surface) shadow-xl z-30 w-52 overflow-hidden">
+                    <button onClick={handleExportInsightsCsv} className="w-full text-left px-4 py-3 text-sm text-(--vn-text) hover:bg-(--vn-bg) transition-colors">
+                      📊 Insights (CSV)
+                    </button>
+                    <button onClick={handleDownloadInsightsPdf} className="w-full text-left px-4 py-3 text-sm text-(--vn-text) hover:bg-(--vn-bg) transition-colors border-t border-(--vn-border)">
+                      📄 Insights (PDF)
+                    </button>
+                    <button onClick={() => downloadPlanPdf(plan, baseStats.period.id)} className="w-full text-left px-4 py-3 text-sm text-(--vn-text) hover:bg-(--vn-bg) transition-colors border-t border-(--vn-border)">
+                      📋 Plan report (PDF)
+                    </button>
+                  </div>
+                </details>
               </div>
             </header>
 
@@ -446,46 +442,49 @@ export default function InsightsPage() {
               </div>
             </section>
 
+            {/* ── Quick-jump sticky nav ─────────────────────────────────── */}
+            <nav
+              aria-label="Insights sections"
+              className="sticky top-0 z-20 -mx-4 px-4 py-2 overflow-x-auto scroll-x-hide"
+              style={{
+                background: "var(--vn-bg)",
+                borderBottom: "1px solid var(--vn-border)",
+                scrollbarWidth: "none",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              <div className="flex gap-2 min-w-max">
+                {([
+                  { id: "s-coach",       label: "Coach" },
+                  { id: "s-on-track",   label: "On Track" },
+                  { id: "s-changes",    label: "Changes" },
+                  { id: "s-overspend",  label: "Overspending" },
+                  { id: "s-income",     label: "Income" },
+                  { id: "s-savings",    label: "Savings" },
+                  { id: "s-next",       label: "Next Steps" },
+                  { id: "s-compare",    label: "Periods" },
+                ] as const).map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      if (!showFullInsights) setShowFullInsights(true);
+                      setTimeout(() => {
+                        const el = document.getElementById(id);
+                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }, 60);
+                    }}
+                    className="rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors hover:bg-(--vn-primary)/10 hover:text-(--vn-primary) text-(--vn-muted)"
+                    style={{ minHeight: 32 }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </nav>
+
             {showFullInsights && (
               <>
-                {/* ── Quick-jump sticky nav ─────────────────────────────────── */}
-                <nav
-                  aria-label="Insights sections"
-                  className="sticky top-0 z-20 -mx-4 px-4 py-2 overflow-x-auto scroll-x-hide"
-                  style={{
-                    background: "var(--vn-bg)",
-                    borderBottom: "1px solid var(--vn-border)",
-                    scrollbarWidth: "none",
-                    WebkitOverflowScrolling: "touch",
-                  }}
-                >
-                  <div className="flex gap-2 min-w-max">
-                    {([
-                      { id: "s-coach",       label: "Coach" },
-                      { id: "s-on-track",   label: "On Track" },
-                      { id: "s-changes",    label: "Changes" },
-                      { id: "s-overspend",  label: "Overspending" },
-                      { id: "s-income",     label: "Income" },
-                      { id: "s-savings",    label: "Savings" },
-                      { id: "s-next",       label: "Next Steps" },
-                      { id: "s-compare",    label: "Periods" },
-                    ] as const).map(({ id, label }) => (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => {
-                          const el = document.getElementById(id);
-                          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }}
-                        className="rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors hover:bg-(--vn-primary)/10 hover:text-(--vn-primary) text-(--vn-muted)"
-                        style={{ minHeight: 32 }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </nav>
-
                 {/* AI Coach — proactive nudges */}
                 <CollapsibleSection id="s-coach" title="AI Coach" defaultOpen>
                   <div className="space-y-3">

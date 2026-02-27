@@ -412,6 +412,10 @@ export default function SettingsPage() {
               </div>
             </div>
 
+            <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">Account &amp; Sync</div>
+              <div className="flex-1 h-px bg-(--vn-border)" />
+            </div>
             {/* Account */}
             <div className="vn-card p-6">
               <div className="text-sm font-semibold text-(--vn-text) mb-4">Account</div>
@@ -544,6 +548,10 @@ export default function SettingsPage() {
               )}
             </div>
 
+            <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">Preferences</div>
+              <div className="flex-1 h-px bg-(--vn-border)" />
+            </div>
             <div className="vn-card p-6">
               <div className="text-sm font-semibold text-(--vn-text) mb-4">Appearance</div>
               <div className="space-y-4">
@@ -644,6 +652,10 @@ export default function SettingsPage() {
               )}
             </div>
 
+            <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">Budget Periods</div>
+              <div className="flex-1 h-px bg-(--vn-border)" />
+            </div>
             <div className="vn-card p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-sm font-semibold text-(--vn-text)">Periods</div>
@@ -901,6 +913,10 @@ export default function SettingsPage() {
               )}
             </div>
 
+            <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">Privacy &amp; Security</div>
+              <div className="flex-1 h-px bg-(--vn-border)" />
+            </div>
             {/* ── Privacy & Security ────────────────────────────────────── */}
             <div className="vn-card p-6">
               <div className="text-sm font-semibold text-(--vn-text) mb-1">Privacy &amp; Security</div>
@@ -976,6 +992,10 @@ export default function SettingsPage() {
               )}
             </div>
 
+            <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">Notifications</div>
+              <div className="flex-1 h-px bg-(--vn-border)" />
+            </div>
             {/* ── Notifications ─────────────────────────────────────────── */}
             <div className="vn-card p-6">
               <div className="text-sm font-semibold text-(--vn-text) mb-1">Notifications</div>
@@ -1054,6 +1074,10 @@ export default function SettingsPage() {
               </div>
             </div>
 
+            <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">About</div>
+              <div className="flex-1 h-px bg-(--vn-border)" />
+            </div>
             <div className="vn-card p-6">
               <div className="text-sm font-semibold text-(--vn-text) mb-4">About</div>
               <div className="space-y-2 text-sm">

@@ -1,6 +1,8 @@
 "use client";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useId } from "react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { motion } from "framer-motion";
 import { chartColors, formatCompactCurrency, getTextColor, getMutedColor, getGridColor, chartConfig } from "@/lib/chartConfig";
 import { formatMoney } from "@/lib/currency";
 import { useDarkMode } from "@/hooks/useDarkMode";
@@ -21,6 +23,12 @@ type Props = {
 export function SpendingTrendChart({ data, showIncome = false, height = 300 }: Props) {
   const isDark = useDarkMode();
   const isMobile = useIsMobile();
+  const uid = useId();
+  const spendGradId = `spendGrad-${uid}`;
+  const incomeGradId = `incomeGrad-${uid}`;
+
+  const spendColor = chartColors.error;
+  const incomeColor = chartColors.success;
 
   // Mobile-optimized margins
   const margins = isMobile
@@ -28,8 +36,21 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
     : chartConfig.margin;
 
   return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
     <ResponsiveContainer width="100%" height={isMobile ? Math.min(height - 60, 220) : height}>
-      <LineChart data={data} margin={margins}>
+      <AreaChart data={data} margin={margins}>
+        <defs>
+          <linearGradient id={spendGradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={spendColor} stopOpacity={0.18} />
+            <stop offset="95%" stopColor={spendColor} stopOpacity={0.02} />
+          </linearGradient>
+          {showIncome && (
+            <linearGradient id={incomeGradId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={incomeColor} stopOpacity={0.15} />
+              <stop offset="95%" stopColor={incomeColor} stopOpacity={0.02} />
+            </linearGradient>
+          )}
+        </defs>
         <CartesianGrid
           strokeDasharray="3 3"
           stroke={getGridColor(isDark)}
@@ -72,32 +93,35 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
           iconType="circle"
           iconSize={isMobile ? 8 : 10}
         />
-        <Line
+        <Area
           type="monotone"
           dataKey="spending"
-          stroke={chartColors.error}
-          strokeWidth={isMobile ? 1.5 : 2}
-          dot={isMobile ? false : { fill: chartColors.error, strokeWidth: 0, r: 4 }}
-          activeDot={{ r: isMobile ? 4 : 6 }}
+          stroke={spendColor}
+          strokeWidth={2.5}
+          fill={`url(#${spendGradId})`}
+          dot={false}
+          activeDot={{ r: 5, strokeWidth: 2, fill: isDark ? "#18181b" : "#fff", stroke: spendColor }}
           name="Spending"
           animationDuration={chartConfig.animationDuration}
           animationEasing={chartConfig.animationEasing}
         />
         {showIncome && (
-          <Line
+          <Area
             type="monotone"
             dataKey="income"
-            stroke={chartColors.success}
-            strokeWidth={isMobile ? 1.5 : 2}
-            dot={isMobile ? false : { fill: chartColors.success, strokeWidth: 0, r: 4 }}
-            activeDot={{ r: isMobile ? 4 : 6 }}
+            stroke={incomeColor}
+            strokeWidth={2.5}
+            fill={`url(#${incomeGradId})`}
+            dot={false}
+            activeDot={{ r: 5, strokeWidth: 2, fill: isDark ? "#18181b" : "#fff", stroke: incomeColor }}
             name="Income"
             animationDuration={chartConfig.animationDuration}
             animationEasing={chartConfig.animationEasing}
           />
         )}
-      </LineChart>
+      </AreaChart>
     </ResponsiveContainer>
+    </motion.div>
   );
 }
 

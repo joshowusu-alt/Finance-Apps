@@ -2,7 +2,8 @@
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { chartColors, formatCurrency, formatCompactCurrency, getTextColor, getMutedColor, getGridColor, chartConfig } from "@/lib/chartConfig";
-import { useMemo } from "react";
+import { useMemo, useId } from "react";
+import { motion } from "framer-motion";
 import { useDarkMode } from "@/hooks/useDarkMode";
 
 export type CashflowDataPoint = {
@@ -25,6 +26,7 @@ export function CashflowProjectionChart({
   lowBalanceThreshold = 0,
 }: Props) {
   const isDark = useDarkMode();
+  const uid = useId();
 
   // Derive Y-axis domain and threshold visibility from the actual data
   const { yDomain, showThreshold } = useMemo(() => {
@@ -55,16 +57,17 @@ export function CashflowProjectionChart({
   }, [data, lowBalanceThreshold]);
 
   return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.45, delay: 0.1 }}>
     <ResponsiveContainer width="100%" height={height}>
       <AreaChart data={data} margin={chartConfig.margin}>
         <defs>
-          <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={`colorBalance-${uid}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={chartColors.primary} stopOpacity={0.3} />
-            <stop offset="95%" stopColor={chartColors.primary} stopOpacity={0} />
+            <stop offset="95%" stopColor={chartColors.primary} stopOpacity={0.04} />
           </linearGradient>
-          <linearGradient id="colorProjected" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={`colorProjected-${uid}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={chartColors.secondary} stopOpacity={0.2} />
-            <stop offset="95%" stopColor={chartColors.secondary} stopOpacity={0} />
+            <stop offset="95%" stopColor={chartColors.secondary} stopOpacity={0.04} />
           </linearGradient>
         </defs>
         <CartesianGrid
@@ -97,6 +100,11 @@ export function CashflowProjectionChart({
           formatter={(value: number | undefined, name?: string) =>
             value !== undefined ? [formatCurrency(value), name ?? ""] : ["", ""]
           }
+          labelFormatter={(label) => {
+            try {
+              return new Date(String(label) + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+            } catch { return String(label); }
+          }}
           labelStyle={{ color: getMutedColor(isDark), marginBottom: 4 }}
         />
         {showThreshold && (
@@ -118,7 +126,7 @@ export function CashflowProjectionChart({
           stroke={chartColors.primary}
           strokeWidth={2}
           fillOpacity={1}
-          fill="url(#colorBalance)"
+          fill={`url(#colorBalance-${uid})`}
           name="Budget (Planned)"
           animationDuration={chartConfig.animationDuration}
           animationEasing={chartConfig.animationEasing}
@@ -131,7 +139,7 @@ export function CashflowProjectionChart({
             strokeWidth={2}
             strokeDasharray="5 5"
             fillOpacity={1}
-            fill="url(#colorProjected)"
+            fill={`url(#colorProjected-${uid})`}
             name="Actuals (Recorded)"
             connectNulls={false}
             animationDuration={chartConfig.animationDuration}
@@ -140,5 +148,6 @@ export function CashflowProjectionChart({
         )}
       </AreaChart>
     </ResponsiveContainer>
+    </motion.div>
   );
 }

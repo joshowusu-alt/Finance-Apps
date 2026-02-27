@@ -86,6 +86,14 @@ export function DonutChart({
 
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
+  if (!data.length || total === 0) {
+    return (
+      <div className="flex items-center justify-center text-(--vn-muted) text-sm" style={{ height }}>
+        No data for this period
+      </div>
+    );
+  }
+
   // Custom legend with click functionality
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderCustomLegend = (props: any) => {
@@ -155,7 +163,7 @@ export function DonutChart({
               <Cell
                 key={`cell-${index}`}
                 fill={entry.color as string}
-                stroke={isDark ? "#18181b" : "#ffffff"}
+                stroke="var(--vn-bg)"
                 strokeWidth={2}
               />
             ))}
@@ -169,7 +177,10 @@ export function DonutChart({
               boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
               padding: "12px 16px",
             }}
-            formatter={(value) => [typeof value === "number" ? formatMoney(value) : "", "Amount"]}
+            formatter={(value, name) => {
+              const pct = total > 0 ? ((Number(value) / total) * 100).toFixed(1) : "0";
+              return [`${formatMoney(Number(value))}  (${pct}%)`, name];
+            }}
             labelStyle={{ fontWeight: 600, marginBottom: 4 }}
           />
           {showLegend && (

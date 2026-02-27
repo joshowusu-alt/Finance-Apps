@@ -19,14 +19,14 @@ export const chartColors = {
   gradientEnd: "#3b82f6",
 
   // Chart-specific colors - HIGHLY DISTINCT for visual clarity
-  chart1: "#3b82f6",        // Blue - Strong blue
-  chart2: "#22c55e",        // Green - Bright green
-  chart3: "#f97316",        // Orange - Vivid orange
-  chart4: "#ef4444",        // Red - Clear red
-  chart5: "#a855f7",        // Purple - Vibrant purple
-  chart6: "#06b6d4",        // Cyan - Bright cyan
-  chart7: "#ec4899",        // Pink - Hot pink
-  chart8: "#84cc16",        // Lime - Lime green
+  chart1: "#4A7FA5",        // Steel blue
+  chart2: "#4FAF7B",        // Soft emerald
+  chart3: "#C5A046",        // Brand gold
+  chart4: "#B85C5C",        // Muted rose
+  chart5: "#7B6FA5",        // Dusty violet
+  chart6: "#5CA5A5",        // Teal
+  chart7: "#A5835C",        // Warm amber
+  chart8: "#6A8A6A",        // Forest
 
   // Finance semantic colors - DISTINCT
   income: "#22c55e",          // Green = money in

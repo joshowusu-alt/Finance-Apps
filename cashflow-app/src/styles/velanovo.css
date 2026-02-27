@@ -160,9 +160,9 @@ body {
 /* Uppercase data label — e.g. “SAFE TO SPEND”, “INCOME” */
 .vn-label {
   font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.065em;
   text-transform: uppercase;
   color: var(--vn-muted);
   line-height: 1.4;
@@ -171,9 +171,9 @@ body {
 /* Gold label variant — for Safe to Spend card and hero metrics */
 .vn-label-gold {
   font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.065em;
   text-transform: uppercase;
   color: var(--vn-gold);
   line-height: 1.4;

@@ -40,7 +40,7 @@ export default function WhatIfPanel({
   categories,
   projectedEndBalance,
 }: Props) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   // adjustments: delta from current projected spend per category (negative = saving money)
   const [adjustments, setAdjustments] = useState<Record<string, number>>({});

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useEffect } from "react";
 
 interface OnboardingTask {
   id: string;
@@ -33,6 +34,12 @@ export function OnboardingChecklist({
 }: OnboardingChecklistProps) {
   const pendingTasks = onboardingTasks.filter((t) => !t.done);
   const allDone = onboardingTasks.every((t) => t.done);
+
+  useEffect(() => {
+    if (!allDone) return;
+    const id = setTimeout(() => onDismiss?.(), 4_000);
+    return () => clearTimeout(id);
+  }, [allDone, onDismiss]);
 
   return (
     <>
@@ -103,7 +110,7 @@ export function OnboardingChecklist({
         )}
         {allDone && (
           <div className="text-sm text-(--vn-success) font-medium text-center py-2">
-            🎉 You&apos;re all set! Dismiss this card to clear space.
+            🎉 You&apos;re all set! This card will close in a moment.
           </div>
         )}
       </div>

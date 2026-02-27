@@ -48,6 +48,16 @@ function formatMonthYear(dateStr: string) {
   });
 }
 
+function getHeatColor(spend: number, maxSpend: number): string {
+  if (spend <= 0) return "transparent";
+  const ratio = Math.min(spend / Math.max(maxSpend, 1), 1);
+  if (ratio < 0.2) return "rgba(16,185,129,0.25)";
+  if (ratio < 0.4) return "rgba(16,185,129,0.5)";
+  if (ratio < 0.6) return "rgba(251,191,36,0.55)";
+  if (ratio < 0.8) return "rgba(249,115,22,0.6)";
+  return "rgba(239,68,68,0.75)";
+}
+
 export default function SpendingCalendarHeatmap({
   transactions,
   periodStart,
@@ -115,7 +125,6 @@ export default function SpendingCalendarHeatmap({
             return <div key={`empty-${i}`} className="aspect-square rounded-lg" />;
 
           const spend = spendByDay[date] ?? 0;
-          const fraction = maxDay > 0 ? spend / maxDay : 0;
           const isToday = date === today;
           const isFuture = date > today;
 
@@ -135,10 +144,7 @@ export default function SpendingCalendarHeatmap({
                 isToday ? "ring-1 ring-(--vn-primary)" : ""
               } ${isFuture ? "opacity-30" : ""}`}
               style={{
-                background:
-                  spend > 0
-                    ? `rgba(220,38,38,${(0.08 + fraction * 0.72).toFixed(2)})`
-                    : "var(--vn-border)",
+                background: spend > 0 ? getHeatColor(spend, maxDay) : "var(--vn-border)",
               }}
               onMouseEnter={() => setHovered(date)}
               onMouseLeave={() => setHovered(null)}
@@ -166,11 +172,11 @@ export default function SpendingCalendarHeatmap({
       {/* Legend */}
       <div className="flex items-center gap-2 mt-3 justify-end">
         <span className="text-[10px] text-(--vn-muted)">Low</span>
-        {[0.1, 0.3, 0.55, 0.75, 0.95].map((f) => (
+        {[0.15, 0.35, 0.55, 0.75, 1].map((f) => (
           <div
             key={f}
             className="w-3 h-3 rounded-sm"
-            style={{ background: `rgba(220,38,38,${(0.08 + f * 0.72).toFixed(2)})` }}
+            style={{ background: getHeatColor(f, 1) }}
           />
         ))}
         <span className="text-[10px] text-(--vn-muted)">High</span>
