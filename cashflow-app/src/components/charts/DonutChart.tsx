@@ -2,9 +2,10 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Sector } from "recharts";
 import { motion } from "framer-motion";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { chartColors, getCategoryColor, getTextColor, getGridColor } from "@/lib/chartConfig";
 import { formatMoney } from "@/lib/currency";
+import { useDarkMode } from "@/hooks/useDarkMode";
 
 export type DonutDataPoint = {
   name: string;
