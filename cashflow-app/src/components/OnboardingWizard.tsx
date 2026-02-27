@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { StepIndicator } from "./onboarding/StepIndicator";
 import { WelcomeStep } from "./onboarding/steps/WelcomeStep";
 import { GetStartedStep } from "./onboarding/steps/GetStartedStep";
@@ -66,9 +66,41 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
 
   const currencySymbol = CURRENCIES[COUNTRIES[country]?.currency ?? "USD"]?.symbol ?? "$";
 
+  const shouldReduceMotion = useReducedMotion();
+  const reducedMotionOverride = shouldReduceMotion
+    ? { initial: false as const, animate: false as const, exit: {} }
+    : {};
+
   useEffect(() => {
     if (step === 3) setTimeout(() => incomeRef.current?.focus(), 400);
   }, [step]);
+
+  // Restore persisted state on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('onboarding_wizard_state');
+      if (saved) {
+        const s = JSON.parse(saved);
+        if (typeof s.step === 'number') setStep(s.step);
+        if (s.country) { setCountryLocal(s.country); persistCountry(s.country); }
+        if (s.periodCadence) setPeriodCadence(s.periodCadence);
+        if (typeof s.periodStartDay === 'number') setPeriodStartDay(s.periodStartDay);
+        if (typeof s.income === 'string') setIncome(s.income);
+        if (s.hasBills !== undefined) setHasBills(s.hasBills);
+        if (s.mode !== undefined) setMode(s.mode);
+      }
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist wizard state to sessionStorage on every relevant change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('onboarding_wizard_state', JSON.stringify({
+        step, country, periodCadence, periodStartDay, income, hasBills, mode,
+      }));
+    } catch { /* ignore */ }
+  }, [step, country, periodCadence, periodStartDay, income, hasBills, mode]);
 
   const handleCountrySelect = useCallback((code: CountryCode) => {
     setCountryLocal(code);
@@ -88,6 +120,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
   const canAdvance = STEP_CONFIG[step]?.canAdvance({ country, income, hasBills, mode }) ?? false;
 
   function handleGetStarted(choice: "fresh" | "sample") {
+    sessionStorage.removeItem('onboarding_wizard_state');
     completeWizard();
     if (choice === "sample") {
       onComplete(createSamplePlan());
@@ -107,6 +140,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
+        {...reducedMotionOverride}
         className="fixed inset-0 z-60 bg-black/60 backdrop-blur-md"
       />
 
@@ -117,6 +151,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.92, y: 30 }}
         transition={SPRING}
+        {...reducedMotionOverride}
         className="fixed inset-0 z-60 flex items-center justify-center p-4 md:p-8"
         role="dialog"
         aria-modal="true"
@@ -138,7 +173,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
           {/* Step content (scrollable on mobile) */}
           <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-8 md:px-10 md:py-10">
             <AnimatePresence mode="wait" custom={direction}>
-              <motion.div key={step} custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit">
+              <motion.div key={step} custom={direction} variants={shouldReduceMotion ? undefined : stepVariants} initial={shouldReduceMotion ? false : "enter"} animate={shouldReduceMotion ? {} : "center"} exit={shouldReduceMotion ? {} : "exit"}>
 
                 {step === 0 && <WelcomeStep />}
 

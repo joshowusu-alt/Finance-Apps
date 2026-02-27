@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion, useSpring, useTransform, AnimatePresence, type Variants } from "framer-motion";
+import { motion, useSpring, useTransform, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import Link from "next/link";
 import { hasStoredPlan, savePlan } from "@/lib/storage";
 import { createSamplePlan } from "@/data/plan";
@@ -77,6 +77,10 @@ export default function HomePage() {
   const [showSetup, setShowSetup] = useState(() => !hasStoredPlan() && !loadWizardState().completed);
   const [mounted, setMounted] = useState(false);
   const [mountTime] = useState(() => Date.now());
+  const shouldReduceMotion = useReducedMotion();
+  const motionProps = shouldReduceMotion
+    ? { initial: false as const, animate: false as const }
+    : {};
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -247,8 +251,9 @@ export default function HomePage() {
             variants={sectionStagger}
             initial="hidden"
             animate="visible"
+            {...motionProps}
           >
-            <motion.header variants={fadeUp} className="vn-masthead flex flex-col gap-4">
+            <motion.header variants={fadeUp} className="vn-masthead flex flex-col gap-4" {...motionProps}>
 
               {/* Gold glow accent top-right */}
               <div className="absolute top-0 right-0 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, rgba(197,160,70,0.14) 0%, transparent 70%)", transform: "translate(30%, -40%)" }} />

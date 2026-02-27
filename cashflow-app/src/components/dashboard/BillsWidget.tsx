@@ -1,5 +1,7 @@
 ﻿"use client";
 
+import { memo } from "react";
+
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { formatMoney } from "@/lib/currency";
@@ -18,7 +20,7 @@ type BillsWidgetProps = {
     href?: string;
 };
 
-export function BillsWidget({ bills, href = "/bills" }: BillsWidgetProps) {
+export const BillsWidget = memo(function BillsWidget({ bills, href = "/bills" }: BillsWidgetProps) {
     const nextBill = bills[0];
     const otherBillCount = bills.length - 1;
 
@@ -74,4 +76,4 @@ export function BillsWidget({ bills, href = "/bills" }: BillsWidgetProps) {
             </motion.div>
         </Link>
     );
-}
+});

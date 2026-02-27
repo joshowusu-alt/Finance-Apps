@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { VelanovoLogo } from "./VelanovoLogo";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { detectRecurringBills } from "@/lib/billDetection";
 import type { Period } from "@/data/plan";
@@ -147,7 +147,7 @@ const items = [
   },
 ];
 
-export default function SidebarNav({ periodLabel, periodStart, periodEnd }: SidebarNavProps) {
+function SidebarNav({ periodLabel, periodStart, periodEnd }: SidebarNavProps) {
   const pathname = usePathname();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname?.startsWith(href));
 
@@ -330,3 +330,5 @@ export default function SidebarNav({ periodLabel, periodStart, periodEnd }: Side
     </aside>
   );
 }
+
+export default memo(SidebarNav);
