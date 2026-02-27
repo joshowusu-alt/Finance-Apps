@@ -261,7 +261,18 @@ export function defaultPeriodStart(): string {
 // ---------------------------------------------------------------------------
 // Default periods — dynamically generated from the 1st of the current month
 // ---------------------------------------------------------------------------
-export const DEFAULT_PERIODS: Period[] = generatePeriods(defaultPeriodStart(), "monthly", 12);
+
+/**
+ * Returns freshly-generated default periods starting from the 1st of the
+ * current month. Call this at request time (or in createBlankPlan) rather than
+ * relying on the module-level constant, which would be frozen to cold-start time.
+ */
+export function createDefaultPeriods(): Period[] {
+  return generatePeriods(defaultPeriodStart(), "monthly", 12);
+}
+
+/** @deprecated Call `createDefaultPeriods()` instead to avoid cold-start staleness. */
+export const DEFAULT_PERIODS: Period[] = createDefaultPeriods();
 
 // ---------------------------------------------------------------------------
 // Sample plan — generic data that teaches bills vs outflows, categories, etc.
@@ -277,7 +288,7 @@ export const SAMPLE_PLAN: Plan = {
     expectedMinBalance: 500,
     variableCap: 400,
   },
-  periods: DEFAULT_PERIODS,
+  periods: createDefaultPeriods(),
 
   // --- Income: salary (monthly) + freelance side gig (monthly) ---
   incomeRules: [
@@ -378,7 +389,9 @@ export const SAMPLE_PLAN: Plan = {
 const SAMPLE_PLAN_JSON = JSON.stringify(SAMPLE_PLAN);
 
 export function createSamplePlan(): Plan {
-  return JSON.parse(SAMPLE_PLAN_JSON) as Plan;
+  const plan = JSON.parse(SAMPLE_PLAN_JSON) as Plan;
+  plan.setup.asOfDate = new Date().toISOString().slice(0, 10);
+  return plan;
 }
 
 // ---------------------------------------------------------------------------
@@ -388,14 +401,14 @@ export const EMPTY_PLAN: Plan = {
   version: PLAN_VERSION,
   setup: {
     selectedPeriodId: 1,
-    asOfDate: new Date().toISOString().split("T")[0],
+    asOfDate: "2000-01-01", // sentinel — createBlankPlan() sets this to todayISO() at request time
     windowDays: 30,
     startingBalance: 0,
     rollForwardBalance: true,
     expectedMinBalance: 0,
     variableCap: 0,
   },
-  periods: DEFAULT_PERIODS,
+  periods: createDefaultPeriods(),
   incomeRules: [],
   outflowRules: [],
   periodRuleOverrides: [],

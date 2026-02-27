@@ -75,3 +75,21 @@ export function defaultDateRange(): { startDate: string; endDate: string } {
     endDate: end.toISOString().split("T")[0],
   };
 }
+
+/**
+ * Human-readable "days until" label for a date string (local time).
+ * Returns "Overdue", "Due today", "Due tomorrow", or "In N days".
+ */
+export function getDaysUntil(dateStr: string): string {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(dateStr);
+  target.setHours(0, 0, 0, 0);
+  const diffTime = target.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return "Overdue";
+  if (diffDays === 0) return "Due today";
+  if (diffDays === 1) return "Due tomorrow";
+  return `In ${diffDays} days`;
+}

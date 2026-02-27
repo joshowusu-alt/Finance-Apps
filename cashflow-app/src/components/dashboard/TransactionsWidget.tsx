@@ -4,13 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { formatMoney } from "@/lib/currency";
 import { prettyDate } from "@/lib/formatUtils";
-
-type Transaction = {
-    id: string;
-    date: string;
-    merchant: string;
-    amount: number;
-};
+import type { Transaction } from "@/data/plan";
 
 type TransactionsWidgetProps = {
     transactions: Transaction[];
@@ -43,7 +37,7 @@ export function TransactionsWidget({ transactions, href = "/transactions" }: Tra
                     transactions.slice(0, 3).map((t) => (
                         <div key={t.id} className="flex justify-between items-center group cursor-default">
                             <div className="flex flex-col">
-                                <span className="text-sm font-medium text-(--vn-text) truncate max-w-[120px]">{t.merchant || "Unknown"}</span>
+                                <span className="text-sm font-medium text-(--vn-text) truncate max-w-[120px]">{t.label || "Unknown"}</span>
                                 <span className="text-xs text-(--vn-muted)">{prettyDate(t.date)}</span>
                             </div>
                             <span className="text-sm font-semibold text-(--vn-text)">

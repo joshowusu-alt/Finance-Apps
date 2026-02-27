@@ -37,6 +37,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getUser().then(({ data: { user: u } }) => {
       setUser(u);
       setLoading(false);
+    }).catch((err) => {
+      console.error("getUser failed:", err);
+      setUser(null);
+      setLoading(false);
     });
 
     // Listen for auth changes

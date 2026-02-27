@@ -11,16 +11,16 @@ import {
     Legend,
 } from "recharts";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useDarkMode } from "@/hooks/useDarkMode";
 import {
     chartColors,
-    formatCurrency,
     formatCompactCurrency,
     getTextColor,
     getMutedColor,
     getGridColor,
     chartConfig,
 } from "@/lib/chartConfig";
+import { formatMoney } from "@/lib/currency";
 
 export type MonthlyDataPoint = {
     month: string; // e.g., "Jan", "Feb"
@@ -44,21 +44,7 @@ export function MonthlyTrendChart({
     showSavings = false,
     showGrid = true,
 }: Props) {
-    const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
-
-    useEffect(() => {
-        const observer = new MutationObserver(() => {
-            const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
-            setIsDark(darkMode);
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ["data-theme"],
-        });
-
-        return () => observer.disconnect();
-    }, []);
+    const isDark = useDarkMode();
 
     const textColor = getTextColor(isDark);
     const mutedColor = getMutedColor(isDark);
@@ -130,7 +116,7 @@ export function MonthlyTrendChart({
                             padding: "12px 16px",
                         }}
                         formatter={(value, name) => [
-                            typeof value === "number" ? formatCurrency(value) : "",
+                            typeof value === "number" ? formatMoney(value) : "",
                             typeof name === "string" ? name.charAt(0).toUpperCase() + name.slice(1) : "",
                         ]}
                         labelStyle={{ fontWeight: 600, marginBottom: 8, color: textColor }}

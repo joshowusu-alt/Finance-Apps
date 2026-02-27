@@ -2,7 +2,8 @@
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { chartColors, formatCurrency, formatCompactCurrency, getTextColor, getMutedColor, getGridColor, chartConfig } from "@/lib/chartConfig";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useDarkMode } from "@/hooks/useDarkMode";
 
 export type CashflowDataPoint = {
   date: string;
@@ -23,21 +24,7 @@ export function CashflowProjectionChart({
   height = 300,
   lowBalanceThreshold = 0,
 }: Props) {
-  const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
-      setIsDark(darkMode);
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const isDark = useDarkMode();
 
   // Derive Y-axis domain and threshold visibility from the actual data
   const { yDomain, showThreshold } = useMemo(() => {

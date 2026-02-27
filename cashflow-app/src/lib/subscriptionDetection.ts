@@ -1,7 +1,8 @@
 import type { Recurrence, Transaction } from "@/data/plan";
 import { detectRecurringBills, type DetectedBill } from "@/lib/billDetection";
 import { suggestCategory } from "@/lib/categorization";
-import { normalizeText } from "@/lib/textUtils";
+import { dayDiff } from "@/lib/dateUtils";
+import { normalizeMerchant, containsKeyword } from "@/lib/textUtils";
 
 export type SubscriptionRecommendation = "keep" | "review" | "cancel";
 
@@ -92,23 +93,6 @@ const NON_SUBSCRIPTION_KEYWORDS = [
 ];
 
 
-
-function containsKeyword(text: string, keywords: string[]) {
-  const normalized = normalizeText(text);
-  return keywords.some((keyword) => normalized.includes(normalizeText(keyword)));
-}
-
-function normalizeMerchant(label: string): string {
-  return label
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/^(payment to|transfer to|direct debit|dd)\s+/i, "")
-    .replace(/\s+(ltd|limited|uk|co|plc|inc)$/i, "")
-    .trim();
-}
-
 function frequencyToMonthly(amount: number, frequency: Recurrence) {
   if (frequency === "weekly") return amount * 4.33;
   if (frequency === "biweekly") return amount * 2.17;
@@ -123,13 +107,6 @@ function frequencyToExpectedGap(frequency: Recurrence) {
 
 function getLastChargeDate(occurrences: Array<{ date: string }>) {
   return occurrences.reduce((latest, item) => (item.date > latest ? item.date : latest), "");
-}
-
-function diffDays(fromISO: string, toISO: string) {
-  const from = new Date(`${fromISO}T00:00:00`);
-  const to = new Date(`${toISO}T00:00:00`);
-  const ms = to.getTime() - from.getTime();
-  return Math.floor(ms / (1000 * 60 * 60 * 24));
 }
 
 function isSubscriptionCandidate(bill: DetectedBill, extraText: string) {
@@ -152,7 +129,7 @@ function buildRecommendation(
 ): { recommendation: SubscriptionRecommendation; reason: string } {
   const expectedGap = frequencyToExpectedGap(subscription.frequency);
   const daysSince = subscription.lastChargeDate
-    ? diffDays(subscription.lastChargeDate, asOfDate)
+    ? dayDiff(subscription.lastChargeDate, asOfDate)
     : 0;
 
   if (subscription.lastChargeDate && daysSince > expectedGap * 2) {

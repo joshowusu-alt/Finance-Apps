@@ -1,25 +1,16 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { MAIN_COOKIE_NAME } from "@/lib/mainStore";
-import { createClient } from "@/lib/supabase/server";
+import { resolveAuthWithCookie, unauthorized } from "@/lib/apiHelpers";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const supabase = await createClient();
-  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+  const auth = await resolveAuthWithCookie();
 
-  if (user) {
-    return NextResponse.json({ userId: user.id, mode: "supabase" });
+  if (!auth) {
+    return unauthorized("Not authenticated");
   }
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get(MAIN_COOKIE_NAME)?.value;
-
-  if (!token) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-
-  // Return the token as the userId (it's already hashed on the server)
-  return NextResponse.json({ userId: token, mode: "main" });
+  // Map internal mode names to the external API shape (backward-compat)
+  const mode = auth.mode === "supabase" ? "supabase" : "main";
+  return NextResponse.json({ userId: auth.userId, mode });
 }

@@ -6,6 +6,8 @@
  */
 
 import type { Transaction, BillTemplate, CashflowCategory, Recurrence } from "@/data/plan";
+import { dayDiff } from "@/lib/dateUtils";
+import { normalizeMerchant } from "@/lib/textUtils";
 
 export type DetectedBill = {
     id: string;
@@ -23,19 +25,6 @@ type TransactionGroup = {
     merchantKey: string;
     transactions: Transaction[];
 };
-
-// Normalize merchant name for grouping
-function normalizeMerchant(label: string): string {
-    return label
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim()
-        // Remove common prefixes/suffixes
-        .replace(/^(payment to|transfer to|direct debit|dd)\s+/i, "")
-        .replace(/\s+(ltd|limited|uk|co|plc|inc)$/i, "")
-        .trim();
-}
 
 // Group transactions by normalized merchant name
 function groupByMerchant(transactions: Transaction[]): TransactionGroup[] {
@@ -59,13 +48,6 @@ function groupByMerchant(transactions: Transaction[]): TransactionGroup[] {
         .filter((g) => g.transactions.length >= 2); // Need at least 2 occurrences
 }
 
-// Calculate days between two dates
-function daysBetween(date1: string, date2: string): number {
-    const d1 = new Date(date1 + "T00:00:00");
-    const d2 = new Date(date2 + "T00:00:00");
-    return Math.abs(Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)));
-}
-
 // Detect frequency pattern
 function detectFrequency(dates: string[]): { frequency: Recurrence; confidence: number } | null {
     if (dates.length < 2) return null;
@@ -74,7 +56,7 @@ function detectFrequency(dates: string[]): { frequency: Recurrence; confidence: 
     const gaps: number[] = [];
 
     for (let i = 1; i < sortedDates.length; i++) {
-        gaps.push(daysBetween(sortedDates[i - 1], sortedDates[i]));
+        gaps.push(dayDiff(sortedDates[i - 1], sortedDates[i]));
     }
 
     const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;

@@ -33,11 +33,19 @@ export async function proxy(request: NextRequest) {
   // Refresh the session — do not remove this line
   await supabase.auth.getUser();
 
-  // Restrict CORS to same-origin for API routes
+  // Restrict CORS to same-origin for API routes.
+  // Cron routes are called server-to-server by Vercel (no Origin header) and
+  // authenticate via Authorization: Bearer <CRON_SECRET> — exempt them here.
   if (request.nextUrl.pathname.startsWith("/api/")) {
-    const origin = request.headers.get("origin");
-    const host = request.headers.get("host");
-    if (origin) {
+    const isCronRoute = request.nextUrl.pathname.startsWith("/api/cron/");
+    if (!isCronRoute) {
+      const origin = request.headers.get("origin");
+      const host = request.headers.get("host");
+      if (!origin) {
+        // Requests with no Origin header (curl, Postman, server-to-server) are
+        // not from a browser page — block them on browser-facing endpoints.
+        return new NextResponse(null, { status: 403 });
+      }
       const originHost = new URL(origin).host;
       if (originHost !== host) {
         return new NextResponse(null, { status: 403 });

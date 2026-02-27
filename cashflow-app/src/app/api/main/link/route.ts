@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import os from "os";
 import { ensureMainPlan, MAIN_COOKIE_MAX_AGE, MAIN_COOKIE_NAME } from "@/lib/mainStore";
-import { setAuthCookie } from "@/lib/apiHelpers";
+import { setAuthCookie, resolveAuthWithCookie } from "@/lib/apiHelpers";
 
 export const runtime = "nodejs";
 
@@ -42,6 +42,7 @@ function getLanUrl() {
 }
 
 async function getNgrokPublicUrl() {
+  if (process.env.NODE_ENV === "production") return null;
   const configured = process.env.NGROK_PUBLIC_URL || process.env.CASHFLOW_PUBLIC_URL;
   if (configured) return normalizeOrigin(configured);
 
@@ -63,6 +64,16 @@ async function getNgrokPublicUrl() {
   }
 
   return null;
+}
+
+export async function GET() {
+  const auth = await resolveAuthWithCookie();
+  if (!auth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const publicUrl = await getNgrokPublicUrl();
+  const localUrl = publicUrl ? null : getLanUrl();
+  return NextResponse.json({ publicUrl, localUrl });
 }
 
 export async function POST() {

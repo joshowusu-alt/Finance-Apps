@@ -1,5 +1,5 @@
 import type { BillTemplate } from "@/data/plan";
-import { normalizeText, splitTokens } from "@/lib/textUtils";
+import { normalizeText, splitTokens, scoreTextMatch } from "@/lib/textUtils";
 
 const BILL_STOP_WORDS = new Set([
   "bill",
@@ -25,25 +25,6 @@ function billTokens(bill: BillTemplate) {
   return filtered.length ? filtered : tokens;
 }
 
-function scoreMatch(hay: string, tokens: string[]) {
-  const normalized = normalizeText(hay);
-  if (!normalized) return { score: 0, matched: 0 };
-  const wordSet = new Set(splitTokens(normalized));
-  let score = 0;
-  let matched = 0;
-  for (const token of tokens) {
-    if (!token) continue;
-    if (wordSet.has(token)) {
-      score += 2;
-      matched += 1;
-    } else if (normalized.includes(token)) {
-      score += 1;
-      matched += 1;
-    }
-  }
-  return { score, matched };
-}
-
 export function suggestBillId(label: string, notes: string, bills: BillTemplate[]) {
   if (!label && !notes) return "";
   const hay = `${label} ${notes ?? ""}`.trim();
@@ -54,7 +35,7 @@ export function suggestBillId(label: string, notes: string, bills: BillTemplate[
   bills.forEach((bill) => {
     const tokens = billTokens(bill);
     if (tokens.length === 0) return;
-    const { score, matched } = scoreMatch(hay, tokens);
+    const { score, matched } = scoreTextMatch(hay, tokens);
     if (score > bestScore || (score === bestScore && matched > bestMatched)) {
       bestScore = score;
       bestMatched = matched;

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Products, CountryCode } from "plaid";
 import { getPlaidClient } from "@/lib/plaid";
-import { resolveAuth, badRequest, serverError } from "@/lib/apiHelpers";
+import { resolveAuthWithCookie, badRequest, serverError } from "@/lib/apiHelpers";
 import { createRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
@@ -10,11 +10,10 @@ const checkLinkTokenLimit = createRateLimiter(10, 60_000);
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await req.json();
-    const auth = await resolveAuth(userId);
+    const auth = await resolveAuthWithCookie();
 
     if (!auth) {
-      return badRequest("Missing userId");
+      return badRequest("Unauthorized");
     }
 
     if (!checkLinkTokenLimit(auth.userId)) {

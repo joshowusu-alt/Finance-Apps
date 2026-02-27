@@ -11,9 +11,22 @@ import {
 } from "@/lib/cashflowEngine";
 import { suggestBillId } from "@/lib/billLinking";
 import { formatMoney } from "@/lib/currency";
-import { normalizeText, splitTokens } from "@/lib/textUtils";
+import { splitTokens, scoreTextMatch } from "@/lib/textUtils";
 import type { CashflowCategory, Plan, Transaction } from "@/data/plan";
 import { dayDiff, clamp, average, stdDev } from "@/lib/dateUtils";
+
+// ─── Named constants ─────────────────────────────────────────────────────────
+
+const SERIES_COLORS = {
+  income: "#22c55e",
+  spending: "#f97316",
+  savings: "#a855f7",
+  balance: "#3b82f6",
+} as const;
+
+const FORECAST_OPTIMISTIC_FACTOR = 1.05;
+const FORECAST_PESSIMISTIC_FACTOR = 0.95;
+const VARIABLE_CATEGORIES = new Set<CashflowCategory>(["allowance", "other", "buffer"]);
 
 export type PeriodStats = {
   period: ReturnType<typeof getPeriod>;
@@ -134,23 +147,78 @@ export type InsightsSnapshot = {
   periodHighlights: PeriodHighlights;
 };
 
-const incomeStopWords = new Set(["income", "salary", "pay", "payment", "wage"]);
+// ─── Private sub-function return types ───────────────────────────────────────
 
-function scoreRuleMatch(hay: string, tokens: string[]) {
-  const normalized = normalizeText(hay);
-  if (!normalized) return 0;
-  const wordSet = new Set(splitTokens(normalized));
-  let score = 0;
-  for (const token of tokens) {
-    if (!token) continue;
-    if (wordSet.has(token)) {
-      score += 2;
-    } else if (normalized.includes(token)) {
-      score += 1;
-    }
-  }
-  return score;
-}
+type PeriodTimelines = {
+  sortedPeriods: Plan["periods"];
+  comparePeriodId: number | null;
+  basePeriod: ReturnType<typeof getPeriod>;
+  comparePeriod: ReturnType<typeof getPeriod> | null;
+  baseStats: PeriodStats;
+  compareStats: PeriodStats | null;
+  startingBalance: number;
+  baseTimeline: TimelineRow[];
+  endBalance: number;
+  lowestPoint: ReturnType<typeof minPoint>;
+  riskDays: number;
+  firstRisk?: TimelineRow;
+  periodDays: number;
+  daysElapsed: number;
+  timeProgress: number;
+  incomeProgress: number;
+  spendingProgress: number;
+  savingsProgress: number;
+};
+
+type ProjectionScenarios = {
+  projectedIncome: number;
+  projectedSpending: number;
+  projectedSavings: number;
+  projectedLeftover: number;
+  forecastScenarios: ForecastScenario[];
+};
+
+type VarianceAnalysis = {
+  varianceByCategory: VarianceByCategory;
+  overspentCategories: VarianceSummary[];
+  variableCap: number;
+  variableSpend: number;
+  variableDelta: number;
+  overspendItems: Transaction[];
+  billVariance: BillVarianceRow[];
+};
+
+type MerchantAnalysis = {
+  merchantRows: MerchantRow[];
+  categoryChanges: CategoryChange[];
+  labelChanges: LabelChange[];
+};
+
+type IncomeAnalysis = {
+  incomeSourceChanges: IncomeSourceChanges;
+  incomeSplit: IncomeSplit;
+};
+
+type TrendSeries = {
+  allStats: PeriodStats[];
+  incomeSeries: number[];
+  spendingSeries: number[];
+  savingsSeries: number[];
+  leftoverSeries: number[];
+  seriesCards: SeriesCard[];
+  incomeAverage: number;
+  incomeVolatility: number;
+  incomeCv: number;
+  hasIncomeData: boolean;
+  stabilityScore: number | null;
+  savingsStreak: number;
+  savingsRate: number;
+  categoryChartData: CategoryData[];
+  periodTrendData: SpendingDataPoint[];
+  periodHighlights: PeriodHighlights;
+};
+
+const incomeStopWords = new Set(["income", "salary", "pay", "payment", "wage"]);
 
 function suggestIncomeRuleId(label: string, notes: string, rules: Plan["incomeRules"]) {
   if (!label && !notes) return "";
@@ -169,7 +237,7 @@ function suggestIncomeRuleId(label: string, notes: string, rules: Plan["incomeRu
           .filter((token) => token.length >= 2 && !incomeStopWords.has(token))
       )
     );
-    const score = scoreRuleMatch(hay, tokens);
+    const score = scoreTextMatch(hay, tokens).score;
     if (score > bestScore) {
       bestScore = score;
       bestId = rule.id;
@@ -267,11 +335,14 @@ function indexOfMin(values: number[]): PeakInfo {
   return { index: idx, value: min };
 }
 
-export function buildInsightsSnapshot(
+// ─── Private sub-functions ────────────────────────────────────────────────────
+
+/** Builds budget + actuals timelines for the selected and compare periods. */
+function buildPeriodTimelines(
   plan: Plan,
   basePeriodId: number,
-  comparePeriodId: "auto" | number | null
-): InsightsSnapshot {
+  rawCompareId: "auto" | number | null
+): PeriodTimelines {
   const sortedPeriods = [...plan.periods].sort((a, b) => a.id - b.id);
   const baseStats = buildStats(plan, basePeriodId);
   const basePeriod = baseStats.period;
@@ -281,13 +352,12 @@ export function buildInsightsSnapshot(
     if (idx > 0) return sortedPeriods[idx - 1].id;
     return null;
   })();
-  const resolvedCompareId = comparePeriodId === "auto" ? defaultCompareId : comparePeriodId;
-  const compareStats = resolvedCompareId ? buildStats(plan, resolvedCompareId) : null;
+  const comparePeriodId = rawCompareId === "auto" ? defaultCompareId : rawCompareId;
+  const compareStats = comparePeriodId ? buildStats(plan, comparePeriodId) : null;
   const comparePeriod = compareStats ? compareStats.period : null;
 
   const startingBalance = getStartingBalance(plan, basePeriod.id);
   const baseTimeline = buildTimeline(plan, basePeriod.id, startingBalance);
-
   const endBalance = baseTimeline.length
     ? baseTimeline[baseTimeline.length - 1].balance
     : plan.setup.startingBalance;
@@ -304,6 +374,35 @@ export function buildInsightsSnapshot(
   const spendingProgress = baseStats.budgetSpending > 0 ? baseStats.actualSpending / baseStats.budgetSpending : 0;
   const savingsProgress = baseStats.budgetSavings > 0 ? baseStats.actualSavings / baseStats.budgetSavings : 0;
 
+  return {
+    sortedPeriods,
+    comparePeriodId: comparePeriodId ?? null,
+    basePeriod,
+    comparePeriod,
+    baseStats,
+    compareStats,
+    startingBalance,
+    baseTimeline,
+    endBalance,
+    lowestPoint,
+    riskDays,
+    firstRisk,
+    periodDays,
+    daysElapsed,
+    timeProgress,
+    incomeProgress,
+    spendingProgress,
+    savingsProgress,
+  };
+}
+
+/** Computes best/base/worst projection scenarios. */
+function computeProjections(
+  baseStats: PeriodStats,
+  timeProgress: number,
+  startingBalance: number,
+  expectedMinBalance: number
+): ProjectionScenarios {
   const projectedIncome = timeProgress > 0 ? baseStats.actualIncome / timeProgress : baseStats.actualIncome;
   const projectedSpending = timeProgress > 0 ? baseStats.actualSpending / timeProgress : baseStats.actualSpending;
   const projectedSavings = timeProgress > 0 ? baseStats.actualSavings / timeProgress : baseStats.actualSavings;
@@ -313,8 +412,8 @@ export function buildInsightsSnapshot(
     {
       id: "conservative",
       label: "Conservative",
-      income: projectedIncome * 0.95,
-      spending: projectedSpending * 1.05,
+      income: projectedIncome * FORECAST_PESSIMISTIC_FACTOR,
+      spending: projectedSpending * FORECAST_OPTIMISTIC_FACTOR,
       savings: projectedSavings,
       note: "Income -5%, spending +5%",
       leftover: 0,
@@ -335,8 +434,8 @@ export function buildInsightsSnapshot(
     {
       id: "optimistic",
       label: "Optimistic",
-      income: projectedIncome * 1.05,
-      spending: projectedSpending * 0.95,
+      income: projectedIncome * FORECAST_OPTIMISTIC_FACTOR,
+      spending: projectedSpending * FORECAST_PESSIMISTIC_FACTOR,
       savings: projectedSavings,
       note: "Income +5%, spending -5%",
       leftover: 0,
@@ -346,23 +445,23 @@ export function buildInsightsSnapshot(
   ].map((scenario) => {
     const leftover = scenario.income - scenario.spending - scenario.savings;
     const end = startingBalance + leftover;
-    return {
-      ...scenario,
-      leftover,
-      endBalance: end,
-      bufferDelta: end - plan.setup.expectedMinBalance,
-    };
+    return { ...scenario, leftover, endBalance: end, bufferDelta: end - expectedMinBalance };
   });
 
-  const varianceByCategory = getVarianceByCategory(plan, basePeriod.id);
+  return { projectedIncome, projectedSpending, projectedSavings, projectedLeftover, forecastScenarios };
+}
+
+/** Computes category-level and total variance between budget and actuals, plus bill variance. */
+function computeVarianceAnalysis(plan: Plan, timelines: PeriodTimelines): VarianceAnalysis {
+  const { baseStats } = timelines;
+  const varianceByCategory = getVarianceByCategory(plan, timelines.basePeriod.id);
 
   const overspentCategories = Object.values(varianceByCategory)
     .filter((v) => v && v.category !== "income" && v.category !== "savings" && v.status === "over")
     .map((v) => v as VarianceSummary);
 
-  const variableCategories = new Set<CashflowCategory>(["allowance", "other", "buffer"]);
   const variableSpend = baseStats.transactions
-    .filter((t) => t.type === "outflow" && variableCategories.has(t.category))
+    .filter((t) => t.type === "outflow" && VARIABLE_CATEGORIES.has(t.category))
     .reduce((sum, t) => sum + t.amount, 0);
   const variableCap = plan.setup.variableCap;
   const variableDelta = variableSpend - variableCap;
@@ -376,27 +475,23 @@ export function buildInsightsSnapshot(
   })();
 
   const billVariance = (() => {
-    const events = generateEvents(plan, basePeriod.id);
+    const events = generateEvents(plan, timelines.basePeriod.id);
     const map = new Map<string, { id: string; label: string; budget: number; actual: number }>();
     plan.bills.forEach((bill) =>
       map.set(bill.id, { id: bill.id, label: bill.label, budget: 0, actual: 0 })
     );
-
     events.forEach((event) => {
       if (event.type !== "outflow" || !event.sourceId) return;
       const entry = map.get(event.sourceId);
       if (entry) entry.budget += event.amount;
     });
-
     baseStats.transactions.forEach((txn) => {
       if (txn.type !== "outflow") return;
-      const matched =
-        txn.linkedBillId || suggestBillId(txn.label, txn.notes ?? "", plan.bills);
+      const matched = txn.linkedBillId || suggestBillId(txn.label, txn.notes ?? "", plan.bills);
       if (!matched) return;
       const entry = map.get(matched);
       if (entry) entry.actual += txn.amount;
     });
-
     return Array.from(map.values())
       .map((row) => ({ ...row, variance: row.actual - row.budget }))
       .filter((row) => row.budget > 0 || row.actual > 0)
@@ -404,29 +499,29 @@ export function buildInsightsSnapshot(
       .slice(0, 6);
   })();
 
+  return { varianceByCategory, overspentCategories, variableCap, variableSpend, variableDelta, overspendItems, billVariance };
+}
+
+/** Computes top merchants and per-merchant spending totals, plus category/label changes vs compare period. */
+function computeMerchantAnalysis(
+  baseStats: PeriodStats,
+  compareStats: PeriodStats | null
+): MerchantAnalysis {
   const merchantRows = (() => {
     const baseMap = mapTotalsByLabel(
       baseStats.transactions,
       (t) => t.type === "outflow" && t.category !== "savings"
     );
     const compareMap = compareStats
-      ? mapTotalsByLabel(
-        compareStats.transactions,
-        (t) => t.type === "outflow" && t.category !== "savings"
-      )
+      ? mapTotalsByLabel(compareStats.transactions, (t) => t.type === "outflow" && t.category !== "savings")
       : new Map<string, number>();
-
     return Array.from(baseMap.entries())
-      .map(([label, total]) => ({
-        label,
-        total,
-        delta: total - (compareMap.get(label) ?? 0),
-      }))
+      .map(([label, total]) => ({ label, total, delta: total - (compareMap.get(label) ?? 0) }))
       .sort((a, b) => b.total - a.total)
       .slice(0, 6);
   })();
 
-  const categoryChanges = (() => {
+  const categoryChanges: CategoryChange[] = (() => {
     if (!compareStats) return [];
     const baseMap = mapTotalsByCategory(
       baseStats.transactions,
@@ -438,15 +533,12 @@ export function buildInsightsSnapshot(
     );
     const categories = new Set([...baseMap.keys(), ...compareMap.keys()]);
     return Array.from(categories)
-      .map((category) => ({
-        category,
-        delta: (baseMap.get(category) ?? 0) - (compareMap.get(category) ?? 0),
-      }))
+      .map((category) => ({ category, delta: (baseMap.get(category) ?? 0) - (compareMap.get(category) ?? 0) }))
       .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
       .slice(0, 5);
   })();
 
-  const labelChanges = (() => {
+  const labelChanges: LabelChange[] = (() => {
     if (!compareStats) return [];
     const baseMap = mapTotalsByLabel(
       baseStats.transactions,
@@ -458,15 +550,21 @@ export function buildInsightsSnapshot(
     );
     const labels = new Set([...baseMap.keys(), ...compareMap.keys()]);
     return Array.from(labels)
-      .map((label) => ({
-        label,
-        delta: (baseMap.get(label) ?? 0) - (compareMap.get(label) ?? 0),
-      }))
+      .map((label) => ({ label, delta: (baseMap.get(label) ?? 0) - (compareMap.get(label) ?? 0) }))
       .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
       .slice(0, 5);
   })();
 
-  const incomeSourceChanges = (() => {
+  return { merchantRows, categoryChanges, labelChanges };
+}
+
+/** Computes income source breakdown and rule matching. */
+function computeIncomeAnalysis(
+  plan: Plan,
+  baseStats: PeriodStats,
+  compareStats: PeriodStats | null
+): IncomeAnalysis {
+  const incomeSourceChanges: IncomeSourceChanges = (() => {
     if (!compareStats) return null;
     const ruleMap = new Map(plan.incomeRules.map((rule) => [rule.id, rule.label]));
     const baseSources = baseStats.transactions
@@ -475,12 +573,10 @@ export function buildInsightsSnapshot(
     const compareSources = compareStats.transactions
       .filter((t) => t.type === "income")
       .map((t) => getIncomeSourceKey(t, plan.incomeRules));
-
     const baseSet = new Set(baseSources);
     const compareSet = new Set(compareSources);
     const newSources = Array.from(baseSet).filter((key) => !compareSet.has(key));
     const missingSources = Array.from(compareSet).filter((key) => !baseSet.has(key));
-
     const formatKey = (key: string) => {
       if (key.startsWith("rule:")) {
         const id = key.replace("rule:", "");
@@ -488,14 +584,13 @@ export function buildInsightsSnapshot(
       }
       return key.replace("label:", "");
     };
-
     return {
       newSources: newSources.map(formatKey).slice(0, 5),
       missingSources: missingSources.map(formatKey).slice(0, 5),
     };
   })();
 
-  const incomeSplit = (() => {
+  const incomeSplit: IncomeSplit = (() => {
     const reliable = baseStats.transactions
       .filter((t) => t.type === "income")
       .map((t) => ({
@@ -510,6 +605,12 @@ export function buildInsightsSnapshot(
     return { reliable, irregular };
   })();
 
+  return { incomeSourceChanges, incomeSplit };
+}
+
+/** Builds the multi-period trend series for charts, plus income analytics and savings metrics. */
+function buildTrendSeries(plan: Plan, baseStats: PeriodStats): TrendSeries {
+  const sortedPeriods = [...plan.periods].sort((a, b) => a.id - b.id);
   const allStats = sortedPeriods.map((p) => buildStats(plan, p.id));
 
   const incomeSeries = allStats.map((s) => s.actualIncome);
@@ -518,34 +619,10 @@ export function buildInsightsSnapshot(
   const leftoverSeries = allStats.map((s) => s.actualLeftover);
 
   const seriesCards: SeriesCard[] = [
-    {
-      key: "income",
-      label: "Income",
-      values: incomeSeries,
-      stroke: "#22c55e",
-      fill: "#22c55e",
-    },
-    {
-      key: "spending",
-      label: "Spending",
-      values: spendingSeries,
-      stroke: "#f97316",
-      fill: "#f97316",
-    },
-    {
-      key: "savings",
-      label: "Savings",
-      values: savingsSeries,
-      stroke: "#a855f7",
-      fill: "#a855f7",
-    },
-    {
-      key: "leftover",
-      label: "Leftover",
-      values: leftoverSeries,
-      stroke: "#3b82f6",
-      fill: "#3b82f6",
-    },
+    { key: "income", label: "Income", values: incomeSeries, stroke: SERIES_COLORS.income, fill: SERIES_COLORS.income },
+    { key: "spending", label: "Spending", values: spendingSeries, stroke: SERIES_COLORS.spending, fill: SERIES_COLORS.spending },
+    { key: "savings", label: "Savings", values: savingsSeries, stroke: SERIES_COLORS.savings, fill: SERIES_COLORS.savings },
+    { key: "leftover", label: "Leftover", values: leftoverSeries, stroke: SERIES_COLORS.balance, fill: SERIES_COLORS.balance },
   ];
 
   const incomePeak = indexOfMax(incomeSeries);
@@ -575,48 +652,6 @@ export function buildInsightsSnapshot(
 
   const savingsRate = baseStats.actualIncome > 0 ? baseStats.actualSavings / baseStats.actualIncome : 0;
 
-  const scorecards = sortedPeriods.map((p) => {
-    const stats = allStats.find((s) => s.period.id === p.id) ?? buildStats(plan, p.id);
-    const start = getStartingBalance(plan, p.id);
-    const rows = buildTimeline(plan, p.id, start);
-    const minBal = minPoint(rows)?.balance ?? start;
-    const minOk = minBal >= plan.setup.expectedMinBalance;
-    const savingsOk = stats.budgetSavings === 0 ? true : stats.actualSavings >= stats.budgetSavings;
-    const leftoverOk = stats.actualLeftover >= 0;
-    const issues = [!minOk, !savingsOk, !leftoverOk].filter(Boolean).length;
-    const status: Scorecard["status"] =
-      issues >= 2 || !leftoverOk ? "red" : issues === 1 ? "amber" : "green";
-    return {
-      id: p.id,
-      label: p.label,
-      status,
-      leftover: stats.actualLeftover,
-    };
-  });
-
-  const recommendations = (() => {
-    const items: string[] = [];
-    if (baseStats.actualSpending > baseStats.budgetSpending + 1) {
-      items.push(`Reduce spending by ${formatMoney(baseStats.actualSpending - baseStats.budgetSpending)} to meet budget.`);
-    }
-    if (baseStats.actualSavings + 1 < baseStats.budgetSavings) {
-      items.push(`Increase savings transfers by ${formatMoney(baseStats.budgetSavings - baseStats.actualSavings)} to hit target.`);
-    }
-    if (variableDelta > 0) {
-      items.push(`Trim variable spend by ${formatMoney(variableDelta)} to stay within the cap.`);
-    }
-    if (timeProgress > 0.1 && baseStats.actualIncome < baseStats.budgetIncome * timeProgress) {
-      items.push("Income is behind pace. Consider updating expected income or adding a supplemental stream.");
-    }
-    if (endBalance < plan.setup.expectedMinBalance) {
-      items.push("Projected balance dips below your safe minimum. Review large outflows or increase buffer.");
-    }
-    if (!items.length) {
-      items.push("Everything looks on track. Keep your current cadence.");
-    }
-    return items.slice(0, 4);
-  })();
-
   const categoryChartData: CategoryData[] = Array.from(
     mapTotalsByCategory(baseStats.transactions, (t) => t.type === "outflow" && t.category !== "savings").entries()
   )
@@ -634,43 +669,6 @@ export function buildInsightsSnapshot(
   }));
 
   return {
-    sortedPeriods,
-    basePeriodId,
-    comparePeriodId: resolvedCompareId ?? null,
-    asOfDate: plan.setup.asOfDate,
-    basePeriod,
-    comparePeriod,
-    baseStats,
-    compareStats,
-    startingBalance,
-    baseTimeline,
-    endBalance,
-    lowestPoint,
-    riskDays,
-    firstRisk,
-    periodDays,
-    daysElapsed,
-    timeProgress,
-    incomeProgress,
-    spendingProgress,
-    savingsProgress,
-    projectedIncome,
-    projectedSpending,
-    projectedSavings,
-    projectedLeftover,
-    forecastScenarios,
-    varianceByCategory,
-    overspentCategories,
-    variableCap,
-    variableSpend,
-    variableDelta,
-    overspendItems,
-    billVariance,
-    merchantRows,
-    categoryChanges,
-    labelChanges,
-    incomeSourceChanges,
-    incomeSplit,
     allStats,
     incomeSeries,
     spendingSeries,
@@ -684,10 +682,92 @@ export function buildInsightsSnapshot(
     stabilityScore,
     savingsStreak,
     savingsRate,
-    scorecards,
-    recommendations,
     categoryChartData,
     periodTrendData,
     periodHighlights,
+  };
+}
+
+/** Builds health scorecards per period. */
+function computeScorecards(plan: Plan, allStats: PeriodStats[]): Scorecard[] {
+  const sortedPeriods = [...plan.periods].sort((a, b) => a.id - b.id);
+  return sortedPeriods.map((p) => {
+    const stats = allStats.find((s) => s.period.id === p.id) ?? buildStats(plan, p.id);
+    const start = getStartingBalance(plan, p.id);
+    const rows = buildTimeline(plan, p.id, start);
+    const minBal = minPoint(rows)?.balance ?? start;
+    const minOk = minBal >= plan.setup.expectedMinBalance;
+    const savingsOk = stats.budgetSavings === 0 ? true : stats.actualSavings >= stats.budgetSavings;
+    const leftoverOk = stats.actualLeftover >= 0;
+    const issues = [!minOk, !savingsOk, !leftoverOk].filter(Boolean).length;
+    const status: Scorecard["status"] =
+      issues >= 2 || !leftoverOk ? "red" : issues === 1 ? "amber" : "green";
+    return { id: p.id, label: p.label, status, leftover: stats.actualLeftover };
+  });
+}
+
+/** Generates spending recommendations based on actuals vs budget. */
+function generateRecommendations(
+  plan: Plan,
+  timelines: PeriodTimelines,
+  variance: VarianceAnalysis
+): string[] {
+  const { baseStats, timeProgress, endBalance } = timelines;
+  const { variableDelta } = variance;
+  const items: string[] = [];
+
+  if (baseStats.actualSpending > baseStats.budgetSpending + 1) {
+    items.push(`Reduce spending by ${formatMoney(baseStats.actualSpending - baseStats.budgetSpending)} to meet budget.`);
+  }
+  if (baseStats.actualSavings + 1 < baseStats.budgetSavings) {
+    items.push(`Increase savings transfers by ${formatMoney(baseStats.budgetSavings - baseStats.actualSavings)} to hit target.`);
+  }
+  if (variableDelta > 0) {
+    items.push(`Trim variable spend by ${formatMoney(variableDelta)} to stay within the cap.`);
+  }
+  if (timeProgress > 0.1 && baseStats.actualIncome < baseStats.budgetIncome * timeProgress) {
+    items.push("Income is behind pace. Consider updating expected income or adding a supplemental stream.");
+  }
+  if (endBalance < plan.setup.expectedMinBalance) {
+    items.push("Projected balance dips below your safe minimum. Review large outflows or increase buffer.");
+  }
+  if (!items.length) {
+    items.push("Everything looks on track. Keep your current cadence.");
+  }
+  return items.slice(0, 4);
+}
+
+// ─── Public orchestrator ─────────────────────────────────────────────────────
+
+export function buildInsightsSnapshot(
+  plan: Plan,
+  basePeriodId: number,
+  comparePeriodId: "auto" | number | null
+): InsightsSnapshot {
+  const timelines = buildPeriodTimelines(plan, basePeriodId, comparePeriodId);
+  const projections = computeProjections(
+    timelines.baseStats,
+    timelines.timeProgress,
+    timelines.startingBalance,
+    plan.setup.expectedMinBalance
+  );
+  const variance = computeVarianceAnalysis(plan, timelines);
+  const merchants = computeMerchantAnalysis(timelines.baseStats, timelines.compareStats);
+  const income = computeIncomeAnalysis(plan, timelines.baseStats, timelines.compareStats);
+  const trends = buildTrendSeries(plan, timelines.baseStats);
+  const scorecards = computeScorecards(plan, trends.allStats);
+  const recommendations = generateRecommendations(plan, timelines, variance);
+
+  return {
+    basePeriodId,
+    asOfDate: plan.setup.asOfDate,
+    ...timelines,
+    ...projections,
+    ...variance,
+    ...merchants,
+    ...income,
+    ...trends,
+    scorecards,
+    recommendations,
   };
 }

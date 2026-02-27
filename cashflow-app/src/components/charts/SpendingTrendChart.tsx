@@ -1,8 +1,10 @@
 "use client";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { chartColors, formatCurrency, formatCompactCurrency, getTextColor, getMutedColor, getGridColor, chartConfig } from "@/lib/chartConfig";
-import { useEffect, useState } from "react";
+import { chartColors, formatCompactCurrency, getTextColor, getMutedColor, getGridColor, chartConfig } from "@/lib/chartConfig";
+import { formatMoney } from "@/lib/currency";
+import { useDarkMode } from "@/hooks/useDarkMode";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export type SpendingDataPoint = {
   date: string;
@@ -17,30 +19,8 @@ type Props = {
 };
 
 export function SpendingTrendChart({ data, showIncome = false, height = 300 }: Props) {
-  const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
-  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 640);
-
-  useEffect(() => {
-    // Check for mobile
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    window.addEventListener("resize", checkMobile);
-
-    // Listen for theme changes
-    const observer = new MutationObserver(() => {
-      const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
-      setIsDark(darkMode);
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", checkMobile);
-    };
-  }, []);
+  const isDark = useDarkMode();
+  const isMobile = useIsMobile();
 
   // Mobile-optimized margins
   const margins = isMobile
@@ -81,7 +61,7 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
             fontSize: isMobile ? "12px" : "14px",
           }}
-          formatter={(value) => value !== undefined ? [formatCurrency(Number(value)), ""] : ["", ""]}
+          formatter={(value) => value !== undefined ? [formatMoney(Number(value)), ""] : ["", ""]}
           labelStyle={{ color: getMutedColor(isDark), marginBottom: 4 }}
         />
         <Legend

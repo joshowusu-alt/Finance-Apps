@@ -9,6 +9,7 @@ import {
   minPoint,
   type TimelineRow,
 } from "@/lib/cashflowEngine";
+import { average, stdDev } from "@/lib/dateUtils";
 import { prettyDate } from "@/lib/formatUtils";
 
 export type DerivedDay = {
@@ -73,18 +74,6 @@ function cadenceLabel(cadence: string) {
 
 function sumBy<T>(items: T[], predicate: (item: T) => boolean, value: (item: T) => number) {
   return items.filter(predicate).reduce((sum, item) => sum + value(item), 0);
-}
-
-function average(values: number[]) {
-  if (!values.length) return 0;
-  return values.reduce((sum, v) => sum + v, 0) / values.length;
-}
-
-function variance(values: number[]) {
-  if (values.length <= 1) return 0;
-  const avg = average(values);
-  const raw = values.reduce((sum, v) => sum + (v - avg) * (v - avg), 0) / values.length;
-  return Math.round(raw * 100) / 100;
 }
 
 function buildHealthReason(
@@ -221,7 +210,7 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
   // "Consistent". Incorporating actual transaction variance is a future improvement.
   const incomeRules = plan.incomeRules.filter((r) => r.enabled);
   const incomeAmounts = incomeRules.map((r) => r.amount);
-  const incomeVariance = variance(incomeAmounts);
+  const incomeVariance = Math.round(stdDev(incomeAmounts) ** 2 * 100) / 100;
   const cadenceSet = new Set(incomeRules.map((r) => r.cadence));
   const avgIncome = average(incomeAmounts);
   const amountSpread = incomeAmounts.length ? Math.max(...incomeAmounts) - Math.min(...incomeAmounts) : 0;

@@ -6,7 +6,7 @@
  */
 
 import type { CashflowCategory } from "@/data/plan";
-import { normalizeText } from "@/lib/textUtils";
+import { normalizeText, containsKeyword } from "@/lib/textUtils";
 
 // Category rule with keywords and optional merchant patterns
 type CategoryRule = {
@@ -157,12 +157,6 @@ const CATEGORY_RULES: CategoryRule[] = [
 // Tokenize text into words
 function tokenize(text: string): string[] {
     return normalizeText(text).split(" ").filter(Boolean);
-}
-
-// Check if any keyword is found in text
-function containsKeyword(text: string, keywords: string[]): boolean {
-    const normalized = normalizeText(text);
-    return keywords.some((keyword) => normalized.includes(keyword.toLowerCase()));
 }
 
 // Check for exact matches (cleaned)

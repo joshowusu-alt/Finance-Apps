@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import PlaidLink from "./PlaidLink";
 import { showToast } from "./Toast";
 
@@ -13,6 +13,14 @@ interface BankAccount {
 
 interface BankingSectionProps {
   onSyncComplete?: () => void;
+}
+
+function BankingSectionShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+      {children}
+    </div>
+  );
 }
 
 export default function BankingSection({ onSyncComplete }: BankingSectionProps) {
@@ -130,26 +138,28 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
 
   if (!ready) {
     return (
-      <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+      <BankingSectionShell>
         <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Bank Sync</div>
         <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Loading...</p>
-      </div>
+      </BankingSectionShell>
     );
   }
 
   if (!userId) {
     return (
-      <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+      <BankingSectionShell>
         <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Bank Sync</div>
         <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
           Sign in to connect your bank and sync transactions automatically.
         </p>
-      </div>
+      </BankingSectionShell>
     );
   }
 
+  const connectButton = <PlaidLink userId={userId} onSuccess={handleBankConnected} />;
+
   return (
-    <div className="rounded-3xl bg-[var(--surface)] p-6 shadow-xl">
+    <BankingSectionShell>
       <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Bank Sync</div>
       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
         Connect your bank to automatically import transactions
@@ -160,7 +170,7 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
           <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-4">
             <p className="text-sm text-slate-600 dark:text-slate-300">No bank accounts connected</p>
             <div className="mt-3">
-              <PlaidLink userId={userId} onSuccess={handleBankConnected} />
+              {connectButton}
             </div>
           </div>
         ) : (
@@ -205,7 +215,7 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
             )}
 
             <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
-              <PlaidLink userId={userId} onSuccess={handleBankConnected} />
+              {connectButton}
             </div>
           </>
         )}
@@ -215,13 +225,13 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
             <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
             {error.includes("No bank accounts connected") && (
               <div className="mt-2">
-                <PlaidLink userId={userId} onSuccess={handleBankConnected} />
+                {connectButton}
               </div>
             )}
           </div>
         )}
       </div>
-    </div>
+    </BankingSectionShell>
   );
 }
 

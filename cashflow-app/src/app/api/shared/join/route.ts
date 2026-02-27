@@ -7,10 +7,21 @@
  */
 import { NextResponse } from "next/server";
 import { joinByShareCode } from "@/lib/sharingStore";
+import { createRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
+// Strict limit: share-code join is rarely retried legitimately, but the short
+// code space makes it trivially brute-forceable without a rate limit.
+const checkJoinLimit = createRateLimiter(10, 60_000);
+
 export async function POST(req: Request) {
+  // Rate-limit by IP to prevent share-code brute force.
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  if (!checkJoinLimit(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
   let code: string | undefined;
   try {
     const body = (await req.json()) as { code?: string };

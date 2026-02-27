@@ -2,7 +2,8 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { chartColors, formatCurrency, getCategoryColor, getTextColor, getGridColor } from "@/lib/chartConfig";
-import { useEffect, useState } from "react";
+import { useDarkMode } from "@/hooks/useDarkMode";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export type CategoryData = {
   name: string;
@@ -17,29 +18,8 @@ type Props = {
 };
 
 export function CategoryBreakdownChart({ data, height = 300, onCategoryClick }: Props) {
-  const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
-  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 640);
-
-  useEffect(() => {
-    // Check for mobile
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    window.addEventListener("resize", checkMobile);
-
-    const observer = new MutationObserver(() => {
-      const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
-      setIsDark(darkMode);
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", checkMobile);
-    };
-  }, []);
+  const isDark = useDarkMode();
+  const isMobile = useIsMobile();
 
   // Assign colors to categories
   const dataWithColors = data.map((item) => ({

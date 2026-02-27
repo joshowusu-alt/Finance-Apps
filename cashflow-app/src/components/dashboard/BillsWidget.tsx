@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { formatMoney } from "@/lib/currency";
 import { prettyDate } from "@/lib/formatUtils";
+import { getDaysUntil } from "@/lib/dateUtils";
 
 type Bill = {
     id: string;
@@ -16,22 +17,6 @@ type BillsWidgetProps = {
     bills: Bill[]; // Sorted by date soonest first
     href?: string;
 };
-
-
-
-function getDaysUntil(dateStr: string) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const target = new Date(dateStr);
-    target.setHours(0, 0, 0, 0);
-    const diffTime = target.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) return "Overdue";
-    if (diffDays === 0) return "Due today";
-    if (diffDays === 1) return "Due tomorrow";
-    return `In ${diffDays} days`;
-}
 
 export function BillsWidget({ bills, href = "/bills" }: BillsWidgetProps) {
     const nextBill = bills[0];

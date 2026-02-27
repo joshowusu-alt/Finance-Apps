@@ -23,8 +23,12 @@ function randomShareCode(len = 6): string {
   return code;
 }
 
+/** Module-level flag so DDL only runs once per serverless cold-start. */
+let schemaEnsured = false;
+
 /** Idempotent — alters main_plans and creates join_tokens table once. */
 async function ensureSharingSchema() {
+  if (schemaEnsured) return;
   const sql = getSQL();
   await sql`
     ALTER TABLE main_plans
@@ -37,6 +41,7 @@ async function ensureSharingSchema() {
       created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
     )
   `;
+  schemaEnsured = true;
 }
 
 /**

@@ -1,5 +1,6 @@
-import type { Plan } from "@/data/plan";
-import { PLAN } from "@/data/plan";
+import type { Plan, BillTemplate, IncomeRule, PeriodCadence } from "@/data/plan";
+import { PLAN, PLAN_VERSION, generatePeriods } from "@/data/plan";
+import { DEFAULT_BILLS } from "@/data/onboardingData";
 import { getStorageScope } from "@/lib/storage";
 import { touchPreferencesUpdatedAt } from "@/lib/preferencesSync";
 
@@ -158,4 +159,61 @@ export function completeWizard(): WizardState {
 export function resetWizard(): WizardState {
   saveWizardState(DEFAULT_WIZARD_STATE);
   return DEFAULT_WIZARD_STATE;
+}
+
+/* ── Wizard plan builder ── */
+
+export type WizardPlanParams = {
+  income: string;
+  hasBills: boolean | null;
+  periodStartDay: number;
+  periodCadence: PeriodCadence;
+  mode: "forecast" | "track" | null;
+};
+
+export function buildPlanFromWizard(params: WizardPlanParams): Plan {
+  const { income, hasBills, periodStartDay, periodCadence, mode } = params;
+  const today = new Date().toISOString().split("T")[0];
+  const incomeAmount = Number(income) || 0;
+
+  const incomeRule: IncomeRule = {
+    id: "primary-income",
+    label: "Monthly Income",
+    amount: incomeAmount,
+    cadence: "monthly",
+    seedDate: today,
+    enabled: true,
+  };
+
+  const bills: BillTemplate[] = hasBills ? DEFAULT_BILLS : [];
+
+  const now = new Date();
+  const periodStart = new Date(now.getFullYear(), now.getMonth(), periodStartDay);
+  const periodStartStr = periodStart.toISOString().split("T")[0];
+  const periodCount = periodCadence === "weekly" ? 26 : periodCadence === "biweekly" ? 13 : 12;
+  const periods = generatePeriods(periodStartStr, periodCadence, periodCount);
+
+  return {
+    version: PLAN_VERSION,
+    setup: {
+      selectedPeriodId: 1,
+      asOfDate: today,
+      autoUpdateAsOfDate: true,
+      windowDays: 30,
+      startingBalance: 0,
+      rollForwardBalance: mode === "track",
+      expectedMinBalance: 0,
+      variableCap: 0,
+    },
+    periods,
+    incomeRules: [incomeRule],
+    outflowRules: [],
+    periodRuleOverrides: [],
+    bills,
+    periodOverrides: [],
+    eventOverrides: [],
+    overrides: [],
+    transactions: [],
+    savingsGoals: [],
+  };
 }

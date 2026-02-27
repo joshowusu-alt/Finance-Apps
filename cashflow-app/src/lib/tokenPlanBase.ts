@@ -9,7 +9,7 @@
 import { createHash, randomBytes } from "crypto";
 import { getSQL } from "@/lib/db";
 import { todayISO } from "@/lib/dateUtils";
-import { PLAN, type Plan } from "@/data/plan";
+import { PLAN, createDefaultPeriods, type Plan } from "@/data/plan";
 
 const TOKEN_BYTES = 32;
 
@@ -29,11 +29,12 @@ export function generateToken() {
 // Plan helpers
 // ---------------------------------------------------------------------------
 
-/** Create a blank plan with today's date. */
+/** Create a blank plan with today's date and freshly-computed default periods. */
 export function createBlankPlan(): Plan {
   return {
     ...PLAN,
     setup: { ...PLAN.setup, asOfDate: todayISO() },
+    periods: createDefaultPeriods(),
     incomeRules: [],
     outflowRules: [],
     bills: [],
@@ -44,9 +45,10 @@ export function createBlankPlan(): Plan {
   };
 }
 
-/** Safely parse plan from Postgres (handles JSONB objects & TEXT strings). */
+/** Safely parse plan from any store (handles null, JSONB objects and TEXT strings). */
 export function parsePlan(raw: unknown, fallback?: () => Plan): Plan {
   try {
+    if (raw == null) return fallback ? fallback() : createBlankPlan();
     if (typeof raw === "string") return JSON.parse(raw) as Plan;
     return raw as Plan;
   } catch {

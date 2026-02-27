@@ -17,28 +17,27 @@ import {
   setOnboardingTask,
 } from "@/lib/onboarding";
 import { ALERT_PREFS_UPDATED_EVENT } from "@/lib/alerts";
-import { getUpcomingEvents } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";
 import { formatMoney } from "@/lib/currency";
 import { VelanovoLogo } from "@/components/VelanovoLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 import { CashflowProjectionChart } from "@/components/charts";
-import type { CashflowDataPoint } from "@/components/charts";
 import { TransactionsWidget } from "@/components/dashboard/TransactionsWidget";
 import { BillsWidget } from "@/components/dashboard/BillsWidget";
 import InfoTooltip from "@/components/InfoTooltip";
 import { useDerived } from "@/lib/useDerived";
-import { prettyDate } from "@/lib/formatUtils";
 import { dayDiff } from "@/lib/dateUtils";
-import { detectSubscriptions } from "@/lib/subscriptionDetection";
 import SpendingVelocityGauge from "@/components/SpendingVelocityGauge";
 import WhatIfPanel from "@/components/WhatIfPanel";
 import GoalRings from "@/components/GoalRings";
 import DebtPayoffPlanner from "@/components/DebtPayoffPlanner";
 import ConfettiBurst from "@/components/ConfettiBurst";
-import { getVarianceByCategory } from "@/lib/cashflowEngine";
-import { detectAnomalies } from "@/lib/anomalyDetection";
 import AnomalyAlerts from "@/components/AnomalyAlerts";
+import { useDashboard } from "@/hooks/useDashboard";
+import { usePeriodClose } from "@/hooks/usePeriodClose";
+import { PeriodCloseModal } from "@/components/dashboard/PeriodCloseModal";
+import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
+import { SubscriptionNudge } from "@/components/dashboard/SubscriptionNudge";
 
 
 
@@ -76,9 +75,6 @@ export default function HomePage() {
   const [onboarding, setOnboarding] = useState(() => loadOnboardingState());
   const [isFirstVisit, setIsFirstVisit] = useState(() => !hasStoredPlan());
   const [showSetup, setShowSetup] = useState(() => !hasStoredPlan() && !loadWizardState().completed);
-  const [showClosePeriod, setShowClosePeriod] = useState(false);
-  const [carryForward, setCarryForward] = useState(true);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mountTime] = useState(() => Date.now());
 
@@ -98,7 +94,7 @@ export default function HomePage() {
     };
   }, []);
 
-  // Auto-complete onboarding tasks derived from plan (no setState in effect)
+  // Auto-complete onboarding tasks derived from plan — pure computation, no side effects
   const resolvedOnboarding = useMemo(() => {
     const current = onboarding;
     let changed = false;
@@ -111,68 +107,38 @@ export default function HomePage() {
         }
       }
     });
-    if (changed) saveOnboardingState({ ...current, completed });
     return changed ? { ...current, completed } : current;
   }, [plan, onboarding]);
 
+  // Persist onboarding state whenever auto-completion produces a new object
+  useEffect(() => {
+    saveOnboardingState(resolvedOnboarding);
+  }, [resolvedOnboarding]);
+
+  // --- Data derivation (delegate to hook) ----------------------------------
+  const {
+    recentTransactions,
+    actuals,
+    upcomingBills,
+    cashflowChartData,
+    categoryItems,
+    activeGoals,
+    liabilityAccounts,
+    subscriptionNudge,
+    spendingAnomalies,
+  } = useDashboard(plan, derived);
+
+  const { income: actualIncome, spending: actualSpending, savings: actualSavings } = actuals;
+  const actualLeftover = actualIncome - actualSpending - actualSavings;
+
+  // --- Period & budget scalars ---------------------------------------------
   const period = derived.period;
   const rows = derived.cashflow.daily;
   const endingBalance = rows.length ? rows[rows.length - 1].balance : 0;
 
-  // Upcoming bills helper - need to map correctly for widget
-  const upcomingBillsRaw = useMemo(
-    () => getUpcomingEvents(plan, plan.setup.selectedPeriodId, "outflow").slice(0, 4),
-    [plan]
-  );
-
-  const upcomingBills = useMemo(() => {
-    return upcomingBillsRaw.map(b => ({
-      id: b.id,
-      label: b.label,
-      amount: b.amount,
-      date: b.date
-    }));
-  }, [upcomingBillsRaw]);
-
-  const periodTransactions = useMemo(
-    () => plan.transactions.filter((t) => t.date >= period.start && t.date <= period.end).map(t => ({
-      ...t,
-      date: t.date
-    })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
-    [plan, period]
-  );
-
-  // Recent transactions for widget
-  const recentTransactions = useMemo(() => {
-    return periodTransactions.slice(0, 5).map(t => ({
-      id: t.id,
-      date: t.date,
-      merchant: t.label || "Unknown",
-      amount: t.amount
-    }));
-  }, [periodTransactions]);
-
   const budgetOutflows = derived.totals.committedBills + derived.totals.allocationsTotal;
   const budgetSavings = derived.savingsHealth.savingsThisPeriod;
   const budgetSpending = budgetOutflows - budgetSavings;
-
-  const actualIncome = useMemo(
-    () => periodTransactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0),
-    [periodTransactions]
-  );
-  const actualSavings = useMemo(
-    () => periodTransactions.filter((t) => t.category === "savings").reduce((sum, t) => sum + t.amount, 0),
-    [periodTransactions]
-  );
-  const actualSpending = useMemo(
-    () =>
-      periodTransactions
-        .filter((t) => t.type === "outflow" && t.category !== "savings")
-        .reduce((sum, t) => sum + t.amount, 0),
-    [periodTransactions]
-  );
-
-  const actualLeftover = actualIncome - actualSpending - actualSavings;
 
   const periodDays = dayDiff(period.start, period.end) + 1;
   const daysElapsedRaw = dayDiff(period.start, plan.setup.asOfDate) + 1;
@@ -180,30 +146,18 @@ export default function HomePage() {
   const timeProgress = periodDays ? Math.min(1, daysElapsed / periodDays) : 0;
   const spendingProgress = budgetSpending ? Math.min(1, actualSpending / budgetSpending) : 0;
   const spendingPaceGap = spendingProgress - timeProgress;
-
   const daysRemaining = Math.max(0, periodDays - daysElapsed);
 
-  // Category variance for WhatIfPanel
-  const categoryItems = useMemo(() => {
-    const variance = getVarianceByCategory(plan, plan.setup.selectedPeriodId);
-    return Object.values(variance)
-      .filter((v) => v && v.category !== "income" && v.category !== "savings")
-      .map((v) => ({ category: v!.category, budgeted: v!.budgeted, actual: v!.actual }));
-  }, [plan]);
-
-  // Active goals for GoalRings
-  const activeGoals = useMemo(
-    () => (plan.savingsGoals ?? []).filter((g) => g.status !== "paused" && g.targetAmount > 0),
-    [plan]
-  );
-
-  // Liability accounts for DebtPayoffPlanner
-  const liabilityAccounts = useMemo(
-    () => (plan.netWorthAccounts ?? []).filter((a) =>
-      ["credit-card", "loan", "mortgage", "other-liability"].includes(a.type) && a.balance !== 0
-    ),
-    [plan]
-  );
+  // --- Period-close state (delegate to hook) --------------------------------
+  const {
+    showClosePeriod,
+    setShowClosePeriod,
+    carryForward,
+    setCarryForward,
+    showConfetti,
+    setShowConfetti,
+    doClose,
+  } = usePeriodClose({ plan, period, endingBalance, actualLeftover });
 
   const onboardingTasks = useMemo(
     () =>
@@ -219,32 +173,12 @@ export default function HomePage() {
   );
   const completedCount = onboardingTasks.filter((task) => task.done).length;
 
-  const cashflowChartData: CashflowDataPoint[] = useMemo(() => {
-    // Map actuals by date so we can look them up quickly
-    const actualsMap = new Map(
-      derived.cashflow.actualsDaily.map((d) => [d.date, d.balance])
-    );
-    return rows.slice(0, 30).map((row) => ({
-      date: prettyDate(row.date),
-      balance: row.balance,                     // Budget (Planned) line
-      projected: actualsMap.get(row.date),      // Actuals (Recorded) line — undefined for future days
-    }));
-  }, [rows, derived.cashflow.actualsDaily]);
-
   // Empty state detection — no plan data set up yet
-  const hasData = plan.incomeRules.length > 0 || plan.bills.length > 0 || plan.transactions.length > 0 || plan.setup.startingBalance > 0;
-
-  // Subscription nudge — detect actionable subscriptions
-  const subscriptionNudge = useMemo(() => {
-    if (plan.transactions.length < 3) return null;
-    const subs = detectSubscriptions(plan.transactions);
-    const actionable = subs.filter(s => s.recommendation === "review" || s.recommendation === "cancel");
-    if (actionable.length === 0) return null;
-    const totalMonthly = actionable.reduce((sum, s) => sum + s.monthlyCost, 0);
-    return { count: actionable.length, totalMonthly };
-  }, [plan.transactions]);
-
-  const spendingAnomalies = useMemo(() => detectAnomalies(plan), [plan]);
+  const hasData =
+    plan.incomeRules.length > 0 ||
+    plan.bills.length > 0 ||
+    plan.transactions.length > 0 ||
+    plan.setup.startingBalance > 0;
 
   const showDay1Banner = useMemo(() => {
     const w = loadWizardState();
@@ -450,78 +384,25 @@ export default function HomePage() {
               </motion.div>
             )}
 
-            {/* Onboarding Panel */}
+            {/* Onboarding checklist */}
             {!resolvedOnboarding.dismissed && (
               <motion.div variants={fadeUp} className="vn-card p-6 border-l-4 border-l-(--vn-primary)">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <div className="text-sm font-bold text-(--vn-text)">Getting started</div>
-                    <div className="mt-1 text-xs text-(--vn-muted)">
-                      {completedCount} of {onboardingTasks.length} steps done
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleDismissOnboarding}
-                    className="text-xs font-semibold text-(--vn-muted) hover:text-(--vn-text) transition-colors"
-                  >
-                    Dismiss
-                  </button>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <button onClick={handleLoadSampleData} className="vn-btn vn-btn-primary text-sm sm:text-xs h-11 sm:h-8 px-4 sm:px-3">
-                    Try demo data
-                    {isFirstVisit ? (
-                      <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wide">Recommended</span>
-                    ) : null}
-                  </button>
-                  <button onClick={() => setShowSetup(true)} className="vn-btn vn-btn-ghost text-sm sm:text-xs h-11 sm:h-8 px-4 sm:px-3">
-                    Quick setup
-                  </button>
-                </div>
-                <div className="mt-2 text-xs text-(--vn-muted)">
-                  Explore a prefilled plan to see insights immediately. You can reset to a blank plan anytime.
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  {onboardingTasks.filter(t => !t.done).slice(0, 3).map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center justify-between gap-3 rounded-xl px-4 py-2 bg-(--vn-bg)"
-                    >
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={task.done}
-                          onChange={(e) => handleToggleTask(task.id, e.target.checked)}
-                          disabled={task.autoDone}
-                          className="w-4 h-4 accent-(--vn-primary) rounded"
-                        />
-                        <span className="text-sm font-medium text-(--vn-text)">{task.label}</span>
-                      </label>
-                      <Link href={task.href} className="text-xs font-semibold text-(--vn-primary)">Go</Link>
-                    </div>
-                  ))}
-                  {onboardingTasks.filter(t => !t.done).length > 3 && (
-                    <div className="text-xs text-center text-(--vn-muted) mt-2">...and {onboardingTasks.filter(t => !t.done).length - 3} more</div>
-                  )}
-                  {onboardingTasks.every(t => t.done) && (
-                    <div className="text-sm text-(--vn-success) font-medium text-center py-2">🎉 You&apos;re all set! Dismiss this card to clear space.</div>
-                  )}
-                </div>
+                <OnboardingChecklist
+                  onboardingTasks={onboardingTasks}
+                  completedCount={completedCount}
+                  isFirstVisit={isFirstVisit}
+                  onDismiss={handleDismissOnboarding}
+                  onLoadSampleData={handleLoadSampleData}
+                  onSetup={() => setShowSetup(true)}
+                  onToggleTask={handleToggleTask}
+                />
               </motion.div>
             )}
 
-            {/* Subscription Nudge */}
+            {/* Subscription nudge */}
             {subscriptionNudge && (
-              <motion.div variants={fadeUp} className="vn-card p-4 border-l-4 border-l-amber-400 flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-sm font-semibold text-(--vn-text)">💡 Subscription review</div>
-                  <div className="text-xs text-(--vn-muted) mt-0.5">
-                    {subscriptionNudge.count} subscription{subscriptionNudge.count > 1 ? "s" : ""} worth reviewing — {formatMoney(subscriptionNudge.totalMonthly)}/month
-                  </div>
-                </div>
-                <Link href="/insights" className="vn-btn vn-btn-ghost text-xs whitespace-nowrap">Review →</Link>
+              <motion.div variants={fadeUp} className="vn-card p-4 border-l-4 border-l-amber-400">
+                <SubscriptionNudge count={subscriptionNudge.count} totalMonthly={subscriptionNudge.totalMonthly} />
               </motion.div>
             )}
 
@@ -637,57 +518,22 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {/* Period Close Modal */}
-      {showClosePeriod && (() => {
-        const nextPeriod = plan.periods.find(p => p.id === period.id + 1);
-        const newStartBalance = carryForward ? endingBalance : plan.setup.startingBalance;
-        function doClose() {
-          if (!nextPeriod) return;
-          const existingIdx = plan.periodOverrides.findIndex(o => o.periodId === nextPeriod.id);
-          const newOverrides = existingIdx >= 0
-            ? plan.periodOverrides.map((o, i) => i === existingIdx ? { ...o, startingBalance: newStartBalance } : o)
-            : [...plan.periodOverrides, { periodId: nextPeriod.id, startingBalance: newStartBalance }];
-          const updated = { ...plan, setup: { ...plan.setup, selectedPeriodId: nextPeriod.id }, periodOverrides: newOverrides };
-          savePlan(updated);
-          setShowClosePeriod(false);
-          if (actualLeftover >= 0) setShowConfetti(true);
-        }
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowClosePeriod(false)}>
-            <div className="vn-card p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
-              <div className="text-base font-bold text-(--vn-text) mb-1">Close Period</div>
-              <div className="text-xs text-(--vn-muted) mb-4">{period.label}</div>
-              <div className="space-y-2 text-sm mb-4">
-                <div className="flex justify-between"><span className="text-(--vn-muted)">Income</span><span className="font-medium text-(--vn-text)">{formatMoney(actualIncome)}</span></div>
-                <div className="flex justify-between"><span className="text-(--vn-muted)">Spending</span><span className="font-medium text-(--vn-text)">{formatMoney(actualSpending)}</span></div>
-                <div className="flex justify-between"><span className="text-(--vn-muted)">Savings</span><span className="font-medium text-(--vn-text)">{formatMoney(actualSavings)}</span></div>
-                <div className="flex justify-between border-t border-(--vn-border) pt-2"><span className="font-semibold text-(--vn-text)">Leftover</span><span className={`font-bold ${actualLeftover >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}>{formatMoney(actualLeftover)}</span></div>
-                <div className="flex justify-between"><span className="text-(--vn-muted)">Forecast end balance</span><span className="font-medium text-(--vn-text)">{formatMoney(endingBalance)}</span></div>
-              </div>
-              {nextPeriod ? (
-                <>
-                  <label className="flex items-center gap-2 text-sm text-(--vn-text) cursor-pointer mb-4">
-                    <input type="checkbox" checked={carryForward} onChange={e => setCarryForward(e.target.checked)} className="accent-(--vn-primary) w-4 h-4" />
-                    Carry balance ({formatMoney(endingBalance)}) to <strong className="ml-0.5">{nextPeriod.label}</strong>
-                  </label>
-                  {!carryForward && (
-                    <div className="text-xs text-(--vn-muted) mb-4">Next period will use your default starting balance ({formatMoney(plan.setup.startingBalance)}).</div>
-                  )}
-                  <div className="flex gap-2">
-                    <button onClick={doClose} className="vn-btn vn-btn-primary flex-1 text-sm">Close &amp; Advance →</button>
-                    <button onClick={() => setShowClosePeriod(false)} className="vn-btn vn-btn-ghost text-sm">Cancel</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-xs text-amber-600 dark:text-amber-400 mb-4">⚠ No next period found. Generate more periods in Settings.</div>
-                  <button onClick={() => setShowClosePeriod(false)} className="vn-btn vn-btn-ghost w-full text-sm">Close</button>
-                </>
-              )}
-            </div>
-          </div>
-        );
-      })()}
+      {/* Period-close modal */}
+      {showClosePeriod && (
+        <PeriodCloseModal
+          plan={plan}
+          period={period}
+          endingBalance={endingBalance}
+          actualIncome={actualIncome}
+          actualSpending={actualSpending}
+          actualSavings={actualSavings}
+          actualLeftover={actualLeftover}
+          carryForward={carryForward}
+          onCarryForwardChange={setCarryForward}
+          onClose={() => setShowClosePeriod(false)}
+          onConfirm={doClose}
+        />
+      )}
     </main>
   );
 }

@@ -1,28 +1,25 @@
 import { PLAN, PLAN_VERSION, Plan, CashflowOverride, CashflowCategory } from "@/data/plan";
+import { parsePlan } from "@/lib/tokenPlanBase";
 import { formatMoney } from "@/lib/currency";
+import {
+  loadScenarioState,
+  saveScenarioState,
+  scenarioPlanKey,
+  scenarioPrevPlanKey,
+} from "@/lib/scenarioStorage";
+import type { AuditEntry } from "@/lib/auditLog";
+import { appendAuditEntry, getAuditActor } from "@/lib/auditLog";
 
-const PLAN_KEY = "cashflow_plan_v2";
-const PREV_PLAN_KEY = "cashflow_prev_plan_v1";
-const SCENARIO_KEY = "cashflow_scenarios_v1";
 const SCOPE_KEY = "cashflow_scope_v1";
 const MAIN_SYNC_AT_KEY = "cashflow_main_sync_at_v1";
 const MAIN_SERVER_UPDATED_KEY = "cashflow_main_server_updated_at_v1";
 const MAIN_SERVER_SYNCED_KEY = "cashflow_main_server_synced_at_v1";
 const MAIN_PLAN_HASH_KEY = "cashflow_main_plan_hash_v1";
-const AUDIT_KEY = "cashflow_audit_v1";
-const AUDIT_ACTOR_KEY = "cashflow_audit_actor_v1";
 const DEFAULT_SCOPE = "default";
 
 export const PLAN_UPDATED_EVENT = "cashflow:plan-updated";
 export const MAIN_SYNC_EVENT = "cashflow:main-sync";
-export const AUDIT_UPDATED_EVENT = "cashflow:audit-updated";
 export const SCOPE_UPDATED_EVENT = "cashflow:scope-updated";
-
-type ScenarioCache = {
-  key: string;
-  raw: string | null;
-  state: ScenarioState;
-};
 
 type PlanCache = {
   key: string;
@@ -30,30 +27,8 @@ type PlanCache = {
   plan: Plan;
 };
 
-let scenarioCache: ScenarioCache | null = null;
 let planCache: PlanCache | null = null;
 let prevPlanCache: PlanCache | null = null;
-
-export type AuditEntry = {
-  id: string;
-  timestamp: string;
-  actor: string;
-  action: "edit" | "import" | "reset" | "sync" | "undo" | "scenario" | "unknown";
-  summary: string;
-  changes: string[];
-};
-
-export type ScenarioMeta = {
-  id: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type ScenarioState = {
-  activeId: string;
-  scenarios: ScenarioMeta[];
-};
 
 type LegacyTotals = {
   fmIncome?: number;
@@ -246,36 +221,6 @@ function summarizePlanChange(prev: Plan | null, next: Plan) {
   return { summary, changes };
 }
 
-export function loadAuditTrail(): AuditEntry[] {
-  if (typeof window === "undefined") return [];
-  const raw = window.localStorage.getItem(auditKey());
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as AuditEntry[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function clearAuditTrail() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(auditKey());
-  dispatchBrowserEvent(AUDIT_UPDATED_EVENT);
-}
-
-export function getAuditActor() {
-  if (typeof window === "undefined") return "Local user";
-  return window.localStorage.getItem(auditActorKey()) || "Local user";
-}
-
-export function setAuditActor(name: string) {
-  if (typeof window === "undefined") return "Local user";
-  const value = name?.trim() || "Local user";
-  window.localStorage.setItem(auditActorKey(), value);
-  return value;
-}
-
 function recordAuditEntry(prevPlan: Plan | null, nextPlan: Plan, action: AuditEntry["action"], actor?: string) {
   if (typeof window === "undefined") return;
   const { summary, changes } = summarizePlanChange(prevPlan, nextPlan);
@@ -287,9 +232,7 @@ function recordAuditEntry(prevPlan: Plan | null, nextPlan: Plan, action: AuditEn
     summary,
     changes,
   };
-  const nextTrail = [entry, ...loadAuditTrail()].slice(0, 200);
-  window.localStorage.setItem(auditKey(), JSON.stringify(nextTrail));
-  dispatchBrowserEvent(AUDIT_UPDATED_EVENT);
+  appendAuditEntry(entry);
 }
 
 function ensurePlanVersion(plan: Plan): Plan {
@@ -315,24 +258,6 @@ function scopedKey(baseKey: string, scope = getStorageScope()) {
   return scope === DEFAULT_SCOPE ? baseKey : `${baseKey}::${scope}`;
 }
 
-function scenarioPlanKey(id: string, scope = getStorageScope()) {
-  const baseKey = scopedKey(PLAN_KEY, scope);
-  return id === "default" ? baseKey : `${baseKey}::${id}`;
-}
-
-function scenarioPrevPlanKey(id: string, scope = getStorageScope()) {
-  const baseKey = scopedKey(PREV_PLAN_KEY, scope);
-  return id === "default" ? baseKey : `${baseKey}::${id}`;
-}
-
-function auditKey(scope = getStorageScope()) {
-  return scopedKey(AUDIT_KEY, scope);
-}
-
-function auditActorKey(scope = getStorageScope()) {
-  return scopedKey(AUDIT_ACTOR_KEY, scope);
-}
-
 function dispatchBrowserEvent(name: string) {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new Event(name));
@@ -346,70 +271,10 @@ function todayISO() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function defaultScenarioState(): ScenarioState {
-  const stamp = nowIso();
-  return {
-    activeId: "default",
-    scenarios: [{ id: "default", name: "Main plan", createdAt: stamp, updatedAt: stamp }],
-  };
-}
-
-export function loadScenarioState(): ScenarioState {
-  if (typeof window === "undefined") return defaultScenarioState();
-  const scope = getStorageScope();
-  const key = scopedKey(SCENARIO_KEY, scope);
-  const raw = window.localStorage.getItem(key);
-  if (scenarioCache && scenarioCache.key === key && scenarioCache.raw === raw) {
-    return scenarioCache.state;
-  }
-  if (!raw) {
-    const created = defaultScenarioState();
-    window.localStorage.setItem(key, JSON.stringify(created));
-    scenarioCache = { key, raw: JSON.stringify(created), state: created };
-    return created;
-  }
-  try {
-    const parsed = JSON.parse(raw) as ScenarioState;
-    const scenarios = Array.isArray(parsed.scenarios) ? parsed.scenarios : [];
-    if (scenarios.length === 0) {
-      const created = defaultScenarioState();
-      window.localStorage.setItem(key, JSON.stringify(created));
-      return created;
-    }
-    const normalized = scenarios.map((scenario) => ({
-      id: scenario.id,
-      name: scenario.name || "Scenario",
-      createdAt: scenario.createdAt || nowIso(),
-      updatedAt: scenario.updatedAt || nowIso(),
-    }));
-    const activeId = normalized.some((s) => s.id === parsed.activeId)
-      ? parsed.activeId
-      : normalized[0].id;
-    const state = { activeId, scenarios: normalized };
-    window.localStorage.setItem(key, JSON.stringify(state));
-    scenarioCache = { key, raw: JSON.stringify(state), state };
-    return state;
-  } catch {
-    const created = defaultScenarioState();
-    window.localStorage.setItem(key, JSON.stringify(created));
-    scenarioCache = { key, raw: JSON.stringify(created), state: created };
-    return created;
-  }
-}
-
-function saveScenarioState(state: ScenarioState) {
-  if (typeof window === "undefined") return;
-  const scope = getStorageScope();
-  const key = scopedKey(SCENARIO_KEY, scope);
-  const raw = JSON.stringify(state);
-  window.localStorage.setItem(key, raw);
-  scenarioCache = { key, raw, state };
-}
-
-function parsePlan(raw: string | null): Plan {
+function deserializePlan(raw: string | null): Plan {
   if (!raw) return PLAN;
   try {
-    const parsed = JSON.parse(raw) as Partial<Plan> & LegacyPlan;
+    const parsed = parsePlan(raw) as Partial<Plan> & LegacyPlan;
     const next: Plan = {
       ...PLAN,
       ...parsed,
@@ -460,11 +325,23 @@ function parsePlan(raw: string | null): Plan {
   }
 }
 
-export function getActiveScenarioUpdatedAt() {
-  if (typeof window === "undefined") return "";
-  const state = loadScenarioState();
-  const active = state.scenarios.find((scenario) => scenario.id === state.activeId);
-  return active?.updatedAt ?? "";
+/**
+ * Pure transform — advances asOfDate to today and selects the period that
+ * contains today. Does not read or write storage; callers that need the
+ * change persisted should follow up with savePlan().
+ */
+export function advancePlanToCurrentPeriod(plan: Plan): Plan {
+  const today = todayISO();
+  const next: Plan = { ...plan, setup: { ...plan.setup } };
+  const shouldAutoUpdate = next.setup.autoUpdateAsOfDate ?? true;
+  if (shouldAutoUpdate && next.setup.asOfDate !== today) {
+    next.setup.asOfDate = today;
+  }
+  const currentPeriod = next.periods.find(p => today >= p.start && today <= p.end);
+  if (currentPeriod && currentPeriod.id !== next.setup.selectedPeriodId) {
+    next.setup.selectedPeriodId = currentPeriod.id;
+  }
+  return next;
 }
 
 export function loadPlan(): Plan {
@@ -481,31 +358,8 @@ export function loadPlan(): Plan {
     window.localStorage.setItem(key, rawPlan);
     planCache = { key, raw: rawPlan, plan: normalized };
   }
-  const next = parsePlan(window.localStorage.getItem(key));
-
-  // Auto-update asOfDate to today if enabled (default: true)
-  const shouldAutoUpdate = next.setup.autoUpdateAsOfDate ?? true;
-  const today = todayISO();
-  if (shouldAutoUpdate && next.setup.asOfDate !== today) {
-    next.setup.asOfDate = today;
-  }
-
-  // Auto-advance to the period that contains today so the user always
-  // sees the current period when opening the app.
-  const currentPeriod = next.periods.find(p => today >= p.start && today <= p.end);
-  if (currentPeriod && currentPeriod.id !== next.setup.selectedPeriodId) {
-    next.setup.selectedPeriodId = currentPeriod.id;
-  }
-
-  // Persist any changes (asOfDate or selectedPeriodId)
-  const updatedRaw = JSON.stringify(next);
-  if (updatedRaw !== raw) {
-    window.localStorage.setItem(key, updatedRaw);
-    planCache = { key, raw: updatedRaw, plan: next };
-  } else {
-    planCache = { key, raw: window.localStorage.getItem(key), plan: next };
-  }
-
+  const next = deserializePlan(window.localStorage.getItem(key));
+  planCache = { key, raw: window.localStorage.getItem(key), plan: next };
   return next;
 }
 
@@ -518,7 +372,7 @@ export function loadPreviousPlan(): Plan | null {
     return prevPlanCache.plan;
   }
   if (!raw) return null;
-  const prev = parsePlan(raw);
+  const prev = deserializePlan(raw);
   prevPlanCache = { key, raw, plan: prev };
   return prev;
 }
@@ -559,7 +413,7 @@ export function savePlan(plan: Plan, options?: SavePlanOptions) {
   const normalized = ensurePlanVersion(plan);
   const raw = JSON.stringify(normalized);
   const prevRaw = window.localStorage.getItem(key);
-  const prevPlan = prevRaw ? parsePlan(prevRaw) : null;
+  const prevPlan = prevRaw ? deserializePlan(prevRaw) : null;
   const hasChanged = !prevRaw || prevRaw !== raw;
 
   if (!options?.skipPrev && prevRaw && prevRaw !== raw) {
@@ -600,10 +454,10 @@ export function savePlanFromRemote(plan: Plan, prevPlan?: Plan | null, updatedAt
   if (typeof window === "undefined") return;
   const state = loadScenarioState();
   const key = scenarioPlanKey(state.activeId);
-  const normalized = parsePlan(JSON.stringify(plan));
+  const normalized = deserializePlan(JSON.stringify(plan));
   const raw = JSON.stringify(normalized);
   const existingRaw = window.localStorage.getItem(key);
-  const previousPlan = prevPlan ?? (existingRaw ? parsePlan(existingRaw) : null);
+  const previousPlan = prevPlan ?? (existingRaw ? deserializePlan(existingRaw) : null);
   const hasChanged = !existingRaw || existingRaw !== raw;
   window.localStorage.setItem(key, raw);
   planCache = { key, raw, plan: normalized };
@@ -645,60 +499,6 @@ export function undoLastPlanChange(actor?: string) {
 
 export function resetPlan() {
   savePlan(PLAN, { action: "reset" });
-}
-
-export function setActiveScenario(id: string) {
-  if (typeof window === "undefined") return defaultScenarioState();
-  const state = loadScenarioState();
-  if (!state.scenarios.some((scenario) => scenario.id === id)) {
-    return state;
-  }
-  const next = { ...state, activeId: id };
-  saveScenarioState(next);
-  return next;
-}
-
-export function createScenario(name: string, plan: Plan) {
-  if (typeof window === "undefined") return defaultScenarioState();
-  const state = loadScenarioState();
-  const id = `scenario-${Date.now()}`;
-  const stamp = nowIso();
-  const next = {
-    activeId: id,
-    scenarios: [
-      ...state.scenarios,
-      { id, name: name || "Scenario", createdAt: stamp, updatedAt: stamp },
-    ],
-  };
-  window.localStorage.setItem(scenarioPlanKey(id), JSON.stringify(ensurePlanVersion(plan)));
-  saveScenarioState(next);
-  return next;
-}
-
-export function renameScenario(id: string, name: string) {
-  if (typeof window === "undefined") return defaultScenarioState();
-  const state = loadScenarioState();
-  const next = {
-    ...state,
-    scenarios: state.scenarios.map((scenario) =>
-      scenario.id === id ? { ...scenario, name: name || scenario.name } : scenario
-    ),
-  };
-  saveScenarioState(next);
-  return next;
-}
-
-export function deleteScenario(id: string) {
-  if (typeof window === "undefined") return defaultScenarioState();
-  const state = loadScenarioState();
-  if (state.scenarios.length <= 1) return state;
-  const remaining = state.scenarios.filter((scenario) => scenario.id !== id);
-  const activeId = state.activeId === id ? remaining[0].id : state.activeId;
-  const next = { activeId, scenarios: remaining };
-  window.localStorage.removeItem(scenarioPlanKey(id));
-  window.localStorage.removeItem(scenarioPrevPlanKey(id));
-  saveScenarioState(next);
-  return next;
 }
 
 function normalizeSyncStamp(value?: string | number) {
@@ -798,3 +598,25 @@ export function setMainPlanHash(hash: string) {
   window.localStorage.setItem(scopedKey(MAIN_PLAN_HASH_KEY), value);
   return value;
 }
+
+// ── Re-exports for backward compatibility ─────────────────────────────────────
+// Canonical location for scenario management: @/lib/scenarioStorage
+export type { ScenarioMeta, ScenarioState } from "@/lib/scenarioStorage";
+export {
+  loadScenarioState,
+  getActiveScenarioUpdatedAt,
+  setActiveScenario,
+  createScenario,
+  renameScenario,
+  deleteScenario,
+} from "@/lib/scenarioStorage";
+
+// Canonical location for audit log: @/lib/auditLog
+export type { AuditEntry } from "@/lib/auditLog";
+export {
+  AUDIT_UPDATED_EVENT,
+  loadAuditTrail,
+  clearAuditTrail,
+  getAuditActor,
+  setAuditActor,
+} from "@/lib/auditLog";

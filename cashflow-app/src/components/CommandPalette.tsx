@@ -187,7 +187,12 @@ export default function CommandPalette() {
     return map;
   }, [filtered]);
 
-  let globalIndex = 0;
+  // Pre-compute a stable id→flatIndex map so render is side-effect-free
+  const indexMap = useMemo(() => {
+    const m = new Map<string, number>();
+    filtered.forEach((item, i) => m.set(item.id, i));
+    return m;
+  }, [filtered]);
 
   return (
     <>
@@ -254,7 +259,7 @@ export default function CommandPalette() {
                         {group}
                       </div>
                       {items.map(item => {
-                        const idx = globalIndex++;
+                        const idx = indexMap.get(item.id) ?? 0;
                         const isActive = idx === activeIndex;
                         return (
                           <button
@@ -295,7 +300,7 @@ export default function CommandPalette() {
                   <span><kbd className="bg-white/5 rounded px-1 border border-white/10">↵</kbd> open</span>
                   <span><kbd className="bg-white/5 rounded px-1 border border-white/10">Esc</kbd> close</span>
                   <span className="ml-auto">
-                    <kbd className="bg-white/5 rounded px-1 border border-white/10">{typeof window !== "undefined" && /Mac/.test(navigator.platform) ? "⌘" : "Ctrl"}</kbd>
+                    <kbd className="bg-white/5 rounded px-1 border border-white/10">{typeof window !== "undefined" && /Mac/.test((navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform) ? "⌘" : "Ctrl"}</kbd>
                     <kbd className="bg-white/5 rounded px-1 border border-white/10 ml-0.5">K</kbd>
                     {" "}anywhere
                   </span>

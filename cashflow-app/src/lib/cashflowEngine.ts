@@ -201,7 +201,14 @@ function applyEventOverrides(
   return adjusted;
 }
 
-function generateIncomeEvents(rule: IncomeRule, period: Period): CashflowEvent[] {
+type BaseRule = Pick<IncomeRule, "id" | "label" | "amount" | "cadence" | "seedDate" | "enabled">;
+
+function generateRuleEvents(
+  rule: BaseRule,
+  period: Period,
+  type: "income" | "outflow",
+  category: CashflowCategory
+): CashflowEvent[] {
   if (!rule.enabled) return [];
   const events: CashflowEvent[] = [];
   const start = parseISO(period.start).getTime();
@@ -221,8 +228,8 @@ function generateIncomeEvents(rule: IncomeRule, period: Period): CashflowEvent[]
         date: iso(d),
         label: rule.label,
         amount: rule.amount,
-        type: "income",
-        category: "income",
+        type,
+        category,
         sourceId: rule.id,
       });
     }
@@ -239,8 +246,8 @@ function generateIncomeEvents(rule: IncomeRule, period: Period): CashflowEvent[]
       date: iso(cur),
       label: rule.label,
       amount: rule.amount,
-      type: "income",
-      category: "income",
+      type,
+      category,
       sourceId: rule.id,
     });
     cur.setDate(cur.getDate() + stepDays);
@@ -248,51 +255,12 @@ function generateIncomeEvents(rule: IncomeRule, period: Period): CashflowEvent[]
   return events;
 }
 
+function generateIncomeEvents(rule: IncomeRule, period: Period): CashflowEvent[] {
+  return generateRuleEvents(rule, period, "income", "income");
+}
+
 function generateOutflowEvents(rule: OutflowRule, period: Period): CashflowEvent[] {
-  if (!rule.enabled) return [];
-  const events: CashflowEvent[] = [];
-  const start = parseISO(period.start).getTime();
-  const end = parseISO(period.end).getTime();
-
-  const stepDays = rule.cadence === "weekly" ? 7 : rule.cadence === "biweekly" ? 14 : 0;
-  if (rule.cadence === "monthly") {
-    const seed = parseISO(rule.seedDate);
-    const months = eachMonthBetween(period.start, period.end);
-    for (const { year, month } of months) {
-      const day = clampDay(year, month - 1, seed.getDate());
-      const d = new Date(year, month - 1, day);
-      const t = d.getTime();
-      if (t < start || t > end) continue;
-      events.push({
-        id: `${rule.id}-${iso(d)}`,
-        date: iso(d),
-        label: rule.label,
-        amount: rule.amount,
-        type: "outflow",
-        category: rule.category,
-        sourceId: rule.id,
-      });
-    }
-    return events;
-  }
-
-  const cur = parseISO(rule.seedDate);
-  while (cur.getTime() < start) {
-    cur.setDate(cur.getDate() + stepDays);
-  }
-  while (cur.getTime() <= end) {
-    events.push({
-      id: `${rule.id}-${iso(cur)}`,
-      date: iso(cur),
-      label: rule.label,
-      amount: rule.amount,
-      type: "outflow",
-      category: rule.category,
-      sourceId: rule.id,
-    });
-    cur.setDate(cur.getDate() + stepDays);
-  }
-  return events;
+  return generateRuleEvents(rule, period, "outflow", rule.category);
 }
 function generateBills(
   bills: BillTemplate[],

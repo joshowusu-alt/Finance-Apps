@@ -16,32 +16,20 @@ const checkRateLimit = createRateLimiter(20, 60_000);
 
 export async function POST(req: Request) {
   try {
-    const { message, financialContext } = await req.json();
+    const { message } = await req.json();
 
     if (!message || typeof message !== "string") {
       return badRequest("Message is required");
     }
 
-    let contextString =
-      typeof financialContext === "string" ? financialContext : "";
-    let rateIdentifier = "";
+    // Always resolve auth and load context server-side — never trust client-supplied context
+    const auth = await resolveAuthWithCookie();
+    if (!auth) return unauthorized();
 
-    // If client didn't send context, load plan server-side
-    if (!contextString) {
-      const auth = await resolveAuthWithCookie();
-      if (!auth) return unauthorized();
-
-      rateIdentifier = auth.userId;
-      const { plan } = await loadActivePlan(auth, PLAN);
-      const aiContext = buildAIContext(plan);
-      contextString = formatContextForPrompt(aiContext);
-    }
-
-    // Fallback rate identifier from IP
-    if (!rateIdentifier) {
-      const forwarded = req.headers.get("x-forwarded-for");
-      rateIdentifier = forwarded?.split(",")[0]?.trim() || "anonymous";
-    }
+    const rateIdentifier = auth.userId;
+    const { plan } = await loadActivePlan(auth, PLAN);
+    const aiContext = buildAIContext(plan);
+    const contextString = formatContextForPrompt(aiContext);
 
     if (!checkRateLimit(rateIdentifier)) {
       return NextResponse.json(

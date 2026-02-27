@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPlaidClient } from "@/lib/plaid";
 import { getSQL } from "@/lib/db";
-import { resolveAuth, badRequest, serverError } from "@/lib/apiHelpers";
+import { resolveAuthWithCookie, badRequest, serverError } from "@/lib/apiHelpers";
 import { createRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
@@ -10,11 +10,16 @@ const checkExchangeTokenLimit = createRateLimiter(10, 60_000);
 
 export async function POST(req: Request) {
   try {
-    const { public_token, userId } = await req.json();
-    const auth = await resolveAuth(userId);
+    const auth = await resolveAuthWithCookie();
 
-    if (!public_token || !auth) {
-      return badRequest("Missing public_token or userId");
+    if (!auth) {
+      return badRequest("Unauthorized");
+    }
+
+    const { public_token } = await req.json();
+
+    if (!public_token) {
+      return badRequest("Missing public_token");
     }
 
     if (!checkExchangeTokenLimit(auth.userId)) {

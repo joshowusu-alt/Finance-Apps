@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
-import { getPlaidClient } from "@/lib/plaid";
-import { mapPlaidCategory, mapPlaidType } from "@/lib/plaidCategories";
+import { getPlaidClient, mapPlaidTransaction } from "@/lib/plaid";
+import type { Transaction as PlaidTransaction } from "plaid";
 import { defaultDateRange } from "@/lib/dateUtils";
 import type { Plan, Transaction } from "@/data/plan";
 
@@ -119,8 +119,7 @@ export async function GET(request: Request) {
           : planRow.plan_json;
 
       // Fetch transactions from each Plaid connection for this user
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const plaidTransactions: any[] = [];
+      const plaidTransactions: PlaidTransaction[] = [];
       for (const conn of userConnections) {
         try {
           const response = await plaidClient.transactionsGet({
@@ -139,22 +138,11 @@ export async function GET(request: Request) {
         }
       }
 
-      // Convert to internal Transaction format
-      const incoming: Transaction[] = plaidTransactions.map((tx) => ({
-        id: `plaid-${tx.transaction_id}`,
-        date: tx.date,
-        label: tx.merchant_name || tx.name,
-        amount: Math.abs(tx.amount),
-        type: mapPlaidType(tx.amount),
-        category: mapPlaidCategory(tx.personal_finance_category?.primary
-          ? [tx.personal_finance_category.primary]
-          : tx.category),
-        notes: `${tx.name} (auto-synced)`,
-      }));
-
-      // Deduplicate against existing transactions
+      // Convert to internal Transaction format (dedup included)
       const existingIds = new Set(plan.transactions.map((t) => t.id));
-      const toAdd = incoming.filter((t) => !existingIds.has(t.id));
+      const toAdd = plaidTransactions
+        .map((tx) => mapPlaidTransaction(tx, existingIds, "auto-synced"))
+        .filter((t): t is Transaction => t !== null);
 
       if (toAdd.length === 0) {
         results.push({ userId, imported: 0, total: plan.transactions.length });

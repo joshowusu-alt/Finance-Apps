@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { saveMainPlan } from "@/lib/mainStore";
-import { getPlaidClient } from "@/lib/plaid";
+import { getPlaidClient, mapPlaidTransaction } from "@/lib/plaid";
 import { getSQL } from "@/lib/db";
 import {
   resolveAuthWithCookie,
@@ -11,7 +11,7 @@ import {
   serverError,
 } from "@/lib/apiHelpers";
 import { defaultDateRange } from "@/lib/dateUtils";
-import { mapPlaidCategory, mapPlaidType } from "@/lib/plaidCategories";
+import type { Transaction as PlaidTransaction } from "plaid";
 import { PLAN, type Plan, type Transaction } from "@/data/plan";
 import { createRateLimiter } from "@/lib/rateLimit";
 
@@ -43,8 +43,7 @@ export async function POST(req: Request) {
 
     const client = getPlaidClient();
     const range = defaultDateRange();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const plaidTransactions: any[] = [];
+    const plaidTransactions: PlaidTransaction[] = [];
 
     for (const connection of connections) {
       try {
@@ -63,23 +62,11 @@ export async function POST(req: Request) {
       }
     }
 
-    // Convert Plaid transactions to Plan Transaction format
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newTransactions: Transaction[] = plaidTransactions.map((tx: any) => ({
-      id: `plaid-${tx.transaction_id}`,
-      date: tx.date,
-      label: tx.merchant_name || tx.name,
-      amount: Math.abs(tx.amount),
-      type: mapPlaidType(tx.amount),
-      category: mapPlaidCategory(tx.category),
-      notes: `${tx.name} (Plaid)`,
-    }));
-
-    // Merge with existing transactions (avoid duplicates)
+    // Convert Plaid transactions to Plan Transaction format (dedup included)
     const existingIds = new Set(plan.transactions.map((t) => t.id));
-    const transactionsToAdd = newTransactions.filter(
-      (t) => !existingIds.has(t.id),
-    );
+    const transactionsToAdd = plaidTransactions
+      .map((tx) => mapPlaidTransaction(tx, existingIds))
+      .filter((t): t is Transaction => t !== null);
 
     const updatedPlan: Plan = {
       ...plan,

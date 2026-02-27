@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useDarkMode } from "@/hooks/useDarkMode";
 import { MerchantLogo } from "@/components/MerchantLogo";
 import type { DetectedBill } from "@/lib/billDetection";
 import { getBillConfidenceLabel, toBillTemplate } from "@/lib/billDetection";
@@ -122,22 +123,8 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
 }
 
 export function BillSuggestions({ detectedBills, onAccept, onDismiss, className = "" }: Props) {
-    const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
+    const isDark = useDarkMode();
     const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
-
-    useEffect(() => {
-        const observer = new MutationObserver(() => {
-            const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
-            setIsDark(darkMode);
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ["data-theme"],
-        });
-
-        return () => observer.disconnect();
-    }, []);
 
     const visibleBills = detectedBills.filter((b) => !dismissedIds.has(b.id));
 

@@ -1,9 +1,11 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { Transaction, CashflowCategory } from "@/data/plan";
-import { formatCurrency, getCategoryColor, getTextColor, getMutedColor } from "@/lib/chartConfig";
+import { useDarkMode } from "@/hooks/useDarkMode";
+import { getCategoryColor, getTextColor, getMutedColor } from "@/lib/chartConfig";
+import { formatMoney } from "@/lib/currency";
 import { prettyDate } from "@/lib/formatUtils";
 
 type Props = {
@@ -25,21 +27,7 @@ export function CategoryDrilldown({
     budgeted,
     periodLabel,
 }: Props) {
-    const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
-
-    useEffect(() => {
-        const observer = new MutationObserver(() => {
-            const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
-            setIsDark(darkMode);
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ["data-theme"],
-        });
-
-        return () => observer.disconnect();
-    }, []);
+    const isDark = useDarkMode();
 
     const categoryColor = getCategoryColor(category);
     const textColor = getTextColor(isDark);
@@ -155,7 +143,7 @@ export function CategoryDrilldown({
                                     Spent
                                 </p>
                                 <p className="mt-1 text-xl font-bold" style={{ color: textColor }}>
-                                    {formatCurrency(totalSpent)}
+                                    {formatMoney(totalSpent)}
                                 </p>
                             </div>
                             {budgeted !== undefined && (
@@ -165,7 +153,7 @@ export function CategoryDrilldown({
                                             Budget
                                         </p>
                                         <p className="mt-1 text-xl font-bold" style={{ color: textColor }}>
-                                            {formatCurrency(budgeted)}
+                                            {formatMoney(budgeted)}
                                         </p>
                                     </div>
                                     <div>
@@ -176,7 +164,7 @@ export function CategoryDrilldown({
                                             className="mt-1 text-xl font-bold"
                                             style={{ color: isOverBudget ? "#ef4444" : "#10b981" }}
                                         >
-                                            {isOverBudget ? "+" : ""}{formatCurrency(variance)}
+                                            {isOverBudget ? "+" : ""}{formatMoney(variance)}
                                         </p>
                                         <p className="text-xs" style={{ color: isOverBudget ? "#ef4444" : "#10b981" }}>
                                             {isOverBudget ? "+" : ""}{variancePercent}%
@@ -227,7 +215,7 @@ export function CategoryDrilldown({
                                                             className="text-sm font-medium"
                                                             style={{ color: t.type === "income" ? "#10b981" : textColor }}
                                                         >
-                                                            {t.type === "income" ? "+" : "-"}{formatCurrency(t.amount)}
+                                                            {t.type === "income" ? "+" : "-"}{formatMoney(t.amount)}
                                                         </span>
                                                     </motion.div>
                                                 ))}

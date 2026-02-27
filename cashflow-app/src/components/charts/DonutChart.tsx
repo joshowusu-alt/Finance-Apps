@@ -3,7 +3,8 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Sector } from "recharts";
 import { motion } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
-import { chartColors, formatCurrency, getCategoryColor, getTextColor, getGridColor } from "@/lib/chartConfig";
+import { chartColors, getCategoryColor, getTextColor, getGridColor } from "@/lib/chartConfig";
+import { formatMoney } from "@/lib/currency";
 
 export type DonutDataPoint = {
   name: string;
@@ -65,22 +66,8 @@ export function DonutChart({
   centerLabel,
   centerValue,
 }: Props) {
-  const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
+  const isDark = useDarkMode();
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
-      setIsDark(darkMode);
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   const onPieEnter = useCallback((_: unknown, index: number) => {
     setActiveIndex(index);
@@ -181,7 +168,7 @@ export function DonutChart({
               boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
               padding: "12px 16px",
             }}
-            formatter={(value) => [typeof value === "number" ? formatCurrency(value) : "", "Amount"]}
+            formatter={(value) => [typeof value === "number" ? formatMoney(value) : "", "Amount"]}
             labelStyle={{ fontWeight: 600, marginBottom: 4 }}
           />
           {showLegend && (
