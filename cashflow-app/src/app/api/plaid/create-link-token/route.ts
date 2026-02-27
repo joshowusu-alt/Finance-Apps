@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       return badRequest("Unauthorized");
     }
 
-    if (!checkLinkTokenLimit(auth.userId)) {
+    if (!(await checkLinkTokenLimit(auth.userId))) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 

@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       return badRequest("Missing public_token");
     }
 
-    if (!checkExchangeTokenLimit(auth.userId)) {
+    if (!(await checkExchangeTokenLimit(auth.userId))) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 

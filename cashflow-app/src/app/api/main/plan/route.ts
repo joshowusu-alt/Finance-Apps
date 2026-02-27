@@ -89,7 +89,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Missing main token." }, { status: 401 });
   }
 
-  if (!checkPlanLimit(token)) {
+  if (!(await checkPlanLimit(token))) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 

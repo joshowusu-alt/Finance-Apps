@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     const aiContext = buildAIContext(plan);
     const contextString = formatContextForPrompt(aiContext);
 
-    if (!checkRateLimit(rateIdentifier)) {
+    if (!(await checkRateLimit(rateIdentifier))) {
       return NextResponse.json(
         { error: "Too many requests. Please wait a moment." },
         { status: 429 },

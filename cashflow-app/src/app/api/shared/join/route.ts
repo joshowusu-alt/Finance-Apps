@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   // Rate-limit by IP to prevent share-code brute force.
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  if (!checkJoinLimit(ip)) {
+  if (!(await checkJoinLimit(ip))) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
   let code: string | undefined;

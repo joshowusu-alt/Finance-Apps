@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // unsafe-eval is only needed in development for source-map / hot-reload
 // tooling. Remove it in production so eval() cannot be used for XSS.
@@ -48,6 +49,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     mcpServer: false,
+    optimizePackageImports: ['recharts', 'framer-motion', '@supabase/supabase-js', 'lucide-react'],
   },
   cleanDistDir: true,
   serverExternalPackages: ["better-sqlite3"],
@@ -61,4 +63,12 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  widenClientFileUpload: true,
+  sourcemaps: { disable: true },
+  disableLogger: true,
+  automaticVercelMonitors: false,
+});

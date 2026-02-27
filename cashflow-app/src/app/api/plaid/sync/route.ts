@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       return unauthorized("Missing authentication");
     }
 
-    if (!checkSyncLimit(auth.userId)) {
+    if (!(await checkSyncLimit(auth.userId))) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 

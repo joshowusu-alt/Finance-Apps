@@ -8,22 +8,15 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ToastContainer from "@/components/Toast";
 import ThemeInitializer from "@/components/ThemeInitializer";
 import BrandInitializer from "@/components/BrandInitializer";
-import AIAssistant from "@/components/AIAssistant";
 import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { AuthProvider } from "@/contexts/AuthContext";
 import CloudSync from "@/components/CloudSync";
 import OfflineOutboxBadge from "@/components/OfflineOutboxBadge";
 import AppWatermark from "@/components/AppWatermark";
-import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
-import NotificationScheduler from "@/components/NotificationScheduler";
-import SplashScreen from "@/components/SplashScreen";
-import QuickAddFAB from "@/components/QuickAddFAB";
-import CommandPalette from "@/components/CommandPalette";
-import PullToRefresh from "@/components/PullToRefresh";
-import SwipeBack from "@/components/SwipeBack";
-import BiometricLock from "@/components/BiometricLock";
 import UpdateBanner from "@/components/UpdateBanner";
+// Browser-only overlay components (lazy, ssr: false) — see ClientOverlays.tsx
+import ClientOverlays from "@/components/ClientOverlays";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -68,7 +61,6 @@ export default function RootLayout({
         />
       </head>
       <body className={`${playfair.variable} ${jakarta.variable} min-h-screen font-sans transition-colors duration-200 overflow-x-hidden`} style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
-        <SplashScreen />
         <AuthProvider>
           <ConfirmProvider>
             <CloudSync />
@@ -81,7 +73,6 @@ export default function RootLayout({
             </a>
             <AppWatermark />
             <ServiceWorkerRegistrar />
-            <NotificationScheduler />
             <noscript>
               <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontFamily: 'sans-serif' }}>
                 <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>JavaScript Required</h1>
@@ -96,16 +87,11 @@ export default function RootLayout({
             </ErrorBoundary>
 
             {/* Persistent bottom navigation */}
-            <BiometricLock />
-            <CommandPalette />
-            <PullToRefresh />
-            <SwipeBack />
-            <QuickAddFAB />
             <BottomNav />
-            <InstallPrompt />
             <ReviewAccessLink />
-            <AIAssistant />
             <ToastContainer />
+            {/* Browser-only overlays — lazy loaded, ssr: false (WebAuthn, Notifications, etc.) */}
+            <ClientOverlays />
           </ConfirmProvider>
         </AuthProvider>
       </body>
