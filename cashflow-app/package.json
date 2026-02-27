@@ -23,6 +23,7 @@
     "jspdf-autotable": "^5.0.7",
     "next": "16.1.1",
     "plaid": "^41.1.0",
+    "posthog-js": "^1.356.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-plaid-link": "^4.1.1",
