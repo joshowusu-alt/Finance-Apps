@@ -380,7 +380,7 @@ export default function BottomNav() {
               exit={{ y: "100%" }}
               transition={{ duration: 0.28, ease: [0.4, 0.0, 0.2, 1] }}
               className="fixed bottom-0 left-0 right-0 z-40 rounded-t-3xl md:hidden"
-              style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)", maxHeight: "85dvh", overflowY: "auto" }}
+              style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)", maxHeight: "85dvh", overflowY: "auto", overscrollBehavior: "contain" }}
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={{ top: 0, bottom: 1 }}
@@ -423,6 +423,29 @@ export default function BottomNav() {
                   ))}
                 </div>
                 <div className="mt-4 space-y-2">
+                  {/* Search / Command Palette */}
+                  <button
+                    onClick={() => {
+                      setShowMore(false);
+                      // Dispatch Cmd+K to open CommandPalette
+                      window.dispatchEvent(
+                        new KeyboardEvent("keydown", {
+                          key: "k",
+                          metaKey: true,
+                          bubbles: true,
+                        })
+                      );
+                    }}
+                    className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 transition-colors"
+                    style={{ background: "var(--vn-bg)" }}
+                  >
+                    <svg className="w-4 h-4 shrink-0" style={{ color: "var(--vn-muted)" }} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <circle cx="11" cy="11" r="8" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35" />
+                    </svg>
+                    <span className="flex-1 text-left text-sm" style={{ color: "var(--vn-text)" }}>Search…</span>
+                    <kbd className="text-xs rounded px-1.5 py-0.5" style={{ color: "var(--vn-muted)", background: "var(--vn-border)", fontFamily: "var(--font-jakarta, sans-serif)" }}>⌘K</kbd>
+                  </button>
                   {periods.length > 1 && (
                     <div className="rounded-2xl px-4 py-3 bg-(--vn-bg)">
                       <div className="flex items-center justify-between gap-2">
@@ -451,7 +474,7 @@ export default function BottomNav() {
                                 const idx = periods.findIndex(p => p.id === selectedPeriodId);
                                 if (idx > 0) handlePeriodChange(periods[idx - 1].id);
                               }}
-                              className="flex items-center justify-center w-7 h-7 rounded-full transition-colors hover:bg-(--vn-border)"
+                              className="flex items-center justify-center w-11 h-11 rounded-full transition-colors hover:bg-(--vn-border)"
                               style={{ color: "var(--vn-muted)" }}
                               aria-label="Previous period"
                             >
@@ -465,7 +488,7 @@ export default function BottomNav() {
                                 const idx = periods.findIndex(p => p.id === selectedPeriodId);
                                 if (idx < periods.length - 1) handlePeriodChange(periods[idx + 1].id);
                               }}
-                              className="flex items-center justify-center w-7 h-7 rounded-full transition-colors hover:bg-(--vn-border)"
+                              className="flex items-center justify-center w-11 h-11 rounded-full transition-colors hover:bg-(--vn-border)"
                               style={{ color: "var(--vn-muted)" }}
                               aria-label="Next period"
                             >

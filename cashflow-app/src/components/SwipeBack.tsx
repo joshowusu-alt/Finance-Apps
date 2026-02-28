@@ -28,7 +28,7 @@ export default function SwipeBack() {
     overlay.style.cssText =
       "position:fixed;top:0;left:0;width:0;height:100dvh;z-index:9990;" +
       "background:linear-gradient(90deg,rgba(212,168,67,0.18),transparent);" +
-      "pointer-events:none;transition:width 0.05s;";
+      "pointer-events:none;transition:width 0.05s;touch-action:pan-y;";
     document.body.appendChild(overlay);
     overlayRef.current = overlay;
 

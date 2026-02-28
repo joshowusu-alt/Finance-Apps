@@ -3,11 +3,11 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { loadPlan } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
-import { clamp } from "@/lib/dateUtils";
 import { downloadPlanPdf } from "@/lib/planIo";
 import { buildInsightsSnapshot } from "@/lib/insightsSnapshot";
 import { downloadInsightsCsv, downloadInsightsPdf } from "@/lib/insightsExport";
 import SidebarNav from "@/components/SidebarNav";
+import { ProgressBar } from "@/components/ProgressBar";
 import { CategoryBreakdownChart, SpendingTrendChart } from "@/components/charts";
 import { CategoryDrilldown } from "@/components/CategoryDrilldown";
 import SpendingCalendarHeatmap from "@/components/SpendingCalendarHeatmap";
@@ -18,6 +18,7 @@ import InfoTooltip from "@/components/InfoTooltip";
 import { useDerived } from "@/lib/useDerived";
 import { prettyDate, formatPercent } from "@/lib/formatUtils";
 import { track } from "@/lib/analytics";
+import { showToast } from "@/components/Toast";
 import { getCategoryLabel } from "@/hooks/useCategoryLabel";
 
 function formatDelta(value: number) {
@@ -42,50 +43,6 @@ function SummaryCard({
       <div className="text-xs uppercase tracking-wide text-(--vn-muted)">{label}</div>
       <div className="mt-2 text-2xl font-semibold text-(--vn-text)">{value}</div>
       {hint ? <div className="mt-1 text-xs text-(--vn-muted)">{hint}</div> : null}
-    </div>
-  );
-}
-
-function ProgressBar({
-  label,
-  value,
-  total,
-  tone,
-  hint,
-  barColor,
-}: {
-  label: string;
-  value: number;
-  total: number;
-  tone?: "good" | "warn" | "bad";
-  hint?: string;
-  barColor?: string;
-}) {
-  const pct = total > 0 ? clamp(value / total, 0, 1) : 0;
-  const defaultColor =
-    tone === "good"
-      ? "#22c55e"
-      : tone === "bad"
-        ? "#ef4444"
-        : "#eab308";
-  const color = barColor || defaultColor;
-  return (
-    <div className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm">
-      <div className="flex items-center justify-between text-xs text-(--vn-muted)">
-        <span>{label}</span>
-        <span className="font-semibold text-(--vn-muted)">{formatPercent(pct)}</span>
-      </div>
-      <div
-        role="progressbar"
-        aria-valuenow={Math.round(pct * 100)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={label}
-        className="mt-2 h-2 rounded-full bg-(--vn-border)"
-      >
-        <div className="h-2 rounded-full" style={{ width: `${pct * 100}%`, background: color }} />
-      </div>
-      {hint ? <div className="mt-2 text-xs text-(--vn-muted)">{hint}</div> : null}
     </div>
   );
 }
@@ -305,6 +262,16 @@ export default function InsightsPage() {
     downloadInsightsPdf(snapshot, derivedForPeriod);
   }
 
+  async function handleShare() {
+    const text = `Velanovo Budget Summary\n\nCheck out my cashflow insights on Velanovo.`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      await navigator.share({ title: "Velanovo Budget Summary", text, url: window.location.href });
+    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+      await navigator.clipboard.writeText(window.location.href);
+      showToast("Link copied to clipboard", "success");
+    }
+  }
+
   return (
     <main className="min-h-screen w-full max-w-full overflow-x-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-40 pt-5">
@@ -380,6 +347,21 @@ export default function InsightsPage() {
                     </button>
                   </div>
                 </details>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  aria-label="Share insights"
+                  className="list-none cursor-pointer flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white/75 hover:text-white hover:bg-white/10 transition-all border border-white/15 select-none"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="18" cy="5" r="3"/>
+                    <circle cx="6" cy="12" r="3"/>
+                    <circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                  Share
+                </button>
               </div>
             </header>
 
@@ -608,30 +590,38 @@ export default function InsightsPage() {
                     <ProgressBar
                       label="Time into period"
                       value={daysElapsed}
-                      total={periodDays}
+                      max={periodDays}
                       barColor="#0f172a"
+                      height="md"
                       hint={`Day ${daysElapsed} of ${periodDays}`}
+                      className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm"
                     />
                     <ProgressBar
                       label="Income pace"
                       value={baseStats.actualIncome}
-                      total={baseStats.budgetIncome}
+                      max={baseStats.budgetIncome}
                       barColor={incomeProgress >= timeProgress ? "#22c55e" : "#eab308"}
+                      height="md"
                       hint={`Actual ${formatMoney(baseStats.actualIncome)} vs budget ${formatMoney(baseStats.budgetIncome)}`}
+                      className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm"
                     />
                     <ProgressBar
                       label="Spending pace"
                       value={baseStats.actualSpending}
-                      total={baseStats.budgetSpending}
+                      max={baseStats.budgetSpending}
                       barColor={spendingProgress <= timeProgress ? "#f97316" : "#ef4444"}
+                      height="md"
                       hint={`Actual ${formatMoney(baseStats.actualSpending)} vs budget ${formatMoney(baseStats.budgetSpending)}`}
+                      className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm"
                     />
                     <ProgressBar
                       label="Savings pace"
                       value={baseStats.actualSavings}
-                      total={baseStats.budgetSavings}
+                      max={baseStats.budgetSavings}
                       barColor={savingsProgress >= timeProgress ? "#a855f7" : "#eab308"}
+                      height="md"
                       hint={`Actual ${formatMoney(baseStats.actualSavings)} vs target ${formatMoney(baseStats.budgetSavings)}`}
+                      className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm"
                     />
                   </div>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">

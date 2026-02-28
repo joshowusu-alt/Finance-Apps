@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -14,16 +14,18 @@ import { exportToCSV, exportToExcel, exportToPDF } from "@/lib/exportData";
 import SidebarNav from "@/components/SidebarNav";
 import EmptyState from "@/components/EmptyState";
 import { showToast } from "@/components/Toast";
+import { TableSkeleton } from "@/components/Skeleton";
 import { MerchantLogo } from "@/components/MerchantLogo";
 import { FormError } from "@/components/FormError";
 import type { Transaction, CashflowCategory, CashflowType, Plan } from "@/data/plan";
 import { getCategoryLabel } from "@/hooks/useCategoryLabel";
 import TransactionTriage from "@/components/TransactionTriage";
+import { todayISO } from "@/lib/dateUtils";
+import { ProgressBar } from "@/components/ProgressBar";
 import {
   type TransactionDraft,
   formatNice,
   makeId,
-  today,
   suggestIncomeRuleId,
   suggestOutflowRuleId,
   resolveIncomeRuleId,
@@ -42,30 +44,6 @@ import {
   resolveTransferRuleId,
   AUTO_CATEGORY_CONFIDENCE,
 } from "@/lib/transactionParsers";
-
-/* ---------- Progress bar component ---------- */
-function ProgressBar({ value, max, favorable }: { value: number; max: number; favorable: boolean }) {
-  if (max <= 0) return null;
-  const pct = Math.min((value / max) * 100, 100);
-  const overBudget = value > max;
-  const barColor = overBudget
-    ? favorable
-      ? "bg-emerald-500 dark:bg-emerald-400"
-      : "bg-rose-500 dark:bg-rose-400"
-    : "bg-blue-500 dark:bg-blue-400";
-  return (
-    <div
-      role="progressbar"
-      aria-valuenow={Math.round(pct)}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-label="Progress"
-      className="mt-1.5 h-1.5 rounded-full bg-(--vn-border) overflow-hidden"
-    >
-      <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
-    </div>
-  );
-}
 
 /* ---------- Budget vs Actual Summary ---------- */
 type BudgetData = {
@@ -161,7 +139,7 @@ function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }:
             <div className="mt-1 text-xl font-semibold text-(--vn-text)">{fmt(card.actual)}</div>
 
             {/* Progress bar */}
-            {card.budget > 0 && <ProgressBar value={card.actual} max={card.budget} favorable={card.favorableWhenOver} />}
+            {card.budget > 0 && <ProgressBar value={card.actual} max={card.budget} tone={card.favorableWhenOver ? "favorable" : "auto"} />}
 
             {delta !== 0 && (
               <div className={`mt-1 text-xs font-semibold ${favorable ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
@@ -172,7 +150,7 @@ function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }:
             {/* Unbudgeted spending callout on spending card */}
             {card.key === "spending" && data.actualUnbudgeted > 0 && (
               <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 px-2 py-1.5 border border-amber-200 dark:border-amber-700/50">
-                <span className="text-amber-600 dark:text-amber-400 text-xs">⚠</span>
+                <span className="text-amber-600 dark:text-amber-400 text-xs">?</span>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-medium text-amber-700 dark:text-amber-300">+{fmt(data.actualUnbudgeted)} unbudgeted</span>
                   <span className="text-[9px] text-amber-600/70 dark:text-amber-400/70">Total actual: {fmt(data.actualSpending)}</span>
@@ -205,7 +183,7 @@ function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }:
                             }}
                             onBlur={() => setLinkingTxnId(null)}
                           >
-                            <option value="">Link to…</option>
+                            <option value="">Link to�</option>
                             {bills?.filter(b => b.enabled).map(b => <option key={b.id} value={`bill:${b.id}`}>{b.label}</option>)}
                             {rules?.filter(r => r.enabled && r.category !== "savings").map(r => <option key={r.id} value={`rule:${r.id}`}>{r.label}</option>)}
                           </select>
@@ -234,7 +212,7 @@ function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }:
 function TransactionsPage() {
   const [plan, setPlan] = useState<Plan>(() => loadPlan());
   const [newTransaction, setNewTransaction] = useState<TransactionDraft>({
-    date: today(),
+    date: todayISO(),
     label: "",
     amount: "",
     type: "outflow" as CashflowType,
@@ -768,7 +746,7 @@ function TransactionsPage() {
     showToast("Transaction added successfully", "success");
 
     setNewTransaction({
-      date: today(),
+      date: todayISO(),
       label: "",
       amount: "",
       type: "outflow",
@@ -946,7 +924,11 @@ function TransactionsPage() {
   }
 
   if (!period) {
-    return <div className="px-6 py-10 text-(--vn-muted)">Loading...</div>;
+    return (
+      <div className="px-4 sm:px-6 pt-5">
+        <TableSkeleton rows={6} />
+      </div>
+    );
   }
 
   return (
@@ -1312,7 +1294,7 @@ function TransactionsPage() {
                     <>
                       <button
                         onClick={() => setBulkMode(true)}
-                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-11 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Enable bulk selection mode"
                       >
@@ -1320,7 +1302,7 @@ function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToCSV(periodTransactions, period.label)}
-                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-11 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to CSV"
                       >
@@ -1328,7 +1310,7 @@ function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToExcel(periodTransactions, period.label)}
-                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-11 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to Excel"
                       >
@@ -1336,7 +1318,7 @@ function TransactionsPage() {
                       </button>
                       <button
                         onClick={() => exportToPDF(periodTransactions, period.label, period.start, period.end)}
-                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-11 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={periodTransactions.length === 0}
                         aria-label="Export transactions to PDF"
                       >
@@ -1347,14 +1329,14 @@ function TransactionsPage() {
                     <>
                       <button
                         onClick={handleBulkExport}
-                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-11 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={selectedIds.size === 0}
                       >
                         Export Selected
                       </button>
                       <button
                         onClick={handleBulkDelete}
-                        className="rounded-lg bg-(--vn-surface) border border-rose-200 dark:border-rose-500/40 px-3 py-1.5 text-xs min-h-10 font-semibold text-rose-700 dark:text-rose-200 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-(--vn-surface) border border-rose-200 dark:border-rose-500/40 px-3 py-1.5 text-xs min-h-11 font-semibold text-rose-700 dark:text-rose-200 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={selectedIds.size === 0}
                       >
                         Delete Selected
@@ -1364,7 +1346,7 @@ function TransactionsPage() {
                           setBulkMode(false);
                           setSelectedIds(new Set());
                         }}
-                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-10 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors"
+                        className="rounded-lg bg-(--vn-surface) border border-(--vn-border) px-3 py-1.5 text-xs min-h-11 font-semibold text-(--vn-text) hover:bg-(--vn-bg) transition-colors"
                       >
                         Cancel
                       </button>
@@ -1397,7 +1379,7 @@ function TransactionsPage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="flex-1 min-w-0 rounded-lg border border-(--vn-border) bg-(--vn-surface) px-3 py-2 text-sm text-(--vn-text) placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
                   />
-                  {/* Filter chip — visible on mobile only */}
+                  {/* Filter chip � visible on mobile only */}
                   <button
                     onClick={() => setShowFilters(f => !f)}
                     aria-expanded={showFilters}
@@ -1453,7 +1435,7 @@ function TransactionsPage() {
               {periodTransactions.length === 0 ? (
                 <div className="mt-4 rounded-xl bg-(--vn-surface) p-8">
                   <EmptyState
-                    icon={searchQuery || filterType !== "all" || filterCategory !== "all" ? "🔍" : "📝"}
+                    icon={searchQuery || filterType !== "all" || filterCategory !== "all" ? "??" : "??"}
                     title={searchQuery || filterType !== "all" || filterCategory !== "all" ? "No matching transactions" : "No transactions yet"}
                     description={
                       searchQuery || filterType !== "all" || filterCategory !== "all"
@@ -1480,7 +1462,7 @@ function TransactionsPage() {
                         href="/import"
                         className="inline-flex items-center gap-2 rounded-lg border border-(--vn-border) bg-(--vn-surface) px-4 py-2 text-sm font-medium text-(--vn-text) shadow-sm hover:bg-(--vn-bg) transition-colors"
                       >
-                        <span>📂</span>
+                        <span>??</span>
                         Import from bank statement
                         <span className="text-(--vn-muted) text-xs">CSV / OFX / QFX</span>
                       </Link>
@@ -1845,7 +1827,7 @@ function TransactionsPage() {
                                 </div>
                               ) : (
                                 <div className="flex-1 min-w-0">
-                                  {/* Main row: logo · text · desktop actions */}
+                                  {/* Main row: logo � text � desktop actions */}
                                   <div className="flex items-start gap-3">
                                     <MerchantLogo merchantName={txn.label} size="sm" />
                                     <div className="flex-1 min-w-0">
@@ -1857,11 +1839,11 @@ function TransactionsPage() {
                                       </div>
                                       <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-(--vn-muted)">
                                         <span className="whitespace-nowrap">{formatNice(txn.date)}</span>
-                                        <span className="text-slate-300">·</span>
+                                        <span className="text-slate-300">�</span>
                                         <span className="capitalize">{txn.category}</span>
                                         {txn.notes && (
                                           <>
-                                            <span className="text-slate-300">·</span>
+                                            <span className="text-slate-300">�</span>
                                             <span className="truncate max-w-[120px] sm:max-w-none">{txn.notes}</span>
                                           </>
                                         )}
@@ -1870,7 +1852,7 @@ function TransactionsPage() {
                                     {/* Desktop: amount + actions (sm+) */}
                                     <div className="hidden sm:flex items-center gap-2 shrink-0">
                                       <span className={`text-sm font-semibold ${txn.type === "income" ? "text-green-600" : txn.type === "transfer" ? "text-sky-600" : "text-rose-600"}`}>
-                                        {txn.type === "income" ? "+" : txn.type === "transfer" ? "T" : "−"}{formatMoney(txn.amount)}
+                                        {txn.type === "income" ? "+" : txn.type === "transfer" ? "T" : "-"}{formatMoney(txn.amount)}
                                       </span>
                                       <button
                                         onClick={() => handleEditTransaction(txn)}
@@ -1889,7 +1871,7 @@ function TransactionsPage() {
                                   {/* Mobile footer: amount + actions (< sm) */}
                                   <div className="mt-2.5 flex items-center justify-between border-t border-(--vn-border) pt-2.5 sm:hidden">
                                     <span className={`text-sm font-semibold ${txn.type === "income" ? "text-green-600" : txn.type === "transfer" ? "text-sky-600" : "text-rose-600"}`}>
-                                      {txn.type === "income" ? "+" : txn.type === "transfer" ? "T" : "−"}{formatMoney(txn.amount)}
+                                      {txn.type === "income" ? "+" : txn.type === "transfer" ? "T" : "-"}{formatMoney(txn.amount)}
                                     </span>
                                     <div className="flex items-center gap-1">
                                       <button
