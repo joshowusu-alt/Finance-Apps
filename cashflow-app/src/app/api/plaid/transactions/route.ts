@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getPlaidClient } from "@/lib/plaid";
 import {
   resolveAuthWithCookie,
@@ -18,7 +19,18 @@ export async function POST(req: Request) {
     const rateLimit = checkRateLimit(req);
     if (rateLimit) return rateLimit;
 
-    const { startDate, endDate } = await req.json();
+    const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional();
+    const bodySchema = z.object({
+      startDate: dateSchema,
+      endDate: dateSchema,
+      userId: z.string().optional(),
+    });
+
+    const parsed = bodySchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid request parameters" }, { status: 400 });
+    }
+    const { startDate, endDate } = parsed.data;
     const auth = await resolveAuthWithCookie();
 
     if (!auth) {

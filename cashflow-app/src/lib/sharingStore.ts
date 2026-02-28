@@ -38,8 +38,12 @@ async function ensureSharingSchema() {
     CREATE TABLE IF NOT EXISTS join_tokens (
       token_hash  VARCHAR(64)  PRIMARY KEY,
       plan_hash   VARCHAR(64)  NOT NULL,
-      created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+      created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+      expires_at  TIMESTAMPTZ
     )
+  `;
+  await sql`
+    ALTER TABLE join_tokens ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ
   `;
   schemaEnsured = true;
 }
@@ -94,9 +98,10 @@ export async function joinByShareCode(shareCode: string): Promise<string | null>
   const joinToken = generateToken();
   const joinTokenHash = hashToken(joinToken);
 
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   await sql`
-    INSERT INTO join_tokens (token_hash, plan_hash, created_at)
-    VALUES (${joinTokenHash}, ${planHash}, NOW())
+    INSERT INTO join_tokens (token_hash, plan_hash, created_at, expires_at)
+    VALUES (${joinTokenHash}, ${planHash}, NOW(), ${expiresAt})
     ON CONFLICT (token_hash) DO NOTHING
   `;
 
@@ -113,7 +118,10 @@ export async function resolvePlanHashFromJoinToken(joinToken: string): Promise<s
 
   try {
     const rows = await sql`
-      SELECT plan_hash FROM join_tokens WHERE token_hash = ${joinTokenHash} LIMIT 1
+      SELECT plan_hash FROM join_tokens
+      WHERE token_hash = ${joinTokenHash}
+        AND (expires_at IS NULL OR expires_at > NOW())
+      LIMIT 1
     `;
     return rows.length > 0 ? rows[0].plan_hash : null;
   } catch {

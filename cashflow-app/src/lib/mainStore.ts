@@ -70,56 +70,16 @@ export async function saveMainPlan(token: string, plan: Plan, prevPlan?: Plan | 
   const planJson = JSON.stringify(plan);
   const prevJson = prevPlan ? JSON.stringify(prevPlan) : null;
 
-  const result = await sql`
-    SELECT plan_json
-    FROM main_plans
-    WHERE token_hash = ${tokenHash}
-  `;
-
-  if (result.length === 0) {
-    await sql`
-      INSERT INTO main_plans
-      (token_hash, plan_json, prev_plan_json, created_at, updated_at, last_seen_at)
-      VALUES (${tokenHash}, ${planJson}, ${prevJson}, ${now}, ${now}, ${now})
-    `;
-    return now.getTime();
-  }
-
-  const row = result[0];
-  const existingPlanJson = typeof row.plan_json === "string"
-    ? row.plan_json
-    : JSON.stringify(row.plan_json);
-
-  if (existingPlanJson === planJson) {
-    if (prevJson && prevJson !== planJson) {
-      await sql`
-        UPDATE main_plans
-        SET prev_plan_json = ${prevJson}, last_seen_at = ${now}
-        WHERE token_hash = ${tokenHash}
-      `;
-    } else {
-      await sql`
-        UPDATE main_plans
-        SET last_seen_at = ${now}
-        WHERE token_hash = ${tokenHash}
-      `;
-    }
-    return now.getTime();
-  }
-
   await sql`
-    UPDATE main_plans
-    SET prev_plan_json = plan_json, plan_json = ${planJson}, updated_at = ${now}, last_seen_at = ${now}
-    WHERE token_hash = ${tokenHash}
+    INSERT INTO main_plans
+      (token_hash, plan_json, prev_plan_json, created_at, updated_at, last_seen_at)
+    VALUES (${tokenHash}, ${planJson}, ${prevJson}, ${now}, ${now}, ${now})
+    ON CONFLICT (token_hash) DO UPDATE SET
+      prev_plan_json = main_plans.plan_json,
+      plan_json      = EXCLUDED.plan_json,
+      updated_at     = EXCLUDED.updated_at,
+      last_seen_at   = EXCLUDED.last_seen_at
   `;
-
-  if (prevJson && prevJson !== planJson) {
-    await sql`
-      UPDATE main_plans
-      SET prev_plan_json = ${prevJson}
-      WHERE token_hash = ${tokenHash}
-    `;
-  }
 
   return now.getTime();
 }
