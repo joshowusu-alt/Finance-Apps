@@ -356,7 +356,7 @@ export default function HouseholdPage() {
             {/* Join section */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--vn-muted)" }}>
-                Join a partner's plan
+                Join a partner&apos;s plan
               </p>
               {joined ? (
                 <div className="flex items-center gap-2 text-sm" style={{ color: "#4ade80" }}>
@@ -377,7 +377,7 @@ export default function HouseholdPage() {
                       background: "var(--vn-bg)",
                       borderColor: "var(--vn-border)",
                       color: "var(--vn-text)",
-                      // @ts-ignore CSS custom properties
+                      // @ts-expect-error CSS custom properties
                       "--tw-ring-color": "var(--vn-gold)",
                     }}
                     aria-label="Share code input"

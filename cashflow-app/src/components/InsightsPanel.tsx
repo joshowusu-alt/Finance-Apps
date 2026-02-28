@@ -79,6 +79,7 @@ export default function InsightsPanel() {
     }, [buildLocalInsights]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(true);
         refreshInsights();
         window.addEventListener(PLAN_UPDATED_EVENT, refreshInsights);

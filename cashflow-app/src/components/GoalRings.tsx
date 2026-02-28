@@ -154,6 +154,7 @@ export default function GoalRings({ goals, transactions }: Props) {
       if (pct >= 1) {
         celebrated.add(g.id);
         sessionStorage.setItem("vn-confetti-goals", JSON.stringify([...celebrated]));
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setConfettiGoal(g.id);
         break; // fire one at a time
       }

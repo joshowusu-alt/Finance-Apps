@@ -100,6 +100,7 @@ export default function CommandPalette() {
   // ── Focus input on open ────────────────────────────────────────────────────
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery("");
       setActiveIndex(0);
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -147,6 +148,7 @@ export default function CommandPalette() {
   }, [query, allCommands, txnCommands]);
 
   // ── Reset activeIndex when filtered changes ────────────────────────────────
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setActiveIndex(0); }, [filtered]);
 
   // ── Keyboard navigation inside modal ──────────────────────────────────────

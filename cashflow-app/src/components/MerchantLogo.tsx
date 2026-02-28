@@ -84,6 +84,7 @@ export function MerchantLogo({ merchantName, size = "md", className = "" }: Prop
         const domain = getMerchantDomain(merchantName);
 
         if (!domain) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsLoading(false);
             setHasError(true);
             return;
