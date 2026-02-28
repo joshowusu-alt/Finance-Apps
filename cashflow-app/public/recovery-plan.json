@@ -1,0 +1,1457 @@
+﻿{
+    "version":  2,
+    "setup":  {
+                  "selectedPeriodId":  3,
+                  "asOfDate":  "2026-02-28",
+                  "autoUpdateAsOfDate":  true,
+                  "windowDays":  35,
+                  "startingBalance":  0,
+                  "rollForwardBalance":  true,
+                  "expectedMinBalance":  500,
+                  "variableCap":  420
+              },
+    "periods":  [
+                    {
+                        "id":  1,
+                        "label":  "P1: 22 Dec 2025–25 Jan 2026",
+                        "start":  "2025-12-22",
+                        "end":  "2026-01-25"
+                    },
+                    {
+                        "id":  2,
+                        "label":  "P2: 26 Jan 2026–25 Feb 2026",
+                        "start":  "2026-01-26",
+                        "end":  "2026-02-25"
+                    },
+                    {
+                        "id":  3,
+                        "label":  "P3: 26 Feb 2026–25 Mar 2026",
+                        "start":  "2026-02-26",
+                        "end":  "2026-03-25"
+                    },
+                    {
+                        "id":  4,
+                        "label":  "P4: 26 Mar 2026–25 Apr 2026",
+                        "start":  "2026-03-26",
+                        "end":  "2026-04-25"
+                    },
+                    {
+                        "id":  5,
+                        "label":  "P5: 26 Apr 2026–25 May 2026",
+                        "start":  "2026-04-26",
+                        "end":  "2026-05-25"
+                    },
+                    {
+                        "id":  6,
+                        "label":  "P6: 26 May 2026–25 Jun 2026",
+                        "start":  "2026-05-26",
+                        "end":  "2026-06-25"
+                    },
+                    {
+                        "id":  7,
+                        "label":  "P7: 26 Jun 2026–25 Jul 2026",
+                        "start":  "2026-06-26",
+                        "end":  "2026-07-25"
+                    },
+                    {
+                        "id":  8,
+                        "label":  "P8: 26 Jul 2026–25 Aug 2026",
+                        "start":  "2026-07-26",
+                        "end":  "2026-08-25"
+                    },
+                    {
+                        "id":  9,
+                        "label":  "P9: 26 Aug 2026–25 Sep 2026",
+                        "start":  "2026-08-26",
+                        "end":  "2026-09-25"
+                    },
+                    {
+                        "id":  10,
+                        "label":  "P10: 26 Sep 2026–25 Oct 2026",
+                        "start":  "2026-09-26",
+                        "end":  "2026-10-25"
+                    },
+                    {
+                        "id":  11,
+                        "label":  "P11: 26 Oct 2026–25 Nov 2026",
+                        "start":  "2026-10-26",
+                        "end":  "2026-11-25"
+                    },
+                    {
+                        "id":  12,
+                        "label":  "P12: 26 Nov 2026–25 Dec 2026",
+                        "start":  "2026-11-26",
+                        "end":  "2026-12-25"
+                    }
+                ],
+    "incomeRules":  [
+                        {
+                            "id":  "fm-income",
+                            "label":  "FM Income",
+                            "amount":  3500,
+                            "cadence":  "monthly",
+                            "seedDate":  "2026-01-25",
+                            "enabled":  true
+                        },
+                        {
+                            "id":  "mcd-income",
+                            "label":  "McD Income",
+                            "amount":  400,
+                            "cadence":  "biweekly",
+                            "seedDate":  "2026-01-01",
+                            "enabled":  true
+                        },
+                        {
+                            "id":  "outlier-income",
+                            "label":  "Outlier Income",
+                            "amount":  100,
+                            "cadence":  "weekly",
+                            "seedDate":  "2026-01-07",
+                            "enabled":  true
+                        }
+                    ],
+    "outflowRules":  [
+                         {
+                             "id":  "weekly-allowance",
+                             "label":  "Weekly Allowance",
+                             "amount":  140,
+                             "cadence":  "weekly",
+                             "seedDate":  "2026-01-07",
+                             "category":  "allowance",
+                             "enabled":  true
+                         }
+                     ],
+    "periodRuleOverrides":  [
+
+                            ],
+    "bills":  [
+                  {
+                      "id":  "bill-1-rent",
+                      "label":  "Rent",
+                      "amount":  550,
+                      "dueDay":  28,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-2-insurance",
+                      "label":  "Insurance",
+                      "amount":  175,
+                      "dueDay":  28,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-3-road-tax",
+                      "label":  "Road Tax",
+                      "amount":  34,
+                      "dueDay":  28,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-4-water-bill",
+                      "label":  "Water Bill",
+                      "amount":  93,
+                      "dueDay":  28,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-5-community-fibre-internet",
+                      "label":  "Community Fibre / Internet",
+                      "amount":  37,
+                      "dueDay":  26,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-6-electricity-gas",
+                      "label":  "Electricity \u0026 Gas",
+                      "amount":  200,
+                      "dueDay":  26,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-7-iphone-payments",
+                      "label":  "iPhone Payments",
+                      "amount":  108,
+                      "dueDay":  26,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-8-parents",
+                      "label":  "Parents",
+                      "amount":  140,
+                      "dueDay":  26,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-9-credit-card-payment",
+                      "label":  "Credit Card Payment",
+                      "amount":  400,
+                      "dueDay":  26,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-10-fuel",
+                      "label":  "Fuel",
+                      "amount":  100,
+                      "dueDay":  26,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-11-tithe",
+                      "label":  "Tithe",
+                      "amount":  410,
+                      "dueDay":  26,
+                      "category":  "giving",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-12-offerings",
+                      "label":  "Offerings",
+                      "amount":  165,
+                      "dueDay":  26,
+                      "category":  "giving",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-13-charity-perez-uni",
+                      "label":  "Charity - Perez Uni",
+                      "amount":  50,
+                      "dueDay":  26,
+                      "category":  "giving",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-14-charity-jpc-utilities",
+                      "label":  "Charity - JPC Utilities",
+                      "amount":  100,
+                      "dueDay":  26,
+                      "category":  "giving",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-15-savings-transfer",
+                      "label":  "Savings Transfer",
+                      "amount":  1050,
+                      "dueDay":  29,
+                      "category":  "savings",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-16-laptop",
+                      "label":  "Laptop",
+                      "amount":  43,
+                      "dueDay":  29,
+                      "category":  "bill",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-17-house-keep",
+                      "label":  "House Keep",
+                      "amount":  560,
+                      "dueDay":  26,
+                      "category":  "allowance",
+                      "enabled":  true
+                  },
+                  {
+                      "id":  "bill-18-one-off-giving-christmas-",
+                      "label":  "One-Off Giving (Christmas)",
+                      "amount":  500,
+                      "dueDay":  26,
+                      "category":  "giving",
+                      "enabled":  true
+                  }
+              ],
+    "periodOverrides":  [
+
+                        ],
+    "eventOverrides":  [
+
+                       ],
+    "overrides":  [
+
+                  ],
+    "transactions":  [
+                         {
+                             "id":  "tx-1",
+                             "date":  "2025-12-15",
+                             "label":  "Apple cloud subscription",
+                             "amount":  2.99,
+                             "type":  "outflow",
+                             "category":  "other",
+                             "notes":  "Cloud storage"
+                         },
+                         {
+                             "id":  "tx-2",
+                             "date":  "2025-12-16",
+                             "label":  "Electricity",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Electricity"
+                         },
+                         {
+                             "id":  "tx-3",
+                             "date":  "2025-12-17",
+                             "label":  "Electricity",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Gas"
+                         },
+                         {
+                             "id":  "tx-4",
+                             "date":  "2025-12-17",
+                             "label":  "Costco",
+                             "amount":  45.6,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Food for the house"
+                         },
+                         {
+                             "id":  "tx-5",
+                             "date":  "2025-12-18",
+                             "label":  "Tesco",
+                             "amount":  4.99,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "water for the house"
+                         },
+                         {
+                             "id":  "tx-6",
+                             "date":  "2025-12-19",
+                             "label":  "Costco",
+                             "amount":  4,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "egg"
+                         },
+                         {
+                             "id":  "tx-7",
+                             "date":  "2025-12-16",
+                             "label":  "Transportation - TfL",
+                             "amount":  7.2,
+                             "type":  "outflow",
+                             "category":  "other",
+                             "notes":  "To the office"
+                         },
+                         {
+                             "id":  "tx-8",
+                             "date":  "2025-12-19",
+                             "label":  "Fuel",
+                             "amount":  30.01,
+                             "type":  "outflow",
+                             "category":  "other",
+                             "notes":  "for the week"
+                         },
+                         {
+                             "id":  "tx-9",
+                             "date":  "2025-12-20",
+                             "label":  "Transportation - TfL",
+                             "amount":  10.1,
+                             "type":  "outflow",
+                             "category":  "other",
+                             "notes":  "To Milton keynes - train disruption"
+                         },
+                         {
+                             "id":  "tx-10",
+                             "date":  "2025-12-20",
+                             "label":  "Transportation - TfL",
+                             "amount":  4.97,
+                             "type":  "outflow",
+                             "category":  "other",
+                             "notes":  "Uber to PKG address"
+                         },
+                         {
+                             "id":  "tx-11",
+                             "date":  "2025-12-21",
+                             "label":  "Tyre puncture",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "other",
+                             "notes":  "flat tyre, puncture repaired"
+                         },
+                         {
+                             "id":  "tx-12",
+                             "date":  "2025-12-22",
+                             "label":  "December Salary",
+                             "amount":  3700,
+                             "type":  "income",
+                             "category":  "income",
+                             "notes":  "N/A"
+                         },
+                         {
+                             "id":  "tx-13",
+                             "date":  "2025-12-22",
+                             "label":  "Cerelac",
+                             "amount":  9.5,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "food for Josh"
+                         },
+                         {
+                             "id":  "tx-14",
+                             "date":  "2025-12-23",
+                             "label":  "Gas",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Gas for the house"
+                         },
+                         {
+                             "id":  "tx-15",
+                             "date":  "2025-12-23",
+                             "label":  "GRA transport",
+                             "amount":  6.47,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Sent to JJ, trip to GRA office"
+                         },
+                         {
+                             "id":  "tx-16",
+                             "date":  "2025-12-23",
+                             "label":  "FM Tithe",
+                             "amount":  371,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Tithe for December"
+                         },
+                         {
+                             "id":  "tx-17",
+                             "date":  "2025-12-23",
+                             "label":  "Utility Sacrifices",
+                             "amount":  100,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Utility sacrifice for December"
+                         },
+                         {
+                             "id":  "tx-18",
+                             "date":  "2025-12-23",
+                             "label":  "Thanksgiving Offering",
+                             "amount":  80,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Offering for December - PJ"
+                         },
+                         {
+                             "id":  "tx-19",
+                             "date":  "2025-12-23",
+                             "label":  "Thanksgiving Offering",
+                             "amount":  60,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Offering for December - PJ"
+                         },
+                         {
+                             "id":  "tx-20",
+                             "date":  "2025-12-23",
+                             "label":  "Mummy J and Mummy R",
+                             "amount":  140,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Allowance for December"
+                         },
+                         {
+                             "id":  "tx-21",
+                             "date":  "2025-12-24",
+                             "label":  "Outlier on 24/12/2025",
+                             "amount":  111.48,
+                             "type":  "income",
+                             "category":  "income",
+                             "notes":  "Weekly allowance"
+                         },
+                         {
+                             "id":  "tx-22",
+                             "date":  "2025-12-24",
+                             "label":  "Outlier Tithe",
+                             "amount":  12,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Tithe on Outlier"
+                         },
+                         {
+                             "id":  "tx-23",
+                             "date":  "2025-12-23",
+                             "label":  "Wipes",
+                             "amount":  11.25,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "wipes for Josh"
+                         },
+                         {
+                             "id":  "tx-24",
+                             "date":  "2025-12-22",
+                             "label":  "Monzo payment",
+                             "amount":  295.21,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Monzo payment - Dec"
+                         },
+                         {
+                             "id":  "tx-25",
+                             "date":  "2025-12-22",
+                             "label":  "Sacrifice for Dec",
+                             "amount":  50,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "December contribution"
+                         },
+                         {
+                             "id":  "tx-26",
+                             "date":  "2025-12-22",
+                             "label":  "Lebara",
+                             "amount":  9,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Data wifey"
+                         },
+                         {
+                             "id":  "tx-27",
+                             "date":  "2025-12-22",
+                             "label":  "Body wash",
+                             "amount":  16.5,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Avon comestics"
+                         },
+                         {
+                             "id":  "tx-28",
+                             "date":  "2025-12-24",
+                             "label":  "Gift to families",
+                             "amount":  457.37,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Gift for the Christmas Season"
+                         },
+                         {
+                             "id":  "tx-29",
+                             "date":  "2025-12-24",
+                             "label":  "Electricity",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Electricity for the house"
+                         },
+                         {
+                             "id":  "tx-30",
+                             "date":  "2025-12-24",
+                             "label":  "Ingredients for cake",
+                             "amount":  7.78,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Cake for Auntie Faith \u0026 Fam"
+                         },
+                         {
+                             "id":  "tx-31",
+                             "date":  "2025-12-24",
+                             "label":  "Fuel for Renault Scenic",
+                             "amount":  30.17,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "on the 24/12 - Fuel"
+                         },
+                         {
+                             "id":  "tx-32",
+                             "date":  "2025-12-26",
+                             "label":  "payment for wifey\u0027s phone",
+                             "amount":  29,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "last payment for iphone 13"
+                         },
+                         {
+                             "id":  "tx-33",
+                             "date":  "2025-12-24",
+                             "label":  "Subription for Capcut",
+                             "amount":  10.99,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Monthly subscription for Capcut"
+                         },
+                         {
+                             "id":  "tx-34",
+                             "date":  "2025-12-26",
+                             "label":  "Gas for house",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Gas for the house"
+                         },
+                         {
+                             "id":  "tx-35",
+                             "date":  "2025-12-27",
+                             "label":  "Hosting Samuel and Honey",
+                             "amount":  31.98,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Hosting Samuel and Honey"
+                         },
+                         {
+                             "id":  "tx-36",
+                             "date":  "2025-12-28",
+                             "label":  "Boba for the house",
+                             "amount":  16.3,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Boba for the house"
+                         },
+                         {
+                             "id":  "tx-37",
+                             "date":  "2025-12-29",
+                             "label":  "Capital one for Dec",
+                             "amount":  111.62,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Capital one for Dec"
+                         },
+                         {
+                             "id":  "tx-38",
+                             "date":  "2025-12-29",
+                             "label":  "Capital one for Dec",
+                             "amount":  32.09,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Capital one for Dec"
+                         },
+                         {
+                             "id":  "tx-39",
+                             "date":  "2025-12-29",
+                             "label":  "Water bill for December",
+                             "amount":  92.77,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Water bill for December"
+                         },
+                         {
+                             "id":  "tx-40",
+                             "date":  "2025-12-29",
+                             "label":  "Community fibre/ internet for December",
+                             "amount":  36.83,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Community fibre/ internet for December"
+                         },
+                         {
+                             "id":  "tx-41",
+                             "date":  "2025-12-29",
+                             "label":  "Laptop for December",
+                             "amount":  43,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Laptop for December"
+                         },
+                         {
+                             "id":  "tx-42",
+                             "date":  "2025-12-29",
+                             "label":  "Water and toothpaste",
+                             "amount":  10.2,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Water and toothpaste"
+                         },
+                         {
+                             "id":  "tx-43",
+                             "date":  "2025-12-30",
+                             "label":  "Barclays Prtnr Fin",
+                             "amount":  24.95,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Iphone payment"
+                         },
+                         {
+                             "id":  "tx-44",
+                             "date":  "2025-12-29",
+                             "label":  "Mayor for his Provisional Lisence",
+                             "amount":  34,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Support for lisence"
+                         },
+                         {
+                             "id":  "tx-45",
+                             "date":  "2025-12-29",
+                             "label":  "Electricity",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Electricity for the house"
+                         },
+                         {
+                             "id":  "tx-46",
+                             "date":  "2025-12-29",
+                             "label":  "Gas",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Gas for the house"
+                         },
+                         {
+                             "id":  "tx-47",
+                             "date":  "2025-12-31",
+                             "label":  "Rent for December",
+                             "amount":  550,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Rent for December"
+                         },
+                         {
+                             "id":  "tx-48",
+                             "date":  "2025-12-28",
+                             "label":  "Fried rice",
+                             "amount":  16.72,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Chinese fried rice"
+                         },
+                         {
+                             "id":  "tx-49",
+                             "date":  "2025-12-30",
+                             "label":  "Bolt to McD",
+                             "amount":  11.02,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Bolt to McD"
+                         },
+                         {
+                             "id":  "tx-50",
+                             "date":  "2025-12-31",
+                             "label":  "Stocks and Shares ISA",
+                             "amount":  20,
+                             "type":  "outflow",
+                             "category":  "savings",
+                             "notes":  "Money Box - Stocks and Shares ISA"
+                         },
+                         {
+                             "id":  "tx-51",
+                             "date":  "2025-12-31",
+                             "label":  "SkyMobile",
+                             "amount":  55.9,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Iphone payment"
+                         },
+                         {
+                             "id":  "tx-52",
+                             "date":  "2025-12-31",
+                             "label":  "Car insurance",
+                             "amount":  174.33,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "EUI Ltd - insurance for the car"
+                         },
+                         {
+                             "id":  "tx-53",
+                             "date":  "2025-12-31",
+                             "label":  "for period 23/12 - 30/12",
+                             "amount":  125.02,
+                             "type":  "income",
+                             "category":  "income",
+                             "notes":  "Outlier income - 23/12 - 30/12"
+                         },
+                         {
+                             "id":  "tx-54",
+                             "date":  "2025-12-31",
+                             "label":  "Tithe on Outlier inflow",
+                             "amount":  13,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Tithe on Outlier inflow"
+                         },
+                         {
+                             "id":  "tx-55",
+                             "date":  "2025-12-31",
+                             "label":  "Fuel to Georges Kablan for 31st Night",
+                             "amount":  25,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Fuel to Georges Kablan for 31st Night"
+                         },
+                         {
+                             "id":  "tx-56",
+                             "date":  "2026-01-01",
+                             "label":  "Interest on Monzo savings",
+                             "amount":  0.28,
+                             "type":  "income",
+                             "category":  "income",
+                             "notes":  "Interest on Monzo savings"
+                         },
+                         {
+                             "id":  "tx-57",
+                             "date":  "2025-12-31",
+                             "label":  "Fuel for Renault Scenic",
+                             "amount":  20,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Fuel for Renault Scenic"
+                         },
+                         {
+                             "id":  "tx-58",
+                             "date":  "2026-01-01",
+                             "label":  "Gas for house",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Gas for the house"
+                         },
+                         {
+                             "id":  "tx-59",
+                             "date":  "2025-12-31",
+                             "label":  "Gift to Deaconess Leticia",
+                             "amount":  100,
+                             "type":  "outflow",
+                             "category":  "other",
+                             "notes":  "Gift to Deaconess Leticia"
+                         },
+                         {
+                             "id":  "tx-60",
+                             "date":  "2025-12-31",
+                             "label":  "Ikea stuff - basket etc",
+                             "amount":  37.35,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Ikea stuff - basket etc"
+                         },
+                         {
+                             "id":  "tx-61",
+                             "date":  "2025-12-31",
+                             "label":  "Thornton Heath stuff for food",
+                             "amount":  46,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Thornton Heath stuff for food"
+                         },
+                         {
+                             "id":  "tx-62",
+                             "date":  "2025-12-31",
+                             "label":  "Sainsbury\u0027s - food stuff",
+                             "amount":  16.29,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Sainsbury\u0027s - food stuff"
+                         },
+                         {
+                             "id":  "tx-63",
+                             "date":  "2025-12-31",
+                             "label":  "Lebara",
+                             "amount":  9,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Data wifey"
+                         },
+                         {
+                             "id":  "tx-64",
+                             "date":  "2025-12-31",
+                             "label":  "KitKatt for the raod - Honey dropoff",
+                             "amount":  4.95,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "KitKatt for the raod - Honey dropoff"
+                         },
+                         {
+                             "id":  "tx-65",
+                             "date":  "2026-01-01",
+                             "label":  "Tuna flakes - Clifton",
+                             "amount":  3.58,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Tuna flakes - Clifton"
+                         },
+                         {
+                             "id":  "tx-66",
+                             "date":  "2026-01-01",
+                             "label":  "Family Bowling",
+                             "amount":  19.9,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Family Bowling"
+                         },
+                         {
+                             "id":  "tx-67",
+                             "date":  "2026-01-02",
+                             "label":  "Income from McD",
+                             "amount":  565.36,
+                             "type":  "income",
+                             "category":  "income",
+                             "notes":  "1st Salary in 2026"
+                         },
+                         {
+                             "id":  "tx-68",
+                             "date":  "2026-01-02",
+                             "label":  "Tithe on McD",
+                             "amount":  57,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Tithe on McD"
+                         },
+                         {
+                             "id":  "tx-69",
+                             "date":  "2026-01-02",
+                             "label":  "Transfer to Money Box",
+                             "amount":  500,
+                             "type":  "outflow",
+                             "category":  "savings",
+                             "notes":  "Transfer to Money Box from McD"
+                         },
+                         {
+                             "id":  "tx-70",
+                             "date":  "2026-01-02",
+                             "label":  "Road tax for Dec",
+                             "amount":  33.68,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Road tax for Dec"
+                         },
+                         {
+                             "id":  "tx-71",
+                             "date":  "2026-01-02",
+                             "label":  "Water from Sainsbury\u0027s",
+                             "amount":  6,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Water from Sainsbury\u0027s - House"
+                         },
+                         {
+                             "id":  "tx-72",
+                             "date":  "2026-01-02",
+                             "label":  "Family Outting - Straford, TfL",
+                             "amount":  1.5,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Family Outting - Straford, TfL"
+                         },
+                         {
+                             "id":  "tx-73",
+                             "date":  "2026-01-02",
+                             "label":  "Family Outting - Straford, Ride on Kiddie - Josh",
+                             "amount":  2,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Family Outting - Straford, Ride on Kiddie - Josh"
+                         },
+                         {
+                             "id":  "tx-74",
+                             "date":  "2026-01-02",
+                             "label":  "Uber to the house",
+                             "amount":  8.91,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Uber to the house"
+                         },
+                         {
+                             "id":  "tx-75",
+                             "date":  "2026-01-02",
+                             "label":  "Food for the outing",
+                             "amount":  39.5,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Food for the outing"
+                         },
+                         {
+                             "id":  "tx-76",
+                             "date":  "2026-01-03",
+                             "label":  "Electricity",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Electricity for the house"
+                         },
+                         {
+                             "id":  "tx-77",
+                             "date":  "2026-01-03",
+                             "label":  "TfL for family outing",
+                             "amount":  6.65,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "TfL for family outing"
+                         },
+                         {
+                             "id":  "tx-78",
+                             "date":  "2026-01-03",
+                             "label":  "Inaugural Service Meat Pie -PCIC",
+                             "amount":  45,
+                             "type":  "outflow",
+                             "category":  "other",
+                             "notes":  "Inaugural Service Meat Pie -PCIC"
+                         },
+                         {
+                             "id":  "tx-79",
+                             "date":  "2026-01-04",
+                             "label":  "Gas",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Gas for the house"
+                         },
+                         {
+                             "id":  "tx-80",
+                             "date":  "2026-01-04",
+                             "label":  "Burnt offering for Jan",
+                             "amount":  21.16,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Burnt offering for Jan"
+                         },
+                         {
+                             "id":  "tx-81",
+                             "date":  "2026-01-04",
+                             "label":  "OpenAI - chatgpt payment",
+                             "amount":  20,
+                             "type":  "outflow",
+                             "category":  "other",
+                             "notes":  "OpenAI - chatgpt payment"
+                         },
+                         {
+                             "id":  "tx-82",
+                             "date":  "2026-01-05",
+                             "label":  "Post office payment for Daddy",
+                             "amount":  6.9,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Post office payment for Daddy"
+                         },
+                         {
+                             "id":  "tx-83",
+                             "date":  "2026-01-04",
+                             "label":  "Tesco - Gifts for Zonal Overseer",
+                             "amount":  41.05,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "For Inaugural service"
+                         },
+                         {
+                             "id":  "tx-84",
+                             "date":  "2026-01-06",
+                             "label":  "Gifts on Tiktok live - Bishop JNO",
+                             "amount":  2.69,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Gifts on Tiktok live - Bishop JNO"
+                         },
+                         {
+                             "id":  "tx-85",
+                             "date":  "2026-01-03",
+                             "label":  "TfL for family outing",
+                             "amount":  6.95,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "TfL for family outing"
+                         },
+                         {
+                             "id":  "tx-86",
+                             "date":  "2026-01-06",
+                             "label":  "Transfer to Money Box",
+                             "amount":  50,
+                             "type":  "outflow",
+                             "category":  "savings",
+                             "notes":  "Transfer to Money Box"
+                         },
+                         {
+                             "id":  "tx-87",
+                             "date":  "2026-01-06",
+                             "label":  "Transfer to Money Box",
+                             "amount":  20,
+                             "type":  "outflow",
+                             "category":  "savings",
+                             "notes":  "Transfer to Money Box"
+                         },
+                         {
+                             "id":  "tx-88",
+                             "date":  "2026-01-06",
+                             "label":  "Fuel for Renault Scenic",
+                             "amount":  20,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Fuel for Renault Scenic"
+                         },
+                         {
+                             "id":  "tx-89",
+                             "date":  "2026-01-06",
+                             "label":  "Fixing tyre for Renault Scenic",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Fixing tyre for Renault Scenic"
+                         },
+                         {
+                             "id":  "tx-90",
+                             "date":  "2026-01-06",
+                             "label":  "Water for the house - Sainsbury\u0027s",
+                             "amount":  6,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Water for the house - Sainsbury\u0027s"
+                         },
+                         {
+                             "id":  "tx-91",
+                             "date":  "2026-01-07",
+                             "label":  "Electricity",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Electricity for the house"
+                         },
+                         {
+                             "id":  "tx-92",
+                             "date":  "2026-01-07",
+                             "label":  "Gas for house",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Gas for house for the house"
+                         },
+                         {
+                             "id":  "tx-93",
+                             "date":  "2026-01-07",
+                             "label":  "Outlier income 07/01/2026",
+                             "amount":  73.45,
+                             "type":  "income",
+                             "category":  "income",
+                             "notes":  "Outlier income 07/01/2026"
+                         },
+                         {
+                             "id":  "tx-94",
+                             "date":  "2026-01-07",
+                             "label":  "Tithe on Outlier inflow",
+                             "amount":  8,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Tithe on Outlier inflow"
+                         },
+                         {
+                             "id":  "tx-95",
+                             "date":  "2026-01-07",
+                             "label":  "TfL to office on 06/01/2026",
+                             "amount":  6.6,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "TfL to office on 06/01/2026"
+                         },
+                         {
+                             "id":  "tx-96",
+                             "date":  "2026-01-07",
+                             "label":  "Gift from Honey",
+                             "amount":  100,
+                             "type":  "income",
+                             "category":  "income",
+                             "notes":  "Pator\u0027s appreciation"
+                         },
+                         {
+                             "id":  "tx-97",
+                             "date":  "2026-01-08",
+                             "label":  "Gift from Honey - Tithe",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Pator\u0027s appreciation - Tithe"
+                         },
+                         {
+                             "id":  "tx-98",
+                             "date":  "2026-01-08",
+                             "label":  "Costco - House stuff",
+                             "amount":  109.73,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Costco - House stuff"
+                         },
+                         {
+                             "id":  "tx-99",
+                             "date":  "2026-01-08",
+                             "label":  "Holland bazaar - house stuff",
+                             "amount":  15.58,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Holland bazaar - house stuff"
+                         },
+                         {
+                             "id":  "tx-100",
+                             "date":  "2026-01-08",
+                             "label":  "Fish Market - house stuff",
+                             "amount":  20.99,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Fish Market - house stuff"
+                         },
+                         {
+                             "id":  "tx-101",
+                             "date":  "2026-01-08",
+                             "label":  "S \u0026 S Halal Butchers L",
+                             "amount":  26.5,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "S \u0026 S Halal Butchers L"
+                         },
+                         {
+                             "id":  "tx-102",
+                             "date":  "2026-01-08",
+                             "label":  "Sainsbury\u0027s - food stuff",
+                             "amount":  7.24,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Sainsbury\u0027s - food stuff"
+                         },
+                         {
+                             "id":  "tx-103",
+                             "date":  "2026-01-09",
+                             "label":  "Subscriptions - Ch_Luxelens",
+                             "amount":  15,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Subscriptions - Ch_Luxelens"
+                         },
+                         {
+                             "id":  "tx-104",
+                             "date":  "2026-01-10",
+                             "label":  "Subscriptions - Ch_Luxelens",
+                             "amount":  11,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Subscriptions - Ch_Luxelens"
+                         },
+                         {
+                             "id":  "tx-105",
+                             "date":  "2026-01-10",
+                             "label":  "Gas for house",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Gas for the house"
+                         },
+                         {
+                             "id":  "tx-106",
+                             "date":  "2026-01-11",
+                             "label":  "Electricity",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Electricity for the house"
+                         },
+                         {
+                             "id":  "tx-107",
+                             "date":  "2026-01-12",
+                             "label":  "Transfer to Money Box",
+                             "amount":  20,
+                             "type":  "outflow",
+                             "category":  "savings",
+                             "notes":  "Transfer to Money Box"
+                         },
+                         {
+                             "id":  "tx-108",
+                             "date":  "2026-01-12",
+                             "label":  "Battery for Renault key",
+                             "amount":  5,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Battery for Renault key"
+                         },
+                         {
+                             "id":  "tx-109",
+                             "date":  "2026-01-14",
+                             "label":  "Income from Outlier",
+                             "amount":  145.59,
+                             "type":  "income",
+                             "category":  "income",
+                             "notes":  "Income from Outlier"
+                         },
+                         {
+                             "id":  "tx-110",
+                             "date":  "2026-01-14",
+                             "label":  "Tithe on Outlier inflow",
+                             "amount":  15,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Tithe on Outlier"
+                         },
+                         {
+                             "id":  "tx-111",
+                             "date":  "2026-01-14",
+                             "label":  "Towing Renault Scenic to  Workshop",
+                             "amount":  75,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Towing Renault Scenic to  Workshop"
+                         },
+                         {
+                             "id":  "tx-112",
+                             "date":  "2026-01-13",
+                             "label":  "Uber eats for the house - Fried rice",
+                             "amount":  13.59,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Uber eats for the house - Fried rice"
+                         },
+                         {
+                             "id":  "tx-113",
+                             "date":  "2026-01-13",
+                             "label":  "Gas for house",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Gas for the house"
+                         },
+                         {
+                             "id":  "tx-114",
+                             "date":  "2026-01-13",
+                             "label":  "Transport to office - Hubby",
+                             "amount":  2.2,
+                             "type":  "outflow",
+                             "category":  "other",
+                             "notes":  "Transport to office"
+                         },
+                         {
+                             "id":  "tx-115",
+                             "date":  "2026-01-14",
+                             "label":  "Deliveroo - indomie etc",
+                             "amount":  8.68,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Deliveroo - indomie etc"
+                         },
+                         {
+                             "id":  "tx-116",
+                             "date":  "2026-01-14",
+                             "label":  "Transport to work - wifey",
+                             "amount":  1.75,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Transport to work - wifey"
+                         },
+                         {
+                             "id":  "tx-117",
+                             "date":  "2026-01-14",
+                             "label":  "Sainsbury\u0027s - food stuff",
+                             "amount":  27.73,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Sainsbury\u0027s - food stuff"
+                         },
+                         {
+                             "id":  "tx-118",
+                             "date":  "2026-01-10",
+                             "label":  "Transport to work - wifey",
+                             "amount":  11.81,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Transport to work - wifey [Uber]"
+                         },
+                         {
+                             "id":  "tx-119",
+                             "date":  "2026-01-10",
+                             "label":  "Transport to work - wifey",
+                             "amount":  8.83,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Transport to work - wifey [Uber]"
+                         },
+                         {
+                             "id":  "tx-120",
+                             "date":  "2026-01-11",
+                             "label":  "Transport to church",
+                             "amount":  6.33,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Transport to church"
+                         },
+                         {
+                             "id":  "tx-121",
+                             "date":  "2026-01-11",
+                             "label":  "Food for house - Kenkey House",
+                             "amount":  24.5,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Food for house - Kenkey House"
+                         },
+                         {
+                             "id":  "tx-122",
+                             "date":  "2026-01-12",
+                             "label":  "Transport to work - wifey",
+                             "amount":  9.79,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Transport to work - wifey [Uber]"
+                         },
+                         {
+                             "id":  "tx-123",
+                             "date":  "2026-01-15",
+                             "label":  "Income from McD",
+                             "amount":  498.31,
+                             "type":  "income",
+                             "category":  "income",
+                             "notes":  "Income from McD"
+                         },
+                         {
+                             "id":  "tx-124",
+                             "date":  "2026-01-15",
+                             "label":  "Tithe on McD",
+                             "amount":  50,
+                             "type":  "outflow",
+                             "category":  "giving",
+                             "notes":  "Tithe on McD"
+                         },
+                         {
+                             "id":  "tx-125",
+                             "date":  "2026-01-15",
+                             "label":  "Uber fare to viewing at Albatross",
+                             "amount":  8.48,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Uber fare to viewing at Albatross"
+                         },
+                         {
+                             "id":  "tx-126",
+                             "date":  "2026-01-15",
+                             "label":  "Uber fare to viewing at Albatross",
+                             "amount":  12.72,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Uber fare to viewing at Albatross"
+                         },
+                         {
+                             "id":  "tx-127",
+                             "date":  "2026-01-15",
+                             "label":  "Transfer to Money Box",
+                             "amount":  250,
+                             "type":  "outflow",
+                             "category":  "savings",
+                             "notes":  "Transfer to Money Box"
+                         },
+                         {
+                             "id":  "tx-128",
+                             "date":  "2026-01-15",
+                             "label":  "Electricity",
+                             "amount":  10,
+                             "type":  "outflow",
+                             "category":  "bill",
+                             "notes":  "Electricity for the house"
+                         },
+                         {
+                             "id":  "tx-129",
+                             "date":  "2026-01-15",
+                             "label":  "Uber to evening service",
+                             "amount":  6.71,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Uber to evening service"
+                         },
+                         {
+                             "id":  "tx-130",
+                             "date":  "2026-01-16",
+                             "label":  "Uber to Ch_luxelens appointment",
+                             "amount":  18.32,
+                             "type":  "outflow",
+                             "category":  "allowance",
+                             "notes":  "Uber to Ch_luxelens appointment - Greenwich"
+                         }
+                     ],
+    "savingsGoals":  [
+
+                     ]
+}

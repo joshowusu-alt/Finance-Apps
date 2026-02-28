@@ -215,6 +215,34 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleRestoreFromBackup() {
+    setRecoveryLoading(true);
+    setRecoveryMsg("");
+    try {
+      const res = await fetch("/recovery-plan.json");
+      if (!res.ok) throw new Error(`Could not load backup file (${res.status})`);
+      const plan = await res.json() as Plan;
+      if (!plan || !Array.isArray(plan.periods) || plan.periods.length === 0) {
+        setRecoveryMsg("Backup file appears empty.");
+        return;
+      }
+      savePlanFromRemote(plan, null, undefined, "local-backup-recovery");
+      setPlan(loadPlan());
+      window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+      const summary = [
+        plan.incomeRules?.length ? `${plan.incomeRules.length} income rules` : "",
+        plan.bills?.length ? `${plan.bills.length} bills` : "",
+        plan.transactions?.length ? `${plan.transactions.length} transactions` : "",
+        plan.periods?.length ? `${plan.periods.length} periods` : "",
+      ].filter(Boolean).join(", ");
+      setRecoveryMsg(`\u2713 Rebuilt: ${summary}`);
+    } catch (e) {
+      setRecoveryMsg(`Error: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
+      setRecoveryLoading(false);
+    }
+  }
+
   function handleExportData() {
     try {
       const data = loadPlan();
@@ -1391,6 +1419,19 @@ export default function SettingsPage() {
                   className="vn-btn vn-btn-primary text-xs"
                 >
                   {recoveryLoading ? "Restoring…" : "Restore from Cloud"}
+                </button>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-(--vn-text) mb-1">Rebuild from Backup File</div>
+                <p className="text-xs text-(--vn-muted) mb-3">
+                  Reconstructs your budget from a known-good local backup — 18 bills, 3 income streams, 130 transactions, 12 periods.
+                </p>
+                <button
+                  onClick={handleRestoreFromBackup}
+                  disabled={recoveryLoading}
+                  className="vn-btn vn-btn-primary text-xs"
+                >
+                  {recoveryLoading ? "Rebuilding\u2026" : "Rebuild from Backup"}
                 </button>
               </div>
               <div>
