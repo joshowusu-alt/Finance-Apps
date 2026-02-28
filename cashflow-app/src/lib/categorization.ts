@@ -154,11 +154,6 @@ const CATEGORY_RULES: CategoryRule[] = [
     },
 ];
 
-// Tokenize text into words
-function tokenize(text: string): string[] {
-    return normalizeText(text).split(" ").filter(Boolean);
-}
-
 // Check for exact matches (cleaned)
 function hasExactMatch(text: string, exactMatches: string[]): boolean {
     const normalized = normalizeText(text);

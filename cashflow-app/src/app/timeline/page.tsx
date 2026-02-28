@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { savePlan } from "@/lib/storage";
 import { generateEvents, getStartingBalance } from "@/lib/cashflowEngine";
 import SidebarNav from "@/components/SidebarNav";

@@ -10,50 +10,90 @@ on:
       - master
 
 jobs:
-  ci:
-    name: Lint, Test & Build
+  build-and-test:
+    name: Type-check, Lint & Unit Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cashflow-app
 
     steps:
-      # Step 1: Check out the full repository source
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Set up Node.js 22 with npm cache scoped to cashflow-app
-      - name: Setup Node.js 22
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
           cache: 'npm'
           cache-dependency-path: cashflow-app/package-lock.json
 
-      # Step 3: Install exact dependencies from the lockfile (clean install)
       - name: Install dependencies
-        run: cd cashflow-app && npm ci
+        run: npm ci
 
-      # Step 4: Run ESLint to catch lint errors
-      - name: Run ESLint
-        run: cd cashflow-app && npm run lint
+      - name: TypeScript check
+        run: npx tsc --noEmit
 
-      # Step 5: Run Vitest unit tests in run (non-watch) mode
-      - name: Run tests
-        run: cd cashflow-app && npm run test -- --run
+      - name: Lint
+        run: npm run lint
 
-      # Step 6: Verify the Next.js production build succeeds.
-      # Real secrets are injected from GitHub repository secrets where available;
-      # optional/unused env vars are set to empty strings so Next.js does not
-      # abort the build due to missing environment variable references.
+      - name: Unit tests
+        run: npm test -- --run
+        env:
+          DATABASE_URL: 'postgresql://localhost/test'
+
+  e2e:
+    name: E2E Tests (plan-derived)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    defaults:
+      run:
+        working-directory: cashflow-app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: cashflow-app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
       - name: Build Next.js app
-        run: cd cashflow-app && npm run build
+        run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_POSTHOG_KEY: ""
-          NEXT_PUBLIC_POSTHOG_HOST: ""
+          NEXT_PUBLIC_POSTHOG_KEY: ''
+          NEXT_PUBLIC_POSTHOG_HOST: ''
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PLAID_CLIENT_ID: ${{ secrets.PLAID_CLIENT_ID }}
           PLAID_SECRET: ${{ secrets.PLAID_SECRET }}
-          SENTRY_DSN: ""
-          UPSTASH_REDIS_REST_URL: ""
-          UPSTASH_REDIS_REST_TOKEN: ""
+          SENTRY_DSN: ''
+          UPSTASH_REDIS_REST_URL: ''
+          UPSTASH_REDIS_REST_TOKEN: ''
+
+      - name: Run E2E tests (plan-derived.spec.ts)
+        run: npm run test:e2e
+        env:
+          CI: 'true'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Upload Playwright report on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: cashflow-app/playwright-report/
+          retention-days: 7

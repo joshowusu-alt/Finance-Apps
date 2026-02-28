@@ -1,5 +1,5 @@
 import type { BillTemplate } from "@/data/plan";
-import { normalizeText, splitTokens, scoreTextMatch } from "@/lib/textUtils";
+import { splitTokens, scoreTextMatch } from "@/lib/textUtils";
 
 const BILL_STOP_WORDS = new Set([
   "bill",

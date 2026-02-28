@@ -1,0 +1,45 @@
+name: Build
+
+# Runs only on push to master — catches Next.js build-time errors separately
+# from the type-check/lint/test CI job.
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Next.js Production Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cashflow-app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: cashflow-app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js app
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_POSTHOG_KEY: ''
+          NEXT_PUBLIC_POSTHOG_HOST: ''
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PLAID_CLIENT_ID: ${{ secrets.PLAID_CLIENT_ID }}
+          PLAID_SECRET: ${{ secrets.PLAID_SECRET }}
+          SENTRY_DSN: ''
+          UPSTASH_REDIS_REST_URL: ''
+          UPSTASH_REDIS_REST_TOKEN: ''

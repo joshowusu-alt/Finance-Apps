@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 const checkLinkTokenLimit = createRateLimiter(10, 60_000);
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const auth = await resolveAuthWithCookie();
 

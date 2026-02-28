@@ -155,7 +155,7 @@ export function calculatePace(actual: number, budget: number, timeProgress: numb
 
 export function generateProactiveInsights(
     plan: Plan,
-    periodId: number,
+    _periodId: number,
     categoryVariance: CategoryVariance[],
     actualSpending: number,
     budgetSpending: number,

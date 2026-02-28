@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { VelanovoLogo, VelanovoIcon } from "./VelanovoLogo";
 
 export function BrandPreview() {
