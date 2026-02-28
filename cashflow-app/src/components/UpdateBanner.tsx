@@ -6,6 +6,7 @@ import { SW_UPDATE_EVENT } from "@/components/ServiceWorkerRegistrar";
 export default function UpdateBanner() {
     const [waiting, setWaiting] = useState<ServiceWorkerRegistration | null>(null);
     const [updating, setUpdating] = useState(false);
+    const [countdown, setCountdown] = useState(5);
 
     useEffect(() => {
         function handleUpdate(e: Event) {
@@ -18,6 +19,18 @@ export default function UpdateBanner() {
         window.addEventListener(SW_UPDATE_EVENT, handleUpdate);
         return () => window.removeEventListener(SW_UPDATE_EVENT, handleUpdate);
     }, []);
+
+    // Auto-apply after countdown reaches 0
+    useEffect(() => {
+        if (!waiting) return;
+        if (countdown <= 0) {
+            handleApply();
+            return;
+        }
+        const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+        return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [waiting, countdown]);
 
     if (!waiting) return null;
 
@@ -73,7 +86,7 @@ export default function UpdateBanner() {
                     opacity: updating ? 0.7 : 1,
                 }}
             >
-                {updating ? "Updating…" : "Update Now"}
+                {updating ? "Updating…" : countdown > 0 ? `Update Now (${countdown})` : "Updating…"}
             </button>
             <button
                 onClick={() => setWaiting(null)}
