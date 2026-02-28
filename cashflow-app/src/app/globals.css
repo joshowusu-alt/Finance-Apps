@@ -9,41 +9,42 @@
 }
 
 :root {
+  /* Bridge aliases → velanovo.css is the single source of truth */
   /* VELANOVO — Light Mode */
-  --background: #F6F5F2;
-  --foreground: #111318;
-  --surface: #FFFFFF;
-  --surface-elevated: #F1EFEA;
+  --background: var(--vn-bg);
+  --foreground: var(--vn-text);
+  --surface: var(--vn-surface);
+  --surface-elevated: #F1EFEA; /* no direct vn equivalent – kept as-is */
   --surface-soft: #F1EFEA;
-  --panel: #FFFFFF;
-  --border: rgba(0, 0, 0, 0.06);
-  --border-hover: rgba(0, 0, 0, 0.12);
+  --panel: #FFFFFF; /* no direct vn equivalent – kept as-is */
+  --border: var(--vn-border);
+  --border-hover: rgba(0, 0, 0, 0.12); /* no direct vn equivalent – kept as-is */
 
   /* Brand — Navy accent, Gold highlight */
-  --accent: #111318;
-  --accent-deep: #0D1117;
+  --accent: var(--vn-primary);
+  --accent-deep: #0D1117; /* no direct vn equivalent – kept as-is */
   --accent-soft: rgba(17, 19, 24, 0.07);
   --accent-hover: rgba(17, 19, 24, 0.11);
 
-  --gold: #C5A046;
-  --gold-500: #D4AF5A;
-  --gold-soft: rgba(197, 160, 70, 0.12);
+  --gold: var(--vn-gold);
+  --gold-500: var(--vn-gold-500);
+  --gold-soft: rgba(197, 160, 70, 0.12); /* no direct vn equivalent – kept as-is */
 
   /* Semantic */
-  --success: #2F7A55;
-  --success-soft: rgba(47, 122, 85, 0.12);
-  --warning: #92400e;
-  --warning-soft: rgba(146, 64, 14, 0.10);
-  --error: #9E4E4E;
-  --error-soft: rgba(158, 78, 78, 0.12);
-  --info: #0284c7;
-  --info-soft: rgba(2, 132, 199, 0.10);
+  --success: var(--vn-success);
+  --success-soft: rgba(47, 122, 85, 0.12); /* no direct vn equivalent – kept as-is */
+  --warning: var(--vn-warning);
+  --warning-soft: rgba(146, 64, 14, 0.10); /* no direct vn equivalent – kept as-is */
+  --error: var(--vn-error);
+  --error-soft: rgba(158, 78, 78, 0.12); /* no direct vn equivalent – kept as-is */
+  --info: var(--vn-info);
+  --info-soft: rgba(2, 132, 199, 0.10); /* no direct vn equivalent – kept as-is */
 
   /* Text */
-  --text-primary: #111318;
-  --text-secondary: #525A65;
-  --text-tertiary: #8C94A3;
-  --text-disabled: #B8BEC8;
+  --text-primary: var(--vn-text);
+  --text-secondary: #525A65; /* no direct vn equivalent – kept as-is */
+  --text-tertiary: var(--vn-muted);
+  --text-disabled: #B8BEC8; /* no direct vn equivalent – kept as-is */
 
   /* === Canonical Spec Tokens === */
   /* These aliases let components use --bg, --text, --muted etc. directly */
