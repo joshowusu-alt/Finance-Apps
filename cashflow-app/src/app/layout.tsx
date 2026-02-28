@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f172a",
+  themeColor: "#0D1117",
 };
 
 export default function RootLayout({
@@ -55,13 +55,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="transition-colors duration-200" suppressHydrationWarning>
       <head>
+        <meta name="theme-color" content="#0D1117" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var scope=localStorage.getItem("cashflow_scope_v1");var key=scope&&scope.trim()&&scope!=="default"?"velanovo-theme::"+scope:"velanovo-theme";var t=localStorage.getItem(key)||localStorage.getItem("velanovo-theme");if(!t&&window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches)t="dark";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}else{document.documentElement.setAttribute("data-theme","light")}}catch(e){}})();`,
+            __html: `(function(){try{var scope=localStorage.getItem("cashflow_scope_v1");var key=scope&&scope.trim()&&scope!=="default"?"velanovo-theme::"+scope:"velanovo-theme";var t=localStorage.getItem(key)||localStorage.getItem("velanovo-theme");if(!t&&window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches)t="dark";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark");document.documentElement.style.background="#0D1117"}else{document.documentElement.style.background="#F6F5F2";document.documentElement.setAttribute("data-theme","light")}}catch(e){}})();`,
           }}
         />
       </head>
-      <body className={`${playfair.variable} ${jakarta.variable} min-h-screen font-sans transition-colors duration-200 overflow-x-hidden`} style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
+      <body className={`${playfair.variable} ${jakarta.variable} min-h-screen font-sans transition-colors duration-200 overflow-x-hidden`} style={{ background: "var(--vn-bg, #0D1117)", color: "var(--vn-text)" }}>
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <PostHogProvider>
         <AuthProvider>

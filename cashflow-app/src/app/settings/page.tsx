@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import packageJson from "../../../package.json";
 import SidebarNav from "@/components/SidebarNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelector from "@/components/CurrencySelector";
@@ -1316,7 +1317,7 @@ export default function SettingsPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-(--vn-muted)">Version</span>
-                  <span className="font-medium text-(--vn-text)">1.0.1 (Build {(process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString()).slice(0, 16).replace("T", " ")})</span>
+                  <span className="font-medium text-(--vn-text)">{packageJson.version} (Build {(process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString()).slice(0, 16).replace("T", " ")})</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-(--vn-muted)">App Name</span>
