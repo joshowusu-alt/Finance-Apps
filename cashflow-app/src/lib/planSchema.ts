@@ -1,6 +1,14 @@
 import { z } from "zod";
 import type { Plan } from "@/data/plan";
 
+export const CustomCategorySchema = z.object({
+  id: z.string(),
+  name: z.string().min(1).max(50),
+  color: z.string().optional(),
+  icon: z.string().max(4).optional(),
+  parentCategory: z.enum(["income", "bill", "giving", "savings", "allowance", "buffer", "other"]),
+}).passthrough();
+
 const PeriodSchema = z
   .object({
     id: z.string(),
@@ -25,6 +33,7 @@ export const PlanSchema = z
     incomeRules: z.array(z.object({ id: z.string() }).passthrough()).default([]),
     outflowRules: z.array(z.object({ id: z.string() }).passthrough()).default([]),
     bills: z.array(z.object({ id: z.string() }).passthrough()).default([]),
+    customCategories: z.array(CustomCategorySchema).optional(),
   })
   .passthrough(); // allow any additional fields (goals, assets, version, etc.)
 

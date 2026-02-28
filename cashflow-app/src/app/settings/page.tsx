@@ -12,6 +12,7 @@ import { loadBranding } from "@/lib/branding";
 import { useAuth } from "@/contexts/AuthContext";
 import { isLockEnabled, enableLock, disableLock, registerBiometric } from "@/components/BiometricLock";
 import { CF_JOIN_TOKEN_KEY } from "@/lib/sharingConstants";
+import CategoryManager from "@/components/CategoryManager";
 import type { Period, PeriodOverride, PeriodRuleOverride, Plan } from "@/data/plan";
 import {
   isNotificationsSupported,
@@ -23,6 +24,8 @@ import {
   resetNotificationCooldowns,
 } from "@/lib/pushNotifications";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
+import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradeButton } from "@/components/ProGate";
 
 // ---------------------------------------------------------------------------
 // Push notification preferences (persisted in localStorage)
@@ -285,6 +288,9 @@ export default function SettingsPage() {
     setNotifPrefsState(updated);
     saveNotifPrefs(updated);
   }
+
+  // ── Subscription state ─────────────────────────────────────────────────
+  const subState = useSubscription();
 
   // ── Notifications state ──────────────────────────────────────────────────
   // Read browser APIs only on the client; initialize to safe defaults for SSR.
@@ -1064,6 +1070,47 @@ export default function SettingsPage() {
               )}
             </div>
 
+            {/* ── Plan & Billing ────────────────────────────────────────── */}
+            <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">Plan &amp; Billing</div>
+              <div className="flex-1 h-px bg-(--vn-border)" />
+            </div>
+            <div className="vn-card p-4">
+              {subState.isLoading ? (
+                <div className="text-sm text-(--vn-muted)">Loading…</div>
+              ) : subState.isPro ? (
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-(--vn-text)">Velanovo Pro</span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, var(--vn-gold) 15%, transparent)", color: "var(--vn-gold)" }}>ACTIVE</span>
+                    </div>
+                    {subState.currentPeriodEnd && (
+                      <div className="text-xs text-(--vn-muted) mt-0.5">
+                        {subState.cancelAtPeriodEnd ? "Cancels" : "Renews"} {new Date(subState.currentPeriodEnd).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={async () => {
+                      const res = await fetch("/api/stripe/portal", { method: "POST" });
+                      const d = await res.json();
+                      if (d.url) window.location.href = d.url;
+                    }}
+                    className="vn-btn vn-btn-ghost text-xs"
+                  >
+                    Manage
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div className="text-sm font-semibold text-(--vn-text) mb-1">Free plan</div>
+                  <div className="text-xs text-(--vn-muted) mb-3">Upgrade to unlock bank sync, household sharing, AI coach, and unlimited periods.</div>
+                  <UpgradeButton />
+                </div>
+              )}
+            </div>
+
             <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
               <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">Notifications</div>
               <div className="flex-1 h-px bg-(--vn-border)" />
@@ -1238,6 +1285,26 @@ export default function SettingsPage() {
                 <span>More suggestions</span>
                 <span>Fewer, clearer patterns</span>
               </div>
+            </div>
+
+            <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">Categories</div>
+              <div className="flex-1 h-px bg-(--vn-border)" />
+            </div>
+            <div className="vn-card p-4">
+              <div className="text-sm font-semibold text-(--vn-text) mb-1">Custom Categories</div>
+              <p className="text-xs text-(--vn-muted) mb-4">
+                Customise how your spending is organised. Built-in categories cannot be removed, but you can add subcategories under them.
+              </p>
+              <CategoryManager
+                customCategories={plan?.customCategories ?? []}
+                onChange={(cats) => {
+                  if (!plan) return;
+                  const updated = { ...plan, customCategories: cats };
+                  savePlan(updated);
+                  setPlan(updated);
+                }}
+              />
             </div>
 
             <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">

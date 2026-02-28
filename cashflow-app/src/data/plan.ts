@@ -1,11 +1,14 @@
-export type CashflowCategory =
-  | "income"
-  | "bill"
-  | "giving"
-  | "savings"
-  | "allowance"
-  | "buffer"
-  | "other";
+export const BUILT_IN_CATEGORIES = ["income", "bill", "giving", "savings", "allowance", "buffer", "other"] as const;
+export type BuiltInCategory = typeof BUILT_IN_CATEGORIES[number];
+export type CashflowCategory = BuiltInCategory | string; // string allows user-defined categories
+
+export interface CustomCategory {
+  id: string;       // crypto.randomUUID()
+  name: string;     // user-provided, e.g. "Groceries"
+  color?: string;   // optional hex color
+  icon?: string;    // optional emoji
+  parentCategory: BuiltInCategory; // which built-in it maps to for rollup
+}
 
 export type CashflowType = "income" | "outflow" | "transfer";
 
@@ -181,6 +184,7 @@ export type Plan = {
   savingsGoals?: SavingsGoal[];
   netWorthAccounts?: NetWorthAccount[];
   netWorthSnapshots?: NetWorthSnapshot[];
+  customCategories?: CustomCategory[];
 };
 
 export const PLAN_VERSION = 2;

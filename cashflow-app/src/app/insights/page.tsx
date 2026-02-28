@@ -18,6 +18,7 @@ import InfoTooltip from "@/components/InfoTooltip";
 import { useDerived } from "@/lib/useDerived";
 import { prettyDate, formatPercent } from "@/lib/formatUtils";
 import { track } from "@/lib/analytics";
+import { getCategoryLabel } from "@/hooks/useCategoryLabel";
 
 function formatDelta(value: number) {
   if (value === 0) return "0";
@@ -529,7 +530,7 @@ export default function InsightsPage() {
                       <div className="space-y-1.5">
                         {overspentCategories.map(cat => (
                           <div key={cat.category} className="flex items-center justify-between text-xs">
-                            <span className="capitalize text-(--vn-muted)">{cat.category}</span>
+                            <span className="capitalize text-(--vn-muted)">{getCategoryLabel(cat.category, plan.customCategories)}</span>
                             <span className="font-semibold text-rose-600 dark:text-rose-400">+{formatMoney(cat.actual - cat.budgeted)} over</span>
                           </div>
                         ))}
@@ -587,7 +588,7 @@ export default function InsightsPage() {
                             const favorable = isIncome ? overBudget : !overBudget;
                             return (
                               <div key={v.category} className="flex items-center justify-between text-sm">
-                                <span className="capitalize text-(--vn-muted)">{v.category}</span>
+                                <span className="capitalize text-(--vn-muted)">{getCategoryLabel(v.category, plan.customCategories)}</span>
                                 <div className="flex items-center gap-3">
                                   <span className="text-xs text-(--vn-muted)">
                                     {formatMoney(v.budgeted)} &rarr; {formatMoney(v.actual)}
@@ -747,7 +748,7 @@ export default function InsightsPage() {
                             ) : (
                               categoryChanges.map((item) => (
                                 <div key={item.category} className="flex items-center justify-between">
-                                  <span className="capitalize">{item.category}</span>
+                                  <span className="capitalize">{getCategoryLabel(item.category, plan.customCategories)}</span>
                                   <span className="font-semibold text-(--vn-text)">{formatDelta(item.delta)}</span>
                                 </div>
                               ))
@@ -838,7 +839,7 @@ export default function InsightsPage() {
                         ) : (
                           overspentCategories.slice(0, 4).map((cat) => (
                             <div key={cat.category} className="flex items-center justify-between">
-                              <span className="capitalize">{cat.category}</span>
+                              <span className="capitalize">{getCategoryLabel(cat.category, plan.customCategories)}</span>
                               <span className="font-semibold text-(--vn-text)">{formatDelta(cat.variance)}</span>
                             </div>
                           ))

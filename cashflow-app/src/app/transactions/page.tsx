@@ -17,6 +17,7 @@ import { showToast } from "@/components/Toast";
 import { MerchantLogo } from "@/components/MerchantLogo";
 import { FormError } from "@/components/FormError";
 import type { Transaction, CashflowCategory, CashflowType, Plan } from "@/data/plan";
+import { getCategoryLabel } from "@/hooks/useCategoryLabel";
 import TransactionTriage from "@/components/TransactionTriage";
 import {
   type TransactionDraft,
@@ -1061,8 +1062,11 @@ function TransactionsPage() {
                     >
                       {categoryOptionsForType(newTransaction.type).map((category) => (
                         <option key={category} value={category}>
-                          {formatCategoryLabel(category)}
+                          {getCategoryLabel(category, plan.customCategories)}
                         </option>
+                      ))}
+                      {newTransaction.type === "outflow" && (plan.customCategories ?? []).map((cat) => (
+                        <option key={cat.id} value={cat.name}>{cat.icon ? `${cat.icon} ` : ""}{cat.name}</option>
                       ))}
                     </select>
                     {categorySuggestion ? (
@@ -1439,6 +1443,9 @@ function TransactionsPage() {
                     <option value="buffer">Buffer</option>
                     <option value="savings">Savings</option>
                     <option value="other">Other</option>
+                    {(plan.customCategories ?? []).map((cat) => (
+                      <option key={cat.id} value={cat.name}>{cat.icon ? `${cat.icon} ` : ""}{cat.name}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -1611,8 +1618,11 @@ function TransactionsPage() {
                                       >
                                         {categoryOptionsForType(editTransaction.type).map((category) => (
                                           <option key={category} value={category}>
-                                            {formatCategoryLabel(category)}
+                                            {getCategoryLabel(category, plan.customCategories)}
                                           </option>
+                                        ))}
+                                        {editTransaction.type === "outflow" && (plan.customCategories ?? []).map((cat) => (
+                                          <option key={cat.id} value={cat.name}>{cat.icon ? `${cat.icon} ` : ""}{cat.name}</option>
                                         ))}
                                       </select>
                                       {editCategorySuggestion ? (
