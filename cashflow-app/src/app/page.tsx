@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { motion, useSpring, useTransform, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import Link from "next/link";
 import { hasStoredPlan, savePlan } from "@/lib/storage";
@@ -76,14 +76,13 @@ export default function HomePage() {
   const [onboarding, setOnboarding] = useState(() => loadOnboardingState());
   const [isFirstVisit, setIsFirstVisit] = useState(() => !hasStoredPlan());
   const [showSetup, setShowSetup] = useState(() => !hasStoredPlan() && !loadWizardState().completed);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [mountTime] = useState(() => Date.now());
   const shouldReduceMotion = useReducedMotion();
   const motionProps = shouldReduceMotion
     ? { initial: false as const, animate: false as const }
     : {};
 
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const refresh = () => {
