@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { loadPlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
@@ -31,13 +31,15 @@ function saveEnvelopes(periodId: number, data: EnvelopeMap) {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const ENVELOPE_DEFS: { category: CashflowCategory; label: string; emoji: string; description: string }[] = [
-  { category: "bill",      label: "Bills",      emoji: "🧾", description: "Fixed monthly obligations" },
-  { category: "giving",    label: "Giving",     emoji: "🫶", description: "Tithing, charity, gifts" },
-  { category: "savings",   label: "Savings",    emoji: "🏦", description: "ISA, emergency fund, goals" },
-  { category: "allowance", label: "Allowance",  emoji: "🛒", description: "Groceries, dining, personal spend" },
-  { category: "buffer",    label: "Buffer",     emoji: "🛡️", description: "Contingency and float" },
-  { category: "other",     label: "Other",      emoji: "💸", description: "Miscellaneous outflows" },
+const SVG_PROPS = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+
+const ENVELOPE_DEFS: { category: CashflowCategory; label: string; icon: React.ReactElement; description: string }[] = [
+  { category: "bill",      label: "Bills",     icon: <svg {...SVG_PROPS}><path d="M9 5H7a2 2 0 0 0-2 2v14l3-2 3 2 3-2 3 2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 7h6m-6 4h3"/></svg>, description: "Fixed monthly obligations" },
+  { category: "giving",    label: "Giving",    icon: <svg {...SVG_PROPS}><path d="M4.318 6.318a4.5 4.5 0 0 0 0 6.364L12 20.364l7.682-7.682a4.5 4.5 0 0 0-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 0 0-6.364 0z"/></svg>, description: "Tithing, charity, gifts" },
+  { category: "savings",   label: "Savings",   icon: <svg {...SVG_PROPS}><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>, description: "ISA, emergency fund, goals" },
+  { category: "allowance", label: "Allowance", icon: <svg {...SVG_PROPS}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>, description: "Groceries, dining, personal spend" },
+  { category: "buffer",    label: "Buffer",    icon: <svg {...SVG_PROPS}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, description: "Contingency and float" },
+  { category: "other",     label: "Other",     icon: <svg {...SVG_PROPS}><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>, description: "Miscellaneous outflows" },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -254,7 +256,7 @@ export default function EnvelopesPage() {
 
             {/* Envelope cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {ENVELOPE_DEFS.map(({ category, label, emoji, description }) => {
+              {ENVELOPE_DEFS.map(({ category, label, icon, description }) => {
                 const allocated = allocations[category] ?? 0;
                 const spent = actualSpend[category] ?? 0;
                 const remaining = allocated - spent;
@@ -269,7 +271,7 @@ export default function EnvelopesPage() {
                     {/* Header */}
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-xl">{emoji}</span>
+                        <span className="w-6 h-6 flex items-center justify-center" style={{ color: "var(--vn-primary)" }}>{icon}</span>
                         <div>
                           <div className="text-sm font-semibold text-(--vn-text)">{label}</div>
                           <div className="text-[11px] text-(--vn-muted)">{description}</div>
