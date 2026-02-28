@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/currency";
 import { CF_JOIN_TOKEN_KEY } from "@/lib/sharingConstants";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradeButton } from "@/components/ProGate";
+import { CardSkeleton } from "@/components/Skeleton";
 import type { Transaction } from "@/data/plan";
 
 // ── Icon ──────────────────────────────────────────────────────────────────
@@ -87,10 +88,11 @@ function timeAgo(ms: number) {
 // ── Loading skeleton ──────────────────────────────────────────────────────
 function LoadingSkeleton() {
   return (
-    <div className="min-h-screen bg-[var(--vn-bg)] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-[var(--vn-gold)] border-t-transparent animate-spin" />
-        <p className="text-sm" style={{ color: "var(--vn-muted)" }}>Loading household…</p>
+    <div className="min-h-screen bg-(--vn-bg) px-4 sm:px-6 pt-10">
+      <div className="mx-auto max-w-2xl space-y-4">
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
       </div>
     </div>
   );

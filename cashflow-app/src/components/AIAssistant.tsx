@@ -14,6 +14,7 @@ export default function AIAssistant() {
         <Link
             href="/coach"
             aria-label="Open Financial Coach"
+            title="Ask your financial coach"
             onClick={() => track("ai_chat_opened")}
             style={{
                 position: "fixed",

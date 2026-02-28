@@ -406,9 +406,13 @@ export default function CoachPage() {
         }];
       }
     } catch {
-      // no plan loaded yet, fall back to static welcome
+      // no plan loaded yet
     }
-    return [INITIAL_MESSAGE];
+    return [{
+      id: "welcome-no-plan",
+      role: "assistant" as const,
+      content: "Hey! I'm your Velanovo financial coach. \ud83d\udc4b\n\nIt looks like your plan isn't set up yet. Head to **Plan** to add your income, bills, and spending budget \u2014 then come back here for personalised advice.\n\nI can help you budget smarter, spot savings, and stay on track once your plan is ready.",
+    }];
   });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);

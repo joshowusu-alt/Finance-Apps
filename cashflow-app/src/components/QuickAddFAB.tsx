@@ -11,6 +11,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { todayISO } from "@/lib/dateUtils";
 import { useHaptic } from "@/lib/useHaptic";
 import { suggestCategory } from "@/lib/categorization";
 import { suggestBillId } from "@/lib/billLinking";
@@ -42,10 +43,6 @@ const CATEGORIES: CashflowCategory[] = [
   "other",
 ];
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function generateId(): string {
   return `txn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -57,7 +54,7 @@ export default function QuickAddFAB() {
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<CashflowType>("outflow");
   const [category, setCategory] = useState<CashflowCategory>("other");
-  const [date, setDate] = useState(today());
+  const [date, setDate] = useState(todayISO());
   const [saved, setSaved] = useState(false);
   const [goalPrompt, setGoalPrompt] = useState<{ txnId: string; amount: number; goals: SavingsGoal[] } | null>(null);
   const [billPrompt, setBillPrompt] = useState<{ txnId: string; bill: BillTemplate } | null>(null);
@@ -118,7 +115,7 @@ export default function QuickAddFAB() {
     setAmount("");
     setType("outflow");
     setCategory("other");
-    setDate(today());
+    setDate(todayISO());
     setSaved(false);
     setGoalPrompt(null);
     setBillPrompt(null);
@@ -208,7 +205,9 @@ export default function QuickAddFAB() {
     <>
       {/* FAB button */}
       <button
-        aria-label="Quick add transaction"
+        aria-label="Add transaction"
+        aria-expanded={open}
+        aria-haspopup="dialog"
         onClick={() => setOpen(true)}
         className="fixed bottom-20 right-4 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl font-bold transition-transform active:scale-95"
         style={{ background: "var(--gold)", color: "var(--vn-bg)" }}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import HomePage from "@/app/page";
 import { Plan } from "@/data/plan";
 import { createFreshPlan, hasStoredPlan, savePlan, setStorageScope } from "@/lib/storage";
+import { CardSkeleton } from "@/components/Skeleton";
 
 export default function ReviewPage() {
   const [ready, setReady] = useState(false);
@@ -54,10 +55,11 @@ export default function ReviewPage() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-[var(--vn-bg)] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-[var(--vn-gold)] border-t-transparent animate-spin" />
-          <p className="text-[var(--vn-muted)] text-sm">Loading...</p>
+      <div className="min-h-screen bg-(--vn-bg) px-4 sm:px-6 pt-10">
+        <div className="mx-auto max-w-2xl space-y-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
         </div>
       </div>
     );

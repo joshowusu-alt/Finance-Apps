@@ -104,32 +104,33 @@ function MainPageContent() {
   }, [searchParams, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 text-center">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--vn-bg)" }}>
+      <div className="max-w-md w-full rounded-3xl p-8 shadow-2xl text-center" style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}>
         {status === "loading" && (
           <>
-            <div className="animate-spin w-16 h-16 border-4 border-white/20 border-t-emerald-400 rounded-full mx-auto mb-6"></div>
-            <h1 className="text-xl font-bold text-white mb-2">Syncing Your Data</h1>
-            <p className="text-slate-300">{message}</p>
+            <div className="w-12 h-12 rounded-full border-2 mx-auto mb-5" style={{ borderColor: "var(--vn-border)", borderTopColor: "var(--vn-primary)" }} />
+            <h1 className="text-lg font-semibold mb-1" style={{ color: "var(--vn-text)" }}>Syncing Your Data</h1>
+            <p style={{ color: "var(--vn-muted)" }}>{message}</p>
           </>
         )}
 
         {status === "success" && (
           <>
             <div className="text-6xl mb-4">✅</div>
-            <h1 className="text-xl font-bold text-white mb-2">Connected!</h1>
-            <p className="text-amber-400">{message}</p>
+            <h1 className="text-xl font-bold mb-2" style={{ color: "var(--vn-text)" }}>Connected!</h1>
+            <p style={{ color: "var(--vn-gold)" }}>{message}</p>
           </>
         )}
 
         {status === "error" && (
           <>
             <div className="text-6xl mb-4">❌</div>
-            <h1 className="text-xl font-bold text-white mb-2">Sync Failed</h1>
-            <p className="text-rose-300 mb-4">{message}</p>
+            <h1 className="text-xl font-bold mb-2" style={{ color: "var(--vn-text)" }}>Sync Failed</h1>
+            <p className="mb-4" style={{ color: "var(--vn-error, #ef4444)" }}>{message}</p>
             <button
               onClick={() => router.push("/insights")}
-              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-colors"
+              className="px-6 py-3 font-semibold rounded-xl transition-colors"
+              style={{ background: "var(--vn-surface-elevated, var(--vn-border))", color: "var(--vn-text)" }}
             >
               Go to Dashboard Anyway
             </button>
@@ -142,10 +143,10 @@ function MainPageContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 text-center">
-        <div className="animate-spin w-16 h-16 border-4 border-white/20 border-t-emerald-400 rounded-full mx-auto mb-6"></div>
-        <h1 className="text-xl font-bold text-white mb-2">Loading...</h1>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--vn-bg)" }}>
+      <div className="max-w-md w-full rounded-3xl p-8 text-center" style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)" }}>
+        <div className="w-12 h-12 rounded-full border-2 mx-auto mb-5" style={{ borderColor: "var(--vn-border)", borderTopColor: "var(--vn-primary)" }} />
+        <h1 className="text-lg font-semibold" style={{ color: "var(--vn-text)" }}>Loading...</h1>
       </div>
     </div>
   );

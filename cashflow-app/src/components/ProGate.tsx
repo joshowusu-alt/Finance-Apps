@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { motion } from "framer-motion";
+import { showToast } from "@/components/Toast";
 
 interface ProGateProps {
   feature: string;
@@ -52,7 +53,7 @@ export function UpgradeButton({ size = "md" }: { size?: "sm" | "md" }) {
       const data = await res.json();
       if (data.url) window.location.href = data.url;
     } catch {
-      // ignore
+      showToast("Something went wrong. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -65,7 +66,7 @@ export function UpgradeButton({ size = "md" }: { size?: "sm" | "md" }) {
       className={`vn-btn ${size === "sm" ? "text-xs px-3 py-1.5" : "px-4 py-2"} font-semibold`}
       style={{ background: "linear-gradient(135deg, #C5A046, #D4AF5A)", color: "#111318" }}
     >
-      {loading ? "Loading…" : "Upgrade to Pro — £9.99/mo"}
+      {loading ? "Loading…" : `Upgrade to Pro — ${process.env.NEXT_PUBLIC_PRO_PRICE_DISPLAY ?? "£9.99/mo"}`}
     </button>
   );
 }

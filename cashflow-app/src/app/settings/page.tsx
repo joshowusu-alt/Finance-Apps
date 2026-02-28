@@ -16,6 +16,7 @@ import { isLockEnabled, enableLock, disableLock, registerBiometric } from "@/com
 import { CF_JOIN_TOKEN_KEY } from "@/lib/sharingConstants";
 import { createClient } from "@/lib/supabase/client";
 import CategoryManager from "@/components/CategoryManager";
+import { showToast } from "@/components/Toast";
 import type { Period, PeriodOverride, PeriodRuleOverride, Plan } from "@/data/plan";
 import {
   isNotificationsSupported,
@@ -27,6 +28,7 @@ import {
   resetNotificationCooldowns,
 } from "@/lib/pushNotifications";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
+import { todayISO } from "@/lib/dateUtils";
 
 
 // ---------------------------------------------------------------------------
@@ -64,11 +66,6 @@ function saveNotifPrefs(prefs: NotifPrefs): void {
   } catch {
     // ignore
   }
-}
-
-/** Return today as YYYY-MM-DD */
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
 }
 
 export default function SettingsPage() {
@@ -209,7 +206,9 @@ export default function SettingsPage() {
       window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
       setRecoveryMsg(`✓ Restored: ${summary}`);
     } catch (e) {
-      setRecoveryMsg(`Error: ${e instanceof Error ? e.message : "Unknown error"}`);
+      const msg = e instanceof Error ? e.message : "Unknown error";
+      setRecoveryMsg(`Error: ${msg}`);
+      showToast("Restore failed. Please try again.", "error");
     } finally {
       setRecoveryLoading(false);
     }
@@ -268,7 +267,9 @@ export default function SettingsPage() {
       const { shareCode } = (await res.json()) as { shareCode: string };
       setHouseholdShareCode(shareCode);
     } catch (e) {
-      setHouseholdMsg(`Error: ${e instanceof Error ? e.message : "Unknown error"}`);
+      const msg = e instanceof Error ? e.message : "Unknown error";
+      setHouseholdMsg(`Error: ${msg}`);
+      showToast("Something went wrong. Please try again.", "error");
     } finally {
       setHouseholdLoading(false);
     }

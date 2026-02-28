@@ -71,7 +71,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
 
   const currencySymbol = CURRENCIES[COUNTRIES[country]?.currency ?? "USD"]?.symbol ?? "$";
 
-  const trapRef = useFocusTrap(true);
+  const trapRef = useFocusTrap(step >= 0);
 
   const shouldReduceMotion = useReducedMotion();
   const reducedMotionOverride = shouldReduceMotion
