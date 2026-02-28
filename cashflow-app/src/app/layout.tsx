@@ -18,6 +18,7 @@ import UpdateBanner from "@/components/UpdateBanner";
 // Browser-only overlay components (lazy, ssr: false) — see ClientOverlays.tsx
 import ClientOverlays from "@/components/ClientOverlays";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { PageTransition } from "@/components/PageTransition";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -41,10 +42,19 @@ export const metadata: Metadata = {
     icon: "/icon-192.png",
     apple: "/apple-touch-icon.png",
   },
+  appleWebApp: {
+    capable: true,
+    title: "Velanovo",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#0D1117",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -55,7 +65,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="transition-colors duration-200" suppressHydrationWarning style={{ background: "#0D1117" }}>
       <head>
-        <meta name="theme-color" content="#0D1117" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{
@@ -91,7 +100,7 @@ else{d.classList.add("dark");d.setAttribute("data-theme","dark");}
             {/* Page content */}
             <ErrorBoundary>
               <div id="main-content" tabIndex={-1} className="relative z-10 min-h-screen pb-28 w-full max-w-full overflow-x-hidden">
-                {children}
+                <PageTransition>{children}</PageTransition>
               </div>
             </ErrorBoundary>
 
