@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
 import { getPlaidClient, mapPlaidTransaction } from "@/lib/plaid";
+import { decrypt, isEncrypted } from "@/lib/encryption";
 import type { Transaction as PlaidTransaction } from "plaid";
 import { defaultDateRange } from "@/lib/dateUtils";
 import type { Plan, Transaction } from "@/data/plan";
@@ -77,11 +78,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: true, usersProcessed: 0, message: "No connected accounts" });
   }
 
-  // Group connections by user
+  // Group connections by user — decrypt access_token for Plaid SDK use
   const byUser = new Map<string, { access_token: string; item_id: string }[]>();
   for (const c of connections) {
     if (!byUser.has(c.user_id)) byUser.set(c.user_id, []);
-    byUser.get(c.user_id)!.push({ access_token: c.access_token, item_id: c.item_id });
+    const token = isEncrypted(c.access_token) ? decrypt(c.access_token) : c.access_token;
+    byUser.get(c.user_id)!.push({ access_token: token, item_id: c.item_id });
   }
 
   // ── 5. Sync each user ──────────────────────────────────────────────────────

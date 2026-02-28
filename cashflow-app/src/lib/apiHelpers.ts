@@ -6,6 +6,7 @@
  */
 
 import { NextResponse } from "next/server";
+import { decrypt, isEncrypted } from "@/lib/encryption";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { ensureMainPlan, MAIN_COOKIE_NAME } from "@/lib/mainStore";
@@ -148,22 +149,29 @@ export type PlaidConnection = { access_token: string; item_id: string };
 export async function fetchPlaidConnections(
   auth: ResolvedAuth,
 ): Promise<PlaidConnection[]> {
+  const decryptToken = (raw: string): string =>
+    isEncrypted(raw) ? decrypt(raw) : raw;
+
   if (auth.user && auth.supabase) {
     const { data } = await auth.supabase
       .from("plaid_connections")
       .select("access_token, item_id")
       .eq("user_id", auth.userId);
-    return (data ?? []) as PlaidConnection[];
+    return ((data ?? []) as PlaidConnection[]).map((c) => ({
+      ...c,
+      access_token: decryptToken(c.access_token),
+    }));
   }
 
   // Neon fallback
   const { getSQL } = await import("@/lib/db");
   const sql = getSQL();
-  return (await sql`
+  const rows = (await sql`
     SELECT access_token, item_id
     FROM plaid_connections
     WHERE user_id = ${auth.userId}
   `) as PlaidConnection[];
+  return rows.map((c) => ({ ...c, access_token: decryptToken(c.access_token) }));
 }
 
 // ---------------------------------------------------------------------------
@@ -217,4 +225,40 @@ export function setAuthCookie(
     maxAge,
     path: "/",
   });
+}
+
+// ---------------------------------------------------------------------------
+// Rate limiting
+// ---------------------------------------------------------------------------
+
+const _rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+/**
+ * Simple in-memory per-IP rate limiter (10 requests / 60 s by default).
+ * Returns a 429 NextResponse when the limit is exceeded, otherwise null.
+ */
+export function checkRateLimit(
+  req: Request,
+  limit = 10,
+  windowMs = 60_000,
+): NextResponse | null {
+  const ip =
+    (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+
+  const now = Date.now();
+  const entry = _rateLimitStore.get(ip);
+
+  if (!entry || now >= entry.resetAt) {
+    _rateLimitStore.set(ip, { count: 1, resetAt: now + windowMs });
+    return null;
+  }
+
+  entry.count += 1;
+  if (entry.count > limit) {
+    return apiError("Too many requests", 429);
+  }
+
+  return null;
 }

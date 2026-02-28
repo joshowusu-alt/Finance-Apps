@@ -1,21 +1,24 @@
 import { NextResponse } from "next/server";
 import { getPlaidClient } from "@/lib/plaid";
 import {
-  resolveAuth,
+  resolveAuthWithCookie,
   fetchPlaidConnections,
-  badRequest,
+  unauthorized,
   serverError,
+  checkRateLimit,
 } from "@/lib/apiHelpers";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await req.json();
-    const auth = await resolveAuth(userId);
+    const rateLimit = checkRateLimit(req);
+    if (rateLimit) return rateLimit;
+
+    const auth = await resolveAuthWithCookie();
 
     if (!auth) {
-      return badRequest("Missing userId");
+      return unauthorized();
     }
 
     const connections = await fetchPlaidConnections(auth);

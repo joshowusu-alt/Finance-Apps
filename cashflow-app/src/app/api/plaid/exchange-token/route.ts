@@ -3,6 +3,7 @@ import { getPlaidClient } from "@/lib/plaid";
 import { getSQL } from "@/lib/db";
 import { resolveAuthWithCookie, badRequest, serverError } from "@/lib/apiHelpers";
 import { createRateLimiter } from "@/lib/rateLimit";
+import { encrypt } from "@/lib/encryption";
 
 export const runtime = "nodejs";
 
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
         {
           user_id: auth.userId,
           item_id: itemId,
-          access_token: accessToken,
+          access_token: encrypt(accessToken),
           updated_at: nowIso,
         },
         { onConflict: "item_id" },
@@ -72,7 +73,7 @@ export async function POST(req: Request) {
       await sql`
         INSERT INTO plaid_connections
         (user_id, item_id, access_token, created_at, updated_at)
-        VALUES (${auth.userId}, ${itemId}, ${accessToken}, ${now}, ${now})
+        VALUES (${auth.userId}, ${itemId}, ${encrypt(accessToken)}, ${now}, ${now})
         ON CONFLICT (item_id) DO UPDATE SET
           access_token = EXCLUDED.access_token,
           updated_at = EXCLUDED.updated_at
