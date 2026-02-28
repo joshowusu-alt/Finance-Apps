@@ -136,17 +136,21 @@ export default function SettingsPage() {
     setRecoveryLoading(true);
     setRecoveryMsg("");
     try {
-      const res = await fetch("/api/main/plan", { method: "GET", credentials: "include" });
+      const res = await fetch("/api/user/plan", { method: "GET", credentials: "include" });
       if (!res.ok) {
         setRecoveryMsg(res.status === 401 ? "Not signed in — please sign in first." : `Server error (${res.status})`);
         return;
       }
-      const data = (await res.json()) as { plan?: Plan; prevPlan?: Plan | null; updatedAt?: number };
-      if (!data.plan || !data.plan.periods?.length) {
+      const data = (await res.json()) as { plan?: Plan | null; prevPlan?: Plan | null; updatedAt?: number | null; scenarioId?: string | null };
+      if (data.plan === null || data.plan === undefined) {
         setRecoveryMsg("No cloud backup found.");
         return;
       }
-      savePlanFromRemote(data.plan, data.prevPlan ?? null, data.updatedAt, "cloud-recovery");
+      if (!data.plan.periods?.length && !data.plan.incomeRules?.length) {
+        setRecoveryMsg("Cloud backup is empty — no data to restore.");
+        return;
+      }
+      savePlanFromRemote(data.plan, data.prevPlan ?? null, data.updatedAt ?? undefined, "cloud-recovery");
       setPlan(loadPlan());
       window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
       setRecoveryMsg("✓ Plan restored from cloud backup!");
