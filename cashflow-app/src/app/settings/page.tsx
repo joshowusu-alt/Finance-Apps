@@ -128,6 +128,51 @@ export default function SettingsPage() {
     typeof window !== "undefined" ? window.localStorage.getItem(CF_JOIN_TOKEN_KEY) : null
   );
 
+  // ── Data Recovery ─────────────────────────────────────────────────────────
+  const [recoveryMsg, setRecoveryMsg] = useState("");
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+
+  async function handleRestoreFromCloud() {
+    setRecoveryLoading(true);
+    setRecoveryMsg("");
+    try {
+      const res = await fetch("/api/main/plan", { method: "GET", credentials: "include" });
+      if (!res.ok) {
+        setRecoveryMsg(res.status === 401 ? "Not signed in — please sign in first." : `Server error (${res.status})`);
+        return;
+      }
+      const data = (await res.json()) as { plan?: Plan; prevPlan?: Plan | null; updatedAt?: number };
+      if (!data.plan || !data.plan.periods?.length) {
+        setRecoveryMsg("No cloud backup found.");
+        return;
+      }
+      savePlanFromRemote(data.plan, data.prevPlan ?? null, data.updatedAt, "cloud-recovery");
+      setPlan(loadPlan());
+      window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+      setRecoveryMsg("✓ Plan restored from cloud backup!");
+    } catch (e) {
+      setRecoveryMsg(`Error: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
+      setRecoveryLoading(false);
+    }
+  }
+
+  function handleExportData() {
+    try {
+      const data = loadPlan();
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "velanovo-backup.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setRecoveryMsg(`Export failed: ${e instanceof Error ? e.message : "Unknown error"}`);
+    }
+  }
+
   async function handleGenerateShareCode() {
     setHouseholdLoading(true);
     setHouseholdMsg("");
@@ -1297,6 +1342,45 @@ export default function SettingsPage() {
                   setPlan(updated);
                 }}
               />
+            </div>
+
+            <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">Data Recovery</div>
+              <div className="flex-1 h-px bg-(--vn-border)" />
+            </div>
+            <div className="vn-card p-6 space-y-4">
+              <div>
+                <div className="text-sm font-semibold text-(--vn-text) mb-1">Restore from Cloud</div>
+                <p className="text-xs text-(--vn-muted) mb-3">
+                  Pull the latest plan saved to your cloud account and overwrite local data. Use this if your local data was cleared or lost.
+                </p>
+                <button
+                  onClick={handleRestoreFromCloud}
+                  disabled={recoveryLoading}
+                  className="vn-btn vn-btn-primary text-xs"
+                >
+                  {recoveryLoading ? "Restoring…" : "Restore from Cloud"}
+                </button>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-(--vn-text) mb-1">Export Data</div>
+                <p className="text-xs text-(--vn-muted) mb-3">
+                  Download your current plan as a JSON file for safekeeping.
+                </p>
+                <button
+                  onClick={handleExportData}
+                  className="vn-btn vn-btn-ghost text-xs"
+                >
+                  Export Data
+                </button>
+              </div>
+              {recoveryMsg && (
+                <p className={`text-xs font-medium ${
+                  recoveryMsg.startsWith("✓") ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"
+                }`}>
+                  {recoveryMsg}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">

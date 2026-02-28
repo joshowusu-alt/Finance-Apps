@@ -367,11 +367,30 @@ export function loadPlan(): Plan {
   if (planCache && planCache.key === key && planCache.raw === raw) {
     return planCache.plan;
   }
-  if (!raw && state.activeId !== "default") {
-    const normalized = ensurePlanVersion(PLAN);
-    const rawPlan = JSON.stringify(normalized);
-    window.localStorage.setItem(key, rawPlan);
-    planCache = { key, raw: rawPlan, plan: normalized };
+  if (!raw) {
+    // No primary key — try safety backup before falling back to a fresh plan
+    try {
+      const safetyRaw = window.localStorage.getItem("velanovo-safety-backup-v1");
+      if (safetyRaw) {
+        const safetyData = JSON.parse(safetyRaw) as { plan?: unknown; savedAt?: string };
+        if (safetyData.plan) {
+          console.log("[storage] Restored plan from safety backup saved at", safetyData.savedAt);
+          const restored = deserializePlan(JSON.stringify(safetyData.plan));
+          const restoredRaw = JSON.stringify(ensurePlanVersion(restored));
+          window.localStorage.setItem(key, restoredRaw);
+          planCache = { key, raw: restoredRaw, plan: restored };
+          return restored;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    if (state.activeId !== "default") {
+      const normalized = ensurePlanVersion(PLAN);
+      const rawPlan = JSON.stringify(normalized);
+      window.localStorage.setItem(key, rawPlan);
+      planCache = { key, raw: rawPlan, plan: normalized };
+    }
   }
   const next = deserializePlan(window.localStorage.getItem(key));
   planCache = { key, raw: window.localStorage.getItem(key), plan: next };
@@ -492,6 +511,16 @@ export function savePlan(plan: Plan, options?: SavePlanOptions) {
 
   window.localStorage.setItem(key, raw);
   planCache = { key, raw, plan: normalized };
+
+  // Safety backup — always written to a fixed key, never scoped, never cleared by scenario reset
+  try {
+    window.localStorage.setItem(
+      "velanovo-safety-backup-v1",
+      JSON.stringify({ plan: normalized, savedAt: new Date().toISOString() })
+    );
+  } catch {
+    // ignore storage errors
+  }
 
   const updated = {
     ...state,
