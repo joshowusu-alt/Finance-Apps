@@ -6,6 +6,12 @@ import { loadPlan, loadPreviousPlan, setStorageScope } from "@/lib/storage";
 type MigrationStatus = "idle" | "loading" | "success" | "error";
 
 export default function MigratePage() {
+    // Guard: only accessible when NEXT_PUBLIC_ENABLE_MIGRATE=true
+    if (process.env.NEXT_PUBLIC_ENABLE_MIGRATE !== "true") {
+        if (typeof window !== "undefined") window.location.replace("/");
+        return null;
+    }
+
     const [status, setStatus] = useState<MigrationStatus>("idle");
     const [message, setMessage] = useState("");
     const [vercelLink, setVercelLink] = useState("");

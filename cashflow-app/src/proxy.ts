@@ -4,6 +4,27 @@ import { createServerClient } from "@supabase/ssr";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+/**
+ * Protected page routes — unauthenticated users without a plan-token cookie
+ * are redirected to /auth.
+ */
+const PROTECTED_PREFIXES = [
+  "/plan",
+  "/transactions",
+  "/goals",
+  "/envelopes",
+  "/bills",
+  "/coach",
+  "/income",
+  "/insights",
+  "/networth",
+  "/year",
+  "/timeline",
+  "/household",
+  "/settings",
+  "/import",
+];
+
 export async function proxy(request: NextRequest) {
   if (!url || !key) return NextResponse.next();
 
@@ -31,7 +52,20 @@ export async function proxy(request: NextRequest) {
   );
 
   // Refresh the session — do not remove this line
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Route protection: redirect unauthenticated users to /auth
+  // Allow anonymous plan-token cookie as auth fallback (local/offline plans)
+  const { pathname } = request.nextUrl;
+  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
+  if (isProtected && !user) {
+    const hasPlanToken = request.cookies.has("cashflow_plan_token");
+    if (!hasPlanToken) {
+      const redirectUrl = new URL("/auth", request.url);
+      redirectUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
 
   // Restrict CORS to same-origin for API routes.
   // Cron routes are called server-to-server by Vercel (no Origin header) and

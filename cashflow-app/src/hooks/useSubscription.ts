@@ -11,11 +11,11 @@ export interface SubscriptionState {
 }
 
 /**
- * REVIEW_MODE — set to true during the review/beta phase to grant all users
+ * REVIEW_MODE — set NEXT_PUBLIC_REVIEW_MODE="true" in .env to grant all users
  * full Pro access without a Stripe subscription.
- * Set to false when billing goes live.
+ * Defaults to false — billing is live unless explicitly overridden.
  */
-const REVIEW_MODE = true;
+const REVIEW_MODE = process.env.NEXT_PUBLIC_REVIEW_MODE === "true";
 
 export function useSubscription(): SubscriptionState {
   const [state, setState] = useState<SubscriptionState>({

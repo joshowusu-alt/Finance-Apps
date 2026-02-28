@@ -33,7 +33,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob:",
-      "connect-src 'self' https://*.supabase.co https://api.openai.com https://cdn.plaid.com https://production.plaid.com https://sandbox.plaid.com https://vitals.vercel-insights.com",
+      "connect-src 'self' https://*.supabase.co https://api.openai.com https://cdn.plaid.com https://production.plaid.com https://sandbox.plaid.com https://vitals.vercel-insights.com https://app.posthog.com https://eu.posthog.com https://us.posthog.com",
       "frame-src 'self' https://cdn.plaid.com",
       "object-src 'none'",
       "base-uri 'self'",
