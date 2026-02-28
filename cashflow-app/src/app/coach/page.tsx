@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { loadPlan } from "@/lib/storage";
 import { buildAIContext, formatContextForPrompt, type AIFinancialContext } from "@/lib/aiContext";
 import { formatMoney } from "@/lib/currency";
+import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradeButton } from "@/components/ProGate";
 
 interface Message {
   id: string;
@@ -413,6 +415,10 @@ export default function CoachPage() {
   const [modelName, setModelName] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { isPro, isLoading: subLoading } = useSubscription();
+
+  const freeMessageCount = messages.filter(m => m.role === "user").length;
+  const hitFreeLimit = !subLoading && !isPro && freeMessageCount >= 3;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -682,28 +688,35 @@ export default function CoachPage() {
 
       {/* Input */}
       <div className="p-3 border-t border-(--vn-border) bg-(--vn-surface)">
-        <div className="flex gap-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask about your finances..."
-            disabled={isLoading}
-            className="flex-1 px-4 py-2.5 bg-(--vn-bg) text-(--vn-text) rounded-xl text-sm placeholder:text-(--vn-muted) focus:outline-none focus:ring-2 focus:ring-(--vn-gold)/50"
-          />
-          <button
-            onClick={() => sendMessage()}
-            disabled={!input.trim() || isLoading}
-            className="px-4 py-2.5 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            style={{ background: "linear-gradient(135deg, #a8731a, #d4a843)" }}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-          </button>
-        </div>
+        {hitFreeLimit ? (
+          <div className="text-center py-3 px-4">
+            <p className="text-xs mb-3" style={{ color: "var(--vn-muted)" }}>You&apos;ve used your 3 free AI messages. Upgrade to Pro for unlimited coaching.</p>
+            <UpgradeButton size="sm" />
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask about your finances..."
+              disabled={isLoading}
+              className="flex-1 px-4 py-2.5 bg-(--vn-bg) text-(--vn-text) rounded-xl text-sm placeholder:text-(--vn-muted) focus:outline-none focus:ring-2 focus:ring-(--vn-gold)/50"
+            />
+            <button
+              onClick={() => sendMessage()}
+              disabled={!input.trim() || isLoading}
+              className="px-4 py-2.5 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              style={{ background: "linear-gradient(135deg, #a8731a, #d4a843)" }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
