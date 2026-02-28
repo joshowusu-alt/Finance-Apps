@@ -1,6 +1,6 @@
-const STATIC_CACHE = "cashflow-static-v4";
-const RUNTIME_CACHE = "cashflow-runtime-v4";
-const OLD_CACHES = ["cashflow-static-v1", "cashflow-runtime-v1", "cashflow-static-v2", "cashflow-runtime-v2", "cashflow-static-v3", "cashflow-runtime-v3"];
+const STATIC_CACHE = "cashflow-static-v5";
+const RUNTIME_CACHE = "cashflow-runtime-v5";
+const OLD_CACHES = ["cashflow-static-v1", "cashflow-runtime-v1", "cashflow-static-v2", "cashflow-runtime-v2", "cashflow-static-v3", "cashflow-runtime-v3", "cashflow-static-v4", "cashflow-runtime-v4"];
 
 const OFFLINE_PAGE = "/offline.html";
 
@@ -17,7 +17,15 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => cache.addAll(APP_SHELL))
   );
-  self.skipWaiting();
+  // Do NOT call self.skipWaiting() here — we let the UpdateBanner ask
+  // the user first, then send a SKIP_WAITING message to activate.
+});
+
+// UpdateBanner posts { type: 'SKIP_WAITING' } when the user taps "Update Now"
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", (event) => {
