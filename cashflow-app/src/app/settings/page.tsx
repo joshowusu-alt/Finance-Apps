@@ -14,6 +14,7 @@ import { loadBranding } from "@/lib/branding";
 import { useAuth } from "@/contexts/AuthContext";
 import { isLockEnabled, enableLock, disableLock, registerBiometric } from "@/components/BiometricLock";
 import { CF_JOIN_TOKEN_KEY } from "@/lib/sharingConstants";
+import { createClient } from "@/lib/supabase/client";
 import CategoryManager from "@/components/CategoryManager";
 import type { Period, PeriodOverride, PeriodRuleOverride, Plan } from "@/data/plan";
 import {
@@ -136,21 +137,46 @@ export default function SettingsPage() {
     setRecoveryLoading(true);
     setRecoveryMsg("");
     try {
-      const res = await fetch("/api/user/plan", { method: "GET", credentials: "include" });
-      if (!res.ok) {
-        setRecoveryMsg(res.status === 401 ? "Not signed in — please sign in first." : `Server error (${res.status})`);
+      // Use client-side Supabase directly — PWA stores the session in
+      // localStorage, not cookies, so server API routes cannot read it.
+      const supabase = createClient();
+      if (!supabase) {
+        setRecoveryMsg("Cloud sync is not configured.");
         return;
       }
-      const data = (await res.json()) as { plan?: Plan | null; prevPlan?: Plan | null; updatedAt?: number | null; scenarioId?: string | null };
-      if (data.plan === null || data.plan === undefined) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setRecoveryMsg("Not signed in — please sign in first.");
+        return;
+      }
+      const { data: rows, error } = await supabase
+        .from("user_plans")
+        .select("plan_json, prev_plan_json, updated_at, scenario_id")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(10);
+      if (error) {
+        setRecoveryMsg(`Database error: ${error.message}`);
+        return;
+      }
+      if (!rows || rows.length === 0) {
         setRecoveryMsg("No cloud backup found.");
         return;
       }
-      if (!data.plan.periods?.length && !data.plan.incomeRules?.length) {
+      // Find the most recent row that has real data
+      const row = rows.find((r) => {
+        const p = r.plan_json as Plan | null;
+        return p && (Array.isArray(p.periods) ? p.periods.length > 0 : false ||
+          Array.isArray((p as Plan).incomeRules) ? (p as Plan).incomeRules.length > 0 : false);
+      }) ?? rows[0];
+      const plan = row.plan_json as Plan | null;
+      if (!plan) {
         setRecoveryMsg("Cloud backup is empty — no data to restore.");
         return;
       }
-      savePlanFromRemote(data.plan, data.prevPlan ?? null, data.updatedAt ?? undefined, "cloud-recovery");
+      const prevPlan = row.prev_plan_json as Plan | null;
+      const updatedAt = row.updated_at ? new Date(row.updated_at).getTime() : undefined;
+      savePlanFromRemote(plan, prevPlan ?? null, updatedAt, "cloud-recovery");
       setPlan(loadPlan());
       window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
       setRecoveryMsg("✓ Plan restored from cloud backup!");
