@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { loadPlan, savePlan } from "@/lib/storage";
 import { getPeriod, generateEvents } from "@/lib/cashflowEngine";
@@ -447,6 +448,7 @@ export default function TransactionsPage() {
   const [bulkMode, setBulkMode] = useState(false);
   const [swipeMap, setSwipeMap] = useState<Record<string, number>>({});
   const swipeTouchStartRef = useRef<{ id: string; x: number } | null>(null);
+  const addFormRef = useRef<HTMLDivElement>(null);
   const [newCategoryTouched, setNewCategoryTouched] = useState(false);
 
   const [editCategoryTouched, setEditCategoryTouched] = useState(false);
@@ -470,6 +472,28 @@ export default function TransactionsPage() {
     const onFocus = () => setPlan(loadPlan());
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
+  }, []);
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const typeParam = searchParams.get("type");
+    const openParam = searchParams.get("open");
+    if (typeParam === "income" || typeParam === "outflow") {
+      const nextType = typeParam as CashflowType;
+      setNewTransaction((prev) => ({
+        ...prev,
+        type: nextType,
+        category: normalizeCategoryForType(nextType, prev.category),
+        linkedRuleId: undefined,
+        linkedBillId: undefined,
+      }));
+    }
+    if (openParam === "1") {
+      setTimeout(() => {
+        addFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const period = useMemo(() => {
@@ -1140,7 +1164,7 @@ export default function TransactionsPage() {
             )}
 
             {/* Add Transaction Form */}
-            <div className="vn-card p-6">
+            <div className="vn-card p-6" ref={addFormRef}>
               <div className="text-sm font-semibold text-(--vn-text) mb-4">Add transaction</div>
               <form onSubmit={handleAddTransaction} className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
