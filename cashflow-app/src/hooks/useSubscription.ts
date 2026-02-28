@@ -10,14 +10,24 @@ export interface SubscriptionState {
   cancelAtPeriodEnd?: boolean;
 }
 
+/**
+ * REVIEW_MODE — set to true during the review/beta phase to grant all users
+ * full Pro access without a Stripe subscription.
+ * Set to false when billing goes live.
+ */
+const REVIEW_MODE = true;
+
 export function useSubscription(): SubscriptionState {
   const [state, setState] = useState<SubscriptionState>({
-    isPro: false,
-    status: null,
-    isLoading: true,
+    isPro: REVIEW_MODE,
+    status: REVIEW_MODE ? "pro" : null,
+    isLoading: !REVIEW_MODE,
   });
 
   useEffect(() => {
+    // Skip the API call entirely in review mode
+    if (REVIEW_MODE) return;
+
     fetch("/api/subscription")
       .then((r) => (r.ok ? r.json() : Promise.resolve({ isPro: false, status: "free" })))
       .then((d) => {

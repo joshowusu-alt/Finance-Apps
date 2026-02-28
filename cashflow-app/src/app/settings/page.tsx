@@ -27,8 +27,7 @@ import {
   resetNotificationCooldowns,
 } from "@/lib/pushNotifications";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
-import { useSubscription } from "@/hooks/useSubscription";
-import { UpgradeButton } from "@/components/ProGate";
+
 
 // ---------------------------------------------------------------------------
 // Push notification preferences (persisted in localStorage)
@@ -394,9 +393,6 @@ export default function SettingsPage() {
     setNotifPrefsState(updated);
     saveNotifPrefs(updated);
   }
-
-  // ── Subscription state ─────────────────────────────────────────────────
-  const subState = useSubscription();
 
   // ── Notifications state ──────────────────────────────────────────────────
   // Read browser APIs only on the client; initialize to safe defaults for SSR.
@@ -1166,45 +1162,21 @@ export default function SettingsPage() {
               )}
             </div>
 
-            {/* ── Plan & Billing ────────────────────────────────────────── */}
+            {/* ── Plan & Billing — greyed out during review phase ────── */}
             <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
               <div className="text-[11px] font-semibold uppercase tracking-widest text-(--vn-muted)">Plan &amp; Billing</div>
               <div className="flex-1 h-px bg-(--vn-border)" />
             </div>
-            <div className="vn-card p-4">
-              {subState.isLoading ? (
-                <div className="text-sm text-(--vn-muted)">Loading…</div>
-              ) : subState.isPro ? (
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-(--vn-text)">Velanovo Pro</span>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, var(--vn-gold) 15%, transparent)", color: "var(--vn-gold)" }}>ACTIVE</span>
-                    </div>
-                    {subState.currentPeriodEnd && (
-                      <div className="text-xs text-(--vn-muted) mt-0.5">
-                        {subState.cancelAtPeriodEnd ? "Cancels" : "Renews"} {new Date(subState.currentPeriodEnd).toLocaleDateString()}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={async () => {
-                      const res = await fetch("/api/stripe/portal", { method: "POST" });
-                      const d = await res.json();
-                      if (d.url) window.location.href = d.url;
-                    }}
-                    className="vn-btn vn-btn-ghost text-xs"
-                  >
-                    Manage
-                  </button>
-                </div>
-              ) : (
+            <div className="vn-card p-4 opacity-50 pointer-events-none select-none" aria-hidden="true">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <div className="text-sm font-semibold text-(--vn-text) mb-1">Free plan</div>
-                  <div className="text-xs text-(--vn-muted) mb-3">Upgrade to unlock bank sync, household sharing, AI coach, and unlimited periods.</div>
-                  <UpgradeButton />
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-(--vn-text)">Velanovo Pro</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, var(--vn-gold) 15%, transparent)", color: "var(--vn-gold)" }}>REVIEW ACCESS</span>
+                  </div>
+                  <div className="text-xs text-(--vn-muted) mt-0.5">Billing coming soon — all features unlocked during review phase.</div>
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
