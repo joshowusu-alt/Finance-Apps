@@ -714,3 +714,25 @@ export function getSavingsTransferReconciliation(plan: Plan, periodId: number) {
     status: variance < -5 ? "under" : variance > 5 ? "over" : "neutral",
   };
 }
+
+/**
+ * Convert an amount at a given cadence to its monthly equivalent.
+ * Uses statistically accurate multipliers (4.33 weeks/month, not 4).
+ */
+export function toMonthlyAmount(amount: number, cadence: string): number {
+  switch (cadence) {
+    case "weekly":
+      return amount * 4.33;
+    case "biweekly":
+    case "bi-weekly":
+      return amount * 2.17;
+    case "annual":
+    case "annually":
+    case "yearly":
+      return amount / 12;
+    case "quarterly":
+      return amount / 3;
+    default:
+      return amount; // monthly
+  }
+}

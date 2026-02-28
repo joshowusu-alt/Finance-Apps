@@ -15,14 +15,6 @@ export function makeId() {
   return `txn-${Date.now()}`;
 }
 
-export function today() {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
 export type TransactionDraft = {
   date: string;
   label: string;
@@ -144,13 +136,19 @@ export function formatCategoryLabel(category: CashflowCategory) {
   return `${category.slice(0, 1).toUpperCase()}${category.slice(1)}`;
 }
 
+export const CADENCE_LABELS: Record<string, string> = {
+  weekly: "Weekly",
+  biweekly: "Every 2 weeks",
+  "bi-weekly": "Every 2 weeks",
+  monthly: "Monthly",
+  quarterly: "Quarterly",
+  annual: "Annually",
+  annually: "Annually",
+  yearly: "Annually",
+};
+
 export function formatFrequencyLabel(frequency: string) {
-  const labels: Record<string, string> = {
-    monthly: "Monthly",
-    biweekly: "Every 2 weeks",
-    weekly: "Weekly",
-  };
-  return labels[frequency] || frequency;
+  return CADENCE_LABELS[frequency] ?? frequency;
 }
 
 export function slugifyBillLabel(label: string) {

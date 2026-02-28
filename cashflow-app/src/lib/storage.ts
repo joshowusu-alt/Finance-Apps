@@ -1,4 +1,5 @@
 import { PLAN, PLAN_VERSION, Plan, CashflowOverride, CashflowCategory, NetWorthSnapshot } from "@/data/plan";
+import { todayISO } from "@/lib/dateUtils";
 
 /**
  * Safely parse plan JSON from localStorage.
@@ -273,14 +274,6 @@ function scopedKey(baseKey: string, scope = getStorageScope()) {
 function dispatchBrowserEvent(name: string) {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new Event(name));
-}
-
-function todayISO() {
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
 }
 
 function deserializePlan(raw: string | null): Plan {

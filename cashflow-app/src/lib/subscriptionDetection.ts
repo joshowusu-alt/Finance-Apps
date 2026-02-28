@@ -2,6 +2,7 @@ import type { Recurrence, Transaction } from "@/data/plan";
 import { detectRecurringBills, type DetectedBill } from "@/lib/billDetection";
 import { suggestCategory } from "@/lib/categorization";
 import { dayDiff } from "@/lib/dateUtils";
+import { toMonthlyAmount } from "@/lib/cashflowEngine";
 import { normalizeMerchant, containsKeyword } from "@/lib/textUtils";
 
 export type SubscriptionRecommendation = "keep" | "review" | "cancel";
@@ -93,12 +94,6 @@ const NON_SUBSCRIPTION_KEYWORDS = [
 ];
 
 
-function frequencyToMonthly(amount: number, frequency: Recurrence) {
-  if (frequency === "weekly") return amount * 4.33;
-  if (frequency === "biweekly") return amount * 2.17;
-  return amount;
-}
-
 function frequencyToExpectedGap(frequency: Recurrence) {
   if (frequency === "weekly") return 7;
   if (frequency === "biweekly") return 14;
@@ -189,7 +184,7 @@ export function detectSubscriptions(
       return isSubscriptionCandidate(bill, extraText);
     })
     .map((bill) => {
-      const monthlyCost = frequencyToMonthly(bill.averageAmount, bill.frequency);
+      const monthlyCost = toMonthlyAmount(bill.averageAmount, bill.frequency);
       const annualCost = monthlyCost * 12;
       const lastChargeDate = getLastChargeDate(bill.occurrences);
       const baseId = normalizeMerchant(bill.merchantName).replace(/\s+/g, "-") || bill.id;

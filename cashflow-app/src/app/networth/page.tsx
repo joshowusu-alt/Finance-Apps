@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadPlan, savePlan } from "@/lib/storage";
+import { todayISO } from "@/lib/dateUtils";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
 import { toast } from "@/components/Toast";
@@ -30,10 +31,6 @@ const TYPE_META: Record<NetWorthAccountType, { label: string; icon: string; colo
 };
 
 
-
-function today() {
-  return new Date().toISOString().split("T")[0];
-}
 
 // ─────────────────────────────────────────────────────────────────
 // Account row component
@@ -534,7 +531,7 @@ export default function NetWorthPage() {
   function handleSaveSnapshot() {
     const snap: NetWorthSnapshot = {
       id: crypto.randomUUID(),
-      date: today(),
+      date: todayISO(),
       totalAssets,
       totalLiabilities,
       netWorth,
@@ -542,7 +539,7 @@ export default function NetWorthPage() {
     };
     const next = [...snapshots, snap].sort((a, b) => a.date.localeCompare(b.date));
     persist(accounts, next);
-    setSnapshotMsg(`Snapshot saved for ${today()}`);
+    setSnapshotMsg(`Snapshot saved for ${todayISO()}`);
     setTimeout(() => setSnapshotMsg(null), 3000);
     toast.success("Snapshot saved");
   }

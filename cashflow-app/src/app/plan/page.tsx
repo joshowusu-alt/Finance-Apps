@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { getUpcomingEvents } from "@/lib/cashflowEngine";
+import { getUpcomingEvents, toMonthlyAmount } from "@/lib/cashflowEngine";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
 import { useDerived } from "@/lib/useDerived";
@@ -18,14 +18,6 @@ function cadenceLabel(cadence: string) {
   if (cadence === "quarterly") return "Quarterly";
   if (cadence === "annual") return "Annual";
   return "Monthly";
-}
-
-function monthlyEquivalent(amount: number, cadence: string) {
-  if (cadence === "weekly") return amount * 4;
-  if (cadence === "biweekly") return amount * 2;
-  if (cadence === "quarterly") return amount / 3;
-  if (cadence === "annual") return amount / 12;
-  return amount;
 }
 
 export default function PlanPage() {
@@ -151,7 +143,7 @@ export default function PlanPage() {
     const groups: Record<string, number> = { allowance: 0, savings: 0, giving: 0, buffer: 0, other: 0 };
     plan.outflowRules.filter((r) => r.enabled).forEach((r) => {
       const key = r.category in groups ? r.category : "other";
-      groups[key] += monthlyEquivalent(r.amount, r.cadence);
+      groups[key] += toMonthlyAmount(r.amount, r.cadence);
     });
     return groups;
   }, [plan.outflowRules]);

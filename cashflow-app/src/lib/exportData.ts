@@ -1,4 +1,5 @@
 import type { Transaction } from "@/data/plan";
+import { todayISO } from "@/lib/dateUtils";
 import { getReportBranding } from "@/lib/branding";
 import { formatMoney } from "@/lib/currency";
 
@@ -20,7 +21,7 @@ export function exportToCSV(transactions: Transaction[], periodLabel: string) {
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
   link.setAttribute("href", url);
-  link.setAttribute("download", `${filenamePrefix}-transactions-${periodLabel}-${new Date().toISOString().split("T")[0]}.csv`);
+  link.setAttribute("download", `${filenamePrefix}-transactions-${periodLabel}-${todayISO()}.csv`);
   link.style.visibility = "hidden";
   document.body.appendChild(link);
   link.click();
@@ -55,7 +56,7 @@ export async function exportToExcel(transactions: Transaction[], periodLabel: st
   });
 
   const { filenamePrefix } = getReportBranding();
-  const filename = `${filenamePrefix}-transactions-${periodLabel}-${new Date().toISOString().split("T")[0]}.xlsx`;
+  const filename = `${filenamePrefix}-transactions-${periodLabel}-${todayISO()}.xlsx`;
 
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], {
@@ -157,5 +158,5 @@ export async function exportToPDF(
     doc.setTextColor(0);
   }
 
-  doc.save(`${filenamePrefix}-transactions-${periodLabel}-${new Date().toISOString().split("T")[0]}.pdf`);
+  doc.save(`${filenamePrefix}-transactions-${periodLabel}-${todayISO()}.pdf`);
 }

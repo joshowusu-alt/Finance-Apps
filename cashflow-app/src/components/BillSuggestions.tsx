@@ -8,6 +8,7 @@ import type { DetectedBill } from "@/lib/billDetection";
 import { getBillConfidenceLabel, toBillTemplate } from "@/lib/billDetection";
 import { formatMoney } from "@/lib/currency";
 import type { BillTemplate } from "@/data/plan";
+import { CADENCE_LABELS } from "@/lib/transactionParsers";
 
 type Props = {
     detectedBills: DetectedBill[];
@@ -15,15 +16,6 @@ type Props = {
     onDismiss: (billId: string) => void;
     className?: string;
 };
-
-function getFrequencyLabel(frequency: string): string {
-    const labels: Record<string, string> = {
-        monthly: "Monthly",
-        biweekly: "Every 2 weeks",
-        weekly: "Weekly",
-    };
-    return labels[frequency] || frequency;
-}
 
 function SwipeableBillCard({ bill, onAccept, onDismiss, isDark }: {
     bill: DetectedBill;
@@ -78,7 +70,7 @@ function SwipeableBillCard({ bill, onAccept, onDismiss, isDark }: {
                                 <ConfidenceBadge confidence={bill.confidence} />
                             </div>
                             <div className="mt-0.5 text-sm" style={{ color: isDark ? "#a1a1aa" : "#71717a" }}>
-                                {formatMoney(bill.averageAmount)} • {getFrequencyLabel(bill.frequency)} • Day {bill.suggestedDueDay}
+                                {formatMoney(bill.averageAmount)} • {CADENCE_LABELS[bill.frequency] ?? bill.frequency} • Day {bill.suggestedDueDay}
                             </div>
                             <div className="mt-1 text-xs" style={{ color: isDark ? "#52525b" : "#a1a1aa" }}>
                                 {bill.occurrences.length} occurrences • <span className="text-[10px] opacity-70">Swipe to confirm or dismiss</span>

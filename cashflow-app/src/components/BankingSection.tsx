@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { todayISO } from "@/lib/dateUtils";
 import PlaidLink from "./PlaidLink";
 import { showToast } from "./Toast";
 
@@ -99,7 +100,7 @@ export default function BankingSection({ onSyncComplete }: BankingSectionProps) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           startDate: getStartDate(),
-          endDate: getTodayDate(),
+          endDate: todayISO(),
         }),
       });
 
@@ -241,6 +242,3 @@ function getStartDate() {
   return date.toISOString().split("T")[0];
 }
 
-function getTodayDate() {
-  return new Date().toISOString().split("T")[0];
-}

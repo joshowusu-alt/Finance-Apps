@@ -2,6 +2,7 @@ import type { Plan, BillTemplate, IncomeRule, PeriodCadence } from "@/data/plan"
 import { PLAN, PLAN_VERSION, generatePeriods } from "@/data/plan";
 import { DEFAULT_BILLS } from "@/data/onboardingData";
 import { getStorageScope } from "@/lib/storage";
+import { todayISO } from "@/lib/dateUtils";
 import { touchPreferencesUpdatedAt } from "@/lib/preferencesSync";
 
 const ONBOARDING_KEY = "cashflow_onboarding_v1";
@@ -173,7 +174,7 @@ export type WizardPlanParams = {
 
 export function buildPlanFromWizard(params: WizardPlanParams): Plan {
   const { income, hasBills, periodStartDay, periodCadence, mode } = params;
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayISO();
   const incomeAmount = Number(income) || 0;
 
   const incomeRule: IncomeRule = {

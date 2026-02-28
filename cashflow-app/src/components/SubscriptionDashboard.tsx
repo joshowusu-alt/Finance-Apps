@@ -4,21 +4,13 @@ import { useMemo } from "react";
 import { detectSubscriptions, type DetectedSubscription } from "@/lib/subscriptionDetection";
 import { formatMoney } from "@/lib/currency";
 import type { Transaction } from "@/data/plan";
+import { CADENCE_LABELS } from "@/lib/transactionParsers";
 
 type Props = {
   transactions: Transaction[];
   asOfDate?: string;
   className?: string;
 };
-
-function formatFrequency(frequency: string) {
-  const labels: Record<string, string> = {
-    monthly: "Monthly",
-    biweekly: "Every 2 weeks",
-    weekly: "Weekly",
-  };
-  return labels[frequency] || frequency;
-}
 
 function getRecommendationTone(recommendation: DetectedSubscription["recommendation"]) {
   if (recommendation === "keep") {
@@ -103,7 +95,7 @@ export default function SubscriptionDashboard({ transactions, asOfDate, classNam
               <div>
                 <div className="text-sm font-semibold text-slate-900 dark:text-white">{sub.merchantName}</div>
                 <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  {formatFrequency(sub.frequency)} | Last charge {sub.lastChargeDate || "N/A"}
+                  {CADENCE_LABELS[sub.frequency] ?? sub.frequency} | Last charge {sub.lastChargeDate || "N/A"}
                 </div>
               </div>
               <div className="text-sm text-slate-700 dark:text-slate-200 md:text-right">
