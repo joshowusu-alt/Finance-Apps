@@ -2,7 +2,7 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Sector } from "recharts";
 import { motion } from "framer-motion";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useId } from "react";
 import { chartColors, getCategoryColor, getTextColor, getGridColor } from "@/lib/chartConfig";
 import { formatMoney } from "@/lib/currency";
 import { useDarkMode } from "@/hooks/useDarkMode";
@@ -69,6 +69,7 @@ export function DonutChart({
 }: Props) {
   const isDark = useDarkMode();
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
+  const uid = useId();
 
   const onPieEnter = useCallback((_: unknown, index: number) => {
     setActiveIndex(index);
@@ -135,7 +136,12 @@ export function DonutChart({
   };
 
   return (
+    <figure role="img" aria-labelledby={`donut-chart-${uid}`}>
+      <figcaption id={`donut-chart-${uid}`} className="sr-only">
+        Category breakdown donut chart showing spending distribution
+      </figcaption>
     <motion.div
+      role="presentation"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
@@ -223,5 +229,6 @@ export function DonutChart({
         </div>
       )}
     </motion.div>
+    </figure>
   );
 }

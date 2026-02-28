@@ -20,9 +20,7 @@ function formatNice(iso: string) {
   return `${weekday} ${day} ${month}`;
 }
 
-function makeId(prefix: string) {
-  return `${prefix}-${Date.now()}`;
-}
+
 
 type EditableEvent = {
   id: string;
@@ -161,7 +159,7 @@ export default function TimelinePage() {
       overrides[idx] = { ...overrides[idx], date: eventDraft.date, amount: amount };
     } else {
       overrides.push({
-        id: makeId("event"),
+        id: crypto.randomUUID(),
         eventId: target.id,
         date: eventDraft.date,
         amount: amount,

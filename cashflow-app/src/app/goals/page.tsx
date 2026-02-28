@@ -11,9 +11,7 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { toast } from "@/components/Toast";
 import { FormError } from "@/components/FormError";
 
-function generateId() {
-    return Math.random().toString(36).substring(2, 15);
-}
+
 
 // ─── Goal Sparkline ───────────────────────────────────────────────────────────
 
@@ -695,7 +693,7 @@ function GoalsPageInner() {
     const handleCreateGoal = (goalData: Omit<SavingsGoal, "id" | "createdAt">) => {
         const newGoal: SavingsGoal = {
             ...goalData,
-            id: generateId(),
+            id: crypto.randomUUID(),
             createdAt: new Date().toISOString(),
         };
         const updatedPlan = {
@@ -725,7 +723,7 @@ function GoalsPageInner() {
             const today = new Date();
             const seedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
             const newRule: OutflowRule = {
-                id: generateId(),
+                id: crypto.randomUUID(),
                 label,
                 amount: monthlyAmount,
                 cadence: "monthly",

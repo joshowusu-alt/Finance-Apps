@@ -57,7 +57,11 @@ export function CashflowProjectionChart({
   }, [data, lowBalanceThreshold]);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.45, delay: 0.1 }}>
+    <figure role="img" aria-labelledby={`cashflow-chart-${uid}`}>
+      <figcaption id={`cashflow-chart-${uid}`} className="sr-only">
+        Cashflow projection chart showing budget balance and projected actuals over time
+      </figcaption>
+    <motion.div role="presentation" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.45, delay: 0.1 }}>
     <ResponsiveContainer width="100%" height={height}>
       <AreaChart data={data} margin={chartConfig.margin}>
         <defs>
@@ -149,5 +153,6 @@ export function CashflowProjectionChart({
       </AreaChart>
     </ResponsiveContainer>
     </motion.div>
+    </figure>
   );
 }

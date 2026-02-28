@@ -30,6 +30,17 @@ function todayISO() {
 
 export default function SettingsPage() {
   const [plan, setPlan] = useState(() => loadPlan());
+
+  useEffect(() => {
+    const handler = () => setPlan(loadPlan());
+    window.addEventListener(PLAN_UPDATED_EVENT, handler);
+    window.addEventListener('focus', handler);
+    return () => {
+      window.removeEventListener(PLAN_UPDATED_EVENT, handler);
+      window.removeEventListener('focus', handler);
+    };
+  }, []);
+
   const [showPeriodModal, setShowPeriodModal] = useState(false);
   const [editingPeriod, setEditingPeriod] = useState<Period | null>(null);
   const [periodFormData, setPeriodFormData] = useState<Partial<Period>>({

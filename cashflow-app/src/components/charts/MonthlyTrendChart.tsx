@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import {
     AreaChart,
     Area,
@@ -45,6 +46,7 @@ export function MonthlyTrendChart({
     showGrid = true,
 }: Props) {
     const isDark = useDarkMode();
+    const uid = useId();
 
     const textColor = getTextColor(isDark);
     const mutedColor = getMutedColor(isDark);
@@ -56,7 +58,12 @@ export function MonthlyTrendChart({
     const savingsGradientId = "savingsGradient";
 
     return (
+        <figure role="img" aria-labelledby={`monthly-trend-${uid}`}>
+          <figcaption id={`monthly-trend-${uid}`} className="sr-only">
+            Monthly trend chart showing income and spending over time
+          </figcaption>
         <motion.div
+            role="presentation"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
@@ -193,5 +200,6 @@ export function MonthlyTrendChart({
                 </AreaChart>
             </ResponsiveContainer>
         </motion.div>
+        </figure>
     );
 }

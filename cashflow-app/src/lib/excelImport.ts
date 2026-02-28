@@ -2,7 +2,7 @@
  * Excel import — parse an uploaded .xlsx file into a Plan.
  */
 
-import type { WorkBook as XLSXWorkBook } from "xlsx";
+import ExcelJS from "exceljs";
 import type {
   IncomeRule,
   OutflowRule,
@@ -37,25 +37,50 @@ export type ImportResult = {
 // Private helpers
 // ---------------------------------------------------------------------------
 
-function getSheet(workbook: XLSXWorkBook, names: string[]) {
-  const map = new Map<string, string>();
-  workbook.SheetNames.forEach((name) => map.set(name.trim().toLowerCase(), name));
-  for (const alias of names) {
-    const key = alias.trim().toLowerCase();
-    if (map.has(key)) return workbook.Sheets[map.get(key)!];
+/** Resolve a CellValue to a plain JS value suitable for our parsers. */
+function resolveCellValue(v: ExcelJS.CellValue): unknown {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "object") {
+    if ("richText" in v) return v.richText.map((r) => r.text).join("");
+    if ("result" in v) return v.result ?? "";
+    if ("text" in v) return v.text;
+    if (v instanceof Date) return v;
+  }
+  return v;
+}
+
+/** Read all data rows from a worksheet, keyed by the header row. */
+function readWorksheet(worksheet: ExcelJS.Worksheet): Record<string, unknown>[] {
+  const rows: Record<string, unknown>[] = [];
+  let headers: string[] = [];
+  worksheet.eachRow((row, rowNumber) => {
+    const rawValues = (row.values as ExcelJS.CellValue[]).slice(1); // drop index-0 (always undefined)
+    const values = rawValues.map(resolveCellValue);
+    if (rowNumber === 1) {
+      headers = values.map((v) => String(v ?? ""));
+    } else {
+      const obj: Record<string, unknown> = {};
+      headers.forEach((h, i) => {
+        obj[h] = values[i] ?? "";
+      });
+      rows.push(obj);
+    }
+  });
+  return rows;
+}
+
+function findWorksheet(workbook: ExcelJS.Workbook, names: string[]): ExcelJS.Worksheet | null {
+  const lowerNames = names.map((n) => n.trim().toLowerCase());
+  for (const ws of workbook.worksheets) {
+    if (lowerNames.includes(ws.name.trim().toLowerCase())) return ws;
   }
   return null;
 }
 
-async function readSheet(workbook: XLSXWorkBook, names: string[]) {
-  const XLSX = await import("xlsx");
-  const sheet = getSheet(workbook, names);
-  if (!sheet) return null;
-  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
-    defval: "",
-    raw: true,
-  });
-  return rows.map((row) => {
+function readSheet(workbook: ExcelJS.Workbook, names: string[]): Record<string, unknown>[] | null {
+  const ws = findWorksheet(workbook, names);
+  if (!ws) return null;
+  return readWorksheet(ws).map((row) => {
     const normalized: Record<string, unknown> = {};
     Object.entries(row).forEach(([key, value]) => {
       normalized[normalizeKey(key)] = value;
@@ -83,19 +108,20 @@ function ensureSelectedPeriod(plan: Plan) {
 
 export async function importPlanFromFile(file: File, currentPlan: Plan): Promise<ImportResult> {
   const warnings: string[] = [];
-  const buffer = await file.arrayBuffer();
-  const XLSX = await import("xlsx");
-  const workbook = XLSX.read(buffer, { type: "array", cellDates: true });
+  const arrayBuffer = await file.arrayBuffer();
+  const workbook = new ExcelJS.Workbook();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await workbook.xlsx.load(Buffer.from(new Uint8Array(arrayBuffer)) as any);
 
-  const setupRows = await readSheet(workbook, ["setup", "plan", "meta"]);
-  const periodRows = await readSheet(workbook, ["periods"]);
-  const incomeRows = await readSheet(workbook, ["incomerules", "income rules", "income_rules", "income"]);
-  const outflowRows = await readSheet(workbook, ["outflowrules", "outflow rules", "outflow_rules", "outflows"]);
-  const billRows = await readSheet(workbook, ["bills", "bill"]);
-  const periodOverrideRows = await readSheet(workbook, ["periodoverrides", "period overrides", "period_overrides"]);
-  const overrideRows = await readSheet(workbook, ["overrides", "cashflowoverrides", "manualoverrides"]);
-  const eventOverrideRows = await readSheet(workbook, ["eventoverrides", "event overrides", "event_overrides"]);
-  const transactionRows = await readSheet(workbook, ["transactions", "txns", "txn"]);
+  const setupRows = readSheet(workbook, ["setup", "plan", "meta"]);
+  const periodRows = readSheet(workbook, ["periods"]);
+  const incomeRows = readSheet(workbook, ["incomerules", "income rules", "income_rules", "income"]);
+  const outflowRows = readSheet(workbook, ["outflowrules", "outflow rules", "outflow_rules", "outflows"]);
+  const billRows = readSheet(workbook, ["bills", "bill"]);
+  const periodOverrideRows = readSheet(workbook, ["periodoverrides", "period overrides", "period_overrides"]);
+  const overrideRows = readSheet(workbook, ["overrides", "cashflowoverrides", "manualoverrides"]);
+  const eventOverrideRows = readSheet(workbook, ["eventoverrides", "event overrides", "event_overrides"]);
+  const transactionRows = readSheet(workbook, ["transactions", "txns", "txn"]);
 
   const next: Plan = {
     ...currentPlan,
@@ -235,13 +261,10 @@ export async function importPlanFromFile(file: File, currentPlan: Plan): Promise
       });
     });
     next.transactions = parsed;
-  } else if (workbook.SheetNames.length === 1) {
-    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(firstSheet, {
-      defval: "",
-      raw: true,
-    });
-    const normalized = rows.map((row) => {
+  } else if (workbook.worksheets.length === 1) {
+    const firstWorksheet = workbook.worksheets[0];
+    const rawRows = readWorksheet(firstWorksheet);
+    const normalized = rawRows.map((row) => {
       const out: Record<string, unknown> = {};
       Object.entries(row).forEach(([key, value]) => {
         out[normalizeKey(key)] = value;

@@ -29,9 +29,7 @@ const TYPE_META: Record<NetWorthAccountType, { label: string; icon: string; colo
   "other-liability":{ label: "Other Debts",      icon: "⚠️",  color: "#B85C5C", group: "liability" },
 };
 
-function makeId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-}
+
 
 function today() {
   return new Date().toISOString().split("T")[0];
@@ -512,7 +510,7 @@ export default function NetWorthPage() {
     if (data.id) {
       next = accounts.map(a => a.id === data.id ? { ...a, ...data, id: a.id } : a);
     } else {
-      next = [...accounts, { ...data, id: makeId() } as NetWorthAccount];
+      next = [...accounts, { ...data, id: crypto.randomUUID() } as NetWorthAccount];
     }
     next = next.map((a, i) => ({ ...a, order: a.order ?? i }));
     persist(next);
@@ -535,7 +533,7 @@ export default function NetWorthPage() {
   // ── Snapshot ──────────────────────────────────────────────────
   function handleSaveSnapshot() {
     const snap: NetWorthSnapshot = {
-      id: makeId(),
+      id: crypto.randomUUID(),
       date: today(),
       totalAssets,
       totalLiabilities,

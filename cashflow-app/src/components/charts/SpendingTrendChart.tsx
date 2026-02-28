@@ -36,7 +36,11 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
     : chartConfig.margin;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+    <figure role="img" aria-labelledby={`spending-trend-${uid}`}>
+      <figcaption id={`spending-trend-${uid}`} className="sr-only">
+        Spending trend chart showing spending over time
+      </figcaption>
+    <motion.div role="presentation" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
     <ResponsiveContainer width="100%" height={isMobile ? Math.min(height - 60, 220) : height}>
       <AreaChart data={data} margin={margins}>
         <defs>
@@ -122,6 +126,7 @@ export function SpendingTrendChart({ data, showIncome = false, height = 300 }: P
       </AreaChart>
     </ResponsiveContainer>
     </motion.div>
+    </figure>
   );
 }
 

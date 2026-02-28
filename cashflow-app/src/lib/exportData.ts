@@ -29,34 +29,47 @@ export function exportToCSV(transactions: Transaction[], periodLabel: string) {
 
 export async function exportToExcel(transactions: Transaction[], periodLabel: string) {
   // Dynamic import to reduce bundle size
-  const XLSX = await import("xlsx");
+  const { default: ExcelJS } = await import("exceljs");
 
-  const data = transactions.map((txn) => ({
-    Date: txn.date,
-    Label: txn.label,
-    Amount: txn.amount,
-    Type: txn.type,
-    Category: txn.category,
-    Notes: txn.notes || "",
-  }));
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Transactions");
 
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-
-  const { filenamePrefix } = getReportBranding();
-
-  // Set column widths
-  worksheet["!cols"] = [
-    { wch: 12 }, // Date
-    { wch: 30 }, // Label
-    { wch: 12 }, // Amount
-    { wch: 10 }, // Type
-    { wch: 12 }, // Category
-    { wch: 40 }, // Notes
+  sheet.columns = [
+    { header: "Date", key: "Date", width: 12 },
+    { header: "Label", key: "Label", width: 30 },
+    { header: "Amount", key: "Amount", width: 12 },
+    { header: "Type", key: "Type", width: 10 },
+    { header: "Category", key: "Category", width: 12 },
+    { header: "Notes", key: "Notes", width: 40 },
   ];
 
-  XLSX.writeFile(workbook, `${filenamePrefix}-transactions-${periodLabel}-${new Date().toISOString().split("T")[0]}.xlsx`);
+  transactions.forEach((txn) => {
+    sheet.addRow({
+      Date: txn.date,
+      Label: txn.label,
+      Amount: txn.amount,
+      Type: txn.type,
+      Category: txn.category,
+      Notes: txn.notes || "",
+    });
+  });
+
+  const { filenamePrefix } = getReportBranding();
+  const filename = `${filenamePrefix}-transactions-${periodLabel}-${new Date().toISOString().split("T")[0]}.xlsx`;
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 export async function exportToPDF(

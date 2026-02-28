@@ -62,6 +62,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${playfair.variable} ${jakarta.variable} min-h-screen font-sans transition-colors duration-200 overflow-x-hidden`} style={{ background: "var(--vn-bg)", color: "var(--vn-text)" }}>
+        <a href="#main-content" className="skip-link">Skip to main content</a>
         <PostHogProvider>
         <AuthProvider>
           <ConfirmProvider>
@@ -70,9 +71,6 @@ export default function RootLayout({
             <OfflineOutboxBadge />
             <ThemeInitializer />
             <BrandInitializer />
-            <a href="#main-content" className="skip-link">
-              Skip to content
-            </a>
             <AppWatermark />
             <ServiceWorkerRegistrar />
             <noscript>
