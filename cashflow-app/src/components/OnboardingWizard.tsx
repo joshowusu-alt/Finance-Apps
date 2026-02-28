@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import Link from "next/link";
 import { StepIndicator } from "./onboarding/StepIndicator";
 import { WelcomeStep } from "./onboarding/steps/WelcomeStep";
 import { GetStartedStep } from "./onboarding/steps/GetStartedStep";
@@ -10,6 +11,7 @@ import { PayCycleStep } from "./onboarding/steps/PayCycleStep";
 import { IncomeInputStep } from "./onboarding/steps/IncomeInputStep";
 import { HasBillsStep } from "./onboarding/steps/HasBillsStep";
 import { ModeStep } from "./onboarding/steps/ModeStep";
+import PlaidLink from "./PlaidLink";
 import { completeWizard, buildPlanFromWizard } from "@/lib/onboarding";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { createSamplePlan } from "@/data/plan";
@@ -26,7 +28,7 @@ type QuickSetupProps = {
   onComplete: (plan: Plan) => void;
 };
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 const SPRING = { type: "spring" as const, stiffness: 300, damping: 25 };
 
@@ -50,7 +52,8 @@ const STEP_CONFIG: { canAdvance: (s: LocalStepData) => boolean }[] = [
   { canAdvance: (s) => Number(s.income) > 0 },           // 3: Income
   { canAdvance: (s) => s.hasBills !== null },             // 4: Bills
   { canAdvance: (s) => s.mode !== null },                 // 5: Mode
-  { canAdvance: () => true },                             // 6: All Set
+  { canAdvance: () => true },                             // 6: Bank Connect (optional)
+  { canAdvance: () => true },                             // 7: All Set
 ];
 
 export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
@@ -64,6 +67,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
   const incomeRef = useRef<HTMLInputElement | null>(null);
   const [hasBills, setHasBills] = useState<boolean | null>(null);
   const [mode, setMode] = useState<"forecast" | "track" | null>(null);
+  const [wizardUserId, setWizardUserId] = useState<string | null>(null);
 
   const currencySymbol = CURRENCIES[COUNTRIES[country]?.currency ?? "USD"]?.symbol ?? "$";
 
@@ -77,6 +81,14 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
   useEffect(() => {
     if (step === 3) setTimeout(() => incomeRef.current?.focus(), 400);
   }, [step]);
+
+  // Fetch userId for PlaidLink on the bank-connect step
+  useEffect(() => {
+    fetch("/api/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.userId) setWizardUserId(d.userId); })
+      .catch(() => {});
+  }, []);
 
   // Restore persisted state on mount
   useEffect(() => {
@@ -132,7 +144,7 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
     }
   }
 
-  const nextLabel = step === 0 ? "Get Started" : "Next";
+  const nextLabel = step === 0 ? "Get Started" : step === 6 ? "Skip" : "Next";
 
   return (
     <AnimatePresence>
@@ -213,8 +225,42 @@ export default function OnboardingWizard({ onComplete }: QuickSetupProps) {
 
                 {step === 5 && <ModeStep mode={mode} onSelect={setMode} />}
 
-                {/* Step 6: All Set */}
-                {step === 6 && <GetStartedStep onComplete={handleGetStarted} />}
+                {/* Step 6: Bank Connect (optional) */}
+                {step === 6 && (
+                  <div>
+                    <div className="text-xl font-semibold text-(--vn-text) mb-1">
+                      Connect your bank
+                      <span className="ml-2 text-sm font-normal text-(--vn-muted)">(optional)</span>
+                    </div>
+                    <p className="text-sm text-(--vn-muted) mt-2 mb-6">
+                      Link your account to auto-import transactions. You can always do this later in Settings.
+                    </p>
+                    {wizardUserId ? (
+                      <PlaidLink
+                        userId={wizardUserId}
+                        onSuccess={goNext}
+                      />
+                    ) : (
+                      <Link
+                        href="/bills#banking"
+                        className="vn-btn vn-btn-primary text-sm"
+                      >
+                        Connect bank account
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      onClick={goNext}
+                      className="mt-4 block w-full text-center text-sm py-2 rounded-lg transition-colors"
+                      style={{ color: "var(--vn-muted)" }}
+                    >
+                      Skip for now &rarr;
+                    </button>
+                  </div>
+                )}
+
+                {/* Step 7: All Set */}
+                {step === 7 && <GetStartedStep onComplete={handleGetStarted} />}
 
               </motion.div>
             </AnimatePresence>

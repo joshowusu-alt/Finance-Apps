@@ -6,6 +6,8 @@ import { createRateLimiter } from "@/lib/rateLimit";
 import { resolvePlanHashFromJoinToken } from "@/lib/sharingStore";
 import { getSQL } from "@/lib/db";
 import { parsePlan } from "@/lib/tokenPlanBase";
+import { apiError } from "@/lib/apiHelpers";
+import { validatePlan } from "@/lib/planSchema";
 
 export const runtime = "nodejs";
 
@@ -63,23 +65,40 @@ export async function GET(req: Request) {
 type PlanPayload = Plan | { plan?: Plan; prevPlan?: Plan | null };
 
 export async function PUT(req: Request) {
+  // 1. Size check — read raw text first
+  const rawBody = await req.text();
+  if (rawBody.length > 1_048_576) {
+    return apiError("Plan payload too large (max 1 MB)", 413);
+  }
+  // 2. Parse JSON
+  let parsedBody: unknown;
+  try {
+    parsedBody = JSON.parse(rawBody);
+  } catch {
+    return apiError("Invalid JSON", 400);
+  }
+
   // Try join token first (household partner)
   const joinData = await getPlanByJoinToken(req);
   if (joinData) {
-    let plan: Plan | null = null;
+    let planRaw: unknown = null;
     let prevPlan: Plan | null = null;
-    try {
-      const body = (await req.json()) as PlanPayload;
-      if (body && typeof body === "object") {
-        if ("plan" in body) {
-          plan = body.plan ?? null;
-          prevPlan = body.prevPlan ?? null;
-        } else {
-          plan = body as Plan;
-        }
+    const body = parsedBody as PlanPayload;
+    if (body && typeof body === "object") {
+      if ("plan" in body) {
+        planRaw = body.plan ?? null;
+        prevPlan = body.prevPlan ?? null;
+      } else {
+        planRaw = body;
       }
-    } catch { plan = null; }
-    if (!plan) return NextResponse.json({ error: "Invalid plan payload." }, { status: 400 });
+    }
+    if (!planRaw) return NextResponse.json({ error: "Invalid plan payload." }, { status: 400 });
+    // 3. Validate schema
+    const validation = validatePlan(planRaw);
+    if (!validation.ok) {
+      return apiError(`Invalid plan: ${validation.error}`, 400);
+    }
+    const plan = validation.plan;
     const updatedAt = await saveMainPlanByHash(joinData.planHash, plan, prevPlan);
     return NextResponse.json({ ok: true, updatedAt });
   }
@@ -93,29 +112,31 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
-  let plan: Plan | null = null;
+  let planRaw: unknown = null;
   let prevPlan: Plan | null = null;
-  try {
-    const body = (await req.json()) as PlanPayload;
-    if (body && typeof body === "object") {
-      if ("plan" in body) {
-        if (body.plan && typeof body.plan === "object") {
-          plan = body.plan;
-        }
-        if (body.prevPlan && typeof body.prevPlan === "object") {
-          prevPlan = body.prevPlan;
-        }
-      } else {
-        plan = body as Plan;
+  const body = parsedBody as PlanPayload;
+  if (body && typeof body === "object") {
+    if ("plan" in body) {
+      if (body.plan && typeof body.plan === "object") {
+        planRaw = body.plan;
       }
+      if (body.prevPlan && typeof body.prevPlan === "object") {
+        prevPlan = body.prevPlan;
+      }
+    } else {
+      planRaw = body;
     }
-  } catch {
-    plan = null;
   }
 
-  if (!plan) {
+  if (!planRaw) {
     return NextResponse.json({ error: "Invalid plan payload." }, { status: 400 });
   }
+  // 3. Validate schema
+  const validation = validatePlan(planRaw);
+  if (!validation.ok) {
+    return apiError(`Invalid plan: ${validation.error}`, 400);
+  }
+  const plan = validation.plan;
 
   const updatedAt = await saveMainPlan(token, plan, prevPlan);
   return NextResponse.json({ ok: true, updatedAt });

@@ -115,3 +115,27 @@ self.addEventListener("message", (event) => {
     self.skipWaiting();
   }
 });
+
+// Handle server-sent Web Push payloads
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  let data;
+  try {
+    data = event.data.json();
+  } catch {
+    data = { title: "Velanovo", body: event.data.text() };
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? "Velanovo", {
+      body: data.body,
+      icon: data.icon ?? "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      // Use `href` so the existing notificationclick handler can navigate
+      data: { href: data.url ?? "/" },
+      tag: "velanovo-push",
+    })
+  );
+});
+

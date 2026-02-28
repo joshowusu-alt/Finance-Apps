@@ -39,11 +39,167 @@ import { usePeriodClose } from "@/hooks/usePeriodClose";
 import { PeriodCloseModal } from "@/components/dashboard/PeriodCloseModal";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { SubscriptionNudge } from "@/components/dashboard/SubscriptionNudge";
+import { detectSubscriptions } from "@/lib/subscriptionDetection";
+import PlaidLink from "@/components/PlaidLink";
 
 
+
+// ---------------------------------------------------------------------------
+// Subscription Summary Card — dismissible, reappears on a new period
+// ---------------------------------------------------------------------------
+function SubscriptionSummaryCard({ plan, onDismiss }: { plan: Plan; onDismiss: () => void }) {
+  const subscriptions = useMemo(
+    () => detectSubscriptions(plan.transactions, { asOfDate: plan.setup.asOfDate }),
+    [plan.transactions, plan.setup.asOfDate]
+  );
+  const count = subscriptions.length;
+  const totalMonthly = subscriptions.reduce((sum, s) => sum + s.monthlyCost, 0);
+  if (count === 0) return null;
+  return (
+    <div
+      className="vn-card p-4 flex items-center justify-between gap-4 transition-colors hover:border-(--vn-gold)"
+      style={{ border: "1px solid var(--vn-border)" }}
+    >
+      <div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-semibold text-(--vn-text)">💳 Subscriptions detected</span>
+          <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+            {formatMoney(totalMonthly)}/mo
+          </span>
+        </div>
+        <div className="text-xs mt-0.5" style={{ color: "var(--vn-muted)" }}>
+          {count} subscription{count !== 1 ? "s" : ""} detected — review to save money
+        </div>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <Link href="/insights?tab=subscriptions" className="vn-btn vn-btn-ghost text-xs whitespace-nowrap">
+          Review subscriptions →
+        </Link>
+        <button
+          onClick={onDismiss}
+          aria-label="Dismiss subscription card"
+          className="p-1 rounded transition-colors hover:bg-(--vn-surface-raised)"
+          style={{ color: "var(--vn-muted)" }}
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function formatPeriodLabel(label: string) {
   return label.replace(/^P(\d+)/, "Period $1");
+}
+
+// ---------------------------------------------------------------------------
+// Bank-connect banner — shown when no Plaid accounts are connected yet
+// ---------------------------------------------------------------------------
+const PLAID_BANNER_DISMISSED_KEY = "plaid-banner-dismissed";
+
+function BankConnectBanner() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [accounts, setAccounts] = useState<unknown[] | null>(null);
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(PLAID_BANNER_DISMISSED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    if (dismissed) return;
+    fetch("/api/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.userId) setUserId(d.userId); })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch("/api/plaid/accounts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    })
+      .then((r) => (r.ok ? r.json() : { accounts: [] }))
+      .then((d) => { setAccounts(Array.isArray(d.accounts) ? d.accounts : []); })
+      .catch(() => { setAccounts([]); });
+  }, [userId]);
+
+  const handleDismiss = () => {
+    try { localStorage.setItem(PLAID_BANNER_DISMISSED_KEY, "1"); } catch { /* ignore */ }
+    setDismissed(true);
+  };
+
+  // Hide if: dismissed, still checking accounts, or already connected
+  if (dismissed || accounts === null || accounts.length > 0) return null;
+
+  return (
+    <motion.div variants={fadeUp} className="vn-card p-5">
+      <div className="flex items-start gap-4">
+        {/* Bank icon */}
+        <div
+          className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl"
+          style={{ background: "color-mix(in srgb, var(--vn-primary) 12%, transparent)" }}
+        >
+          <svg
+            className="h-5 w-5"
+            style={{ color: "var(--vn-primary)" }}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth={1.75}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 10v11M12 10v11M16 10v11" />
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold text-(--vn-text)">Connect your bank</div>
+          <div className="text-xs text-(--vn-muted) mt-0.5">
+            Auto-import transactions and stop entering data manually.
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {userId ? (
+              <PlaidLink
+                userId={userId}
+                onSuccess={() => setAccounts(["connected"])}
+              />
+            ) : (
+              <Link
+                href="/bills#banking"
+                className="vn-btn vn-btn-primary text-xs px-3 py-1.5"
+              >
+                Connect bank account
+              </Link>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={handleDismiss}
+          aria-label="Dismiss bank connect banner"
+          className="shrink-0 -mt-0.5 -mr-1 p-1 rounded-md transition-colors"
+          style={{ color: "var(--vn-muted)" }}
+        >
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </motion.div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -137,6 +293,9 @@ export default function HomePage() {
 
   // --- Period & budget scalars ---------------------------------------------
   const period = derived.period;
+  const [subDismissed, setSubDismissed] = useState(
+    () => typeof window !== "undefined" && localStorage.getItem(`sub-card-dismissed:${derived.period.id}`) === "1"
+  );
   const rows = derived.cashflow.daily;
   const endingBalance = rows.length ? rows[rows.length - 1].balance : 0;
 
@@ -436,6 +595,9 @@ export default function HomePage() {
               </motion.div>
             )}
 
+            {/* Bank connect banner — only shown when no accounts are connected */}
+            <BankConnectBanner />
+
             {/* Visual Hero: Projection */}
             <motion.div variants={fadeUp} className="vn-card p-6">
               <div className="flex items-center justify-between mb-4">
@@ -509,6 +671,19 @@ export default function HomePage() {
                 <WhatIfPanel
                   categories={categoryItems}
                   projectedEndBalance={endingBalance}
+                />
+              </motion.div>
+            )}
+
+            {/* Subscription summary card */}
+            {!subDismissed && (
+              <motion.div variants={fadeUp}>
+                <SubscriptionSummaryCard
+                  plan={plan}
+                  onDismiss={() => {
+                    localStorage.setItem(`sub-card-dismissed:${period.id}`, "1");
+                    setSubDismissed(true);
+                  }}
                 />
               </motion.div>
             )}
