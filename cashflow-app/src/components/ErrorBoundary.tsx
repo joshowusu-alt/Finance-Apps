@@ -25,7 +25,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("Error caught by boundary:", error, errorInfo);
+    console.error("[Velanovo] Unhandled render error:", error.message, error.stack);
+    console.error("[Velanovo] Component stack:", errorInfo.componentStack);
     Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
   }
 

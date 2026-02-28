@@ -6,6 +6,7 @@
  * cookie name, and any store-specific save semantics.
  */
 
+import "server-only";
 import { createHash, randomBytes } from "crypto";
 import { getSQL } from "@/lib/db";
 import { todayISO } from "@/lib/dateUtils";

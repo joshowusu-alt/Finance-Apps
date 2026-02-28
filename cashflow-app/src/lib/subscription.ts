@@ -1,3 +1,4 @@
+import "server-only";
 import { neon } from "@neondatabase/serverless";
 
 export type SubscriptionStatus = "free" | "pro" | "trialing" | "past_due" | "canceled";

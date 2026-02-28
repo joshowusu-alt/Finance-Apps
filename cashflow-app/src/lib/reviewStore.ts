@@ -1,3 +1,4 @@
+import "server-only";
 import { getSQL } from "@/lib/db";
 import { Plan } from "@/data/plan";
 import {

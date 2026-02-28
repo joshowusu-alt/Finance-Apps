@@ -3,6 +3,7 @@
  *
  * Eliminates 6× duplicate `getSQL()` definitions across API routes and stores.
  */
+import "server-only";
 
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 

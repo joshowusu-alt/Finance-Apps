@@ -11,6 +11,7 @@
  *   5. Plan API resolves joinToken → planHash → loads/saves correct plan.
  */
 
+import "server-only";
 import { randomBytes } from "crypto";
 import { getSQL } from "@/lib/db";
 import { hashToken, generateToken } from "@/lib/tokenPlanBase";
