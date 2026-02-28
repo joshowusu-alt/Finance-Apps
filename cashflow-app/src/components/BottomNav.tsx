@@ -245,6 +245,22 @@ function IconCoach(active: boolean) {
   );
 }
 
+function IconHousehold(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path
+        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+        stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+      <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function IconSettings(active: boolean) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -285,6 +301,7 @@ const moreItems: NavItem[] = [
   { href: "/import", label: "Import", desc: "Upload data", icon: IconImport },
   { href: "/year", label: "Year Review", desc: "Annual summary", icon: IconYearReview },
   { href: "/coach", label: "Coach", desc: "AI advisor", icon: IconCoach },
+  { href: "/household", label: "Household", desc: "Shared finances", icon: IconHousehold },
   { href: "/settings", label: "Settings", desc: "Preferences", icon: IconSettings },
 ];
 
