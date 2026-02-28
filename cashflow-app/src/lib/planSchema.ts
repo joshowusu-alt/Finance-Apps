@@ -11,7 +11,7 @@ export const CustomCategorySchema = z.object({
 
 const PeriodSchema = z
   .object({
-    id: z.string(),
+    id: z.number(), // Period.id is a number, not a string
     start: z.string(),
     end: z.string(),
   })

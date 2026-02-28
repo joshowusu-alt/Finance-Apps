@@ -1,5 +1,17 @@
 import { PLAN, PLAN_VERSION, Plan, CashflowOverride, CashflowCategory, NetWorthSnapshot } from "@/data/plan";
-import { parsePlan } from "@/lib/tokenPlanBase";
+
+/**
+ * Safely parse plan JSON from localStorage.
+ * NOTE: do NOT import from tokenPlanBase here — that file pulls in
+ * @/lib/db (Neon / server-only), which crashes the browser bundle.
+ */
+function parseStoredPlan(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
 import { formatMoney } from "@/lib/currency";
 import {
   loadScenarioState,
@@ -274,7 +286,7 @@ function todayISO() {
 function deserializePlan(raw: string | null): Plan {
   if (!raw) return PLAN;
   try {
-    const parsed = parsePlan(raw) as Partial<Plan> & LegacyPlan;
+    const parsed = (parseStoredPlan(raw) ?? {}) as Partial<Plan> & LegacyPlan;
     const next: Plan = {
       ...PLAN,
       ...parsed,
@@ -292,6 +304,8 @@ function deserializePlan(raw: string | null): Plan {
       eventOverrides: parsed.eventOverrides ?? [],
       overrides: parsed.overrides ?? [],
       transactions: parsed.transactions ?? [],
+      savingsGoals: parsed.savingsGoals ?? [],
+      customCategories: parsed.customCategories ?? undefined,
     };
 
     if (!Array.isArray(parsed.incomeRules) && Array.isArray(parsed.items)) {
