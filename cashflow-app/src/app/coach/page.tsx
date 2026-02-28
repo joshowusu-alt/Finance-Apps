@@ -141,7 +141,7 @@ function renderMessage(content: string, isStreaming: boolean): React.ReactNode {
     <div className="space-y-1">
       {rendered}
       {isStreaming && (
-        <span className="inline-block w-[2px] h-[1em] bg-(--vn-muted) ml-0.5 align-middle animate-pulse" />
+        <span className="inline-block w-0.5 h-[1em] bg-(--vn-muted) ml-0.5 align-middle animate-pulse" />
       )}
     </div>
   );
@@ -391,6 +391,21 @@ export default function CoachPage() {
     } catch {
       // ignore malformed storage
     }
+    // Try to build a proactive welcome if a plan is already loaded
+    try {
+      const plan = loadPlan();
+      const ctx = buildAIContext(plan);
+      const insight = ctx.insights[0];
+      if (insight) {
+        return [{
+          id: "welcome",
+          role: "assistant",
+          content: `Hey there! I'm your financial coach.\n\n${insight.message}\n\nAsk me anything about your money, or tap a suggestion below.`,
+        }];
+      }
+    } catch {
+      // no plan loaded yet, fall back to static welcome
+    }
     return [INITIAL_MESSAGE];
   });
   const [input, setInput] = useState("");
@@ -612,10 +627,10 @@ export default function CoachPage() {
               <div
                 className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                   msg.role === "user"
-                    ? "text-white rounded-br-md" 
+                    ? "text-white rounded-br-md"
                     : "bg-(--vn-surface) border border-(--vn-border) text-(--vn-text) rounded-bl-md"
-                }
-                style={msg.role === "user" ? { background: "linear-gradient(135deg, #a8731a, #d4a843)" } : undefined}`}
+                }`}
+                style={msg.role === "user" ? { background: "linear-gradient(135deg, #a8731a, #d4a843)" } : undefined}
               >
                 {isStreamingMsg && !msg.content ? (
                   <div className="flex gap-1">

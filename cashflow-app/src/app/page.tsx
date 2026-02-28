@@ -7,7 +7,7 @@ import { hasStoredPlan, savePlan } from "@/lib/storage";
 import { createSamplePlan } from "@/data/plan";
 import { loadWizardState } from "@/lib/onboarding";
 import OnboardingWizard from "@/components/OnboardingWizard";
-import type { Plan } from "@/data/plan";
+import type { Plan, Period } from "@/data/plan";
 import {
   dismissOnboarding,
   loadOnboardingState,
@@ -247,6 +247,124 @@ function BankConnectBanner() {
         </button>
       </div>
     </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Coach entry card — quick link to the AI Financial Coach
+// ---------------------------------------------------------------------------
+function CoachEntryCard() {
+  return (
+    <Link
+      href="/coach"
+      className="vn-card p-4 flex items-center gap-3 transition-colors hover:border-(--vn-gold)"
+      style={{ border: "1px solid var(--vn-border)", textDecoration: "none" }}
+    >
+      <div
+        className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl"
+        style={{ background: "color-mix(in srgb, var(--vn-gold) 12%, transparent)" }}
+      >
+        <span className="text-lg" aria-hidden="true">💬</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-semibold text-(--vn-text)">Ask your coach</div>
+        <div className="text-xs text-(--vn-muted) mt-0.5">
+          AI-powered answers about your finances
+        </div>
+      </div>
+      <svg className="h-4 w-4 shrink-0" style={{ color: "var(--vn-muted)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
+    </Link>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Savings Rate KPI card
+// ---------------------------------------------------------------------------
+function SavingsRateCard({
+  plan,
+  period,
+  income,
+  spending,
+}: {
+  plan: Plan;
+  period: Period;
+  income: number;
+  spending: number;
+}) {
+  if (income === 0) return null;
+
+  const saved = income - spending;
+  const rate = Math.round((saved / income) * 100);
+  const isPositive = rate > 0;
+
+  // Previous period comparison
+  const periods = plan.periods ?? [];
+  const currentIdx = periods.findIndex((p) => p.id === period.id);
+  const prevPeriod = currentIdx > 0 ? periods[currentIdx - 1] : null;
+  let prevRate: number | null = null;
+  if (prevPeriod) {
+    const prevTx = plan.transactions.filter(
+      (t) => t.date >= prevPeriod.start && t.date <= prevPeriod.end
+    );
+    const prevIncome = prevTx
+      .filter((t) => t.type === "income")
+      .reduce((s, t) => s + t.amount, 0);
+    const prevSpending = prevTx
+      .filter((t) => t.type !== "income")
+      .reduce((s, t) => s + t.amount, 0);
+    if (prevIncome > 0)
+      prevRate = Math.round(((prevIncome - prevSpending) / prevIncome) * 100);
+  }
+
+  const trend = prevRate !== null ? rate - prevRate : null;
+
+  return (
+    <div
+      className="vn-card p-4 flex items-center justify-between gap-4"
+      style={{ border: "1px solid var(--vn-border)" }}
+    >
+      <div>
+        <div
+          className="text-xs uppercase tracking-wide font-medium"
+          style={{ color: "var(--vn-muted)" }}
+        >
+          Savings rate
+        </div>
+        <div className="mt-1 flex items-end gap-2">
+          <span
+            className="text-2xl font-bold tabular-nums"
+            style={{ color: isPositive ? "#4FAF7B" : "#b85c5c" }}
+          >
+            {rate}%
+          </span>
+          {trend !== null && (
+            <span
+              className="text-xs font-medium mb-0.5"
+              style={{ color: trend >= 0 ? "#4FAF7B" : "#b85c5c" }}
+            >
+              {trend >= 0 ? "↑" : "↓"}{Math.abs(trend)}pp vs last
+            </span>
+          )}
+        </div>
+        <div className="text-xs mt-0.5" style={{ color: "var(--vn-muted)" }}>
+          {isPositive
+            ? `Saving ${formatMoney(saved)} this period`
+            : `Overspending by ${formatMoney(Math.abs(saved))}`}
+        </div>
+      </div>
+      <div
+        className="shrink-0 flex h-12 w-12 items-center justify-center rounded-xl text-xl"
+        style={{
+          background: isPositive
+            ? "rgba(79,175,123,0.12)"
+            : "rgba(184,92,92,0.12)",
+        }}
+      >
+        {isPositive ? "🏦" : "⚠️"}
+      </div>
+    </div>
   );
 }
 
@@ -646,6 +764,9 @@ export default function HomePage() {
             {/* Bank connect banner — only shown when no accounts are connected */}
             <BankConnectBanner />
 
+            {/* AI Coach entry point */}
+            <CoachEntryCard />
+
             {/* Visual Hero: Projection */}
             <motion.div variants={fadeUp} className="vn-card p-6">
               <div className="flex items-center justify-between mb-4">
@@ -737,6 +858,18 @@ export default function HomePage() {
                     localStorage.setItem(`sub-card-dismissed:${period.id}`, "1");
                     setSubDismissed(true);
                   }}
+                />
+              </motion.div>
+            )}
+
+            {/* Savings rate KPI */}
+            {actualIncome > 0 && (
+              <motion.div variants={fadeUp}>
+                <SavingsRateCard
+                  plan={plan}
+                  period={period}
+                  income={actualIncome}
+                  spending={actualSpending}
                 />
               </motion.div>
             )}
