@@ -154,7 +154,7 @@ export default function SettingsPage() {
         .select("plan_json, prev_plan_json, updated_at, scenario_id")
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false })
-        .limit(10);
+        .limit(20);
       if (error) {
         setRecoveryMsg(`Database error: ${error.message}`);
         return;
@@ -163,23 +163,52 @@ export default function SettingsPage() {
         setRecoveryMsg("No cloud backup found.");
         return;
       }
-      // Find the most recent row that has real data
-      const row = rows.find((r) => {
-        const p = r.plan_json as Plan | null;
-        return p && (Array.isArray(p.periods) ? p.periods.length > 0 : false ||
-          Array.isArray((p as Plan).incomeRules) ? (p as Plan).incomeRules.length > 0 : false);
-      }) ?? rows[0];
-      const plan = row.plan_json as Plan | null;
-      if (!plan) {
-        setRecoveryMsg("Cloud backup is empty — no data to restore.");
+
+      // Score a plan by how much real data it contains.
+      // prev_plan_json may hold the user's real data if a blank plan was
+      // pushed on top of it after a crash-loop data-loss event.
+      function scoreP(p: unknown): number {
+        if (!p || typeof p !== "object") return 0;
+        const pl = p as Plan;
+        return (
+          (Array.isArray(pl.incomeRules) ? pl.incomeRules.length : 0) * 10 +
+          (Array.isArray(pl.outflowRules) ? pl.outflowRules.length : 0) * 10 +
+          (Array.isArray(pl.bills) ? pl.bills.length : 0) * 5 +
+          (Array.isArray(pl.periods) ? pl.periods.length : 0) +
+          (Array.isArray(pl.periodOverrides) ? pl.periodOverrides.length : 0) * 3
+        );
+      }
+
+      let bestPlan: Plan | null = null;
+      let bestScore = -1;
+
+      for (const row of rows) {
+        for (const col of [row.plan_json, row.prev_plan_json]) {
+          const score = scoreP(col);
+          if (score > bestScore) {
+            bestScore = score;
+            bestPlan = col as Plan | null;
+          }
+        }
+      }
+
+      if (!bestPlan || bestScore === 0) {
+        setRecoveryMsg("Cloud backup is empty — no data to restore. Your data may not have been synced before it was lost.");
         return;
       }
-      const prevPlan = row.prev_plan_json as Plan | null;
-      const updatedAt = row.updated_at ? new Date(row.updated_at).getTime() : undefined;
-      savePlanFromRemote(plan, prevPlan ?? null, updatedAt, "cloud-recovery");
+
+      const pl = bestPlan as Plan;
+      const summary = [
+        pl.incomeRules?.length ? `${pl.incomeRules.length} income rules` : "",
+        pl.outflowRules?.length ? `${pl.outflowRules.length} outflow rules` : "",
+        pl.bills?.length ? `${pl.bills.length} bills` : "",
+        pl.periods?.length ? `${pl.periods.length} periods` : "",
+      ].filter(Boolean).join(", ");
+
+      savePlanFromRemote(bestPlan, null, undefined, "cloud-recovery");
       setPlan(loadPlan());
       window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
-      setRecoveryMsg("✓ Plan restored from cloud backup!");
+      setRecoveryMsg(`✓ Restored: ${summary}`);
     } catch (e) {
       setRecoveryMsg(`Error: ${e instanceof Error ? e.message : "Unknown error"}`);
     } finally {
