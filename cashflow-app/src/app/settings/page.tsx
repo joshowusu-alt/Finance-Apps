@@ -22,6 +22,44 @@ import {
   disableNotifications,
   resetNotificationCooldowns,
 } from "@/lib/pushNotifications";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
+
+// ---------------------------------------------------------------------------
+// Push notification preferences (persisted in localStorage)
+// ---------------------------------------------------------------------------
+const NOTIF_PREFS_KEY = "vn:notif-prefs";
+
+interface NotifPrefs {
+  billReminders: boolean;
+  lowBalance: boolean;
+  dailySummary: boolean;
+}
+
+const DEFAULT_NOTIF_PREFS: NotifPrefs = {
+  billReminders: true,
+  lowBalance: true,
+  dailySummary: false,
+};
+
+function loadNotifPrefs(): NotifPrefs {
+  try {
+    const raw =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem(NOTIF_PREFS_KEY)
+        : null;
+    return raw ? (JSON.parse(raw) as NotifPrefs) : DEFAULT_NOTIF_PREFS;
+  } catch {
+    return DEFAULT_NOTIF_PREFS;
+  }
+}
+
+function saveNotifPrefs(prefs: NotifPrefs): void {
+  try {
+    window.localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(prefs));
+  } catch {
+    // ignore
+  }
+}
 
 /** Return today as YYYY-MM-DD */
 function todayISO() {
@@ -223,6 +261,29 @@ export default function SettingsPage() {
     setBiometricStatus("idle");
     const ok = await registerBiometric();
     setBiometricStatus(ok ? "registered" : "error");
+  }
+
+  // ── Push subscription ─────────────────────────────────────────────────────
+  const {
+    isSupported: pushSupported,
+    isSubscribed,
+    isLoading: pushLoading,
+    subscribe: subscribePush,
+    unsubscribe: unsubscribePush,
+  } = usePushSubscription();
+
+  // ── Notification preferences (localStorage) ──────────────────────────────
+  const [notifPrefs, setNotifPrefsState] = useState<NotifPrefs>(
+    () => loadNotifPrefs()
+  );
+
+  function updateNotifPref<K extends keyof NotifPrefs>(
+    key: K,
+    value: NotifPrefs[K],
+  ) {
+    const updated = { ...notifPrefs, [key]: value };
+    setNotifPrefsState(updated);
+    saveNotifPrefs(updated);
   }
 
   // ── Notifications state ──────────────────────────────────────────────────
@@ -1053,6 +1114,100 @@ export default function SettingsPage() {
                   </button>
                 </div>
               )}
+            </div>
+
+            {/* ── Push Alerts ───────────────────────────────────────────── */}
+            <div className="vn-card p-6 space-y-5">
+              <div>
+                <div className="text-sm font-semibold text-(--vn-text) mb-1">Push Alerts</div>
+                <p className="text-xs text-(--vn-muted)">
+                  Personalised daily push notifications sent to this device.
+                  Subscribe once and we&apos;ll alert you about bills, low balance, or your daily budget — no app open required.
+                </p>
+              </div>
+
+              {/* Subscribe / Unsubscribe */}
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-sm text-(--vn-text)">
+                    {isSubscribed ? "Push notifications active" : "Push notifications inactive"}
+                  </div>
+                  <div className="text-xs text-(--vn-muted) mt-0.5">
+                    {pushSupported
+                      ? isSubscribed
+                        ? "This device will receive daily alerts"
+                        : "Subscribe to receive alerts on this device"
+                      : "Push notifications are not supported in this browser"}
+                  </div>
+                </div>
+                {pushSupported && (
+                  <button
+                    type="button"
+                    disabled={pushLoading}
+                    onClick={isSubscribed ? unsubscribePush : subscribePush}
+                    className={`vn-btn text-xs shrink-0 ${
+                      isSubscribed ? "vn-btn-ghost" : "vn-btn-primary"
+                    }`}
+                  >
+                    {pushLoading
+                      ? "…"
+                      : isSubscribed
+                      ? "Unsubscribe"
+                      : "Subscribe"}
+                  </button>
+                )}
+              </div>
+
+              {/* Preference toggles */}
+              <div className="space-y-3 pt-2" style={{ borderTop: "1px solid var(--vn-border)" }}>
+                <div className="text-xs font-semibold uppercase tracking-widest text-(--vn-muted) mb-2">
+                  Alert types
+                </div>
+
+                {(
+                  [
+                    {
+                      key: "billReminders" as const,
+                      label: "Bill reminders",
+                      desc: "Alert when a bill is due within 2 days",
+                    },
+                    {
+                      key: "lowBalance" as const,
+                      label: "Low balance",
+                      desc: "Alert when running balance drops below £100",
+                    },
+                    {
+                      key: "dailySummary" as const,
+                      label: "Daily budget summary",
+                      desc: "Daily £/day remaining message",
+                    },
+                  ] as const
+                ).map(({ key, label, desc }) => (
+                  <div key={key} className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="text-sm text-(--vn-text)">{label}</div>
+                      <div className="text-xs text-(--vn-muted)">{desc}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => updateNotifPref(key, !notifPrefs[key])}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                        notifPrefs[key]
+                          ? "bg-(--vn-accent) focus:ring-(--vn-accent)"
+                          : "bg-(--vn-border) focus:ring-(--vn-border)"
+                      }`}
+                      role="switch"
+                      aria-checked={notifPrefs[key]}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
+                          notifPrefs[key] ? "translate-x-5" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="vn-card p-6">
