@@ -53,7 +53,14 @@ function ProgressBar({ value, max, favorable }: { value: number; max: number; fa
       : "bg-rose-500 dark:bg-rose-400"
     : "bg-blue-500 dark:bg-blue-400";
   return (
-    <div className="mt-1.5 h-1.5 rounded-full bg-(--vn-border) overflow-hidden">
+    <div
+      role="progressbar"
+      aria-valuenow={Math.round(pct)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label="Progress"
+      className="mt-1.5 h-1.5 rounded-full bg-(--vn-border) overflow-hidden"
+    >
       <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
     </div>
   );

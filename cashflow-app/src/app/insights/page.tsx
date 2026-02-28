@@ -74,7 +74,14 @@ function ProgressBar({
         <span>{label}</span>
         <span className="font-semibold text-(--vn-muted)">{formatPercent(pct)}</span>
       </div>
-      <div className="mt-2 h-2 rounded-full bg-(--vn-border)">
+      <div
+        role="progressbar"
+        aria-valuenow={Math.round(pct * 100)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={label}
+        className="mt-2 h-2 rounded-full bg-(--vn-border)"
+      >
         <div className="h-2 rounded-full" style={{ width: `${pct * 100}%`, background: color }} />
       </div>
       {hint ? <div className="mt-2 text-xs text-(--vn-muted)">{hint}</div> : null}

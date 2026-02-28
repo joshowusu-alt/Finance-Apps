@@ -68,7 +68,7 @@ export default function EmptyState({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.4 }}
-        className="text-xl font-bold text-(--text-primary) mb-2"
+        className="text-xl font-bold text-(--vn-text) mb-2"
       >
         {title}
       </motion.h3>
@@ -78,7 +78,7 @@ export default function EmptyState({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.4 }}
-        className="text-sm text-(--text-secondary) max-w-md leading-relaxed mb-8"
+        className="text-sm text-(--vn-muted) max-w-md leading-relaxed mb-8"
       >
         {description}
       </motion.p>

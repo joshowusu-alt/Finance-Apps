@@ -18,7 +18,7 @@ type NavItem = {
 
 function IconHome(active: boolean) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-9.5Z"
         stroke="currentColor"
@@ -34,7 +34,7 @@ function IconHome(active: boolean) {
 
 function IconPlan(active: boolean) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
         stroke="currentColor"
@@ -71,7 +71,7 @@ function IconTimeline(active: boolean) {
 
 function IconInsights(active: boolean) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M3 3v15a3 3 0 0 0 3 3h15"
         stroke="currentColor"
@@ -93,7 +93,7 @@ function IconInsights(active: boolean) {
 
 function IconMore(active: boolean) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <circle cx="12" cy="5" r="1.5" fill="currentColor" opacity={active ? 1 : 0.7} />
       <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity={active ? 1 : 0.7} />
       <circle cx="12" cy="19" r="1.5" fill="currentColor" opacity={active ? 1 : 0.7} />
@@ -103,7 +103,7 @@ function IconMore(active: boolean) {
 
 function IconTransactions(active: boolean) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M3 10h18M3 6h18M3 14h10M17 17l3 3m0 0l-3 3m3-3H14"
         stroke="currentColor"
@@ -371,6 +371,10 @@ export default function BottomNav() {
             />
             <motion.div
               key="more-sheet"
+              id="bottom-nav-more-sheet"
+              role="dialog"
+              aria-modal={true}
+              aria-label="All features"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
@@ -413,7 +417,7 @@ export default function BottomNav() {
                         {it.label}
                       </span>
                       {it.desc && (
-                        <span className="text-[9px] leading-tight text-center" style={{ color: "var(--vn-muted)" }}>{it.desc}</span>
+                        <span className="text-[11px] leading-tight text-center" style={{ color: "var(--vn-muted)" }}>{it.desc}</span>
                       )}
                     </Link>
                   ))}
@@ -550,6 +554,9 @@ export default function BottomNav() {
             {/* More button */}
             <button
               onClick={() => setShowMore((v) => !v)}
+              aria-expanded={showMore}
+              aria-controls="bottom-nav-more-sheet"
+              aria-haspopup="dialog"
               className="relative"
             >
               <motion.div

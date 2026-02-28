@@ -36,21 +36,18 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-background px-6">
+        <div className="min-h-screen flex items-center justify-center bg-(--vn-bg) px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="max-w-md w-full card-premium p-8 text-center"
+            className="max-w-md w-full vn-card p-8 text-center"
           >
             {/* Animated Error Icon */}
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1, rotate: [0, -10, 10, -10, 0] }}
-              transition={{
-                scale: { delay: 0.2, duration: 0.5, type: "spring", stiffness: 200 },
-                rotate: { delay: 0.7, duration: 0.6 }
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
               className="mb-6 text-6xl"
             >
               ⚠️
@@ -60,7 +57,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.4 }}
-              className="text-2xl font-bold text-(--text-primary) mb-3"
+              className="text-2xl font-bold text-(--vn-text) mb-3"
             >
               Oops! Something went wrong
             </motion.h1>
@@ -69,7 +66,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.4 }}
-              className="text-sm text-(--text-secondary) mb-8 leading-relaxed"
+              className="text-sm text-(--vn-muted) mb-8 leading-relaxed"
             >
               We encountered an unexpected error. Don&apos;t worry, your data is safe.
               Try refreshing the page or contact support if the problem persists.
@@ -101,8 +98,22 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               </button>
 
               <button
+                onClick={() => {
+                  if (window.confirm("Reset all app data? This cannot be undone.")) {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.reload();
+                  }
+                }}
+                className="vn-btn vn-btn-ghost w-full"
+              >
+                Reset app data
+                <span className="block text-xs font-normal opacity-70 mt-0.5">Use if the app keeps crashing</span>
+              </button>
+
+              <button
                 onClick={() => window.location.href = "/"}
-                className="w-full text-sm text-(--text-tertiary) hover:text-(--text-secondary) transition-colors py-2"
+                className="w-full text-sm text-(--vn-muted) hover:text-(--vn-text) transition-colors py-2"
               >
                 Go to Dashboard
               </button>
@@ -115,7 +126,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                 transition={{ delay: 0.6, duration: 0.4 }}
                 className="mt-8 text-left"
               >
-                <summary className="cursor-pointer text-xs font-semibold text-(--text-tertiary) hover:text-(--text-secondary) mb-3 transition-colors">
+                <summary className="cursor-pointer text-xs font-semibold text-soft hover:text-muted mb-3 transition-colors">
                   🔍 Error Details (Development Only)
                 </summary>
                 <pre className="text-xs text-(--error) bg-(--error-soft) p-4 rounded-lg overflow-auto max-h-48 font-mono border border-(--error)/20">
@@ -138,12 +149,12 @@ export function PageErrorBoundary({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundary
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-background px-6">
+        <div className="min-h-screen flex items-center justify-center bg-(--vn-bg) px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="max-w-md w-full card-premium p-8 text-center"
+            className="max-w-md w-full vn-card p-8 text-center"
           >
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
@@ -154,11 +165,11 @@ export function PageErrorBoundary({ children }: { children: React.ReactNode }) {
               ⚠️
             </motion.div>
 
-            <h2 className="text-xl font-bold text-(--text-primary) mb-2">
+            <h2 className="text-xl font-bold text-(--vn-text) mb-2">
               Page Error
             </h2>
 
-            <p className="text-sm text-(--text-secondary) mb-6">
+            <p className="text-sm text-(--vn-muted) mb-6">
               This page encountered an error and couldn&apos;t load properly.
             </p>
 

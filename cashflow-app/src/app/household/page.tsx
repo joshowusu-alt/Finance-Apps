@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { loadPlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
+import { formatMoney } from "@/lib/currency";
 import { CF_JOIN_TOKEN_KEY } from "@/lib/sharingConstants";
 import type { Transaction } from "@/data/plan";
 
@@ -54,7 +55,7 @@ function formatDate(iso: string) {
 
 function formatAmount(amount: number, type: Transaction["type"]) {
   const sign = type === "income" ? "+" : "−";
-  return `${sign}£${Math.abs(amount).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${sign}${formatMoney(Math.abs(amount))}`;
 }
 
 function categoryColor(cat: Transaction["category"]) {
