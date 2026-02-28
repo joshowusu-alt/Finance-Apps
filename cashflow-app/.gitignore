@@ -25,6 +25,12 @@
 *.pem
 .data/
 *.sqlite
+*.db
+
+# Personal data exports — never commit
+sqlite-export.json
+_import_data.json
+transactions.json
 
 # debug
 npm-debug.log*

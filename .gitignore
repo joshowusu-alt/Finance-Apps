@@ -19,3 +19,13 @@ Thumbs.db
 .vscode/
 .idea/
 node_modules
+
+# App data exports — never commit (contain personal financial data)
+cashflow-app/sqlite-export.json
+cashflow-app/_import_data.json
+cashflow-app/transactions.json
+
+# Root data exports
+period1*.json
+transactions_extracted.json
+transactions_output.json
