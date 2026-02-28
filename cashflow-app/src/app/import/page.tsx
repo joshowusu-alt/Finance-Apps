@@ -171,6 +171,101 @@ function parseAmount(raw: string): number {
   return parseFloat(raw.replace(/[£$€,\s]/g, "")) || 0;
 }
 
+// ─── YNAB CSV Parser ─────────────────────────────────────────────────────────────────────────────
+// Columns: Account,Flag,Date,Payee,Category Group/Category,Category Group,Category,Memo,Outflow,Inflow,Cleared
+
+function parseYNABCSV(csvText: string): ParsedRow[] {
+  const lines = csvText.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const headerLower = lines[0].toLowerCase();
+  if (!headerLower.includes("inflow") || !headerLower.includes("outflow") || !headerLower.includes("payee")) {
+    return [];
+  }
+
+  const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, "").toLowerCase());
+  const payeeIdx    = headers.findIndex((h) => h === "payee");
+  const dateIdx     = headers.findIndex((h) => h === "date");
+  const outflowIdx  = headers.findIndex((h) => h === "outflow");
+  const inflowIdx   = headers.findIndex((h) => h === "inflow");
+
+  const rows: ParsedRow[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) continue;
+    const cols = parseCSVLine(line);
+    const outflow = parseFloat(cols[outflowIdx]?.replace(/[\$,]/g, "") ?? "0") || 0;
+    const inflow  = parseFloat(cols[inflowIdx]?.replace(/[\$,]/g, "") ?? "0") || 0;
+    const amount  = inflow > 0 ? inflow : outflow;
+    const type: CashflowType = inflow > 0 ? "income" : "outflow";
+    if (amount === 0) continue;
+
+    const rawDate = cols[dateIdx]?.replace(/"/g, "").trim() ?? "";
+    const label   = cols[payeeIdx]?.replace(/"/g, "").trim() || "Unknown";
+    const date    = parseDate(rawDate);
+    const suggestion = type === "income" ? { category: "income" as CashflowCategory, confidence: 99 } : suggestCategory(label);
+
+    rows.push({
+      id: `ynab-${i}-${Date.now()}`,
+      rawDate,
+      date,
+      label,
+      amount,
+      type,
+      category: suggestion.category,
+      selected: true,
+      confidence: suggestion.confidence,
+    });
+  }
+  return rows;
+}
+
+// ─── Monarch Money CSV Parser ─────────────────────────────────────────────────────────────────
+// Columns: Date,Merchant,Category,Account,Original Statement,Notes,Amount,Tags
+
+function parseMonarchCSV(csvText: string): ParsedRow[] {
+  const lines = csvText.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const headerLower = lines[0].toLowerCase();
+  if (!headerLower.includes("merchant") || !headerLower.includes("original statement")) {
+    return [];
+  }
+
+  const headers    = lines[0].split(",").map((h) => h.trim().replace(/"/g, "").toLowerCase());
+  const dateIdx     = headers.findIndex((h) => h === "date");
+  const merchantIdx = headers.findIndex((h) => h === "merchant");
+  const amountIdx   = headers.findIndex((h) => h === "amount");
+
+  const rows: ParsedRow[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) continue;
+    const cols  = parseCSVLine(line);
+    const raw   = parseFloat(cols[amountIdx]?.replace(/[\$,]/g, "") ?? "0") || 0;
+    // Monarch: positive = income/credit, negative = expense
+    const amount = Math.abs(raw);
+    const type: CashflowType = raw >= 0 ? "income" : "outflow";
+    if (amount === 0) continue;
+
+    const rawDate = cols[dateIdx]?.replace(/"/g, "").trim() ?? "";
+    const label   = cols[merchantIdx]?.replace(/"/g, "").trim() || "Unknown";
+    const date    = parseDate(rawDate);
+    const suggestion = type === "income" ? { category: "income" as CashflowCategory, confidence: 99 } : suggestCategory(label);
+
+    rows.push({
+      id: `monarch-${i}-${Date.now()}`,
+      rawDate,
+      date,
+      label,
+      amount,
+      type,
+      category: suggestion.category,
+      selected: true,
+      confidence: suggestion.confidence,
+    });
+  }
+  return rows;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ImportPage() {
@@ -196,6 +291,24 @@ export default function ImportPage() {
   }
 
   function processCSV(text: string) {
+    // Try specific format parsers first (auto-detect)
+    const ynabRows = parseYNABCSV(text);
+    if (ynabRows.length > 0) {
+      setHeaders([]);
+      setRows(applyDedup(ynabRows));
+      setImported(false);
+      return;
+    }
+
+    const monarchRows = parseMonarchCSV(text);
+    if (monarchRows.length > 0) {
+      setHeaders([]);
+      setRows(applyDedup(monarchRows));
+      setImported(false);
+      return;
+    }
+
+    // Fall back to generic column-sniffing parser
     const lines = text.split(/\r?\n/).filter(l => l.trim());
     if (lines.length < 2) return;
 
@@ -350,6 +463,9 @@ export default function ImportPage() {
                 <p className="font-semibold text-(--vn-text)">Drop your bank file here</p>
                 <p className="text-sm text-(--vn-muted) mt-1">or click to browse</p>
                 <p className="text-xs text-(--vn-muted) mt-3">CSV, OFX, QFX, QBO — Barclays, Chase, Monzo, Revolut, YNAB, Quicken</p>
+                <p className="text-xs mt-2" style={{ color: "var(--vn-muted)" }}>
+                  Supports: Generic CSV · YNAB export · Monarch Money export · OFX/QFX · Excel
+                </p>
                 <input
                   ref={fileInputRef}
                   type="file"
