@@ -403,17 +403,56 @@ export default function BottomNav() {
                 </div>
                 <div className="mt-4 space-y-2">
                   {periods.length > 1 && (
-                    <div className="flex items-center justify-between rounded-2xl px-4 py-3 bg-(--vn-bg)">
-                      <span className="text-sm font-medium text-(--vn-text)">Period</span>
-                      <select
-                        value={selectedPeriodId}
-                        onChange={(e) => handlePeriodChange(Number(e.target.value))}
-                        className="text-xs font-semibold text-(--vn-primary) bg-transparent border-none outline-none cursor-pointer"
-                      >
-                        {periods.map((p) => (
-                          <option key={p.id} value={p.id}>{p.label}</option>
-                        ))}
-                      </select>
+                    <div className="rounded-2xl px-4 py-3 bg-(--vn-bg)">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium text-(--vn-text) shrink-0">Period</span>
+                        {periods.length <= 4 ? (
+                          <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+                            {periods.map((p) => (
+                              <button
+                                key={p.id}
+                                onClick={() => handlePeriodChange(p.id)}
+                                className="shrink-0 min-h-8 rounded-full px-3 py-1 text-xs font-medium transition-colors"
+                                style={
+                                  p.id === selectedPeriodId
+                                    ? { background: "var(--vn-primary)", color: "#fff" }
+                                    : { background: "var(--vn-surface)", color: "var(--vn-muted)", border: "1px solid var(--vn-border)" }
+                                }
+                              >
+                                {p.label}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                const idx = periods.findIndex(p => p.id === selectedPeriodId);
+                                if (idx > 0) handlePeriodChange(periods[idx - 1].id);
+                              }}
+                              className="flex items-center justify-center w-7 h-7 rounded-full transition-colors hover:bg-(--vn-border)"
+                              style={{ color: "var(--vn-muted)" }}
+                              aria-label="Previous period"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                            </button>
+                            <span className="text-xs font-semibold min-w-20 text-center" style={{ color: "var(--vn-primary)" }}>
+                              {periods.find(p => p.id === selectedPeriodId)?.label ?? ""}
+                            </span>
+                            <button
+                              onClick={() => {
+                                const idx = periods.findIndex(p => p.id === selectedPeriodId);
+                                if (idx < periods.length - 1) handlePeriodChange(periods[idx + 1].id);
+                              }}
+                              className="flex items-center justify-center w-7 h-7 rounded-full transition-colors hover:bg-(--vn-border)"
+                              style={{ color: "var(--vn-muted)" }}
+                              aria-label="Next period"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                   <div className="flex items-center justify-between rounded-2xl px-4 py-3 bg-(--vn-bg)">
