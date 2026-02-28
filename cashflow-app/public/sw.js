@@ -1,6 +1,6 @@
-const STATIC_CACHE = "cashflow-static-v6";
-const RUNTIME_CACHE = "cashflow-runtime-v6";
-const OLD_CACHES = ["cashflow-static-v1", "cashflow-runtime-v1", "cashflow-static-v2", "cashflow-runtime-v2", "cashflow-static-v3", "cashflow-runtime-v3", "cashflow-static-v4", "cashflow-runtime-v4", "cashflow-static-v5", "cashflow-runtime-v5"];
+const STATIC_CACHE = "cashflow-static-v7";
+const RUNTIME_CACHE = "cashflow-runtime-v7";
+const OLD_CACHES = ["cashflow-static-v1", "cashflow-runtime-v1", "cashflow-static-v2", "cashflow-runtime-v2", "cashflow-static-v3", "cashflow-runtime-v3", "cashflow-static-v4", "cashflow-runtime-v4", "cashflow-static-v5", "cashflow-runtime-v5", "cashflow-static-v6", "cashflow-runtime-v6"];
 
 const OFFLINE_PAGE = "/offline.html";
 
