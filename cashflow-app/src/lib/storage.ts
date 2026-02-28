@@ -287,6 +287,7 @@ function deserializePlan(raw: string | null): Plan {
       periods: Array.isArray(parsed.periods) && parsed.periods.length > 0
         ? parsed.periods
         : PLAN.periods,
+      periodRuleOverrides: parsed.periodRuleOverrides ?? [],
       periodOverrides: parsed.periodOverrides ?? [],
       eventOverrides: parsed.eventOverrides ?? [],
       overrides: parsed.overrides ?? [],

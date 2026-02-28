@@ -320,16 +320,6 @@ export default function SettingsPage() {
     setNotifEnabled(false);
   }, []);
 
-  useEffect(() => {
-    const refresh = () => setPlan(loadPlan());
-    window.addEventListener("focus", refresh);
-    window.addEventListener(PLAN_UPDATED_EVENT, refresh);
-    return () => {
-      window.removeEventListener("focus", refresh);
-      window.removeEventListener(PLAN_UPDATED_EVENT, refresh);
-    };
-  }, []);
-
   function handleAddPeriod() {
     setEditingPeriod(null);
     setPeriodFormData({

@@ -19,7 +19,7 @@ export function useSubscription(): SubscriptionState {
 
   useEffect(() => {
     fetch("/api/subscription")
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : Promise.resolve({ isPro: false, status: "free" })))
       .then((d) => {
         setState({
           isPro: d.isPro ?? false,
