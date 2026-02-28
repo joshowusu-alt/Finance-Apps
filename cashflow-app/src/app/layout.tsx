@@ -53,12 +53,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="transition-colors duration-200" suppressHydrationWarning>
+    <html lang="en" className="transition-colors duration-200" suppressHydrationWarning style={{ background: "#0D1117" }}>
       <head>
         <meta name="theme-color" content="#0D1117" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var scope=localStorage.getItem("cashflow_scope_v1");var key=scope&&scope.trim()&&scope!=="default"?"velanovo-theme::"+scope:"velanovo-theme";var t=localStorage.getItem(key)||localStorage.getItem("velanovo-theme");if(!t&&window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches)t="dark";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark");document.documentElement.style.background="#0D1117"}else{document.documentElement.style.background="#F6F5F2";document.documentElement.setAttribute("data-theme","light")}}catch(e){}})();`,
+            __html: `(function(){try{
+var d=document.documentElement;
+d.style.background="#0D1117";
+var s=document.createElement("style");s.id="vn-bg-init";s.textContent="html,body{background:#0D1117}";document.head.appendChild(s);
+var scope=localStorage.getItem("cashflow_scope_v1");var key=scope&&scope.trim()&&scope!=="default"?"velanovo-theme::"+scope:"velanovo-theme";var t=localStorage.getItem(key)||localStorage.getItem("velanovo-theme");if(!t&&window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches)t="dark";
+if(t==="dark"){d.classList.add("dark");d.setAttribute("data-theme","dark");}
+else if(t==="light"){d.style.background="#F6F5F2";s.textContent="html,body{background:#F6F5F2}";d.setAttribute("data-theme","light");}
+else{d.classList.add("dark");d.setAttribute("data-theme","dark");}
+}catch(e){}})();`,
           }}
         />
       </head>
