@@ -10,7 +10,7 @@
  * projected end balance, and vice versa.
  */
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { formatMoney } from "@/lib/currency";
 import { track } from "@/lib/analytics";
 
@@ -42,11 +42,6 @@ export default function WhatIfPanel({
   projectedEndBalance,
 }: Props) {
   const [open, setOpen] = useState(true);
-
-  // Track panel open on mount (defaults open) and on user toggle to open
-  useEffect(() => {
-    track("whatif_panel_opened");
-  }, []);
 
   function handleToggleOpen() {
     setOpen((p) => {

@@ -1,12 +1,12 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { loadPlan } from "@/lib/storage";
+import { loadPlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import SidebarNav from "@/components/SidebarNav";
 import { getPeriod } from "@/lib/cashflowEngine";
 import { getStorageScope } from "@/lib/storage";
-import type { CashflowCategory } from "@/data/plan";
+import type { CashflowCategory, Plan } from "@/data/plan";
 
 // ─── Storage ─────────────────────────────────────────────────────────────────
 
@@ -43,9 +43,20 @@ const ENVELOPE_DEFS: { category: CashflowCategory; label: string; emoji: string;
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function EnvelopesPage() {
-  const plan = loadPlan();
+  const [plan, setPlan] = useState<Plan>(() => loadPlan());
   const periodId = plan.setup.selectedPeriodId;
   const period = getPeriod(plan, periodId);
+
+  // Keep plan in sync with any changes from other pages
+  useEffect(() => {
+    const refresh = () => setPlan(loadPlan());
+    window.addEventListener(PLAN_UPDATED_EVENT, refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.removeEventListener(PLAN_UPDATED_EVENT, refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, []);
 
   const [allocations, setAllocations] = useState<EnvelopeMap>(() => loadEnvelopes(periodId));
   const [editingCat, setEditingCat] = useState<CashflowCategory | null>(null);

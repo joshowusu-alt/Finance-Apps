@@ -392,9 +392,9 @@ export default function HomePage() {
                 <div className="text-xs text-(--vn-muted) mb-4">Add income, a bill payment, or import a bank export to start tracking against your budget.</div>
                 <div className="grid grid-cols-3 gap-2.5">
                   {[
-                    { label: "Log income", href: "/transactions", icon: "M12 4v16m8-8H4", color: "var(--vn-success)" },
-                    { label: "Log payment", href: "/transactions", icon: "M20 12H4", color: "var(--vn-error)" },
-                    { label: "Import CSV", href: "/transactions", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12", color: "var(--accent)" },
+                    { label: "Log income", href: "/transactions?type=income&open=1", icon: "M12 4v16m8-8H4", color: "var(--vn-success)" },
+                    { label: "Log payment", href: "/transactions?type=outflow&open=1", icon: "M20 12H4", color: "var(--vn-error)" },
+                    { label: "Import CSV", href: "/import", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12", color: "var(--accent)" },
                   ].map((c) => (
                     <Link key={c.label} href={c.href}
                       className="rounded-xl p-3 text-center transition-opacity hover:opacity-80"
@@ -451,7 +451,7 @@ export default function HomePage() {
                     </span>
                     {derived.cashflow.actualsDaily.length > 0 && (
                       <span className="flex items-center gap-1 text-[10px] text-(--vn-muted)">
-                        <span className="inline-block w-6 h-0.5 border-t-2 border-dashed border-(--vn-secondary)" />
+                        <span className="inline-block w-6 h-0.5 border-t-2 border-dashed border-(--vn-gold)" />
                         Actuals (Recorded)
                       </span>
                     )}
@@ -468,7 +468,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="h-[250px] w-full">
+              <div className="h-62.5 w-full">
                 <CashflowProjectionChart
                   data={cashflowChartData}
                   showProjection={derived.cashflow.actualsDaily.length > 0}
