@@ -8,6 +8,7 @@ import type { Plan } from "@/data/plan";
 import {
   getActiveScenarioUpdatedAt,
   getStorageScope,
+  hasStoredPlan,
   loadPlan,
   loadPreviousPlan,
   loadScenarioState,
@@ -119,15 +120,6 @@ function scopeHasData(scope: string) {
     }
   }
   return false;
-}
-
-function initializeFreshScope() {
-  saveOnboardingState(DEFAULT_ONBOARDING_STATE);
-  saveWizardState(DEFAULT_WIZARD_STATE);
-  saveAlertPreferences(DEFAULT_ALERT_PREFS);
-  setTheme("light");
-  // Use auto-detected currency based on user locale instead of hardcoding GBP
-  // setCurrency is intentionally not called — getCurrency() will auto-detect
 }
 
 /**
@@ -242,9 +234,12 @@ export default function CloudSync() {
         const defaultHasData = scopeHasData("default");
         if (defaultHasData) {
           migrateDefaultScopeToUser(targetScope);
-        } else {
-          initializeFreshScope();
         }
+        // Do NOT call initializeFreshScope() here — if neither local scope has data,
+        // let syncPlan() run first. It will pull from Supabase if server data exists,
+        // or push the (empty) local plan only if there is truly nothing on the server.
+        // Calling initializeFreshScope() immediately would wipe any data that might
+        // still be recoverable from the cloud (e.g. after an iOS localStorage eviction).
       }
     }
   }, [loading, user]);
@@ -387,7 +382,13 @@ export default function CloudSync() {
       (!lastSyncedServerUpdatedAt || serverUpdatedMs !== lastSyncedServerUpdatedAt);
 
     if (!serverRow?.plan_json) {
-      await pushPlan(localPlan, localPrev, scenarioId);
+      // Only push when we have real locally-stored data.
+      // If localStorage was cleared (e.g. iOS crash-loop eviction) both local and
+      // server are effectively empty — pushing here would cement a blank plan.
+      // hasStoredPlan() returns false when the plan key is absent from localStorage.
+      if (hasStoredPlan()) {
+        await pushPlan(localPlan, localPrev, scenarioId);
+      }
       return;
     }
 
