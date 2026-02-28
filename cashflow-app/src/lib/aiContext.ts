@@ -582,6 +582,19 @@ export function buildAIContext(plan: Plan): AIFinancialContext {
 // Context Formatter for AI Prompt
 // ============================================================================
 
+/**
+ * Strips control characters and angle brackets from a string before embedding
+ * it in an AI system prompt. Prevents prompt injection via user-controlled data
+ * (transaction labels, category names, note fields, etc.).
+ */
+function sanitizeForPrompt(str: string, maxLen = 100): string {
+  return str
+    .replace(/[\x00-\x1F\x7F]/g, " ")  // strip control characters
+    .replace(/[<>]/g, " ")               // strip angle brackets
+    .slice(0, maxLen)
+    .trim();
+}
+
 export function formatContextForPrompt(ctx: AIFinancialContext): string {
     let prompt = `=== FINANCIAL CONTEXT: ${ctx.period.label} ===\n\n`;
 
@@ -598,10 +611,10 @@ export function formatContextForPrompt(ctx: AIFinancialContext): string {
 
     // Variance summary
     if (ctx.variance.overspentCategories.length > 0) {
-        prompt += `OVER BUDGET CATEGORIES: ${ctx.variance.overspentCategories.join(", ")}\n`;
+        prompt += `OVER BUDGET CATEGORIES: ${ctx.variance.overspentCategories.map(c => sanitizeForPrompt(c)).join(", ")}\n`;
     }
     if (ctx.variance.underspentCategories.length > 0) {
-        prompt += `UNDER BUDGET CATEGORIES: ${ctx.variance.underspentCategories.join(", ")}\n`;
+        prompt += `UNDER BUDGET CATEGORIES: ${ctx.variance.underspentCategories.map(c => sanitizeForPrompt(c)).join(", ")}\n`;
     }
     prompt += `\n`;
 
@@ -613,7 +626,7 @@ export function formatContextForPrompt(ctx: AIFinancialContext): string {
         .slice(0, 6)
         .forEach(v => {
             const statusIcon = v.status === "over" ? "⚠️" : v.status === "under" ? "✅" : "";
-            prompt += `• ${v.category}: ${formatMoney(v.actual)} / ${formatMoney(v.budgeted)} ${statusIcon}\n`;
+            prompt += `• ${sanitizeForPrompt(v.category)}: ${formatMoney(v.actual)} / ${formatMoney(v.budgeted)} ${statusIcon}\n`;
         });
     prompt += `\n`;
 
@@ -632,7 +645,7 @@ export function formatContextForPrompt(ctx: AIFinancialContext): string {
     if (ctx.subscriptions.detected.length > 0) {
         prompt += `DETECTED SUBSCRIPTIONS (${formatMoney(ctx.subscriptions.totalMonthly)}/month total):\n`;
         ctx.subscriptions.detected.slice(0, 5).forEach(s => {
-            prompt += `• ${s.name}: ${formatMoney(s.amount)} (${s.frequency})\n`;
+            prompt += `• ${sanitizeForPrompt(s.name)}: ${formatMoney(s.amount)} (${s.frequency})\n`;
         });
         prompt += `\n`;
     }
@@ -642,7 +655,7 @@ export function formatContextForPrompt(ctx: AIFinancialContext): string {
         prompt += `KEY INSIGHTS:\n`;
         ctx.insights.forEach(i => {
             const icon = i.type === "warning" ? "⚠️" : i.type === "success" ? "✅" : "ℹ️";
-            prompt += `${icon} ${i.message}\n`;
+            prompt += `${icon} ${sanitizeForPrompt(i.message, 200)}\n`;
         });
         prompt += `\n`;
     }
@@ -652,7 +665,7 @@ export function formatContextForPrompt(ctx: AIFinancialContext): string {
         prompt += `RECENT TRANSACTIONS:\n`;
         ctx.recentTransactions.slice(0, 5).forEach(t => {
             const typeLabel = t.type === "income" ? "+" : "-";
-            prompt += `• ${t.date}: ${t.label} ${typeLabel}${formatMoney(t.amount)} (${t.category})\n`;
+            prompt += `• ${t.date}: ${sanitizeForPrompt(t.label)} ${typeLabel}${formatMoney(t.amount)} (${sanitizeForPrompt(t.category)})\n`;
         });
     }
 

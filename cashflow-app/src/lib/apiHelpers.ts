@@ -25,7 +25,7 @@ export interface ResolvedAuth {
   /** Supabase user object (null if anonymous). */
   user: { id: string } | null;
   /** Auth mode used. */
-  mode: "supabase" | "main-token" | "body-userId";
+  mode: "supabase" | "main-token";
 }
 
 // ---------------------------------------------------------------------------
@@ -35,13 +35,10 @@ export interface ResolvedAuth {
 /**
  * Resolve the effective userId from (in priority order):
  *   1. Supabase session
- *   2. Request body `userId` field
  *
  * Returns null if no identity can be determined.
  */
-export async function resolveAuth(
-  bodyUserId?: string,
-): Promise<ResolvedAuth | null> {
+export async function resolveAuth(): Promise<ResolvedAuth | null> {
   const supabase = await createClient();
   const user = supabase
     ? (await supabase.auth.getUser()).data.user
@@ -51,21 +48,15 @@ export async function resolveAuth(
     return { userId: user.id, supabase, user, mode: "supabase" };
   }
 
-  if (bodyUserId) {
-    return { userId: bodyUserId, supabase, user: null, mode: "body-userId" };
-  }
-
   return null;
 }
 
 /**
  * Resolve auth, falling back to the main cookie token when no Supabase
- * session and no body userId exist.
+ * session exists.
  */
-export async function resolveAuthWithCookie(
-  bodyUserId?: string,
-): Promise<ResolvedAuth | null> {
-  const result = await resolveAuth(bodyUserId);
+export async function resolveAuthWithCookie(): Promise<ResolvedAuth | null> {
+  const result = await resolveAuth();
   if (result) return result;
 
   const cookieStore = await cookies();
@@ -192,7 +183,10 @@ export function apiError(
 
 /** 400 Bad Request */
 export function badRequest(message: string, details?: string) {
-  return apiError(message, 400, details);
+  if (details) {
+    console.error("[badRequest]", message, details);
+  }
+  return apiError(message, 400);
 }
 
 /** 401 Unauthorized */
@@ -202,7 +196,10 @@ export function unauthorized(message = "Not authenticated") {
 
 /** 500 Internal Server Error */
 export function serverError(message: string, details?: string) {
-  return apiError(message, 500, details);
+  if (details) {
+    console.error("[serverError]", message, details);
+  }
+  return apiError(message, 500);  // no details in response body
 }
 
 // ---------------------------------------------------------------------------

@@ -269,7 +269,9 @@ FORMATTING:
 - Match the currency shown in the financial data below
 
 USER'S FINANCIAL SNAPSHOT:
-${contextString}`;
+<user_financial_data>
+${contextString}
+</user_financial_data>`;
 
     // ── First call: non-streaming with tools enabled ───────────────────────
     // We buffer the full response to detect tool_calls before streaming.
