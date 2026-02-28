@@ -4,8 +4,6 @@ import { neon } from "@neondatabase/serverless";
 
 export const runtime = "nodejs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-02-25.clover" });
-
 function getPeriodEnd(sub: Stripe.Subscription): string {
   const item = sub.items?.data?.[0];
   if (item && "current_period_end" in item) {
@@ -15,6 +13,7 @@ function getPeriodEnd(sub: Stripe.Subscription): string {
 }
 
 export async function POST(req: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-02-25.clover" });
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
   if (!sig) return NextResponse.json({ error: "No signature" }, { status: 400 });

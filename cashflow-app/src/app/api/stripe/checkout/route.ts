@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { resolveAuthWithCookie } from "@/lib/apiHelpers";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-02-25.clover" });
-
 export async function POST() {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-02-25.clover" });
   const auth = await resolveAuthWithCookie();
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
