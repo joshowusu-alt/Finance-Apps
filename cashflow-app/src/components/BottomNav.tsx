@@ -101,24 +101,191 @@ function IconMore(active: boolean) {
   );
 }
 
+function IconTransactions(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M3 10h18M3 6h18M3 14h10M17 17l3 3m0 0l-3 3m3-3H14"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  );
+}
+
+function IconBills(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M9 5H7a2 2 0 0 0-2 2v14l3-2 3 2 3-2 3 2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 7h6m-6 4h3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  );
+}
+
+function IconIncome(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  );
+}
+
+function IconGoals(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20Zm0-6a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm0-2a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  );
+}
+
+function IconNetWorth(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  );
+}
+
+function IconEnvelopes(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  );
+}
+
+function IconImport(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  );
+}
+
+function IconYearReview(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 0 0 .95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 0 0-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 0 0-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 0 0-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 0 0 .951-.69l1.519-4.674z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  );
+}
+
+function IconCoach(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-5l-5 5v-5z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  );
+}
+
+function IconSettings(active: boolean) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.15 : 0}
+      />
+      <path
+        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 const primaryItems: NavItem[] = [
   { href: "/", label: "Home", icon: IconHome },
   { href: "/plan", label: "Budget", icon: IconPlan },
-  { href: "/transactions", label: "Transactions", icon: () => <span className="text-lg">💳</span> },
+  { href: "/transactions", label: "Transactions", icon: IconTransactions },
   { href: "/insights", label: "Insights", icon: IconInsights },
 ];
 
 const moreItems: NavItem[] = [
   { href: "/timeline", label: "Calendar", desc: "Cashflow timeline", icon: IconTimeline },
-  { href: "/bills", label: "Bills", desc: "Recurring bills", icon: () => <span className="text-lg">📄</span> },
-  { href: "/income", label: "Income", desc: "Income rules", icon: () => <span className="text-lg">💰</span> },
-  { href: "/goals", label: "Goals", desc: "Save targets", icon: () => <span className="text-lg">🎯</span> },
-  { href: "/networth", label: "Net Worth", desc: "Financial position", icon: () => <span className="text-lg">📊</span> },
-  { href: "/envelopes", label: "Envelopes", desc: "Zero-based budgets", icon: () => <span className="text-lg">✉️</span> },
-  { href: "/import", label: "Import", desc: "Upload data", icon: () => <span className="text-lg">📂</span> },
-  { href: "/year", label: "Year Review", desc: "Annual summary", icon: () => <span className="text-lg">🌟</span> },
-  { href: "/coach", label: "Coach", desc: "AI advisor", icon: () => <span className="text-lg">🤖</span> },
-  { href: "/settings", label: "Settings", desc: "Preferences", icon: () => <span className="text-lg">⚙️</span> },
+  { href: "/bills", label: "Bills", desc: "Recurring bills", icon: IconBills },
+  { href: "/income", label: "Income", desc: "Income rules", icon: IconIncome },
+  { href: "/goals", label: "Goals", desc: "Save targets", icon: IconGoals },
+  { href: "/networth", label: "Net Worth", desc: "Financial position", icon: IconNetWorth },
+  { href: "/envelopes", label: "Envelopes", desc: "Zero-based budgets", icon: IconEnvelopes },
+  { href: "/import", label: "Import", desc: "Upload data", icon: IconImport },
+  { href: "/year", label: "Year Review", desc: "Annual summary", icon: IconYearReview },
+  { href: "/coach", label: "Coach", desc: "AI advisor", icon: IconCoach },
+  { href: "/settings", label: "Settings", desc: "Preferences", icon: IconSettings },
 ];
 
 export default function BottomNav() {
@@ -218,7 +385,7 @@ export default function BottomNav() {
                         {it.icon(isActive(it.href))}
                         {it.href === "/bills" && billSuggestionCount > 0 && (
                           <span
-                            className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-2"
+                            className="absolute -top-1 -right-1 min-w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-2"
                             style={{ background: "#d4a843", borderColor: "var(--vn-surface)" }}
                           >
                             {billSuggestionCount}
