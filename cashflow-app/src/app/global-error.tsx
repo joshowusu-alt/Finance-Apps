@@ -116,41 +116,43 @@ export default function GlobalError({
                         </button>
                     </div>
 
-                    {process.env.NODE_ENV === "development" && (
-                        <details
+                    {/* Always show error message so we can diagnose crashes */}
+                    <details
+                        open
+                        style={{
+                            marginTop: "2rem",
+                            textAlign: "left",
+                            fontSize: "0.75rem",
+                        }}
+                    >
+                        <summary
                             style={{
-                                marginTop: "2rem",
-                                textAlign: "left",
-                                fontSize: "0.75rem",
+                                cursor: "pointer",
+                                color: "rgba(240,237,232,0.6)",
+                                marginBottom: "0.5rem",
+                                fontWeight: 600,
                             }}
                         >
-                            <summary
-                                style={{
-                                    cursor: "pointer",
-                                    color: "rgba(240,237,232,0.4)",
-                                    marginBottom: "0.5rem",
-                                }}
-                            >
-                                Error Details
-                            </summary>
-                            <pre
-                                style={{
-                                    background: "rgba(255,255,255,0.05)",
-                                    padding: "1rem",
-                                    borderRadius: "0.5rem",
-                                    overflow: "auto",
-                                    maxHeight: "12rem",
-                                    color: "#f87171",
-                                    fontSize: "0.7rem",
-                                    whiteSpace: "pre-wrap",
-                                }}
-                            >
-                                {error.message}
-                                {"\n\n"}
-                                {error.stack}
-                            </pre>
-                        </details>
-                    )}
+                            Error Details
+                        </summary>
+                        <pre
+                            style={{
+                                background: "rgba(255,255,255,0.05)",
+                                padding: "1rem",
+                                borderRadius: "0.5rem",
+                                overflow: "auto",
+                                maxHeight: "16rem",
+                                color: "#f87171",
+                                fontSize: "0.7rem",
+                                whiteSpace: "pre-wrap",
+                                wordBreak: "break-all",
+                            }}
+                        >
+                            {error.message}
+                            {"\n\n"}
+                            {error.stack?.slice(0, 800)}
+                        </pre>
+                    </details>
                 </div>
             </body>
         </html>
