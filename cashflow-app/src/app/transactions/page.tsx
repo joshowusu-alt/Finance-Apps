@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -425,7 +425,7 @@ function BudgetVsActualSummary({ data, formatMoney: fmt, bills, rules, onLink }:
   );
 }
 
-export default function TransactionsPage() {
+function TransactionsPage() {
   const [plan, setPlan] = useState<Plan>(() => loadPlan());
   const [newTransaction, setNewTransaction] = useState<TransactionDraft>({
     date: today(),
@@ -2111,4 +2111,11 @@ export default function TransactionsPage() {
   );
 }
 
+export default function TransactionsPageWithSuspense() {
+  return (
+    <Suspense>
+      <TransactionsPage />
+    </Suspense>
+  );
+}
 
