@@ -26,7 +26,7 @@ export type Period = {
   end: string; // YYYY-MM-DD
 };
 
-export type Recurrence = "weekly" | "biweekly" | "monthly";
+export type Recurrence = "weekly" | "biweekly" | "monthly" | "quarterly" | "annual";
 
 export type IncomeRule = {
   id: string;

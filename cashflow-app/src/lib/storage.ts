@@ -1,4 +1,4 @@
-import { PLAN, PLAN_VERSION, Plan, CashflowOverride, CashflowCategory } from "@/data/plan";
+import { PLAN, PLAN_VERSION, Plan, CashflowOverride, CashflowCategory, NetWorthSnapshot } from "@/data/plan";
 import { parsePlan } from "@/lib/tokenPlanBase";
 import { formatMoney } from "@/lib/currency";
 import {
@@ -406,8 +406,61 @@ export type SavePlanOptions = {
   skipPrev?: boolean;
 };
 
+// ---------------------------------------------------------------------------
+// Net worth auto-snapshot helpers
+// ---------------------------------------------------------------------------
+const ASSET_ACCOUNT_TYPES = new Set(["savings", "investment", "property", "other-asset"]);
+
+function computeCurrentNetWorth(plan: Plan): {
+  totalAssets: number;
+  totalLiabilities: number;
+  netWorth: number;
+  accountBalances: Record<string, number>;
+} {
+  const accounts = plan.netWorthAccounts ?? [];
+  let totalAssets = 0;
+  let totalLiabilities = 0;
+  const accountBalances: Record<string, number> = {};
+  for (const acc of accounts) {
+    accountBalances[acc.id] = acc.balance;
+    if (ASSET_ACCOUNT_TYPES.has(acc.type)) {
+      totalAssets += acc.balance;
+    } else {
+      totalLiabilities += acc.balance;
+    }
+  }
+  return { totalAssets, totalLiabilities, netWorth: totalAssets - totalLiabilities, accountBalances };
+}
+
+function autoSnapshotNetWorth(plan: Plan): Plan {
+  const accounts = plan.netWorthAccounts ?? [];
+  if (accounts.length === 0) return plan;
+
+  const today = new Date();
+  const monthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+  const alreadyHasThisMonth = (plan.netWorthSnapshots ?? []).some(
+    (s) => s.date?.startsWith(monthKey)
+  );
+  if (alreadyHasThisMonth) return plan;
+
+  const { totalAssets, totalLiabilities, netWorth, accountBalances } = computeCurrentNetWorth(plan);
+  const newSnapshot: NetWorthSnapshot = {
+    id: crypto.randomUUID(),
+    date: today.toISOString().slice(0, 10),
+    totalAssets,
+    totalLiabilities,
+    netWorth,
+    accountBalances,
+  };
+  return {
+    ...plan,
+    netWorthSnapshots: [...(plan.netWorthSnapshots ?? []), newSnapshot],
+  };
+}
+
 export function savePlan(plan: Plan, options?: SavePlanOptions) {
   if (typeof window === "undefined") return;
+  plan = autoSnapshotNetWorth(plan); // auto-snapshot net worth on new month
   const state = loadScenarioState();
   const key = scenarioPlanKey(state.activeId);
   const normalized = ensurePlanVersion(plan);

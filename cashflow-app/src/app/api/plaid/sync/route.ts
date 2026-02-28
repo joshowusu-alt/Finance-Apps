@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { saveMainPlan } from "@/lib/mainStore";
 import { getPlaidClient, mapPlaidTransaction } from "@/lib/plaid";
 import { getSQL } from "@/lib/db";
@@ -21,7 +22,18 @@ const checkSyncLimit = createRateLimiter(5, 60_000);
 
 export async function POST(req: Request) {
   try {
-    const { startDate, endDate } = await req.json();
+    const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional();
+    const bodySchema = z.object({
+      startDate: dateSchema,
+      endDate: dateSchema,
+      userId: z.string().optional(),
+    });
+
+    const parsed = bodySchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid request parameters" }, { status: 400 });
+    }
+    const { startDate, endDate } = parsed.data;
     const auth = await resolveAuthWithCookie();
 
     if (!auth) {

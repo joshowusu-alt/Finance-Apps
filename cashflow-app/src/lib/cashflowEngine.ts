@@ -236,6 +236,28 @@ function generateRuleEvents(
     return events;
   }
 
+  if (rule.cadence === "quarterly" || rule.cadence === "annual") {
+    const monthStep = rule.cadence === "quarterly" ? 3 : 12;
+    const seed = parseISO(rule.seedDate);
+    const cur = new Date(seed.getFullYear(), seed.getMonth(), seed.getDate());
+    while (cur.getTime() < start) {
+      cur.setMonth(cur.getMonth() + monthStep);
+    }
+    while (cur.getTime() <= end) {
+      events.push({
+        id: `${rule.id}-${iso(cur)}`,
+        date: iso(cur),
+        label: rule.label,
+        amount: rule.amount,
+        type,
+        category,
+        sourceId: rule.id,
+      });
+      cur.setMonth(cur.getMonth() + monthStep);
+    }
+    return events;
+  }
+
   const cur = parseISO(rule.seedDate);
   while (cur.getTime() < start) {
     cur.setDate(cur.getDate() + stepDays);

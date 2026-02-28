@@ -15,12 +15,16 @@ import type { PeriodRuleOverride } from "@/data/plan";
 function cadenceLabel(cadence: string) {
   if (cadence === "weekly") return "Weekly";
   if (cadence === "biweekly") return "Bi-weekly";
+  if (cadence === "quarterly") return "Quarterly";
+  if (cadence === "annual") return "Annual";
   return "Monthly";
 }
 
 function monthlyEquivalent(amount: number, cadence: string) {
   if (cadence === "weekly") return amount * 4;
   if (cadence === "biweekly") return amount * 2;
+  if (cadence === "quarterly") return amount / 3;
+  if (cadence === "annual") return amount / 12;
   return amount;
 }
 

@@ -88,6 +88,54 @@ function SubscriptionSummaryCard({ plan, onDismiss }: { plan: Plan; onDismiss: (
   );
 }
 
+// ---------------------------------------------------------------------------
+// Today Card — shows upcoming bills and cold-start CTA
+// ---------------------------------------------------------------------------
+function TodayCard({ plan }: { plan: Plan }) {
+  const today = new Date();
+  const in7Days = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const bills = (plan.bills ?? []).filter((b) => {
+    if (!b.dueDay || !b.enabled) return false;
+    const dueDate = new Date(today.getFullYear(), today.getMonth(), b.dueDay);
+    if (dueDate < today) {
+      dueDate.setMonth(dueDate.getMonth() + 1);
+    }
+    return dueDate <= in7Days;
+  });
+
+  const transactionCount = (plan.transactions ?? []).length;
+
+  if (transactionCount > 5 && bills.length === 0) return null;
+
+  return (
+    <div className="vn-card p-4" style={{ border: "1px solid var(--vn-border)" }}>
+      <div className="text-sm font-semibold text-(--vn-text) mb-2">📅 Today</div>
+      {bills.length > 0 && (
+        <div className="text-xs text-(--vn-muted) mb-2">
+          {bills.length} bill{bills.length !== 1 ? "s" : ""} due in the next 7 days
+          <ul className="mt-1 space-y-0.5">
+            {bills.slice(0, 3).map((b) => (
+              <li key={b.id} className="flex justify-between">
+                <span>{b.label}</span>
+                <span className="font-medium text-(--vn-text)">{b.amount ? formatMoney(b.amount) : ""}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {transactionCount === 0 && (
+        <div className="mt-2 flex items-center gap-2">
+          <span className="text-xs text-(--vn-muted)">No transactions yet —</span>
+          <a href="/transactions" className="text-xs font-medium text-(--vn-gold) hover:underline">
+            add your first →
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function formatPeriodLabel(label: string) {
   return label.replace(/^P(\d+)/, "Period $1");
 }
@@ -637,6 +685,11 @@ export default function HomePage() {
                   lowBalanceThreshold={plan.setup.expectedMinBalance}
                 />
               </div>
+            </motion.div>
+
+            {/* Upcoming bills & cold-start Today card */}
+            <motion.div variants={fadeUp} {...motionProps}>
+              <TodayCard plan={plan} />
             </motion.div>
 
             {/* Pointers: Widget Grid */}
