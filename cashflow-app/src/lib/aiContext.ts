@@ -18,6 +18,7 @@ import {
 import { detectSubscriptions } from "@/lib/subscriptionDetection";
 import { formatMoney } from "@/lib/currency";
 import { dayDiff, clamp } from "@/lib/dateUtils";
+import { deriveApp } from "@/lib/derive";
 
 // ============================================================================
 // Types
@@ -123,6 +124,27 @@ export interface AIFinancialContext {
         category: string;
         type: string;
     }>;
+
+    /** Period stage (from derive.ts) */
+    periodStage: "early" | "mid" | "late" | "closing";
+    /** Weekly spending patterns for pattern detection */
+    weeklyPatterns: {
+        week4OverspendDetected: boolean;
+        overspendWeekIndex: number | null;
+        weeklySpend: number[];
+    };
+    /** Period-over-period deltas */
+    deltas: {
+        overspendVsLastPeriod: number | null;
+        riskDaysVsLastPeriod: number | null;
+        savingsVsLastPeriod: number | null;
+    };
+    /** Highest-priority recommendation from derive.ts */
+    primaryRecommendation: {
+        action: string;
+        reason: string;
+        urgency: "high" | "medium" | "low";
+    };
 }
 
 // ============================================================================
@@ -575,6 +597,11 @@ export function buildAIContext(plan: Plan): AIFinancialContext {
         },
         insights,
         recentTransactions,
+        // Sprint 9 additions — sourced from derive.ts to avoid re-computation
+        periodStage: deriveApp(plan, periodId).periodStage,
+        weeklyPatterns: deriveApp(plan, periodId).weeklyPatterns,
+        deltas: deriveApp(plan, periodId).deltas,
+        primaryRecommendation: deriveApp(plan, periodId).primaryRecommendation,
     };
 }
 
@@ -659,7 +686,26 @@ export function formatContextForPrompt(ctx: AIFinancialContext): string {
         });
         prompt += `\n`;
     }
-
+    // Sprint 9: period stage + weekly patterns + deltas
+    if (ctx.periodStage) {
+        prompt += `PERIOD STAGE: ${ctx.periodStage}\n`;
+    }
+    if (ctx.weeklyPatterns?.week4OverspendDetected) {
+        prompt += `⚠️ WEEK 4 OVERSPEND DETECTED: Spending in the latest week is 30%+ above the weekly average.\n`;
+    }
+    if (ctx.deltas) {
+        const { overspendVsLastPeriod, riskDaysVsLastPeriod, savingsVsLastPeriod } = ctx.deltas;
+        if (overspendVsLastPeriod !== null) {
+            prompt += `OVERSPEND DELTA vs LAST PERIOD: ${overspendVsLastPeriod <= 0 ? "↓" : "↑"}${formatMoney(Math.abs(overspendVsLastPeriod))} ${overspendVsLastPeriod <= 0 ? "(improvement)" : "(worse)"}\n`;
+        }
+        if (riskDaysVsLastPeriod !== null) {
+            prompt += `RISK DAYS DELTA vs LAST PERIOD: ${riskDaysVsLastPeriod > 0 ? "+" : ""}${riskDaysVsLastPeriod}\n`;
+        }
+        if (savingsVsLastPeriod !== null) {
+            prompt += `SAVINGS DELTA vs LAST PERIOD: ${formatMoney(savingsVsLastPeriod)} ${savingsVsLastPeriod >= 0 ? "(improvement)" : "(below last period)"}\n`;
+        }
+    }
+    prompt += `\n`;
     // Recent transactions
     if (ctx.recentTransactions.length > 0) {
         prompt += `RECENT TRANSACTIONS:\n`;

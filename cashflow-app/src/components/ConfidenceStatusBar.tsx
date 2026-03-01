@@ -37,65 +37,47 @@ const STATUS_CONFIG: Record<
   },
 };
 
+/**
+ * Inline pill variant — dot + tier label + one-line explanation.
+ * The full numeric score + pillar breakdown lives in ConfidenceScoreModule.
+ */
 export default function ConfidenceStatusBar({ confidence, className = "" }: Props) {
   const cfg = STATUS_CONFIG[confidence.status];
 
   return (
     <div
-      className={`flex items-center gap-4 rounded-xl px-4 py-3 ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 ${className}`}
       style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}
       role="status"
-      aria-label={`Financial confidence: ${confidence.status}, score ${confidence.score}`}
+      aria-label={`Financial confidence: ${confidence.status}`}
     >
-      {/* Left: large numeric score */}
-      <div className="shrink-0 text-center">
-        <div
-          className="text-[10px] uppercase tracking-widest font-semibold mb-0.5"
-          style={{ color: "rgba(240,237,232,0.45)" }}
-        >
-          Confidence
-        </div>
-        <div
-          className="font-bold tabular-nums leading-none"
-          style={{
-            fontSize: "clamp(2rem,5vw,2.5rem)",
-            color: cfg.text,
-            transition: "color 400ms ease",
-          }}
-        >
-          {confidence.score}
-        </div>
-      </div>
-
-      {/* Divider */}
+      {/* Status dot */}
       <span
-        className="block w-px self-stretch shrink-0"
-        style={{ background: cfg.border }}
+        className="block w-1.5 h-1.5 rounded-full shrink-0"
+        style={{ background: cfg.dot }}
         aria-hidden="true"
       />
-
-      {/* Right: tier label + explanation */}
-      <div className="min-w-0">
-        <div className="flex items-center gap-1.5 mb-1">
-          <span
-            className="block w-1.5 h-1.5 rounded-full shrink-0"
-            style={{ background: cfg.dot }}
-            aria-hidden="true"
-          />
-          <span
-            className="text-[10px] font-semibold uppercase tracking-widest"
-            style={{ color: cfg.text }}
-          >
-            {confidence.status}
-          </span>
-        </div>
-        <p
-          className="text-xs leading-relaxed line-clamp-2"
-          style={{ color: "rgba(240,237,232,0.55)" }}
-        >
-          {confidence.explanation}
-        </p>
-      </div>
+      {/* Tier label */}
+      <span
+        className="text-[10px] font-semibold uppercase tracking-widest"
+        style={{ color: cfg.text }}
+      >
+        {confidence.status}
+      </span>
+      {/* Separator + one-line explanation (hidden on very small screens) */}
+      <span
+        className="hidden sm:inline text-xs"
+        style={{ color: cfg.border }}
+        aria-hidden="true"
+      >
+        ·
+      </span>
+      <span
+        className="hidden sm:inline text-xs line-clamp-1"
+        style={{ color: "rgba(240,237,232,0.55)" }}
+      >
+        {confidence.explanation}
+      </span>
     </div>
   );
 }

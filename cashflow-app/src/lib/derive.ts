@@ -9,7 +9,7 @@ import {
   minPoint,
   type TimelineRow,
 } from "@/lib/cashflowEngine";
-import { average, stdDev } from "@/lib/dateUtils";
+import { average, stdDev, dayDiff } from "@/lib/dateUtils";
 import { prettyDate } from "@/lib/formatUtils";
 
 export type DerivedDay = {
@@ -61,6 +61,26 @@ export type Derived = {
   };
   flags: {
     hasStartingBalance: boolean;
+  };
+  /** What fraction of the period has elapsed expressed as a stage */
+  periodStage: "early" | "mid" | "late" | "closing";
+  /** Weekly spending patterns for pattern-detection in Sprint 9 */
+  weeklyPatterns: {
+    week4OverspendDetected: boolean;
+    overspendWeekIndex: number | null;
+    weeklySpend: number[];
+  };
+  /** Period-over-period deltas vs the previous period */
+  deltas: {
+    overspendVsLastPeriod: number | null;
+    riskDaysVsLastPeriod: number | null;
+    savingsVsLastPeriod: number | null;
+  };
+  /** Single highest-priority actionable recommendation */
+  primaryRecommendation: {
+    action: string;
+    reason: string;
+    urgency: "high" | "medium" | "low";
   };
 };
 
@@ -239,6 +259,116 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
   const leftoverValue = remaining;
   const savingsExplanation = `${leftoverLabel} is what's left after income, bills, and allocations.`;
 
+  // ── New Sprint 8/9 fields ──────────────────────────────────────────────────
+
+  // Period stage — how far through the period are we?
+  const periodDaysTotal = dayDiff(period.start, period.end) + 1;
+  const daysElapsedInPeriod = Math.min(Math.max(dayDiff(period.start, plan.setup.asOfDate) + 1, 0), periodDaysTotal);
+  const timeProgressInPeriod = periodDaysTotal > 0 ? Math.min(1, daysElapsedInPeriod / periodDaysTotal) : 0;
+  const periodStage: Derived["periodStage"] =
+    timeProgressInPeriod < 0.25 ? "early" :
+    timeProgressInPeriod < 0.65 ? "mid" :
+    timeProgressInPeriod < 0.90 ? "late" : "closing";
+
+  // Weekly spend patterns
+  const periodActualOutflows = plan.transactions.filter(
+    (t) => t.date >= period.start && t.date <= period.end && t.type === "outflow" && t.category !== "savings"
+  );
+  const weeklySpend: number[] = [0, 0, 0, 0];
+  periodActualOutflows.forEach((t) => {
+    const weekIdx = Math.min(3, Math.floor(dayDiff(period.start, t.date) / 7));
+    weeklySpend[weekIdx] += t.amount;
+  });
+  const weeksStarted = Math.floor(daysElapsedInPeriod / 7);
+  const week4OverspendDetected =
+    weeksStarted >= 4 &&
+    weeklySpend[0] + weeklySpend[1] + weeklySpend[2] > 0
+      ? weeklySpend[3] > (weeklySpend[0] + weeklySpend[1] + weeklySpend[2]) / 3 * 1.3
+      : false;
+  const overspendWeekIndex: number | null = (() => {
+    if (weeksStarted < 2) return null;
+    const completedWeeks = weeklySpend.slice(0, Math.min(weeksStarted, 4));
+    if (completedWeeks.length < 2) return null;
+    const avg = completedWeeks.reduce((a, b) => a + b, 0) / completedWeeks.length;
+    const maxIdx = completedWeeks.reduce((best, v, i) => (v > completedWeeks[best] ? i : best), 0);
+    return completedWeeks[maxIdx] > avg * 1.3 ? maxIdx : null;
+  })();
+
+  // Deltas vs previous period
+  const sortedPeriodsAscForDeltas = [...plan.periods].sort((a, b) => a.id - b.id);
+  const currentPeriodIdx = sortedPeriodsAscForDeltas.findIndex((p) => p.id === resolvedPeriodId);
+  const prevPeriodRecord = currentPeriodIdx > 0 ? sortedPeriodsAscForDeltas[currentPeriodIdx - 1] : null;
+  let deltas: Derived["deltas"] = {
+    overspendVsLastPeriod: null,
+    riskDaysVsLastPeriod: null,
+    savingsVsLastPeriod: null,
+  };
+  if (prevPeriodRecord) {
+    const prevDerived = deriveApp(plan, prevPeriodRecord.id);
+    const prevActualSpend = plan.transactions
+      .filter(
+        (t) =>
+          t.date >= prevPeriodRecord.start &&
+          t.date <= prevPeriodRecord.end &&
+          t.type === "outflow" &&
+          t.category !== "savings"
+      )
+      .reduce((sum, t) => sum + t.amount, 0);
+    const prevBudgetSpend =
+      prevDerived.totals.committedBills +
+      prevDerived.totals.allocationsTotal -
+      prevDerived.savingsHealth.savingsThisPeriod;
+    const currActualSpend = periodActualOutflows.reduce((sum, t) => sum + t.amount, 0);
+    const currBudgetSpend = allocationsTotal + committedBills - savingsThisPeriod;
+    const prevOverspend = prevBudgetSpend > 0 ? prevActualSpend - prevBudgetSpend : 0;
+    const currOverspend = currBudgetSpend > 0 ? currActualSpend - currBudgetSpend : 0;
+    deltas = {
+      overspendVsLastPeriod: currOverspend - prevOverspend,
+      riskDaysVsLastPeriod: daysBelowMin - prevDerived.cashflow.daysBelowMin,
+      savingsVsLastPeriod: savingsThisPeriod - prevDerived.savingsHealth.savingsThisPeriod,
+    };
+  }
+
+  // Primary recommendation — highest-priority action
+  const currActualSpendForRec = periodActualOutflows.reduce((sum, t) => sum + t.amount, 0);
+  const currBudgetSpendForRec = allocationsTotal + committedBills - savingsThisPeriod;
+  const spendingProgressForRec = currBudgetSpendForRec > 0
+    ? Math.min(1, currActualSpendForRec / currBudgetSpendForRec)
+    : 0;
+  const paceGapForRec = spendingProgressForRec - timeProgressInPeriod;
+  let primaryRecommendation: Derived["primaryRecommendation"];
+  if (lowest.balance < 0) {
+    primaryRecommendation = {
+      action: "Reduce bills or move income earlier to avoid a negative balance",
+      reason: `Your balance is forecast to go negative on ${prettyDate(lowest.date)}.`,
+      urgency: "high",
+    };
+  } else if (daysBelowMin > 3) {
+    primaryRecommendation = {
+      action: "Restructure your plan to reduce days below your safety net",
+      reason: `${daysBelowMin} days are forecast below your minimum balance this period.`,
+      urgency: "high",
+    };
+  } else if (paceGapForRec > 0.15) {
+    primaryRecommendation = {
+      action: "Trim discretionary spending this week to get back on pace",
+      reason: `Spending is tracking ${Math.round(paceGapForRec * 100)}% ahead of your budget timeline.`,
+      urgency: "medium",
+    };
+  } else if (savingsThisPeriod === 0) {
+    primaryRecommendation = {
+      action: "Add a savings allocation to your plan to start building your safety net",
+      reason: "No savings target is set — even a small amount compounds over time.",
+      urgency: "medium",
+    };
+  } else {
+    primaryRecommendation = {
+      action: "Keep tracking your spending to close the period on target",
+      reason: "Your plan is in good shape — staying consistent is the priority.",
+      urgency: "low",
+    };
+  }
+
   return {
     period: {
       id: period.id,
@@ -279,5 +409,13 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
     flags: {
       hasStartingBalance,
     },
+    periodStage,
+    weeklyPatterns: {
+      week4OverspendDetected,
+      overspendWeekIndex,
+      weeklySpend,
+    },
+    deltas,
+    primaryRecommendation,
   };
 }

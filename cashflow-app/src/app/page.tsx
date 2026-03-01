@@ -7,7 +7,7 @@ import { hasStoredPlan, savePlan } from "@/lib/storage";
 import { createSamplePlan } from "@/data/plan";
 import { loadWizardState } from "@/lib/onboarding";
 import OnboardingWizard from "@/components/OnboardingWizard";
-import type { Plan, Period } from "@/data/plan";
+import type { Plan } from "@/data/plan";
 import {
   dismissOnboarding,
   loadOnboardingState,
@@ -30,13 +30,14 @@ import { useDerived } from "@/lib/useDerived";
 import ConfidenceStatusBar from "@/components/ConfidenceStatusBar";
 import { dayDiff } from "@/lib/dateUtils";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
-import SpendingVelocityGauge from "@/components/SpendingVelocityGauge";
 import WhatIfPanel from "@/components/WhatIfPanel";
 import GoalRings from "@/components/GoalRings";
 import DebtPayoffPlanner from "@/components/DebtPayoffPlanner";
 import ConfettiBurst from "@/components/ConfettiBurst";
-import AnomalyAlerts from "@/components/AnomalyAlerts";
 import { useDashboard } from "@/hooks/useDashboard";
+import CollapsibleSection from "@/components/CollapsibleSection";
+import ConfidenceScoreModule from "@/components/ConfidenceScoreModule";
+import type { Derived } from "@/lib/derive";
 import { usePeriodClose } from "@/hooks/usePeriodClose";
 import { PeriodCloseModal } from "@/components/dashboard/PeriodCloseModal";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
@@ -56,7 +57,7 @@ function SubscriptionSummaryCard({ plan, onDismiss }: { plan: Plan; onDismiss: (
   );
   const count = subscriptions.length;
   const totalMonthly = subscriptions.reduce((sum, s) => sum + s.monthlyCost, 0);
-  if (count === 0) return null;
+  if (count < 3) return null;
   return (
     <div
       className="vn-card p-4 flex items-center justify-between gap-4 transition-colors hover:border-(--vn-gold)"
@@ -253,119 +254,166 @@ function BankConnectBanner() {
 }
 
 // ---------------------------------------------------------------------------
-// Coach entry card — quick link to the AI Financial Coach
+// Primary Recommendation Card — surfaces the #1 actionable from deriveApp
 // ---------------------------------------------------------------------------
-function CoachEntryCard() {
+function PrimaryRecommendationCard({
+  recommendation,
+}: {
+  recommendation: Derived["primaryRecommendation"];
+}) {
+  const urgencyColor: Record<string, string> = {
+    high:   "var(--vn-status-risk)",
+    medium: "var(--vn-status-watch)",
+    low:    "var(--vn-status-stable)",
+  };
+  const urgencyBg: Record<string, string> = {
+    high:   "rgba(158,78,78,0.10)",
+    medium: "rgba(180,120,20,0.10)",
+    low:    "rgba(197,160,70,0.10)",
+  };
+  const urgencyIcon: Record<string, string> = {
+    high: "⚠️", medium: "💡", low: "✓",
+  };
+  const urgencyHeading: Record<string, string> = {
+    high: "Action needed", medium: "Next focus", low: "All good",
+  };
   return (
-    <Link
-      href="/coach"
-      className="vn-card p-4 flex items-center gap-3 transition-colors hover:border-(--vn-gold)"
-      style={{ border: "1px solid var(--vn-border)", textDecoration: "none" }}
+    <div
+      className="vn-card p-4 flex items-start gap-3"
+      style={{ border: "1px solid var(--vn-border)" }}
     >
       <div
-        className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl"
-        style={{ background: "color-mix(in srgb, var(--vn-gold) 12%, transparent)" }}
+        className="shrink-0 flex h-9 w-9 items-center justify-center rounded-xl mt-0.5"
+        style={{ background: urgencyBg[recommendation.urgency] }}
       >
-        <span className="text-lg" aria-hidden="true">💬</span>
+        <span className="text-base" aria-hidden="true">
+          {urgencyIcon[recommendation.urgency]}
+        </span>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-(--vn-text)">Ask your coach</div>
-        <div className="text-xs text-(--vn-muted) mt-0.5">
-          AI-powered answers about your finances
+        <div
+          className="text-xs uppercase tracking-widest font-semibold mb-0.5"
+          style={{ color: urgencyColor[recommendation.urgency] }}
+        >
+          {urgencyHeading[recommendation.urgency]}
         </div>
+        <div className="text-sm font-semibold text-(--vn-text)">
+          {recommendation.action}
+        </div>
+        <div className="text-xs mt-0.5" style={{ color: "var(--vn-muted)" }}>
+          {recommendation.reason}
+        </div>
+        <Link
+          href="/coach"
+          className="text-xs font-medium mt-2 inline-flex items-center gap-1 hover:underline"
+          style={{ color: "var(--vn-gold)" }}
+        >
+          Ask coach →
+        </Link>
       </div>
-      <svg className="h-4 w-4 shrink-0" style={{ color: "var(--vn-muted)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
-    </Link>
+    </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Savings Rate KPI card
+// Progress Summary Strip — savings streak + period-over-period deltas
 // ---------------------------------------------------------------------------
-function SavingsRateCard({
-  plan,
-  period,
-  income,
-  spending,
+function ProgressSummaryStrip({
+  streak,
+  deltas,
 }: {
-  plan: Plan;
-  period: Period;
-  income: number;
-  spending: number;
+  streak: number;
+  deltas: Derived["deltas"];
 }) {
-  if (income === 0) return null;
-
-  const saved = income - spending;
-  const rate = Math.round((saved / income) * 100);
-  const isPositive = rate > 0;
-
-  // Previous period comparison
-  const periods = plan.periods ?? [];
-  const currentIdx = periods.findIndex((p) => p.id === period.id);
-  const prevPeriod = currentIdx > 0 ? periods[currentIdx - 1] : null;
-  let prevRate: number | null = null;
-  if (prevPeriod) {
-    const prevTx = plan.transactions.filter(
-      (t) => t.date >= prevPeriod.start && t.date <= prevPeriod.end
-    );
-    const prevIncome = prevTx
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + t.amount, 0);
-    const prevSpending = prevTx
-      .filter((t) => t.type !== "income")
-      .reduce((s, t) => s + t.amount, 0);
-    if (prevIncome > 0)
-      prevRate = Math.round(((prevIncome - prevSpending) / prevIncome) * 100);
-  }
-
-  const trend = prevRate !== null ? rate - prevRate : null;
-
+  const hasDeltas = deltas.overspendVsLastPeriod !== null;
   return (
     <div
-      className="vn-card p-4 flex items-center justify-between gap-4"
+      className="vn-card p-4 grid grid-cols-2 sm:grid-cols-3 gap-4"
       style={{ border: "1px solid var(--vn-border)" }}
     >
+      {/* Savings streak */}
       <div>
         <div
-          className="text-xs uppercase tracking-wide font-medium"
+          className="text-xs uppercase tracking-widest font-medium"
           style={{ color: "var(--vn-muted)" }}
         >
-          Savings rate
+          Savings streak
         </div>
-        <div className="mt-1 flex items-end gap-2">
+        <div className="mt-1 flex items-end gap-1.5">
           <span
-            className="text-2xl font-bold tabular-nums"
-            style={{ color: isPositive ? "#4FAF7B" : "#b85c5c" }}
+            className="text-xl font-bold tabular-nums"
+            style={{
+              color: streak > 0
+                ? "var(--vn-status-secure)"
+                : "var(--vn-muted)",
+            }}
           >
-            {rate}%
+            {streak}
           </span>
-          {trend !== null && (
+          <span
+            className="text-xs mb-0.5"
+            style={{ color: "var(--vn-muted)" }}
+          >
+            {streak === 1 ? "period" : "periods"}
+          </span>
+        </div>
+      </div>
+
+      {/* Spending delta vs last period */}
+      {hasDeltas && deltas.overspendVsLastPeriod !== null && (
+        <div>
+          <div
+            className="text-xs uppercase tracking-widest font-medium"
+            style={{ color: "var(--vn-muted)" }}
+          >
+            Overspend change
+          </div>
+          <div className="mt-1 flex items-end gap-1.5">
             <span
-              className="text-xs font-medium mb-0.5"
-              style={{ color: trend >= 0 ? "#4FAF7B" : "#b85c5c" }}
+              className="text-xl font-bold tabular-nums"
+              style={{
+                color: deltas.overspendVsLastPeriod <= 0
+                  ? "var(--vn-status-secure)"
+                  : "var(--vn-status-risk)",
+              }}
             >
-              {trend >= 0 ? "↑" : "↓"}{Math.abs(trend)}pp vs last
+              {deltas.overspendVsLastPeriod <= 0 ? "↓" : "↑"}
+              {formatMoney(Math.abs(deltas.overspendVsLastPeriod))}
             </span>
-          )}
+          </div>
+          <div className="text-xs" style={{ color: "var(--vn-muted)" }}>
+            vs last period
+          </div>
         </div>
-        <div className="text-xs mt-0.5" style={{ color: "var(--vn-muted)" }}>
-          {isPositive
-            ? `Saving ${formatMoney(saved)} this period`
-            : `Overspending by ${formatMoney(Math.abs(saved))}`}
+      )}
+
+      {/* Risk days delta */}
+      {hasDeltas && deltas.riskDaysVsLastPeriod !== null && (
+        <div>
+          <div
+            className="text-xs uppercase tracking-widest font-medium"
+            style={{ color: "var(--vn-muted)" }}
+          >
+            Risk days change
+          </div>
+          <div className="mt-1 flex items-end gap-1.5">
+            <span
+              className="text-xl font-bold tabular-nums"
+              style={{
+                color: deltas.riskDaysVsLastPeriod <= 0
+                  ? "var(--vn-status-secure)"
+                  : "var(--vn-status-risk)",
+              }}
+            >
+              {deltas.riskDaysVsLastPeriod > 0 ? "+" : ""}
+              {deltas.riskDaysVsLastPeriod}
+            </span>
+          </div>
+          <div className="text-xs" style={{ color: "var(--vn-muted)" }}>
+            vs last period
+          </div>
         </div>
-      </div>
-      <div
-        className="shrink-0 flex h-12 w-12 items-center justify-center rounded-xl text-xl"
-        style={{
-          background: isPositive
-            ? "rgba(79,175,123,0.12)"
-            : "rgba(184,92,92,0.12)",
-        }}
-      >
-        {isPositive ? "🏦" : "⚠️"}
-      </div>
+      )}
     </div>
   );
 }
@@ -443,7 +491,6 @@ export default function HomePage() {
     activeGoals,
     liabilityAccounts,
     subscriptionNudge,
-    spendingAnomalies,
   } = useDashboard(plan, derived);
 
   const { income: actualIncome, spending: actualSpending, savings: actualSavings } = actuals;
@@ -748,8 +795,24 @@ export default function HomePage() {
             {/* Bank connect banner — only shown when no accounts are connected */}
             <BankConnectBanner />
 
-            {/* AI Coach entry point */}
-            <CoachEntryCard />
+            {/* Zone 2: Am I progressing? */}
+            {hasData && (
+              <motion.div variants={fadeUp} {...motionProps}>
+                <ProgressSummaryStrip
+                  streak={derived.savingsHealth.streak}
+                  deltas={derived.deltas}
+                />
+              </motion.div>
+            )}
+
+            {/* Zone 3: What next? */}
+            {hasData && (
+              <motion.div variants={fadeUp} {...motionProps}>
+                <PrimaryRecommendationCard
+                  recommendation={derived.primaryRecommendation}
+                />
+              </motion.div>
+            )}
 
             {/* Visual Hero: Projection */}
             <motion.div variants={fadeUp} className="vn-card p-6">
@@ -792,6 +855,19 @@ export default function HomePage() {
               </div>
             </motion.div>
 
+            {/* Confidence Score Module (collapsed by default) */}
+            {hasData && (
+              <motion.div variants={fadeUp} {...motionProps}>
+                <CollapsibleSection
+                  id="confidence-module"
+                  title="Financial Confidence Score"
+                  defaultOpen={false}
+                >
+                  <ConfidenceScoreModule confidence={confidence} />
+                </CollapsibleSection>
+              </motion.div>
+            )}
+
             {/* Upcoming bills & cold-start Today card */}
             <motion.div variants={fadeUp} {...motionProps}>
               <TodayCard plan={plan} />
@@ -809,18 +885,6 @@ export default function HomePage() {
                 <BillsWidget bills={upcomingBills} />
               </motion.div>
 
-              {/* 4. Spending velocity gauge */}
-              {daysElapsed > 0 && budgetSpending > 0 && (
-                <motion.div className="h-full md:col-span-2" whileHover={{ y: -2, transition: { duration: 0.18 } }}>
-                  <SpendingVelocityGauge
-                    actualSpend={actualSpending}
-                    budgetSpend={budgetSpending}
-                    daysElapsed={daysElapsed}
-                    periodDays={periodDays}
-                    daysRemaining={daysRemaining}
-                  />
-                </motion.div>
-              )}
             </motion.div>
 
             {/* What-if scenario panel */}
@@ -843,25 +907,6 @@ export default function HomePage() {
                     setSubDismissed(true);
                   }}
                 />
-              </motion.div>
-            )}
-
-            {/* Savings rate KPI */}
-            {actualIncome > 0 && (
-              <motion.div variants={fadeUp}>
-                <SavingsRateCard
-                  plan={plan}
-                  period={period}
-                  income={actualIncome}
-                  spending={actualSpending}
-                />
-              </motion.div>
-            )}
-
-            {/* Spending anomalies */}
-            {spendingAnomalies.length > 0 && (
-              <motion.div variants={fadeUp}>
-                <AnomalyAlerts anomalies={spendingAnomalies} />
               </motion.div>
             )}
 

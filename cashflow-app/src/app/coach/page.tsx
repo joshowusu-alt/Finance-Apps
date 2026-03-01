@@ -180,6 +180,41 @@ function getFollowUps(lastUserMessage: string): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// Build period-stage preamble for contextual framing
+// ---------------------------------------------------------------------------
+function buildStageContext(ctx: AIFinancialContext): string {
+  const stage = ctx.periodStage ?? "mid";
+  const daysLeft = ctx.period.daysTotal - ctx.period.daysElapsed;
+  if (stage === "early")   return `You're early in the period — great time to set a strong pace.\n\n`;
+  if (stage === "late")    return `You're in the final stretch (${daysLeft} days left) — decisions now matter most.\n\n`;
+  if (stage === "closing") return `Almost at period end (${daysLeft} days left) — focus on finishing strong.\n\n`;
+  return "";
+}
+
+// Build a delta comparison line for budget/savings/forecast responses
+function buildDeltaLine(ctx: AIFinancialContext, topic: "overspend" | "savings" | "risk"): string {
+  const d = ctx.deltas;
+  if (!d) return "";
+  const fmt = formatMoney;
+  if (topic === "overspend" && d.overspendVsLastPeriod !== null) {
+    const v = d.overspendVsLastPeriod;
+    if (v < 0) return `📉 Overspend is **${fmt(Math.abs(v))} lower** than last period — trending in the right direction.\n`;
+    if (v > 0) return `📈 Overspend is **${fmt(v)} higher** than last period — worth addressing now.\n`;
+  }
+  if (topic === "savings" && d.savingsVsLastPeriod !== null) {
+    const v = d.savingsVsLastPeriod;
+    if (v >= 0) return `✅ Savings allocation is **${fmt(v)} higher** than last period.\n`;
+    return `⚠️ Savings allocation is **${fmt(Math.abs(v))} lower** than last period.\n`;
+  }
+  if (topic === "risk" && d.riskDaysVsLastPeriod !== null) {
+    const v = d.riskDaysVsLastPeriod;
+    if (v < 0) return `✅ **${Math.abs(v)} fewer risk days** than last period — plan is healthier.\n`;
+    if (v > 0) return `⚠️ **${v} more risk days** than last period — consider smoothing your outflows.\n`;
+  }
+  return "";
+}
+
+// ---------------------------------------------------------------------------
 // Local fallback response generator (uses same localStorage data as the UI)
 // ---------------------------------------------------------------------------
 
@@ -197,37 +232,56 @@ function generateLocalResponse(
     .filter(c => c.status === "over" && c.category !== "income")
     .sort((a, b) => b.variance - a.variance)[0];
 
+  // ── Week-4 overspend pattern (Sprint 9) ──────────────────────────────────
+  const isWeek4Pattern = ctx.weeklyPatterns?.week4OverspendDetected;
+  if (isWeek4Pattern && (q.includes("budget") || q.includes("spending") || q.includes("track") || q.includes("week"))) {
+    let r = `⚠️ **Week-4 spending spike detected**\n\n`;
+    r += `Your latest week shows spending 30%+ above your weekly average for this period.\n\n`;
+    r += `**Spent:** ${fmt(ctx.actuals.spending.amount)} of ${fmt(ctx.budget.spending)}\n\n`;
+    r += `**Why this happens:**\n`;
+    r += `• End-of-period catch-up spending\n`;
+    r += `• Deferred bills landing at once\n`;
+    r += `• Reduced diligence as the period winds down\n\n`;
+    r += `**Quick action:** Review transactions from the past 7 days and identify any non-essentials.\n`;
+    r += `${buildDeltaLine(ctx, "overspend")}`;
+    r += `\nAim for **${fmt(Math.max(0, dailyBudget))}/day** for the next ${daysLeft} days to recover.`;
+    return r;
+  }
+
   // ── Budget / on-track ────────────────────────────────────────────────────
   if (q.includes("budget") || q.includes("track") || q.includes("on track")) {
     const sp = ctx.smartPace.spending;
+    const stageCtx = buildStageContext(ctx);
 
     if (sp.isNormal || sp.status === "on-track") {
-      let r = `You're doing great — right on track!\n\n`;
+      let r = stageCtx + `You're doing great — right on track!\n\n`;
       r += `**Spent:** ${fmt(ctx.actuals.spending.amount)} of ${fmt(ctx.budget.spending)}\n`;
       r += `**Remaining:** ${fmt(ctx.actuals.leftover)}\n\n`;
       if (ctx.smartPace.spendingPattern === "front-loaded" && ctx.period.timeProgress < 0.5) {
         r += `Your bills are front-loaded so the big spending is done. Smooth sailing from here!\n\n`;
       }
-      r += `You can comfortably spend **${fmt(dailyBudget)}/day** for the next ${daysLeft} days.`;
+      r += `You can comfortably spend **${fmt(dailyBudget)}/day** for the next ${daysLeft} days.\n`;
+      r += buildDeltaLine(ctx, "overspend");
       return r;
     }
 
     if (sp.status === "ahead" && !sp.isNormal) {
       const extra = Math.abs(sp.variance);
-      let r = `Heads up — you're running a bit ahead of pace.\n\n`;
+      let r = stageCtx + `Heads up — you're running a bit ahead of pace.\n\n`;
       r += `**Spent:** ${fmt(ctx.actuals.spending.amount)} of ${fmt(ctx.budget.spending)}\n`;
       r += `That's about **${fmt(extra)} more** than your usual rhythm by this point.\n\n`;
       r += `**Quick wins to get back on track:**\n`;
       if (topOverspent) r += `• **${topOverspent.category}** is running hot — worth a quick review\n`;
       r += `• Aim for **${fmt(Math.max(0, dailyBudget))}/day** going forward\n`;
       r += `• Try a no-spend day tomorrow\n\n`;
+      r += buildDeltaLine(ctx, "overspend");
       r += `Nothing alarming — just a gentle course correction!`;
       return r;
     }
 
     if (sp.status === "behind") {
       const saved = Math.abs(sp.variance);
-      let r = `Nice work! You're under budget.\n\n`;
+      let r = stageCtx + `Nice work! You're under budget.\n\n`;
       r += `**Spent:** ${fmt(ctx.actuals.spending.amount)} of ${fmt(ctx.budget.spending)}\n`;
       r += `You're **${fmt(saved)} under** your usual pace — extra breathing room.\n\n`;
       r += `**What to do with the surplus:**\n`;
@@ -237,10 +291,11 @@ function generateLocalResponse(
       return r;
     }
 
-    let r = `Looking good — everything's balanced!\n\n`;
+    let r = stageCtx + `Looking good — everything's balanced!\n\n`;
     r += `**Spent:** ${fmt(ctx.actuals.spending.amount)} of ${fmt(ctx.budget.spending)}\n`;
     r += `**Remaining:** ${fmt(ctx.actuals.leftover)}\n\n`;
-    r += `Aim for **${fmt(dailyBudget)}/day** for the next ${daysLeft} days.`;
+    r += `Aim for **${fmt(dailyBudget)}/day** for the next ${daysLeft} days.\n`;
+    r += buildDeltaLine(ctx, "overspend");
     return r;
   }
 
@@ -277,10 +332,11 @@ function generateLocalResponse(
       r += `\n`;
     }
     if (ctx.variance.overspentCategories.length > 0) {
-      r += `**Focus area:** ${ctx.variance.overspentCategories[0]} is over budget — review recent purchases there.`;
+      r += `**Focus area:** ${ctx.variance.overspentCategories[0]} is over budget — review recent purchases there.\n`;
     } else {
-      r += `Everything's within budget — great discipline!`;
+      r += `Everything's within budget — great discipline!\n`;
     }
+    r += buildDeltaLine(ctx, "overspend");
     return r;
   }
 
@@ -300,12 +356,14 @@ function generateLocalResponse(
       r += `**Catch-up plan:**\n`;
       r += `• Transfer **${fmt(gap / Math.max(1, Math.ceil(daysLeft / 7)))}/week** to close the gap\n`;
       r += `• Look for a subscription to pause\n`;
-      r += `• Try one home-cooked meal swap this week`;
+      r += `• Try one home-cooked meal swap this week\n\n`;
+      r += buildDeltaLine(ctx, "savings");
     } else {
       r += `You're ahead of your savings target — brilliant!\n\n`;
       r += `**Level up ideas:**\n`;
       r += `• Increase your savings goal by 10% next period\n`;
-      r += `• Direct the extra to your emergency fund`;
+      r += `• Direct the extra to your emergency fund\n\n`;
+      r += buildDeltaLine(ctx, "savings");
     }
     return r;
   }
@@ -324,11 +382,13 @@ function generateLocalResponse(
       r += `**How to avoid this:**\n`;
       r += `• Delay large purchases until after your next income\n`;
       r += `• Check if any bills can be rescheduled\n`;
-      r += `• Consider a temporary freeze on non-essentials`;
+      r += `• Consider a temporary freeze on non-essentials\n\n`;
+      r += buildDeltaLine(ctx, "risk");
     } else {
       r += `Your balance stays healthy throughout — no danger zones!\n\n`;
+      r += buildDeltaLine(ctx, "risk");
       if (ctx.forecast.scenarios.length > 0) {
-        r += `**Scenarios:**\n`;
+        r += `\n**Scenarios:**\n`;
         ctx.forecast.scenarios.forEach(s => {
           r += `• ${s.label}: ${fmt(s.endBalance)}\n`;
         });
@@ -353,7 +413,7 @@ function generateLocalResponse(
 
   // ── Default with top insights ────────────────────────────────────────────
   if (ctx.insights.length > 0) {
-    let r = `${ctx.insights[0].message}\n\n`;
+    let r = `${buildStageContext(ctx)}${ctx.insights[0].message}\n\n`;
     if (ctx.insights.length > 1) {
       r += `**Also worth knowing:**\n`;
       ctx.insights.slice(1, 3).forEach(i => { r += `• ${i.message}\n`; });
