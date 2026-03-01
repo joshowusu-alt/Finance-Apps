@@ -139,8 +139,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title ?? "Velanovo", {
       body: data.body,
-      icon: data.icon ?? "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: data.icon ?? "/icon-192.png",
+      badge: "/icon-192.png",
       // Use `href` so the existing notificationclick handler can navigate
       data: { href: data.url ?? "/" },
       tag: "velanovo-push",

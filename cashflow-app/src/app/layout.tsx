@@ -19,6 +19,7 @@ import UpdateBanner from "@/components/UpdateBanner";
 import ClientOverlays from "@/components/ClientOverlays";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { PageTransition } from "@/components/PageTransition";
+import NextTopLoader from "nextjs-toploader";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -50,10 +51,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0D1117",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0D1117" },
+    { media: "(prefers-color-scheme: light)", color: "#F6F5F2" },
+  ],
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
 };
 
@@ -80,6 +83,7 @@ else{d.classList.add("dark");d.setAttribute("data-theme","dark");}
         />
       </head>
       <body className={`${playfair.variable} ${jakarta.variable} min-h-screen font-sans transition-colors duration-200 overflow-x-hidden`} style={{ background: "var(--vn-bg, #0D1117)", color: "var(--vn-text)" }}>
+        <NextTopLoader color="var(--vn-gold, #C9A227)" height={2} showSpinner={false} shadow={false} />
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <PostHogProvider>
         <AuthProvider>

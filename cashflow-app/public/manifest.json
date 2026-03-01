@@ -15,5 +15,28 @@
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
     { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
   ],
-  "screenshots": []
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Add Transaction",
+      "short_name": "Add",
+      "description": "Quickly add a new transaction",
+      "url": "/transactions?add=1",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "View Budget",
+      "short_name": "Budget",
+      "description": "View your budget plan",
+      "url": "/plan",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Goals",
+      "short_name": "Goals",
+      "description": "Track your savings goals",
+      "url": "/goals",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
 }
