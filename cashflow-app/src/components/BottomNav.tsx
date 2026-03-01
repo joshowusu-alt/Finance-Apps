@@ -551,7 +551,14 @@ export default function BottomNav() {
                   href={it.href}
                   aria-current={active ? "page" : undefined}
                   className="relative"
-                  onClick={() => { haptic(10); setShowMore(false); }}
+                  onClick={(e) => {
+                    haptic(10);
+                    setShowMore(false);
+                    if (it.href === "/transactions" && pathname === "/transactions") {
+                      e.preventDefault();
+                      window.dispatchEvent(new CustomEvent("OPEN_ADD_TRANSACTION"));
+                    }
+                  }}
                 >
                   <motion.div
                     whileTap={{ scale: 0.98 }}
@@ -566,18 +573,21 @@ export default function BottomNav() {
                       />
                     )}
                     <motion.span
-                      className="relative"
+                      className="relative flex flex-col items-center"
                       style={{ color: active ? "var(--gold)" : "var(--text-tertiary)" }}
                       animate={{ scale: active ? 1.04 : 1, y: active ? -1 : 0 }}
                       transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
                     >
+                      {active && (
+                        <span className="block w-5 h-0.5 rounded-full mb-1" style={{ background: "var(--vn-gold)" }} />
+                      )}
                       {it.icon(active)}
                       {it.href === "/insights" && isOverspending && !active && (
                         <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 border border-(--vn-surface)" />
                       )}
                     </motion.span>
                     <span
-                      className={`relative text-[11px] ${active ? "font-medium" : "font-normal"}`}
+                      className={`relative text-[11px] ${active ? "font-semibold" : "font-normal"}`}
                       style={{ color: active ? "var(--gold)" : "var(--text-tertiary)" }}
                     >
                       {it.label}

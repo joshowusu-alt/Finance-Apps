@@ -629,7 +629,11 @@ export default function HomePage() {
                 ) : (
                   <>
                     <div className="text-xs uppercase tracking-widest font-semibold mb-1 flex items-center gap-1" style={{ color: "var(--gold)", letterSpacing: "0.12em" }}>Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
-                    <AnimatedNumber value={actualLeftover} format={(n) => formatMoney(Math.round(n))} className={`text-4xl font-semibold tabular-nums ${actualLeftover > 0 ? "text-emerald-300" : "text-red-400"}`} />
+                    <AnimatedNumber
+                      value={actualLeftover}
+                      format={(n) => formatMoney(Math.round(n))}
+                      className={`hero-number ${actualLeftover > 0 ? "text-emerald-300" : "text-red-400"}`}
+                    />
                     <div className="text-xs mt-1" style={{ color: "rgba(240,237,232,0.45)" }}>Leftover from income this period</div>
                     {actualIncome === 0 && plan.incomeRules.length > 0 && (
                       <div className="mt-1.5 flex items-center gap-1 text-[11px] text-amber-300">

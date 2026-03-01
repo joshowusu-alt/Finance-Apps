@@ -258,6 +258,14 @@ function TransactionsPage() {
     return () => window.removeEventListener("focus", onFocus);
   }, []);
 
+  useEffect(() => {
+    const handler = () => {
+      addFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    window.addEventListener("OPEN_ADD_TRANSACTION", handler);
+    return () => window.removeEventListener("OPEN_ADD_TRANSACTION", handler);
+  }, []);
+
   const searchParams = useSearchParams();
   useEffect(() => {
     const typeParam = searchParams.get("type");

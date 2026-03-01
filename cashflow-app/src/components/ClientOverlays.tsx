@@ -14,7 +14,6 @@ const AIAssistant = dynamic(() => import("@/components/AIAssistant"), { ssr: fal
 const InstallPrompt = dynamic(() => import("@/components/InstallPrompt"), { ssr: false, loading: () => null });
 const NotificationScheduler = dynamic(() => import("@/components/NotificationScheduler"), { ssr: false, loading: () => null });
 const SplashScreen = dynamic(() => import("@/components/SplashScreen"), { ssr: false, loading: () => null });
-const QuickAddFAB = dynamic(() => import("@/components/QuickAddFAB"), { ssr: false, loading: () => null });
 const CommandPalette = dynamic(() => import("@/components/CommandPalette"), { ssr: false, loading: () => null });
 const PullToRefresh = dynamic(() => import("@/components/PullToRefresh"), { ssr: false, loading: () => null });
 const SwipeBack = dynamic(() => import("@/components/SwipeBack"), { ssr: false, loading: () => null });
@@ -30,7 +29,6 @@ export default function ClientOverlays() {
       <CommandPalette />
       <PullToRefresh />
       <SwipeBack />
-      <QuickAddFAB />
       <InstallPrompt />
       <AIAssistant />
     </>
