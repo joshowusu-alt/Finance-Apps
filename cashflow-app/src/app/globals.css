@@ -88,14 +88,14 @@
 
 .dark {
   /* VELANOVO — Dark Mode */
-  --background: #0D1117;
+  --background: #0E0C0B;
   --foreground: #E6E8EB;
-  --surface: #111827;
-  --surface-elevated: #141C26;
-  --surface-soft: #141C26;
-  --panel: #111827;
+  --surface: #1A1612;
+  --surface-elevated: #231E19;
+  --surface-soft: #231E19;
+  --panel: #1A1612;
   /* Borders: bumped from 0.06/0.12 → visible in dark without being harsh */
-  --border: rgba(255, 255, 255, 0.10);
+  --border: rgba(255, 255, 255, 0.07);
   --border-hover: rgba(255, 255, 255, 0.20);
 
   /* Brand */
@@ -120,13 +120,13 @@
   --info-soft: rgba(56, 189, 248, 0.15);
 
   /* Text — all pass WCAG AA on dark surfaces */
-  --text-primary: #E6E8EB;
-  --text-secondary: #B8C2CC;  /* was #AAB2BD; slightly brighter */
-  --text-tertiary: #9BA4B0;  /* was #7D8793; 7:1 on bg → always AA-compliant */
+  --text-primary: #EDE9E3;
+  --text-secondary: #C4BDB4;
+  --text-tertiary: #9A9188;
   --text-disabled: #4A5260;
 
   /* Canonical aliases for dark mode */
-  --text-invert: #0D1117;
+  --text-invert: #0E0C0B;
   --control-ring: rgba(212, 175, 90, 0.35);
 
   /* Elevation shadows — dark */

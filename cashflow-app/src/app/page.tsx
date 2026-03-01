@@ -27,6 +27,7 @@ import { TransactionsWidget } from "@/components/dashboard/TransactionsWidget";
 import { BillsWidget } from "@/components/dashboard/BillsWidget";
 import InfoTooltip from "@/components/InfoTooltip";
 import { useDerived } from "@/lib/useDerived";
+import ConfidenceStatusBar from "@/components/ConfidenceStatusBar";
 import { dayDiff } from "@/lib/dateUtils";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import SpendingVelocityGauge from "@/components/SpendingVelocityGauge";
@@ -385,7 +386,7 @@ const fadeUp: Variants = {
 
 
 export default function HomePage() {
-  const { state: plan, derived } = useDerived();
+  const { state: plan, derived, confidence } = useDerived();
   const [onboarding, setOnboarding] = useState(() => loadOnboardingState());
   const [isFirstVisit, setIsFirstVisit] = useState(() => !hasStoredPlan());
   const [showSetup, setShowSetup] = useState(() => !hasStoredPlan() && !loadWizardState().completed);
@@ -686,19 +687,7 @@ export default function HomePage() {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10">
-                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                          derived.health.label === "Healthy"
-                          ? "bg-emerald-900/30 text-emerald-300"
-                          : derived.health.label === "Watch"
-                            ? "bg-amber-900/30 text-amber-300"
-                            : "bg-red-900/30 text-red-300"
-                        }`}>
-                        {derived.health.label}
-                      </span>
-                      <span className="text-xs" style={{ color: "rgba(240,237,232,0.5)" }}>{derived.health.reason}</span>
-                      <InfoTooltip text="Your financial health score: Healthy = spending well within budget; Watch = nearing limits; Caution = over-budget or savings at risk." />
-                    </div>
+                    <ConfidenceStatusBar confidence={confidence} className="mt-3" />
                   </>
                 )}
               </div>

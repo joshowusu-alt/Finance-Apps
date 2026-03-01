@@ -29,6 +29,11 @@
   --vn-gradient-gold: linear-gradient(135deg, #C5A046 0%, #D4AF5A 100%);
   --vn-card-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.7);
   --vn-focus-ring: 0 0 0 2px var(--vn-bg), 0 0 0 4px var(--vn-gold);
+  /* Confidence status colors */
+  --vn-status-secure: #2F7A55;
+  --vn-status-stable: #C5A046;
+  --vn-status-watch: #B47814;
+  --vn-status-risk: #9E4E4E;
 }
 
 html[data-theme="dark"] {
@@ -51,6 +56,11 @@ html[data-theme="dark"] {
   --vn-gradient-gold: linear-gradient(135deg, #D4AF5A 0%, #E2C074 100%);
   --vn-card-shadow: 0 1px 4px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.04);
   --vn-focus-ring: 0 0 0 2px var(--vn-bg), 0 0 0 4px var(--vn-gold);
+  /* Confidence status colors — dark mode (brighter for contrast) */
+  --vn-status-secure: #4FAF7B;
+  --vn-status-stable: #D4AF5A;
+  --vn-status-watch: #E8A020;
+  --vn-status-risk: #C87070;
 }
 
 body {
@@ -75,16 +85,6 @@ body {
 
 .vn-card:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-.dark .vn-card {
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-}
-
-.dark .vn-card:hover {
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 
 /* Glass card — frosted, for modals and overlay panels */
@@ -132,8 +132,8 @@ body {
 }
 
 .dark .vn-masthead {
-  background: linear-gradient(135deg, #141C26 0%, #1A2430 100%);
-  border: 1px solid rgba(197, 160, 70, 0.15);
+  background: linear-gradient(135deg, #1E1710 0%, #2A1F16 60%, #1E1710 100%);
+  border: 1px solid rgba(212, 175, 90, 0.22);
 }
 
 .vn-masthead::before {

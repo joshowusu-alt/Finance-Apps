@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { loadPlan, savePlan, advancePlanToCurrentPeriod, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { deriveApp, type Derived } from "@/lib/derive";
+import { computeConfidenceScore, type ConfidenceResult } from "@/lib/confidence";
 import type { Plan } from "@/data/plan";
 
-export function useDerived(periodId?: number): { state: Plan; derived: Derived } {
+export function useDerived(periodId?: number): { state: Plan; derived: Derived; confidence: ConfidenceResult } {
   const [state, setState] = useState<Plan>(() => {
     const plan = loadPlan();
     const advanced = advancePlanToCurrentPeriod(plan);
@@ -25,6 +26,7 @@ export function useDerived(periodId?: number): { state: Plan; derived: Derived }
   }, []);
 
   const derived = useMemo(() => deriveApp(state, periodId), [state, periodId]);
+  const confidence = useMemo(() => computeConfidenceScore(derived, state), [derived, state]);
 
-  return { state, derived };
+  return { state, derived, confidence };
 }
