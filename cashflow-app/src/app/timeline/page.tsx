@@ -209,6 +209,7 @@ export default function TimelinePage() {
                 <input
                   className="mt-2 w-full rounded-xl border border-(--vn-border) bg-(--vn-surface) px-2 py-1.5 sm:px-3 sm:py-2 text-base sm:text-lg text-(--vn-text) outline-none focus:border-slate-400"
                   type="number"
+                  inputMode="decimal"
                   value={startingBalance || ""}
                   onChange={(e) => updateStartingBalance(Number(e.target.value))}
                   placeholder="0"
@@ -373,6 +374,7 @@ export default function TimelinePage() {
                             </label>
                             <input
                               type="number"
+                              inputMode="decimal"
                               step="0.01"
                               min="0"
                               value={eventDraft.amount || ""}

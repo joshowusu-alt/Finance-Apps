@@ -224,6 +224,7 @@ function AccountForm({
             <label className="text-xs font-semibold text-(--vn-muted) uppercase tracking-wide">Balance *</label>
             <input
               type="number"
+              inputMode="decimal"
               value={balance}
               onChange={e => setBalance(e.target.value)}
               placeholder="0.00"
@@ -334,6 +335,7 @@ function AccountForm({
                 </label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   value={baseBalance}
                   onChange={e => setBaseBalance(e.target.value)}
                   placeholder="0.00"
@@ -365,6 +367,7 @@ function AccountForm({
                   <div className="flex items-center gap-2 mt-1">
                     <input
                       type="number"
+                      inputMode="decimal"
                       value={linkedRuleShare}
                       onChange={e => setLinkedRuleShare(e.target.value)}
                       min="1"

@@ -17,6 +17,7 @@ import { suggestCategory } from "@/lib/categorization";
 import { suggestBillId } from "@/lib/billLinking";
 import { formatMoney } from "@/lib/currency";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 import type { CashflowCategory, CashflowType, SavingsGoal, BillTemplate } from "@/data/plan";
 
 // Voice transcript → form fields
@@ -49,6 +50,7 @@ function generateId(): string {
 
 export default function QuickAddFAB() {
   const haptic = useHaptic();
+  useKeyboardInset();
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState("");
   const [amount, setAmount] = useState("");
@@ -237,7 +239,7 @@ export default function QuickAddFAB() {
               aria-modal="true"
               aria-label="Quick Add Transaction"
               className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl flex flex-col pt-3"
-              style={{ background: "var(--vn-surface)", maxHeight: "85dvh" }}
+              style={{ background: "var(--vn-surface)", maxHeight: "85dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + var(--keyboard-height, 0px))" }}
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}

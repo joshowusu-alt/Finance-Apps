@@ -898,6 +898,7 @@ export default function BillsPage() {
                 </label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   value={formData.amount || ""}
                   onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
                   className="vn-input text-sm"
@@ -912,6 +913,7 @@ export default function BillsPage() {
                 </label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   min="1"
                   max="31"
                   value={formData.dueDay || ""}
@@ -1003,6 +1005,7 @@ export default function BillsPage() {
                 </label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   value={outflowFormData.amount || ""}
                   onChange={(e) => setOutflowFormData({ ...outflowFormData, amount: Number(e.target.value) })}
                   className="vn-input text-sm"

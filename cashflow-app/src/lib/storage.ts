@@ -347,7 +347,13 @@ export function advancePlanToCurrentPeriod(plan: Plan): Plan {
   }
   const currentPeriod = next.periods.find(p => today >= p.start && today <= p.end);
   if (currentPeriod && currentPeriod.id !== next.setup.selectedPeriodId) {
-    next.setup.selectedPeriodId = currentPeriod.id;
+    const currentPeriodIdx = next.periods.findIndex(p => today >= p.start && today <= p.end);
+    const selectedPeriodIdx = next.periods.findIndex(p => p.id === next.setup.selectedPeriodId);
+    // Only auto-advance if user is on the period immediately before current (idx diff <= 1)
+    if (currentPeriodIdx - selectedPeriodIdx <= 1) {
+      next.setup.selectedPeriodId = currentPeriod.id;
+    }
+    // else: user is reviewing historical data — leave them there
   }
   return next;
 }

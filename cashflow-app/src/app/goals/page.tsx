@@ -233,6 +233,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave, tran
                         <label className="block text-xs font-medium text-(--vn-muted) mb-1">Target</label>
                         <input
                             type="number"
+                            inputMode="decimal"
                             value={editTarget}
                             onChange={(e) => {
                                 setEditTarget(e.target.value);
@@ -247,6 +248,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave, tran
                         <label className="block text-xs font-medium text-(--vn-muted) mb-1">Current</label>
                         <input
                             type="number"
+                            inputMode="decimal"
                             value={editCurrent === "0" ? "" : editCurrent}
                             onChange={(e) => {
                                 setEditCurrent(e.target.value);
@@ -479,6 +481,7 @@ function GoalCard({ goal, onUpdate, onDelete, linkedRule, onToggleAutoSave, tran
                 <div className="flex gap-2">
                     <input
                         type="number"
+                        inputMode="decimal"
                         placeholder="Add amount..."
                         value={addAmount}
                         onChange={(e) => setAddAmount(e.target.value)}
@@ -572,6 +575,7 @@ function NewGoalForm({ onSave, onCancel }: {
                     <label className="block text-sm font-medium text-(--vn-muted) mb-1">Target Amount</label>
                     <input
                         type="number"
+                        inputMode="decimal"
                         placeholder="1500"
                         value={targetAmount}
                         onChange={(e) => {
@@ -587,6 +591,7 @@ function NewGoalForm({ onSave, onCancel }: {
                     <label className="block text-sm font-medium text-(--vn-muted) mb-1">Already Saved</label>
                     <input
                         type="number"
+                        inputMode="decimal"
                         placeholder="0"
                         value={currentAmount}
                         onChange={(e) => {

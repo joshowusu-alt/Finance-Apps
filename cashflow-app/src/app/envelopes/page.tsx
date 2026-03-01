@@ -297,6 +297,7 @@ export default function EnvelopesPage() {
                         <input
                           autoFocus
                           type="number"
+                          inputMode="decimal"
                           value={editValue}
                           onChange={e => setEditValue(e.target.value)}
                           onBlur={commitEdit}

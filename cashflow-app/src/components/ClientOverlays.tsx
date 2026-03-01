@@ -8,6 +8,7 @@
  * Notification, etc.) and must not run on the server.
  */
 import dynamic from "next/dynamic";
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 
 const AIAssistant = dynamic(() => import("@/components/AIAssistant"), { ssr: false, loading: () => null });
 const InstallPrompt = dynamic(() => import("@/components/InstallPrompt"), { ssr: false, loading: () => null });
@@ -20,6 +21,7 @@ const SwipeBack = dynamic(() => import("@/components/SwipeBack"), { ssr: false, 
 const BiometricLock = dynamic(() => import("@/components/BiometricLock"), { ssr: false, loading: () => null });
 
 export default function ClientOverlays() {
+  useKeyboardInset();
   return (
     <>
       <SplashScreen />

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useHaptic } from "@/lib/useHaptic";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
 import { loadPlan, savePlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
@@ -308,6 +309,7 @@ const moreItems: NavItem[] = [
 export default function BottomNav() {
   const pathname = usePathname();
   const [showMore, setShowMore] = useState(false);
+  const haptic = useHaptic();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname?.startsWith(href));
   const isMoreActive = moreItems.some((it) => isActive(it.href));
 
@@ -345,6 +347,17 @@ export default function BottomNav() {
       window.removeEventListener("focus", refresh);
     };
   }, []);
+
+  // App badge for alerts/suggestions
+  const badgeCount = billSuggestionCount + (isOverspending ? 1 : 0);
+  useEffect(() => {
+    if (!("setAppBadge" in navigator)) return;
+    if (badgeCount > 0) {
+      navigator.setAppBadge(badgeCount).catch(() => {});
+    } else {
+      navigator.clearAppBadge().catch(() => {});
+    }
+  }, [badgeCount]);
 
   const handlePeriodChange = (id: number) => {
     try {
@@ -538,7 +551,7 @@ export default function BottomNav() {
                   href={it.href}
                   aria-current={active ? "page" : undefined}
                   className="relative"
-                  onClick={() => setShowMore(false)}
+                  onClick={() => { haptic(10); setShowMore(false); }}
                 >
                   <motion.div
                     whileTap={{ scale: 0.98 }}
@@ -576,7 +589,7 @@ export default function BottomNav() {
 
             {/* More button */}
             <button
-              onClick={() => setShowMore((v) => !v)}
+              onClick={() => { haptic(10); setShowMore((v) => !v); }}
               aria-expanded={showMore}
               aria-controls="bottom-nav-more-sheet"
               aria-haspopup="dialog"

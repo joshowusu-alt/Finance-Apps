@@ -421,6 +421,7 @@ export default function IncomePage() {
                 </label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   value={formData.amount || ""}
                   onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
                   className="vn-input text-sm"

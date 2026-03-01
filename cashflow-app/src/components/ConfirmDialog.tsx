@@ -79,16 +79,17 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
 
                         {/* Dialog */}
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "100%" }}
+                            transition={{ type: "spring", damping: 28, stiffness: 300 }}
                             role="dialog"
                             aria-modal="true"
                             aria-label={dialog.title}
-                            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm"
+                            className="fixed bottom-0 left-0 right-0 z-50"
                         >
-                            <div ref={trapRef} className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 mx-4">
+                            <div ref={trapRef} className="bg-white dark:bg-slate-800 rounded-t-2xl shadow-2xl p-6 pb-8">
+                                <div className="w-10 h-1 rounded-full bg-(--vn-border) mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                                     {dialog.title}
                                 </h3>
