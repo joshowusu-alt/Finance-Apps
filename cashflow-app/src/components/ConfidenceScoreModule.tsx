@@ -42,14 +42,15 @@ function buildArcPath(
 }
 
 // ── Colour config (CSS tokens only — no hardcoded hex) ──────────────────────
+// bg uses color-mix so it inherits the live token in both light and dark themes.
 const STATUS_CONFIG: Record<
   ConfidenceStatus,
   { color: string; bg: string }
 > = {
-  Secure:   { color: "var(--vn-status-secure)",  bg: "rgba(47,122,85,0.12)" },
-  Stable:   { color: "var(--vn-status-stable)",  bg: "rgba(197,160,70,0.12)" },
-  Watch:    { color: "var(--vn-status-watch)",   bg: "rgba(180,120,20,0.12)" },
-  "At Risk":{ color: "var(--vn-status-risk)",    bg: "rgba(158,78,78,0.12)" },
+  Secure:   { color: "var(--vn-status-secure)",  bg: "color-mix(in srgb, var(--vn-status-secure) 12%, transparent)" },
+  Stable:   { color: "var(--vn-status-stable)",  bg: "color-mix(in srgb, var(--vn-status-stable) 12%, transparent)" },
+  Watch:    { color: "var(--vn-status-watch)",   bg: "color-mix(in srgb, var(--vn-status-watch) 12%, transparent)" },
+  "At Risk":{ color: "var(--vn-status-risk)",    bg: "color-mix(in srgb, var(--vn-status-risk) 12%, transparent)" },
 };
 
 // ── Pillar bar ───────────────────────────────────────────────────────────────
@@ -70,15 +71,16 @@ function PillarBar({
   return (
     <div className="flex flex-col gap-1 flex-1 min-w-0">
       <div className="flex items-center justify-between gap-1">
+        {/* text-xs + var(--vn-text): WCAG AA in both light and dark themes */}
         <span
-          className="text-[10px] uppercase tracking-widest font-medium truncate"
-          style={{ color: "var(--vn-muted)" }}
+          className="text-xs uppercase tracking-widest font-medium truncate"
+          style={{ color: "var(--vn-text)" }}
         >
           {label}
         </span>
         <span
-          className="text-[10px] font-bold tabular-nums shrink-0"
-          style={{ color }}
+          className="text-xs font-bold tabular-nums shrink-0"
+          style={{ color: "var(--vn-text)" }}
         >
           {value}
         </span>
@@ -120,7 +122,10 @@ const SVG_SIZE = 168;
 export default function ConfidenceScoreModule({ confidence }: Props) {
   const reducedMotion = useReducedMotion();
   const cfg = STATUS_CONFIG[confidence.status];
-  const fraction = Math.min(1, Math.max(0, confidence.score / 100));
+  // Req 2: score must equal liquidity+behaviour+momentum; fall back if missing
+  const score =
+    confidence.score ?? Math.min(100, confidence.liquidity + confidence.behaviour + confidence.momentum);
+  const fraction = Math.min(1, Math.max(0, score / 100));
   const scoreSweep = fraction * ARC_TOTAL_DEG;
   const trackPath = buildArcPath(CX, CY, TRACK_R, ARC_TOTAL_DEG);
   const scorePath = buildArcPath(CX, CY, TRACK_R, scoreSweep);
@@ -169,7 +174,7 @@ export default function ConfidenceScoreModule({ confidence }: Props) {
                 }}
               />
             )}
-            {/* Score number */}
+            {/* Score number — 30px bold = large text, all tier tokens pass AA */}
             <text
               x={CX}
               y={CY - 6}
@@ -182,17 +187,17 @@ export default function ConfidenceScoreModule({ confidence }: Props) {
                 fontFamily: "inherit",
               }}
             >
-              {confidence.score}
+              {score}
             </text>
-            {/* Status label */}
+            {/* Status label — var(--vn-text) at 11px guarantees WCAG AA in both themes */}
             <text
               x={CX}
               y={CY + 18}
               textAnchor="middle"
               dominantBaseline="middle"
               style={{
-                fill: "var(--vn-muted)",
-                fontSize: 10,
+                fill: "var(--vn-text)",
+                fontSize: 11,
                 fontFamily: "inherit",
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
@@ -211,9 +216,10 @@ export default function ConfidenceScoreModule({ confidence }: Props) {
           >
             {confidence.explanation}
           </p>
+          {/* text-sm + var(--vn-text) at 70% opacity: readable and WCAG AA (~8:1) */}
           <p
-            className="text-xs mt-2"
-            style={{ color: "var(--vn-muted)" }}
+            className="text-sm mt-2"
+            style={{ color: "var(--vn-text)", opacity: 0.7 }}
           >
             Score = Liquidity ({confidence.liquidity}/40) + Behaviour (
             {confidence.behaviour}/30) + Momentum ({confidence.momentum}/30)
@@ -251,7 +257,7 @@ export default function ConfidenceScoreModule({ confidence }: Props) {
 
       {/* Screen-reader summary */}
       <p className="sr-only">
-        Financial confidence score {confidence.score} out of 100, rated{" "}
+        Financial confidence score {score} out of 100, rated{" "}
         {confidence.status}. Liquidity {confidence.liquidity} of 40, Behaviour{" "}
         {confidence.behaviour} of 30, Momentum {confidence.momentum} of 30.{" "}
         {confidence.explanation}

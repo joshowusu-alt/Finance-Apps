@@ -53,7 +53,7 @@ export default function CollapsibleSection({
         >
           {title}
         </span>
-        <span className="text-xs" style={{ color: "var(--vn-muted)" }}>
+        <span className="text-xs" style={{ color: "var(--vn-text)", opacity: 0.6 }}>
           {open ? "Hide" : "Show"}
         </span>
       </button>
