@@ -6,7 +6,6 @@ import { loadPlan, PLAN_UPDATED_EVENT } from "@/lib/storage";
 import { formatMoney } from "@/lib/currency";
 import { CF_JOIN_TOKEN_KEY } from "@/lib/sharingConstants";
 import { useSubscription } from "@/hooks/useSubscription";
-import { UpgradeButton } from "@/components/ProGate";
 import { CardSkeleton } from "@/components/Skeleton";
 import type { Transaction } from "@/data/plan";
 
@@ -243,18 +242,8 @@ export default function HouseholdPage() {
 
   if (!ready) return <LoadingSkeleton />;
 
-  if (!subLoading && !isPro) {
-    return (
-      <div className="min-h-screen pb-28 md:pb-10 flex items-center justify-center" style={{ background: "var(--vn-bg)" }}>
-        <div className="max-w-sm mx-auto px-6 text-center">
-          <div className="text-4xl mb-4">👨‍👩‍👧‍👦</div>
-          <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: "var(--vn-text)" }}>Household Sharing</h1>
-          <p className="text-sm mb-6" style={{ color: "var(--vn-muted)" }}>Share your cashflow with a partner or household member. View combined transactions in real time. Available on Pro.</p>
-          <UpgradeButton />
-        </div>
-      </div>
-    );
-  }
+  // Subscription gate bypassed for testing — restore before launch
+  void subLoading; void isPro;
 
   return (
     <div className="min-h-screen pb-28 md:pb-10" style={{ background: "var(--vn-bg)" }}>
