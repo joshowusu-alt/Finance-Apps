@@ -33,7 +33,7 @@
   --vn-status-secure: #2F7A55;
   --vn-status-stable: #C5A046;
   --vn-status-watch: #B47814;
-  --vn-status-risk: #9E4E4E;
+  --vn-status-tight: #9E4E4E;
 }
 
 html[data-theme="dark"] {
@@ -60,7 +60,7 @@ html[data-theme="dark"] {
   --vn-status-secure: #4FAF7B;
   --vn-status-stable: #D4AF5A;
   --vn-status-watch: #E8A020;
-  --vn-status-risk: #C87070;
+  --vn-status-tight: #C87070;
 }
 
 body {

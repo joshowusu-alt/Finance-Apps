@@ -10,24 +10,25 @@
  *   Progress Momentum    30 pts  — savings streak, period delta, risk delta
  *
  * Status tiers:
- *   Secure   ≥ 90
- *   Stable   ≥ 75
- *   Watch    ≥ 60
- *   At Risk  < 60
+ *   Secure      ≥ 90
+ *   Stable      ≥ 75
+ *   Watch zone  ≥ 60
+ *   Tight zone  < 60
  *
  * Override gates:
- *   lowestBal < 0   → force "At Risk"
- *   riskDays > 3    → cap score at 74 (forces Watch or below)
+ *   lowestBal < 0   → force "Tight zone"
+ *   riskDays > 3    → cap score at 74 (forces Watch zone or below)
  */
 
 import { deriveApp } from "@/lib/derive";
 import type { Derived } from "@/lib/derive";
 import type { Plan } from "@/data/plan";
 import { dayDiff } from "@/lib/dateUtils";
+import { TIER_EXPLANATIONS } from "@/lib/copy";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type ConfidenceStatus = "Secure" | "Stable" | "Watch" | "At Risk";
+export type ConfidenceStatus = "Secure" | "Stable" | "Watch zone" | "Tight zone";
 
 export interface ConfidenceResult {
   /** Composite score 0–100 */
@@ -194,53 +195,40 @@ export function computeConfidenceScore(derived: Derived, plan: Plan): Confidence
 
   let status: ConfidenceStatus;
   if (lowestBal < 0) {
-    status = "At Risk";
+    status = "Tight zone";
   } else if (score >= 90) {
     status = "Secure";
   } else if (score >= 75) {
     status = "Stable";
   } else if (score >= 60) {
-    status = "Watch";
+    status = "Watch zone";
   } else {
-    status = "At Risk";
+    status = "Tight zone";
   }
 
   // ── Explanation ───────────────────────────────────────────────────────────
   let explanation: string;
 
-  if (status === "At Risk" && lowestBal < 0) {
-    explanation =
-      "Your balance is forecast to go negative — reducing bills or timing income earlier would help.";
-  } else if (status === "At Risk" && riskDays > 3) {
-    explanation =
-      "Multiple forecast risk days are the main drag — adjusting your plan now would improve your position.";
-  } else if (status === "At Risk") {
-    explanation =
-      "Spending is tracking ahead of schedule — adjusting discretionary spend this week would improve your position.";
-  } else if (status === "Watch" && riskDays > 0) {
-    explanation =
-      "Forecast risk days are the main drag — reducing bills or timing income earlier would help.";
-  } else if (status === "Watch" && paceGap > 0.10) {
-    explanation =
-      "Spending is tracking moderately ahead of plan — a small adjustment would bring you back on track.";
-  } else if (status === "Watch") {
-    explanation =
-      "Balance dips close to your safety net this period — monitor your spending pace closely.";
+  if (status === "Tight zone" && lowestBal < 0) {
+    explanation = TIER_EXPLANATIONS["Tight zone"].negativeForecast;
+  } else if (status === "Tight zone" && riskDays > 3) {
+    explanation = TIER_EXPLANATIONS["Tight zone"].multipleRiskDays;
+  } else if (status === "Tight zone") {
+    explanation = TIER_EXPLANATIONS["Tight zone"].spendingAhead;
+  } else if (status === "Watch zone" && riskDays > 0) {
+    explanation = TIER_EXPLANATIONS["Watch zone"].riskDays;
+  } else if (status === "Watch zone" && paceGap > 0.10) {
+    explanation = TIER_EXPLANATIONS["Watch zone"].moderatelyAhead;
+  } else if (status === "Watch zone") {
+    explanation = TIER_EXPLANATIONS["Watch zone"].default;
   } else if (status === "Stable" && streak >= 2) {
-    explanation =
-      "Good savings consistency is supporting your score — keep the streak going.";
+    explanation = TIER_EXPLANATIONS["Stable"].streak;
   } else if (status === "Stable") {
-    explanation =
-      "Looking steady. Keep an eye on your spending pace as the period progresses.";
-  } else if (streak >= 3) {
-    // Secure
-    explanation =
-      "Improving savings consistency across periods is lifting your score — your plan is working.";
+    explanation = TIER_EXPLANATIONS["Stable"].default;
   } else if (deltaPts === 30) {
-    explanation =
-      "Driven by strong liquidity and an improving spending trend versus last period.";
+    explanation = TIER_EXPLANATIONS["Secure"].improving;
   } else {
-    explanation = "Driven by strong liquidity and steady spending pace.";
+    explanation = TIER_EXPLANATIONS["Secure"].default;
   }
 
   return { score, liquidity, behaviour, momentum, status, explanation };
