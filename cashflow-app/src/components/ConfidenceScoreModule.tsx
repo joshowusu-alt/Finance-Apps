@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useId } from "react";
 import { useReducedMotion } from "framer-motion";
 import type { ConfidenceResult, ConfidenceStatus } from "@/lib/confidence";
 
@@ -42,15 +43,14 @@ function buildArcPath(
 }
 
 // ── Colour config (CSS tokens only — no hardcoded hex) ──────────────────────
-// bg uses color-mix so it inherits the live token in both light and dark themes.
 const STATUS_CONFIG: Record<
   ConfidenceStatus,
   { color: string; bg: string }
 > = {
-  Secure:   { color: "var(--vn-status-secure)",  bg: "color-mix(in srgb, var(--vn-status-secure) 12%, transparent)" },
-  Stable:   { color: "var(--vn-status-stable)",  bg: "color-mix(in srgb, var(--vn-status-stable) 12%, transparent)" },
-  Watch:    { color: "var(--vn-status-watch)",   bg: "color-mix(in srgb, var(--vn-status-watch) 12%, transparent)" },
-  "At Risk":{ color: "var(--vn-status-risk)",    bg: "color-mix(in srgb, var(--vn-status-risk) 12%, transparent)" },
+  Secure:       { color: "var(--vn-status-secure)",  bg: "color-mix(in srgb, var(--vn-status-secure) 12%, transparent)" },
+  Stable:       { color: "var(--vn-status-stable)",  bg: "color-mix(in srgb, var(--vn-status-stable) 12%, transparent)" },
+  "Watch zone": { color: "var(--vn-status-watch)",   bg: "color-mix(in srgb, var(--vn-status-watch) 12%, transparent)" },
+  "Tight zone": { color: "var(--vn-status-tight)",   bg: "color-mix(in srgb, var(--vn-status-tight) 12%, transparent)" },
 };
 
 // ── Pillar bar ───────────────────────────────────────────────────────────────
@@ -109,6 +109,38 @@ function PillarBar({
   );
 }
 
+// ── Inline collapsible ──────────────────────────────────────────────────────
+function InlineCollapsible({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 text-xs focus:outline-none focus-visible:rounded"
+        aria-expanded={open}
+        aria-controls={id}
+        style={{ color: "var(--vn-muted)" }}
+      >
+        <span>{label}</span>
+        <span aria-hidden="true">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div id={id} className="mt-3">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
 interface Props {
   confidence: ConfidenceResult;
@@ -132,6 +164,19 @@ export default function ConfidenceScoreModule({ confidence }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
+      {/* ── Lead: tier label + plain-English meaning ─────────────── */}
+      <div>
+        <div
+          className="text-xs uppercase tracking-widest font-semibold mb-1"
+          style={{ color: cfg.color }}
+        >
+          {confidence.status}
+        </div>
+        <p className="text-sm leading-relaxed" style={{ color: "var(--vn-text)" }}>
+          {confidence.explanation}
+        </p>
+      </div>
+
       {/* ── Gauge row ────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row items-center gap-6">
         {/* SVG arc gauge */}
@@ -174,7 +219,7 @@ export default function ConfidenceScoreModule({ confidence }: Props) {
                 }}
               />
             )}
-            {/* Score number — 30px bold = large text, all tier tokens pass AA */}
+            {/* Score number */}
             <text
               x={CX}
               y={CY - 6}
@@ -189,7 +234,7 @@ export default function ConfidenceScoreModule({ confidence }: Props) {
             >
               {score}
             </text>
-            {/* Status label — var(--vn-text) at 11px guarantees WCAG AA in both themes */}
+            {/* Status label */}
             <text
               x={CX}
               y={CY + 18}
@@ -208,51 +253,46 @@ export default function ConfidenceScoreModule({ confidence }: Props) {
           </svg>
         </div>
 
-        {/* Explanation text */}
+        {/* Collapsible formula + pillar bars */}
         <div className="flex-1 min-w-0">
-          <p
-            className="text-sm leading-relaxed"
-            style={{ color: "var(--vn-text)" }}
-          >
-            {confidence.explanation}
-          </p>
-          {/* text-sm + var(--vn-text) at 70% opacity: readable and WCAG AA (~8:1) */}
-          <p
-            className="text-sm mt-2"
-            style={{ color: "var(--vn-text)", opacity: 0.7 }}
-          >
-            Score = Liquidity ({confidence.liquidity}/40) + Behaviour (
-            {confidence.behaviour}/30) + Momentum ({confidence.momentum}/30)
-          </p>
+          <InlineCollapsible label="How this is calculated">
+            <>
+              <p
+                className="text-sm mb-3"
+                style={{ color: "var(--vn-text)", opacity: 0.7 }}
+              >
+                Score = Liquidity ({confidence.liquidity}/40) + Behaviour (
+                {confidence.behaviour}/30) + Momentum ({confidence.momentum}/30)
+              </p>
+              <div
+                className="flex gap-4"
+                style={{ borderTop: "1px solid var(--vn-border)", paddingTop: "0.75rem" }}
+              >
+                <PillarBar
+                  label="Liquidity"
+                  value={confidence.liquidity}
+                  max={40}
+                  color={cfg.color}
+                  reducedMotion={reducedMotion}
+                />
+                <PillarBar
+                  label="Behaviour"
+                  value={confidence.behaviour}
+                  max={30}
+                  color={cfg.color}
+                  reducedMotion={reducedMotion}
+                />
+                <PillarBar
+                  label="Momentum"
+                  value={confidence.momentum}
+                  max={30}
+                  color={cfg.color}
+                  reducedMotion={reducedMotion}
+                />
+              </div>
+            </>
+          </InlineCollapsible>
         </div>
-      </div>
-
-      {/* ── Pillar bars ─────────────────────────────────────────────── */}
-      <div
-        className="flex gap-4 pt-4"
-        style={{ borderTop: "1px solid var(--vn-border)" }}
-      >
-        <PillarBar
-          label="Liquidity"
-          value={confidence.liquidity}
-          max={40}
-          color={cfg.color}
-          reducedMotion={reducedMotion}
-        />
-        <PillarBar
-          label="Behaviour"
-          value={confidence.behaviour}
-          max={30}
-          color={cfg.color}
-          reducedMotion={reducedMotion}
-        />
-        <PillarBar
-          label="Momentum"
-          value={confidence.momentum}
-          max={30}
-          color={cfg.color}
-          reducedMotion={reducedMotion}
-        />
       </div>
 
       {/* Screen-reader summary */}

@@ -23,17 +23,17 @@ const STATUS_CONFIG: Record<
     border: "rgba(197,160,70,0.20)",
     dot: "var(--vn-status-stable)",
   },
-  Watch: {
+  "Watch zone": {
     bg: "rgba(180,120,20,0.10)",
     text: "var(--vn-status-watch)",
     border: "rgba(180,120,20,0.20)",
     dot: "var(--vn-status-watch)",
   },
-  "At Risk": {
+  "Tight zone": {
     bg: "rgba(158,78,78,0.10)",
-    text: "var(--vn-status-risk)",
+    text: "var(--vn-status-tight)",
     border: "rgba(158,78,78,0.20)",
-    dot: "var(--vn-status-risk)",
+    dot: "var(--vn-status-tight)",
   },
 };
 
