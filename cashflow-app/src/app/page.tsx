@@ -44,6 +44,9 @@ import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist"
 import { SubscriptionNudge } from "@/components/dashboard/SubscriptionNudge";
 import { detectSubscriptions } from "@/lib/subscriptionDetection";
 import PlaidLink from "@/components/PlaidLink";
+import TodayLens from "@/components/dashboard/TodayLens";
+import { useTodayLens } from "@/hooks/useTodayLens";
+import { HOME_COPY } from "@/lib/copy";
 
 
 
@@ -65,13 +68,13 @@ function SubscriptionSummaryCard({ plan, onDismiss }: { plan: Plan; onDismiss: (
     >
       <div>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-(--vn-text)">💳 Subscriptions detected</span>
+          <span className="text-sm font-semibold text-(--vn-text)">{HOME_COPY.subSummaryTitle}</span>
           <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
             {formatMoney(totalMonthly)}/mo
           </span>
         </div>
         <div className="text-xs mt-0.5" style={{ color: "var(--vn-muted)" }}>
-          {count} subscription{count !== 1 ? "s" : ""} detected — review to save money
+          {HOME_COPY.subSummaryDetail(count)}
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">
@@ -262,7 +265,7 @@ function PrimaryRecommendationCard({
   recommendation: Derived["primaryRecommendation"];
 }) {
   const urgencyColor: Record<string, string> = {
-    high:   "var(--vn-status-risk)",
+    high:   "var(--vn-status-tight)",
     medium: "var(--vn-status-watch)",
     low:    "var(--vn-status-stable)",
   };
@@ -275,7 +278,7 @@ function PrimaryRecommendationCard({
     high: "⚠️", medium: "💡", low: "✓",
   };
   const urgencyHeading: Record<string, string> = {
-    high: "Action needed", medium: "Next focus", low: "All good",
+    high: HOME_COPY.urgencyHigh, medium: HOME_COPY.urgencyMedium, low: HOME_COPY.urgencyLow,
   };
   return (
     <div
@@ -374,7 +377,7 @@ function ProgressSummaryStrip({
               style={{
                 color: deltas.overspendVsLastPeriod <= 0
                   ? "var(--vn-status-secure)"
-                  : "var(--vn-status-risk)",
+                  : "var(--vn-status-tight)",
               }}
             >
               {deltas.overspendVsLastPeriod <= 0 ? "↓" : "↑"}
@@ -402,7 +405,7 @@ function ProgressSummaryStrip({
               style={{
                 color: deltas.riskDaysVsLastPeriod <= 0
                   ? "var(--vn-status-secure)"
-                  : "var(--vn-status-risk)",
+                  : "var(--vn-status-tight)",
               }}
             >
               {deltas.riskDaysVsLastPeriod > 0 ? "+" : ""}
@@ -492,6 +495,8 @@ export default function HomePage() {
     liabilityAccounts,
     subscriptionNudge,
   } = useDashboard(plan, derived);
+
+  const todayLens = useTodayLens(derived, plan, confidence);
 
   const { income: actualIncome, spending: actualSpending, savings: actualSavings } = actuals;
   const actualLeftover = actualIncome - actualSpending - actualSavings;
@@ -627,7 +632,7 @@ export default function HomePage() {
                   <VelanovoLogo size={28} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-semibold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>Dashboard</h1>
+                  <h1 className="text-2xl font-semibold text-white/90" style={{ fontFamily: "var(--font-playfair, serif)" }}>{HOME_COPY.pageTitle}</h1>
                   <div className="mt-1 text-sm text-white/45">
                     {formatPeriodLabel(period.label)}
                     {period && (
@@ -676,17 +681,17 @@ export default function HomePage() {
                   </div>
                 ) : (
                   <>
-                    <div className="text-xs uppercase tracking-widest font-semibold mb-1 flex items-center gap-1" style={{ color: "var(--gold)", letterSpacing: "0.12em" }}>Safe to Spend<InfoTooltip text="Income received this period minus spending and savings. This is how much you can still spend without going over budget." /></div>
+                    <div className="text-xs uppercase tracking-widest font-semibold mb-1 flex items-center gap-1" style={{ color: "var(--gold)", letterSpacing: "0.12em" }}>Safe to Spend<InfoTooltip text={HOME_COPY.safeToSpendTooltip} /></div>
                     <AnimatedNumber
                       value={actualLeftover}
                       format={(n) => formatMoney(Math.round(n))}
                       className={`hero-number ${actualLeftover > 0 ? "text-emerald-300" : "text-red-400"}`}
                     />
-                    <div className="text-xs mt-1" style={{ color: "rgba(240,237,232,0.45)" }}>Leftover from income this period</div>
+                    <div className="text-xs mt-1" style={{ color: "rgba(240,237,232,0.45)" }}>{HOME_COPY.safeToSpendSubtext}</div>
                     {actualIncome === 0 && plan.incomeRules.length > 0 && (
                       <div className="mt-1.5 flex items-center gap-1 text-[11px] text-amber-300">
                         <span>⚠</span>
-                        <span>No income recorded yet — add an income transaction to see your true safe-to-spend</span>
+                        <span>{HOME_COPY.noIncomeWarning}</span>
                       </div>
                     )}
 
@@ -694,9 +699,9 @@ export default function HomePage() {
                     {timeProgress > 0.02 && budgetSpending > 0 && (
                       <div className="mt-3 pt-3 border-t border-white/10">
                         <div className="flex items-center justify-between text-xs mb-1.5" style={{ color: "rgba(240,237,232,0.45)" }}>
-                          <span className="flex items-center gap-1">Spending pace<InfoTooltip text="The blue bar shows how much of your budget you've spent. The grey bar shows how far through the period you are. If blue exceeds grey, you're spending faster than time is passing." /></span>
+                          <span className="flex items-center gap-1">Spending pace<InfoTooltip text={HOME_COPY.spendingPaceTooltip} /></span>
                           <span className={spendingPaceGap > 0.08 ? "text-rose-400 font-semibold" : spendingPaceGap < -0.08 ? "text-emerald-300 font-semibold" : ""} style={!(spendingPaceGap > 0.08) && !(spendingPaceGap < -0.08) ? { color: "rgba(240,237,232,0.45)" } : undefined}>
-                            {spendingPaceGap > 0.08 ? "Spending high" : spendingPaceGap < -0.08 ? "Under budget ✓" : "On track"}
+                            {spendingPaceGap > 0.08 ? HOME_COPY.spendingPaceHigh : spendingPaceGap < -0.08 ? HOME_COPY.spendingPaceGood : HOME_COPY.spendingPaceOk}
                           </span>
                         </div>
                         <div className="relative h-2 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }}>
@@ -739,6 +744,13 @@ export default function HomePage() {
                 )}
               </div>
             </motion.header>
+
+            {/* Today Lens — narrative summary above the detail */}
+            {hasData && (
+              <motion.div variants={fadeUp} {...motionProps}>
+                <TodayLens data={todayLens} />
+              </motion.div>
+            )}
 
             {/* Day-1 quick-start banner */}
             {showDay1Banner && (
@@ -853,6 +865,7 @@ export default function HomePage() {
                   lowBalanceThreshold={plan.setup.expectedMinBalance}
                 />
               </div>
+              <p className="text-xs mt-2" style={{ color: "var(--vn-muted)" }}>{HOME_COPY.chartCaption}</p>
             </motion.div>
 
             {/* Confidence Score Module (collapsed by default) */}
@@ -889,7 +902,7 @@ export default function HomePage() {
 
             {/* What-if scenario panel */}
             {categoryItems.length > 0 && (
-              <motion.div variants={fadeUp}>
+              <motion.div id="what-if" variants={fadeUp}>
                 <WhatIfPanel
                   categories={categoryItems}
                   projectedEndBalance={endingBalance}
