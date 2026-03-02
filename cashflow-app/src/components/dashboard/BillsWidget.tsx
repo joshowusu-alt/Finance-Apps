@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { formatMoney } from "@/lib/currency";
 import { prettyDate } from "@/lib/formatUtils";
 import { getDaysUntil } from "@/lib/dateUtils";
+import { useHaptic } from "@/lib/useHaptic";
 
 type Bill = {
     id: string;
@@ -23,11 +24,13 @@ type BillsWidgetProps = {
 export const BillsWidget = memo(function BillsWidget({ bills, href = "/bills" }: BillsWidgetProps) {
     const nextBill = bills[0];
     const otherBillCount = bills.length - 1;
+    const haptic = useHaptic();
 
     return (
-        <Link href={href}>
+        <Link href={href} onClick={() => haptic(8)}>
             <motion.div
                 whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.97, transition: { type: "spring", stiffness: 500, damping: 30 } }}
                 className="vn-card p-5 h-full flex flex-col justify-between hover:border-amber-500/30 transition-colors cursor-pointer group"
             >
                 <div className="flex justify-between items-start mb-2">

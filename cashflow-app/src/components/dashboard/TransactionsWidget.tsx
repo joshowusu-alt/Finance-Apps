@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { formatMoney } from "@/lib/currency";
 import { prettyDate } from "@/lib/formatUtils";
 import type { Transaction } from "@/data/plan";
+import { useHaptic } from "@/lib/useHaptic";
 
 type TransactionsWidgetProps = {
     transactions: Transaction[];
@@ -14,8 +15,12 @@ type TransactionsWidgetProps = {
 
 
 export function TransactionsWidget({ transactions, href = "/transactions" }: TransactionsWidgetProps) {
+    const haptic = useHaptic();
     return (
-        <div className="vn-card p-5 h-full flex flex-col">
+        <motion.div
+            whileTap={{ scale: 0.99, transition: { type: "spring", stiffness: 500, damping: 30 } }}
+            className="vn-card p-5 h-full flex flex-col"
+        >
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "var(--gold-soft)", color: "var(--gold)" }}>
@@ -35,7 +40,12 @@ export function TransactionsWidget({ transactions, href = "/transactions" }: Tra
                     <div className="text-sm text-(--vn-muted) italic py-2">No recent transactions.</div>
                 ) : (
                     transactions.slice(0, 3).map((t) => (
-                        <div key={t.id} className="flex justify-between items-center group cursor-default">
+                        <motion.div
+                            key={t.id}
+                            className="flex justify-between items-center group cursor-default"
+                            whileTap={{ scale: 0.97, transition: { type: "spring", stiffness: 500, damping: 30 } }}
+                            onClick={() => haptic(6)}
+                        >
                             <div className="flex items-center justify-between gap-2 w-full min-w-0">
                               <div className="flex-1 min-w-0">
                                 <div className="text-sm font-medium text-(--vn-text) truncate">{t.label || "Unknown"}</div>
@@ -48,7 +58,7 @@ export function TransactionsWidget({ transactions, href = "/transactions" }: Tra
                                 {t.type === "income" ? "+" : "−"}{formatMoney(Math.abs(t.amount))}
                               </span>
                             </div>
-                        </div>
+                        </motion.div>
                     ))
                 )}
             </div>
@@ -68,6 +78,6 @@ export function TransactionsWidget({ transactions, href = "/transactions" }: Tra
                     </Link>
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 }

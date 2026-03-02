@@ -754,7 +754,7 @@ export default function HomePage() {
 
             {/* Day-1 quick-start banner */}
             {showDay1Banner && (
-              <motion.div variants={fadeUp} className="vn-card p-5">
+              <motion.div variants={fadeUp} whileTap={{ scale: 0.99, transition: { type: "spring", stiffness: 400, damping: 30 } }} className="vn-card p-5">
                 <div className="text-sm font-bold text-(--vn-text) mb-0.5">Your plan is ready — log your first transactions</div>
                 <div className="text-xs text-(--vn-muted) mb-4">Add income, a bill payment, or import a bank export to start tracking against your budget.</div>
                 <div className="grid grid-cols-3 gap-2.5">
@@ -784,7 +784,7 @@ export default function HomePage() {
 
             {/* Onboarding checklist */}
             {!resolvedOnboarding.dismissed && (
-              <motion.div variants={fadeUp} className="vn-card p-6 border-l-4 border-l-(--vn-primary)">
+              <motion.div variants={fadeUp} whileTap={{ scale: 0.99, transition: { type: "spring", stiffness: 400, damping: 30 } }} className="vn-card p-6 border-l-4 border-l-(--vn-primary)">
                 <OnboardingChecklist
                   onboardingTasks={onboardingTasks}
                   completedCount={completedCount}
@@ -799,7 +799,7 @@ export default function HomePage() {
 
             {/* Subscription nudge */}
             {subscriptionNudge && (
-              <motion.div variants={fadeUp} className="vn-card p-4 border-l-4 border-l-amber-400">
+              <motion.div variants={fadeUp} whileTap={{ scale: 0.99, transition: { type: "spring", stiffness: 400, damping: 30 } }} className="vn-card p-4 border-l-4 border-l-amber-400">
                 <SubscriptionNudge count={subscriptionNudge.count} totalMonthly={subscriptionNudge.totalMonthly} />
               </motion.div>
             )}
@@ -819,7 +819,7 @@ export default function HomePage() {
 
             {/* Zone 3: What next? */}
             {hasData && (
-              <motion.div variants={fadeUp} {...motionProps}>
+              <motion.div variants={fadeUp} whileTap={{ scale: 0.99, transition: { type: "spring", stiffness: 400, damping: 30 } }} {...motionProps}>
                 <PrimaryRecommendationCard
                   recommendation={derived.primaryRecommendation}
                 />
@@ -827,7 +827,7 @@ export default function HomePage() {
             )}
 
             {/* Visual Hero: Projection */}
-            <motion.div variants={fadeUp} className="vn-card p-6">
+            <motion.div variants={fadeUp} whileTap={{ scale: 0.99, transition: { type: "spring", stiffness: 400, damping: 30 } }} className="vn-card p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="text-sm font-bold text-(--vn-text)">Cashflow Forecast</div>
