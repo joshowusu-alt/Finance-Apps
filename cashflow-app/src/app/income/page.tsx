@@ -64,9 +64,11 @@ export default function IncomePage() {
   const period = useMemo(() => getPeriod(plan, plan.setup.selectedPeriodId), [plan]);
   const events = useMemo(() => generateEvents(plan, plan.setup.selectedPeriodId), [plan]);
   const upcoming = useMemo(
-    () => getUpcomingEvents(plan, plan.setup.selectedPeriodId, "income").slice(0, 6),
+    () => getUpcomingEvents(plan, plan.setup.selectedPeriodId, "income"),
     [plan]
   );
+
+  const [showLater, setShowLater] = useState(false);
 
   const budgetedIncome = useMemo(
     () => events.filter((e) => e.type === "income").reduce((sum, e) => sum + e.amount, 0),
@@ -274,22 +276,95 @@ export default function IncomePage() {
               </div>
 
               <div className="vn-card p-6">
-                <div className="text-sm font-semibold text-(--vn-text)">Upcoming income</div>
-                <div className="mt-4 space-y-3 text-sm">
-                  {upcoming.length === 0 ? (
-                    <div className="text-(--vn-muted)">No income in the current window.</div>
-                  ) : (
-                    upcoming.map((item) => (
-                      <div key={item.id} className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <div className="font-semibold text-(--vn-text)">{item.label}</div>
-                          <div className="text-xs text-(--vn-muted)">Due {prettyDate(item.date)}</div>
+                {upcoming.length === 0 ? (
+                  <>
+                    <div className="text-sm font-semibold text-(--vn-text) mb-3">Coming up</div>
+                    <div className="text-(--vn-muted) text-xs">No income in the current window.</div>
+                  </>
+                ) : (() => {
+                  const msPerDay = 86_400_000;
+                  const todayMs = new Date(plan.setup.asOfDate + "T00:00:00").getTime();
+                  const withDays = upcoming.map((ev) => ({
+                    ...ev,
+                    daysAway: Math.round(
+                      (new Date(ev.date + "T00:00:00").getTime() - todayMs) / msPerDay
+                    ),
+                  }));
+                  const dueNow   = withDays.filter((e) => e.daysAway <= 0);
+                  const thisWeek = withDays.filter((e) => e.daysAway >= 1 && e.daysAway <= 7);
+                  const later    = withDays.filter((e) => e.daysAway > 7);
+
+                  const rows = (items: typeof withDays) =>
+                    items.map((ev) => (
+                      <div
+                        key={ev.id}
+                        className="flex items-center justify-between gap-3 rounded-xl bg-(--vn-surface) px-4 py-3 border-l-4 border-l-emerald-400"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="shrink-0 w-14 text-center leading-none">
+                            {ev.daysAway < 0 ? (
+                              <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">Overdue</span>
+                            ) : ev.daysAway === 0 ? (
+                              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Today</span>
+                            ) : ev.daysAway === 1 ? (
+                              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Tmrw</span>
+                            ) : (
+                              <span className="text-[10px] font-semibold text-(--vn-muted)">In {ev.daysAway}d</span>
+                            )}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-(--vn-text)">{ev.label}</div>
+                            <div className="text-xs text-(--vn-muted)">{prettyDate(ev.date)}</div>
+                          </div>
                         </div>
-                        <div className="font-semibold text-green-600">{formatMoney(item.amount)}</div>
+                        <span className="shrink-0 text-sm font-semibold text-emerald-600 dark:text-emerald-400">{formatMoney(ev.amount)}</span>
                       </div>
-                    ))
-                  )}
-                </div>
+                    ));
+
+                  return (
+                    <>
+                      <div className="flex items-baseline gap-2 mb-4">
+                        <span className="text-sm font-semibold text-(--vn-text)">Coming up</span>
+                        <span className="text-xs text-(--vn-muted)">sorted by days away</span>
+                      </div>
+                      <div className="space-y-4">
+                        {dueNow.length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Due now</span>
+                              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 rounded-full px-1.5 py-0.5">{dueNow.length}</span>
+                            </div>
+                            <div className="space-y-2">{rows(dueNow)}</div>
+                          </div>
+                        )}
+                        {thisWeek.length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">This week</span>
+                              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 rounded-full px-1.5 py-0.5">{thisWeek.length}</span>
+                            </div>
+                            <div className="space-y-2">{rows(thisWeek)}</div>
+                          </div>
+                        )}
+                        {later.length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-xs font-semibold uppercase tracking-wider text-(--vn-muted)">Later</span>
+                              <span className="text-[10px] font-bold bg-(--vn-surface) text-(--vn-muted) border border-(--vn-border) rounded-full px-1.5 py-0.5">{later.length}</span>
+                              <button
+                                onClick={() => setShowLater((p) => !p)}
+                                className="ml-auto text-xs text-(--vn-muted) hover:text-(--vn-text) transition-colors"
+                              >
+                                {showLater ? "Hide" : `+ ${later.length} more`}
+                              </button>
+                            </div>
+                            {showLater && <div className="space-y-2">{rows(later)}</div>}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
