@@ -69,6 +69,15 @@ export type Derived = {
     week4OverspendDetected: boolean;
     overspendWeekIndex: number | null;
     weeklySpend: number[];
+    weeklyDiscretionarySpend: number[];
+  };
+  /** Discretionary pace vs time — excludes scheduled bills so front-loading doesn't trigger false alarms */
+  spendingPace: {
+    discretionaryActualSpend: number;
+    discretionaryBudget: number;
+    paceGap: number;
+    isFrontLoadedBills: boolean;
+    scheduledBillFractionToDate: number;
   };
   /** Period-over-period deltas vs the previous period */
   deltas: {
@@ -275,24 +284,42 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
     (t) => t.date >= period.start && t.date <= period.end && t.type === "outflow" && t.category !== "savings"
   );
   const weeklySpend: number[] = [0, 0, 0, 0];
+  const weeklyDiscretionarySpend: number[] = [0, 0, 0, 0];
   periodActualOutflows.forEach((t) => {
     const weekIdx = Math.min(3, Math.floor(dayDiff(period.start, t.date) / 7));
     weeklySpend[weekIdx] += t.amount;
+    if (t.category !== "bill") weeklyDiscretionarySpend[weekIdx] += t.amount;
   });
   const weeksStarted = Math.floor(daysElapsedInPeriod / 7);
   const week4OverspendDetected =
     weeksStarted >= 4 &&
-    weeklySpend[0] + weeklySpend[1] + weeklySpend[2] > 0
-      ? weeklySpend[3] > (weeklySpend[0] + weeklySpend[1] + weeklySpend[2]) / 3 * 1.3
+    weeklyDiscretionarySpend[0] + weeklyDiscretionarySpend[1] + weeklyDiscretionarySpend[2] > 0
+      ? weeklyDiscretionarySpend[3] > (weeklyDiscretionarySpend[0] + weeklyDiscretionarySpend[1] + weeklyDiscretionarySpend[2]) / 3 * 1.3
       : false;
   const overspendWeekIndex: number | null = (() => {
     if (weeksStarted < 2) return null;
-    const completedWeeks = weeklySpend.slice(0, Math.min(weeksStarted, 4));
+    const completedWeeks = weeklyDiscretionarySpend.slice(0, Math.min(weeksStarted, 4));
     if (completedWeeks.length < 2) return null;
     const avg = completedWeeks.reduce((a, b) => a + b, 0) / completedWeeks.length;
     const maxIdx = completedWeeks.reduce((best, v, i) => (v > completedWeeks[best] ? i : best), 0);
     return completedWeeks[maxIdx] > avg * 1.3 ? maxIdx : null;
   })();
+
+  // Front-loaded bill detection — avoid false "spending ahead" alarms
+  const billEventsToDate = events.filter(
+    (e) => e.type === "outflow" && billIds.has(e.sourceId ?? "") && e.date <= plan.setup.asOfDate
+  );
+  const billsScheduledBeforeNow = billEventsToDate.reduce((s, e) => s + e.amount, 0);
+  const scheduledBillFractionToDate = committedBills > 0 ? billsScheduledBeforeNow / committedBills : 0;
+  const isFrontLoadedBills = scheduledBillFractionToDate > timeProgressInPeriod + 0.2;
+  const discretionaryActualSpend = periodActualOutflows
+    .filter((t) => t.category !== "bill")
+    .reduce((s, t) => s + t.amount, 0);
+  const discretionaryBudget = Math.max(0, allocationsTotal - savingsThisPeriod);
+  const discretionaryPaceGap =
+    discretionaryBudget > 0
+      ? Math.min(1, discretionaryActualSpend / discretionaryBudget) - timeProgressInPeriod
+      : 0;
 
   // Deltas vs previous period
   const sortedPeriodsAscForDeltas = [...plan.periods].sort((a, b) => a.id - b.id);
@@ -349,10 +376,18 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
       reason: `${daysBelowMin} days are forecast below your minimum balance this period.`,
       urgency: "high",
     };
-  } else if (paceGapForRec > 0.15) {
+  } else if (isFrontLoadedBills && paceGapForRec > 0.15 && discretionaryPaceGap <= 0.15) {
+    primaryRecommendation = {
+      action: "Bills hit early this period — your day-to-day spending is on track",
+      reason: `${Math.round(scheduledBillFractionToDate * 100)}% of this period's committed bills fell in the first part of the period. That's normal timing, not overspending.`,
+      urgency: "low",
+    };
+  } else if (discretionaryPaceGap > 0.15) {
     primaryRecommendation = {
       action: "Trim discretionary spending this week to get back on pace",
-      reason: `Spending is tracking ${Math.round(paceGapForRec * 100)}% ahead of your budget timeline.`,
+      reason: isFrontLoadedBills
+        ? `Bills are front-loaded this period — and on top of that, day-to-day spending is tracking ${Math.round(discretionaryPaceGap * 100)}% ahead of your timeline.`
+        : `Day-to-day spending is tracking ${Math.round(discretionaryPaceGap * 100)}% ahead of your budget timeline.`,
       urgency: "medium",
     };
   } else if (savingsThisPeriod === 0) {
@@ -414,6 +449,14 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
       week4OverspendDetected,
       overspendWeekIndex,
       weeklySpend,
+      weeklyDiscretionarySpend,
+    },
+    spendingPace: {
+      discretionaryActualSpend,
+      discretionaryBudget,
+      paceGap: discretionaryPaceGap,
+      isFrontLoadedBills,
+      scheduledBillFractionToDate,
     },
     deltas,
     primaryRecommendation,

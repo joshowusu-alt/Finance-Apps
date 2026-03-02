@@ -517,7 +517,10 @@ export default function HomePage() {
   const daysElapsedRaw = dayDiff(period.start, plan.setup.asOfDate) + 1;
   const daysElapsed = Math.min(Math.max(daysElapsedRaw, 0), periodDays);
   const timeProgress = periodDays ? Math.min(1, daysElapsed / periodDays) : 0;
-  const spendingProgress = budgetSpending ? Math.min(1, actualSpending / budgetSpending) : 0;
+  const { discretionaryActualSpend, discretionaryBudget } = derived.spendingPace;
+  const spendingProgress = discretionaryBudget > 0
+    ? Math.min(1, discretionaryActualSpend / discretionaryBudget)
+    : (budgetSpending ? Math.min(1, actualSpending / budgetSpending) : 0);
   const spendingPaceGap = spendingProgress - timeProgress;
   const daysRemaining = Math.max(0, periodDays - daysElapsed);
 
