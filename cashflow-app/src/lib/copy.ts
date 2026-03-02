@@ -88,8 +88,9 @@ export const HOME_COPY = {
   spendingPaceHigh:    "Running a bit ahead",
   spendingPaceGood:    "Pacing well",
   spendingPaceOk:      "On track",
+  spendingPaceBelow:   "Running below plan",
   spendingPaceTooltip:
-    "The blue bar shows how much of your budget you've spent. The grey bar shows how far through the period you are. If blue overtakes grey, you're spending faster than usual.",
+    "Expected pace accounts for bill due dates — so early rent or utilities don't look like overspending.",
 
   // Primary recommendation headings
   urgencyHigh:   "One thing to do",

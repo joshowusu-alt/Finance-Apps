@@ -517,11 +517,20 @@ export default function HomePage() {
   const daysElapsedRaw = dayDiff(period.start, plan.setup.asOfDate) + 1;
   const daysElapsed = Math.min(Math.max(daysElapsedRaw, 0), periodDays);
   const timeProgress = periodDays ? Math.min(1, daysElapsed / periodDays) : 0;
-  const { discretionaryActualSpend, discretionaryBudget } = derived.spendingPace;
-  const spendingProgress = discretionaryBudget > 0
-    ? Math.min(1, discretionaryActualSpend / discretionaryBudget)
+  const {
+    paceStatus,
+    expectedSpentToDate,
+    actualSpentToDate: actualSpentCurve,
+    varianceToExpected,
+    totalPlannedOutflows,
+    isFrontLoadedBills: isFrontLoaded,
+  } = derived.spendingPace;
+  const spendingProgress = totalPlannedOutflows > 0
+    ? Math.min(1, actualSpentCurve / totalPlannedOutflows)
     : (budgetSpending ? Math.min(1, actualSpending / budgetSpending) : 0);
-  const spendingPaceGap = spendingProgress - timeProgress;
+  const expectedFraction = totalPlannedOutflows > 0
+    ? Math.min(1, expectedSpentToDate / totalPlannedOutflows)
+    : timeProgress;
   const daysRemaining = Math.max(0, periodDays - daysElapsed);
 
   // --- Period-close state (delegate to hook) --------------------------------
@@ -698,31 +707,43 @@ export default function HomePage() {
                       </div>
                     )}
 
-                    {/* Spending pace bar */}
+                    {/* Spending pace bar — expected-spend curve, not linear time */}
                     {timeProgress > 0.02 && budgetSpending > 0 && (
                       <div className="mt-3 pt-3 border-t border-white/10">
                         <div className="flex items-center justify-between text-xs mb-1.5" style={{ color: "rgba(240,237,232,0.45)" }}>
                           <span className="flex items-center gap-1">Spending pace<InfoTooltip text={HOME_COPY.spendingPaceTooltip} /></span>
-                          <span className={spendingPaceGap > 0.08 ? "text-rose-400 font-semibold" : spendingPaceGap < -0.08 ? "text-emerald-300 font-semibold" : ""} style={!(spendingPaceGap > 0.08) && !(spendingPaceGap < -0.08) ? { color: "rgba(240,237,232,0.45)" } : undefined}>
-                            {spendingPaceGap > 0.08 ? HOME_COPY.spendingPaceHigh : spendingPaceGap < -0.08 ? HOME_COPY.spendingPaceGood : HOME_COPY.spendingPaceOk}
+                          <span
+                            className={paceStatus === "running-ahead" ? "text-rose-400 font-semibold" : paceStatus === "running-below" ? "text-emerald-300 font-semibold" : ""}
+                            style={paceStatus === "pacing-well" ? { color: "rgba(240,237,232,0.45)" } : undefined}
+                          >
+                            {paceStatus === "running-ahead" ? HOME_COPY.spendingPaceHigh : paceStatus === "running-below" ? HOME_COPY.spendingPaceBelow : HOME_COPY.spendingPaceGood}
                           </span>
                         </div>
                         <div className="relative h-2 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }}>
-                          {/* Time elapsed bar (background) */}
-                          <div className="absolute inset-y-0 left-0 rounded-full bg-(--vn-border)" style={{ width: `${Math.round(timeProgress * 100)}%` }} />
-                          {/* Spending progress bar (foreground — animated fill) */}
+                          {/* Expected spend marker — follows planned bill dates, not linear time */}
+                          <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${Math.round(expectedFraction * 100)}%`, background: "rgba(255,255,255,0.18)" }} />
+                          {/* Actual spend bar (animated fill) */}
                           <motion.div
-                            className={`absolute inset-y-0 left-0 rounded-full`}
-                            style={{ background: spendingPaceGap > 0.08 ? "rgba(184,92,92,0.9)" : spendingPaceGap < -0.08 ? "rgba(79,175,123,0.9)" : "#5DA9E9" }}
+                            className="absolute inset-y-0 left-0 rounded-full"
+                            style={{ background: paceStatus === "running-ahead" ? "rgba(184,92,92,0.9)" : paceStatus === "running-below" ? "rgba(79,175,123,0.9)" : "#5DA9E9" }}
                             initial={{ width: 0, opacity: 0 }}
                             animate={{ width: `${Math.min(100, Math.round(spendingProgress * 100))}%`, opacity: 0.85 }}
                             transition={{ duration: 1.1, ease: "easeOut", delay: 0.25 }}
                           />
                         </div>
                         <div className="flex justify-between text-[10px] mt-1" style={{ color: "rgba(240,237,232,0.38)" }}>
-                          <span>{Math.round(spendingProgress * 100)}% spent</span>
-                          <span>{Math.round(timeProgress * 100)}% of period</span>
+                          {paceStatus === "pacing-well" ? (
+                            <span>On track with scheduled spend</span>
+                          ) : (
+                            <span>£{Math.round(Math.abs(varianceToExpected))} {varianceToExpected > 0 ? "ahead" : "below"} vs expected today</span>
+                          )}
+                          <span>{Math.round(expectedFraction * 100)}% expected</span>
                         </div>
+                        {isFrontLoaded && paceStatus !== "running-ahead" && (
+                          <div className="mt-1 text-[10px]" style={{ color: "rgba(240,237,232,0.30)" }}>
+                            Bills are front-loaded this period — this is expected.
+                          </div>
+                        )}
                       </div>
                     )}
 
