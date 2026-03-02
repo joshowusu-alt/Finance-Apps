@@ -15,7 +15,7 @@ export function SubscriptionNudge({ count, totalMonthly }: SubscriptionNudgeProp
     <div className="flex items-center justify-between gap-4">
       <div>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-(--vn-text)">💡 Subscription review</span>
+          <span className="text-sm font-semibold text-(--vn-text)">You have recurring charges to review</span>
           <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
             {formatMoney(totalMonthly)}/mo
           </span>

@@ -24,23 +24,12 @@ const CATEGORY_EMOJI: Record<string, string> = {
   buffer: "🛡️",
 };
 
-function ratioLabel(ratio: number) {
-  if (ratio >= 3) return "text-rose-500 dark:text-rose-400";
-  if (ratio >= 2) return "text-orange-500 dark:text-orange-400";
-  return "text-amber-500 dark:text-amber-400";
-}
-
-function ratioBar(ratio: number) {
-  if (ratio >= 3) return "bg-rose-400";
-  if (ratio >= 2) return "bg-orange-400";
-  return "bg-amber-400";
-}
-
 interface Props {
   anomalies: SpendAnomaly[];
+  timeProgress?: number;
 }
 
-export default function AnomalyAlerts({ anomalies }: Props) {
+export default function AnomalyAlerts({ anomalies, timeProgress = 0.5 }: Props) {
   if (anomalies.length === 0) return null;
 
   return (
@@ -56,11 +45,11 @@ export default function AnomalyAlerts({ anomalies }: Props) {
         <div className="flex items-center justify-between px-5 py-4 border-b border-(--vn-border)">
           <div>
             <div className="text-sm font-bold text-(--vn-text) flex items-center gap-2">
-              <span>⚠️</span>
-              <span>Spending Anomalies</span>
+              <span>📈</span>
+              <span>Running ahead in these areas</span>
             </div>
             <div className="text-xs text-(--vn-muted) mt-0.5">
-              Categories running above their 3-period average
+              Categories above their 3-period average
             </div>
           </div>
           <Link
@@ -86,7 +75,7 @@ export default function AnomalyAlerts({ anomalies }: Props) {
                   <span className="text-sm font-medium text-(--vn-text)">
                     {CATEGORY_LABELS[a.category] ?? a.category}
                   </span>
-                  <span className={`text-xs font-bold tabular-nums ${ratioLabel(a.ratio)}`}>
+                  <span className="text-xs font-bold tabular-nums text-amber-500 dark:text-amber-400">
                     {a.ratio.toFixed(1)}× usual
                   </span>
                 </div>
@@ -100,7 +89,7 @@ export default function AnomalyAlerts({ anomalies }: Props) {
                   />
                   {/* Fill */}
                   <motion.div
-                    className={`absolute inset-y-0 left-0 rounded-full ${ratioBar(a.ratio)}`}
+                    className={`absolute inset-y-0 left-0 rounded-full bg-amber-400`}
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(98, (a.ratio / (a.ratio + 1)) * 100)}%` }}
                     transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
@@ -115,6 +104,17 @@ export default function AnomalyAlerts({ anomalies }: Props) {
                     avg {formatMoney(a.avgAmount)} over {a.periodsUsed} period{a.periodsUsed !== 1 ? "s" : ""}
                   </span>
                 </div>
+                {(() => {
+                  const projected = a.currentAmount / Math.max(0.05, timeProgress);
+                  const overrun = projected - a.avgAmount;
+                  if (overrun <= 5) return null;
+                  const cat = CATEGORY_LABELS[a.category] ?? a.category;
+                  return (
+                    <p className="text-[10px] mt-1.5 italic" style={{ color: "var(--vn-muted)" }}>
+                      At this pace, {cat} could run about {formatMoney(overrun)} above usual by end of period.
+                    </p>
+                  );
+                })()}
               </div>
             </div>
           ))}
