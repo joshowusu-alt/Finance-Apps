@@ -62,7 +62,7 @@ function computeYearStats(plan: Plan, year: string) {
     const pIncome = txns.filter((t) => t.type === "income" && t.date >= p.start && t.date <= p.end).reduce((s, t) => s + t.amount, 0);
     const pSpend = txns.filter((t) => t.type === "outflow" && t.date >= p.start && t.date <= p.end).reduce((s, t) => s + t.amount, 0);
     const pSave = txns.filter((t) => t.category === "savings" && t.date >= p.start && t.date <= p.end).reduce((s, t) => s + t.amount, 0);
-    return { label: p.label, pIncome, pSpend, pSave, leftover: pIncome - pSpend };
+    return { label: p.label, start: p.start, pIncome, pSpend, pSave, leftover: pIncome - pSpend };
   });
 
   const sorted = [...periodStats].sort((a, b) => b.leftover - a.leftover);
@@ -128,6 +128,7 @@ export default function YearInReviewPage() {
 
   const currentYear = new Date().getFullYear().toString();
   const [year, setYear] = useState(years[0] ?? currentYear);
+  const [showFuturePeriods, setShowFuturePeriods] = useState(false);
   const s = useMemo(() => computeYearStats(plan, year), [plan, year]);
   // suppress unused import warning
   void getCurrencySymbol;
@@ -230,10 +231,10 @@ export default function YearInReviewPage() {
               >
                 <div className="text-sm font-semibold text-(--vn-text) mb-1">Period breakdown</div>
                 <div className="text-xs text-(--vn-muted) mb-4">Income vs spending per period</div>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={s.periodStats} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barCategoryGap="25%">
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={s.periodStats} margin={{ top: 4, right: 8, left: 0, bottom: 8 }} barCategoryGap="25%">
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--vn-border)" strokeOpacity={0.5} />
-                    <XAxis dataKey="label" tick={{ fontSize: 10, fill: "var(--vn-muted)" }} axisLine={false} tickLine={false} interval={0} />
+                    <XAxis dataKey="label" tickFormatter={(v: string) => v.split(":")[0]} tick={{ fontSize: 10, fill: "var(--vn-muted)" }} axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" height={36} />
                     <YAxis tickFormatter={(v: number) => formatMoney(v)} tick={{ fontSize: 10, fill: "var(--vn-muted)" }} axisLine={false} tickLine={false} width={60} />
                     <Tooltip
                       formatter={(value: number | undefined, name: string | undefined) => [formatMoney(value ?? 0), name ?? ""]}
@@ -264,22 +265,41 @@ export default function YearInReviewPage() {
               >
                 <div className="text-sm font-semibold text-(--vn-text) mb-1">Savings rate per period</div>
                 <div className="text-xs text-(--vn-muted) mb-4">% of income saved each period</div>
-                <div className="space-y-2">
-                  {s.periodStats.map((p) => {
+{(() => {
+                  const asOf = plan.setup.asOfDate;
+                  const started = s.periodStats.filter((p) => p.start <= asOf);
+                  const future  = s.periodStats.filter((p) => p.start > asOf);
+                  const renderRow = (p: typeof s.periodStats[0]) => {
                     const rate = p.pIncome > 0 ? p.pSave / p.pIncome : 0;
-                    const pct = Math.round(rate * 100);
+                    const pct  = Math.round(rate * 100);
                     const color = rate >= 0.2 ? "#22c55e" : rate >= 0.1 ? "#eab308" : "#f43f5e";
                     return (
                       <div key={p.label} className="flex items-center gap-3">
-                        <span className="text-xs text-(--vn-muted) w-20 shrink-0 truncate">{p.label}</span>
+                        <span className="text-xs text-(--vn-muted) w-16 shrink-0 truncate">{p.label.split(":")[0]}</span>
                         <div className="flex-1 h-2 rounded-full" style={{ background: "var(--vn-border)" }}>
                           <div className="h-2 rounded-full transition-all" style={{ width: `${Math.min(pct, 100)}%`, background: color }} />
                         </div>
                         <span className="text-xs font-semibold w-10 text-right shrink-0" style={{ color }}>{pct}%</span>
                       </div>
                     );
-                  })}
-                </div>
+                  };
+                  return (
+                    <div className="space-y-2">
+                      {started.map(renderRow)}
+                      {future.length > 0 && (
+                        <div className="pt-1">
+                          <button
+                            onClick={() => setShowFuturePeriods((v) => !v)}
+                            className="text-xs text-(--vn-muted) hover:text-(--vn-text) transition-colors"
+                          >
+                            {showFuturePeriods ? "Hide future periods" : `+ ${future.length} upcoming period${future.length !== 1 ? "s" : ""}`}
+                          </button>
+                          {showFuturePeriods && <div className="space-y-2 mt-2">{future.map(renderRow)}</div>}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </motion.div>
             )}
 
