@@ -230,19 +230,8 @@ export function generateProactiveInsights(
                 priority: 9,
             });
         }
-    } else {
-        // Fallback to linear pace if smart pace not available
-        if (timeProgress > 0.1) {
-            const spendingPace = budgetSpending > 0 ? actualSpending / budgetSpending : 0;
-            if (spendingPace < timeProgress - 0.1) {
-                insights.push({
-                    type: "success",
-                    message: `Spending nicely under pace. ${formatMoney(dailyBudgetAmount)}/day available.`,
-                    priority: 7,
-                });
-            }
-        }
     }
+    // No linear time-based fallback — smartPace is always provided via buildAIContext
 
     // =========================================================================
     // CATEGORY-SPECIFIC INSIGHTS (personalized to their spending)

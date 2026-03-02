@@ -9,7 +9,7 @@ import {
   minPoint,
   type TimelineRow,
 } from "@/lib/cashflowEngine";
-import { average, stdDev, dayDiff } from "@/lib/dateUtils";
+import { average, stdDev, dayDiff, addDaysISO } from "@/lib/dateUtils";
 import { prettyDate } from "@/lib/formatUtils";
 
 export type DerivedDay = {
@@ -71,11 +71,10 @@ export type Derived = {
     weeklySpend: number[];
     weeklyDiscretionarySpend: number[];
   };
-  /** Expected-spend curve pace — compares actual vs what was planned-to-date per event dates */
+  /** Expected-spend curve pace — SSOT. No time-based comparisons. All consumers must read from here. */
   spendingPace: {
     discretionaryActualSpend: number;
     discretionaryBudget: number;
-    paceGap: number;
     isFrontLoadedBills: boolean;
     scheduledBillFractionToDate: number;
     expectedSpentToDate: number;
@@ -84,6 +83,8 @@ export type Derived = {
     tolerance: number;
     paceStatus: "pacing-well" | "running-ahead" | "running-below";
     totalPlannedOutflows: number;
+    /** clamp(expectedSpentToDate / totalPlannedOutflows, 0..1) for bar display */
+    expectedFraction: number;
   };
   /** Period-over-period deltas vs the previous period */
   deltas: {
@@ -311,28 +312,18 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
     return completedWeeks[maxIdx] > avg * 1.3 ? maxIdx : null;
   })();
 
-  // Front-loaded bill detection — avoid false "spending ahead" alarms
-  const billEventsToDate = events.filter(
-    (e) => e.type === "outflow" && billIds.has(e.sourceId ?? "") && e.date <= plan.setup.asOfDate
-  );
-  const billsScheduledBeforeNow = billEventsToDate.reduce((s, e) => s + e.amount, 0);
-  const scheduledBillFractionToDate = committedBills > 0 ? billsScheduledBeforeNow / committedBills : 0;
-  const isFrontLoadedBills = scheduledBillFractionToDate > timeProgressInPeriod + 0.2;
+  // Discretionary breakout (for recommendation copy only)
   const discretionaryActualSpend = periodActualOutflows
     .filter((t) => t.category !== "bill")
     .reduce((s, t) => s + t.amount, 0);
   const discretionaryBudget = Math.max(0, allocationsTotal - savingsThisPeriod);
-  const discretionaryPaceGap =
-    discretionaryBudget > 0
-      ? Math.min(1, discretionaryActualSpend / discretionaryBudget) - timeProgressInPeriod
-      : 0;
 
-  // Expected-spend curve — driven by planned event dates, not linear time
+  // SSOT — Expected-spend curve: driven by planned event dates, not linear time
+  const totalPlannedOutflows = Math.max(0, committedBills + allocationsTotal - savingsThisPeriod);
   const expectedSpentToDate = events
     .filter((e) => e.type === "outflow" && e.category !== "savings" && e.date <= plan.setup.asOfDate)
     .reduce((s, e) => s + e.amount, 0);
   const actualSpentToDate = periodActualOutflows.reduce((s, t) => s + t.amount, 0);
-  const totalPlannedOutflows = Math.max(0, committedBills + allocationsTotal - savingsThisPeriod);
   const spendingTolerance = Math.max(30, totalPlannedOutflows * 0.03);
   const varianceToExpected = actualSpentToDate - expectedSpentToDate;
   const paceStatus: "pacing-well" | "running-ahead" | "running-below" =
@@ -341,6 +332,24 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
       : varianceToExpected > spendingTolerance
         ? "running-ahead"
         : "running-below";
+  const expectedFraction = totalPlannedOutflows > 0
+    ? Math.min(1, expectedSpentToDate / totalPlannedOutflows)
+    : 0;
+
+  // isFrontLoaded — SSOT canonical heuristic: >55% of planned outflows in first 20% of period days
+  const firstQuintileDays = Math.ceil(periodDaysTotal * 0.2);
+  const firstQuintileCutoff = addDaysISO(period.start, firstQuintileDays - 1);
+  const firstQuintileOutflows = events
+    .filter((e) => e.type === "outflow" && e.category !== "savings" && e.date <= firstQuintileCutoff)
+    .reduce((s, e) => s + e.amount, 0);
+  const isFrontLoadedBills = totalPlannedOutflows > 0 && (firstQuintileOutflows / totalPlannedOutflows) > 0.55;
+
+  // scheduledBillFractionToDate — still needed for spendingPace return object
+  const billEventsToDate = events.filter(
+    (e) => e.type === "outflow" && billIds.has(e.sourceId ?? "") && e.date <= plan.setup.asOfDate
+  );
+  const billsScheduledBeforeNow = billEventsToDate.reduce((s, e) => s + e.amount, 0);
+  const scheduledBillFractionToDate = committedBills > 0 ? billsScheduledBeforeNow / committedBills : 0;
 
   // Deltas vs previous period
   const sortedPeriodsAscForDeltas = [...plan.periods].sort((a, b) => a.id - b.id);
@@ -471,7 +480,6 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
     spendingPace: {
       discretionaryActualSpend,
       discretionaryBudget,
-      paceGap: discretionaryPaceGap,
       isFrontLoadedBills,
       scheduledBillFractionToDate,
       expectedSpentToDate,
@@ -480,6 +488,7 @@ export function deriveApp(plan: Plan, periodId?: number): Derived {
       tolerance: spendingTolerance,
       paceStatus,
       totalPlannedOutflows,
+      expectedFraction,
     },
     deltas,
     primaryRecommendation,

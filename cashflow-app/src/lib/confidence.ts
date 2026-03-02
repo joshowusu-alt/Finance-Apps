@@ -23,7 +23,6 @@
 import { deriveApp } from "@/lib/derive";
 import type { Derived } from "@/lib/derive";
 import type { Plan } from "@/data/plan";
-import { dayDiff } from "@/lib/dateUtils";
 import { TIER_EXPLANATIONS } from "@/lib/copy";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -120,21 +119,17 @@ export function computeConfidenceScore(derived: Derived, plan: Plan): Confidence
   const budgetSavings = derived.savingsHealth.savingsThisPeriod;
   const budgetSpending = budgetOutflows - budgetSavings;
 
-  const periodDays = dayDiff(periodStart, periodEnd) + 1;
-  const asOfDate = plan.setup.asOfDate;
-  const daysElapsed = Math.min(Math.max(dayDiff(periodStart, asOfDate) + 1, 0), periodDays);
-  const timeProgress = periodDays > 0 ? Math.min(1, daysElapsed / periodDays) : 0;
-
+  // Pace scoring — SSOT from derived.spendingPace, no local time-based computation
   const actualSpending = sumPeriodOutflows(plan, periodStart, periodEnd);
-  const spendingProgress = budgetSpending > 0 ? Math.min(1, actualSpending / budgetSpending) : 0;
-  const paceGap = spendingProgress - timeProgress;
+  const { paceStatus: spendingPaceStatus, varianceToExpected: spendingVariance, totalPlannedOutflows: spendingBudget } = derived.spendingPace;
+  const normalizedVariance = spendingBudget > 0 ? spendingVariance / spendingBudget : 0;
 
   let pacePts: number;
-  if (paceGap <= 0.05 && paceGap >= -0.05)    pacePts = 60; // aligned
-  else if (paceGap > 0.05 && paceGap <= 0.10) pacePts = 48; // slightly over
-  else if (paceGap > 0.10 && paceGap <= 0.20) pacePts = 36; // moderately over
-  else if (paceGap > 0.20)                     pacePts = 20; // heavily over
-  else                                          pacePts = 54; // paceGap < -0.10: under budget
+  if (spendingPaceStatus === "pacing-well")                           pacePts = 60;
+  else if (normalizedVariance > 0 && normalizedVariance <= 0.10)     pacePts = 48;
+  else if (normalizedVariance > 0.10 && normalizedVariance <= 0.20)  pacePts = 36;
+  else if (normalizedVariance > 0.20)                                 pacePts = 20;
+  else                                                                 pacePts = 54;
 
   // Income stability (last 3 periods)
   const sortedPeriodsDesc = [...plan.periods].sort((a, b) => b.id - a.id);
@@ -217,7 +212,7 @@ export function computeConfidenceScore(derived: Derived, plan: Plan): Confidence
     explanation = TIER_EXPLANATIONS["Tight zone"].spendingAhead;
   } else if (status === "Watch zone" && riskDays > 0) {
     explanation = TIER_EXPLANATIONS["Watch zone"].riskDays;
-  } else if (status === "Watch zone" && paceGap > 0.10) {
+  } else if (status === "Watch zone" && normalizedVariance > 0.10) {
     explanation = TIER_EXPLANATIONS["Watch zone"].moderatelyAhead;
   } else if (status === "Watch zone") {
     explanation = TIER_EXPLANATIONS["Watch zone"].default;

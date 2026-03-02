@@ -200,11 +200,9 @@ export default function InsightsPage() {
   const bestLeftover = periodHighlights.bestLeftover;
   const worstLeftover = periodHighlights.worstLeftover;
 
-  const paceDelta = spendingProgress - timeProgress;
-  const paceStatus =
-    paceDelta > 0.08 ? "Spending high" : paceDelta < -0.08 ? "Under budget" : "On track";
-  const paceTone =
-    paceDelta > 0.08 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400";
+  const { paceStatus: rawPaceStatus } = derivedForPeriod.spendingPace;
+  const paceStatus = rawPaceStatus === "running-ahead" ? "Spending high" : rawPaceStatus === "running-below" ? "Spending lighter than planned" : "On track";
+  const paceTone = rawPaceStatus === "running-ahead" ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400";
 
   // Cross-period variance table data
   const crossPeriodVariance = useMemo(() => {
@@ -609,7 +607,7 @@ export default function InsightsPage() {
                       label="Spending pace"
                       value={baseStats.actualSpending}
                       max={baseStats.budgetSpending}
-                      barColor={spendingProgress <= timeProgress ? "#f97316" : "#ef4444"}
+                      barColor={rawPaceStatus !== "running-ahead" ? "#f97316" : "#ef4444"}
                       height="md"
                       hint={`Actual ${formatMoney(baseStats.actualSpending)} vs budget ${formatMoney(baseStats.budgetSpending)}`}
                       className="rounded-2xl bg-(--vn-surface) p-4 shadow-sm"

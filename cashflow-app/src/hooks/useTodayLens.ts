@@ -32,36 +32,18 @@ export function useTodayLens(
     // Tightest day — already computed by derive engine
     const tightestDay = derived.cashflow.lowest;
 
-    // Spending pace gap → weekly target reduction
+    // Weekly target reduction — SSOT from derived.spendingPace, no time-based comparison
     const periodDays = dayDiff(derived.period.start, derived.period.end) + 1;
     const daysElapsed = Math.min(
       Math.max(dayDiff(derived.period.start, plan.setup.asOfDate) + 1, 0),
       periodDays
     );
-
-    const budgetSpending = Math.max(
-      0,
-      derived.totals.committedBills +
-        derived.totals.allocationsTotal -
-        derived.savingsHealth.savingsThisPeriod
-    );
-
-    const actualSpending = plan.transactions
-      .filter(
-        (t) =>
-          t.date >= derived.period.start &&
-          t.date <= derived.period.end &&
-          t.type === "outflow" &&
-          t.category !== "savings"
-      )
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const targetDailyRate = periodDays > 0 ? budgetSpending / periodDays : 0;
-    const actualDailyRate = daysElapsed > 0 ? actualSpending / daysElapsed : 0;
-    const weeklyTargetReduction = Math.max(
-      0,
-      Math.round((actualDailyRate - targetDailyRate) * 7)
-    );
+    const { varianceToExpected, paceStatus: spPaceStatus } = derived.spendingPace;
+    const daysRemaining = Math.max(1, periodDays - daysElapsed);
+    const weeksRemaining = Math.max(1, daysRemaining / 7);
+    const weeklyTargetReduction = spPaceStatus === "running-ahead"
+      ? Math.max(0, Math.round(varianceToExpected / weeksRemaining))
+      : 0;
 
     return {
       hasData,
