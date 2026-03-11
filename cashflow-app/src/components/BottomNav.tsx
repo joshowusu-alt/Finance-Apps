@@ -391,9 +391,19 @@ export default function BottomNav() {
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ duration: 0.28, ease: [0.4, 0.0, 0.2, 1] }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="fixed bottom-0 left-0 right-0 z-40 rounded-t-3xl md:hidden"
-              style={{ background: "var(--vn-surface)", border: "1px solid var(--vn-border)", maxHeight: "85dvh", overflowY: "auto", overscrollBehavior: "contain" }}
+              style={{
+                background: "color-mix(in srgb, var(--vn-surface) 90%, transparent)",
+                backdropFilter: "blur(32px) saturate(1.4)",
+                WebkitBackdropFilter: "blur(32px) saturate(1.4)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderBottom: "none",
+                boxShadow: "0 -4px 40px rgba(0,0,0,0.28), 0 -1px 0 rgba(255,255,255,0.06)",
+                maxHeight: "85dvh",
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+              }}
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={{ top: 0, bottom: 1 }}
@@ -537,12 +547,18 @@ export default function BottomNav() {
 
       {/* Bottom tab bar */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-xl md:hidden"
-        style={{ background: "var(--vn-surface)", borderTopColor: "var(--vn-border)", boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.08)" }}
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+        style={{
+          background: "color-mix(in srgb, var(--vn-surface) 82%, transparent)",
+          backdropFilter: "blur(32px) saturate(1.5)",
+          WebkitBackdropFilter: "blur(32px) saturate(1.5)",
+          borderTop: "1px solid rgba(255,255,255,0.07)",
+          boxShadow: "0 -1px 0 var(--vn-border), 0 -8px 32px rgba(0,0,0,0.12)",
+        }}
         aria-label="Primary"
       >
         <div className="mx-auto max-w-5xl px-2">
-          <div className="flex items-center justify-around py-1">
+          <div className="flex items-center justify-around py-1.5">
             {primaryItems.map((it) => {
               const active = isActive(it.href);
               return (
@@ -561,34 +577,43 @@ export default function BottomNav() {
                   }}
                 >
                   <motion.div
-                    whileTap={{ scale: 0.98 }}
-                    className="relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 text-xs"
+                    whileTap={{ scale: 0.96 }}
+                    className="relative flex flex-col items-center gap-0.5 rounded-2xl px-4 py-2 text-xs"
                   >
                     {active && (
                       <motion.div
                         layoutId="activeTab"
                         className="absolute inset-0 rounded-2xl"
-                        style={{ background: "var(--gold-soft)" }}
-                        transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
+                        style={{
+                          background: "color-mix(in srgb, var(--vn-gold) 13%, transparent)",
+                          border: "1px solid color-mix(in srgb, var(--vn-gold) 28%, transparent)",
+                        }}
+                        transition={{ type: "spring", stiffness: 400, damping: 32 }}
                       />
                     )}
                     <motion.span
                       className="relative flex flex-col items-center"
-                      style={{ color: active ? "var(--gold)" : "var(--text-tertiary)" }}
-                      animate={{ scale: active ? 1.04 : 1, y: active ? -1 : 0 }}
-                      transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
+                      style={{ color: active ? "var(--vn-gold)" : "var(--text-tertiary)" }}
+                      animate={{ scale: active ? 1.05 : 1, y: active ? -0.5 : 0 }}
+                      transition={{ duration: 0.22, ease: [0.4, 0.0, 0.2, 1] }}
                     >
                       {active && (
-                        <span className="block w-5 h-0.5 rounded-full mb-1" style={{ background: "var(--vn-gold)" }} />
+                        <motion.span
+                          layoutId="activeTabDot"
+                          className="block w-4 h-0.5 rounded-full mb-1.5"
+                          style={{ background: "var(--vn-gold)", boxShadow: "0 0 6px rgba(197,160,70,0.65)" }}
+                          transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                        />
                       )}
+                      {!active && <span className="block w-4 h-0.5 mb-1.5 opacity-0" />}
                       {it.icon(active)}
                       {it.href === "/insights" && isOverspending && !active && (
                         <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 border border-(--vn-surface)" />
                       )}
                     </motion.span>
                     <span
-                      className={`relative text-[11px] ${active ? "font-semibold" : "font-normal"}`}
-                      style={{ color: active ? "var(--gold)" : "var(--text-tertiary)" }}
+                      className={`relative text-[10.5px] leading-tight ${active ? "font-semibold" : "font-normal"}`}
+                      style={{ color: active ? "var(--vn-gold)" : "var(--text-tertiary)" }}
                     >
                       {it.label}
                     </span>
@@ -606,28 +631,36 @@ export default function BottomNav() {
               className="relative"
             >
               <motion.div
-                whileTap={{ scale: 0.98 }}
-                className="relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 text-xs"
+                whileTap={{ scale: 0.96 }}
+                className="relative flex flex-col items-center gap-0.5 rounded-2xl px-4 py-2 text-xs"
               >
                 {(showMore || isMoreActive) && (
                   <motion.div
                     layoutId={showMore ? undefined : "activeTab"}
                     className="absolute inset-0 rounded-2xl"
-                    style={{ background: "var(--gold-soft)" }}
-                    transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
+                    style={{
+                      background: "color-mix(in srgb, var(--vn-gold) 13%, transparent)",
+                      border: "1px solid color-mix(in srgb, var(--vn-gold) 28%, transparent)",
+                    }}
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
                 <motion.span
                   className="relative"
-                  style={{ color: showMore || isMoreActive ? "var(--gold)" : "var(--text-tertiary)" }}
-                  animate={{ scale: showMore ? 1.04 : 1, y: showMore ? -1 : 0 }}
-                  transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
+                  style={{ color: showMore || isMoreActive ? "var(--vn-gold)" : "var(--text-tertiary)" }}
+                  animate={{ scale: showMore ? 1.05 : 1, y: showMore ? -0.5 : 0 }}
+                  transition={{ duration: 0.22, ease: [0.4, 0.0, 0.2, 1] }}
                 >
+                  {showMore || isMoreActive ? (
+                    <span className="block w-4 h-0.5 mb-1.5 rounded-full" style={{ background: "var(--vn-gold)", boxShadow: "0 0 6px rgba(197,160,70,0.65)" }} />
+                  ) : (
+                    <span className="block w-4 h-0.5 mb-1.5 opacity-0" />
+                  )}
                   {IconMore(showMore || isMoreActive)}
                 </motion.span>
                 <span
-                  className={`relative text-[11px] ${showMore || isMoreActive ? "font-medium" : "font-normal"}`}
-                  style={{ color: showMore || isMoreActive ? "var(--gold)" : "var(--text-tertiary)" }}
+                  className={`relative text-[10.5px] leading-tight ${showMore || isMoreActive ? "font-semibold" : "font-normal"}`}
+                  style={{ color: showMore || isMoreActive ? "var(--vn-gold)" : "var(--text-tertiary)" }}
                 >
                   More
                 </span>
@@ -637,7 +670,7 @@ export default function BottomNav() {
         </div>
 
         {/* Bottom safe area for notched devices */}
-        <div className="h-[env(safe-area-inset-bottom)]" style={{ background: "var(--vn-surface)" }} />
+        <div className="h-[env(safe-area-inset-bottom)]" style={{ background: "color-mix(in srgb, var(--vn-surface) 82%, transparent)" }} />
       </nav>
     </>
   );

@@ -231,20 +231,34 @@ function SidebarNav({ periodLabel, periodStart, periodEnd }: SidebarNavProps) {
     <aside
       className="hidden lg:flex flex-col gap-5 self-start sticky top-5 overflow-hidden"
       style={{
-        background: "linear-gradient(160deg, #0f172a 0%, #0c1626 60%, #091220 100%)",
-        border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: "20px",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)",
+        background: "linear-gradient(165deg, #0c1828 0%, #091220 55%, #07100e 100%)",
+        border: "1px solid rgba(255,255,255,0.065)",
+        borderRadius: "22px",
+        boxShadow: "0 4px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.065), inset 0 -1px 0 rgba(0,0,0,0.25)",
         minHeight: "calc(100vh - 40px)",
         position: "relative",
       }}
     >
-      {/* Subtle gold glow */}
+      {/* Gold atmospheric glow — top right */}
       <div style={{
-        position: "absolute", top: -80, right: -80,
-        width: 260, height: 260,
-        background: "radial-gradient(circle, rgba(168,115,26,0.18), transparent 65%)",
+        position: "absolute", top: -100, right: -100,
+        width: 320, height: 320,
+        background: "radial-gradient(circle, rgba(168,115,26,0.22), transparent 62%)",
         pointerEvents: "none", borderRadius: "50%",
+      }} />
+      {/* Secondary deep glow — bottom left */}
+      <div style={{
+        position: "absolute", bottom: -80, left: -80,
+        width: 240, height: 240,
+        background: "radial-gradient(circle, rgba(29,78,140,0.14), transparent 65%)",
+        pointerEvents: "none", borderRadius: "50%",
+      }} />
+      {/* Grain noise overlay on sidebar */}
+      <div style={{
+        position: "absolute", inset: 0, borderRadius: "inherit",
+        backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")",
+        backgroundRepeat: "repeat", backgroundSize: "200px 200px",
+        opacity: 0.025, pointerEvents: "none",
       }} />
 
       {/* Logo */}
@@ -259,44 +273,50 @@ function SidebarNav({ periodLabel, periodStart, periodEnd }: SidebarNavProps) {
           return (
             <Link key={item.href} href={item.href} className="block relative" aria-current={active ? "page" : undefined} aria-label={item.label}>
               <motion.div
-                whileHover={{ x: 3 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200"
+                whileHover={{ x: 2 }}
+                whileTap={{ scale: 0.97 }}
+                className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150"
                 style={{
-                  color: active ? "#d4a843" : "rgba(240,237,232,0.62)",
-                  fontWeight: active ? 600 : 500,
+                  color: active ? "#e2c074" : "rgba(230,225,218,0.55)",
+                  fontWeight: active ? 600 : 450,
                 }}
               >
                 {active && (
                   <motion.div
                     layoutId="sidebarActiveTab"
                     className="absolute inset-0 rounded-xl"
-                    style={{ background: "rgba(212,168,67,0.12)", border: "1px solid rgba(212,168,67,0.18)" }}
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    style={{
+                      background: "linear-gradient(135deg, rgba(212,168,67,0.16) 0%, rgba(212,168,67,0.09) 100%)",
+                      border: "1px solid rgba(212,168,67,0.22)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+                    }}
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
                 {active && (
-                  <div
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
-                    style={{ background: "#d4a843" }}
+                  <motion.div
+                    layoutId="sidebarStripe"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full"
+                    style={{ background: "linear-gradient(180deg, #e2c074, #c5a046)", boxShadow: "0 0 8px rgba(226,192,116,0.6)" }}
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
                 <motion.span
-                  className="relative z-10"
-                  animate={{ scale: active ? 1.05 : 1 }}
+                  className="relative z-10 shrink-0"
+                  animate={{ scale: active ? 1.06 : 1, opacity: active ? 1 : 0.7 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
                   {item.icon}
                   {item.href === "/bills" && billSuggestionCount > 0 && (
                     <span
                       className="absolute -top-1 -right-1 min-w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold text-white"
-                      style={{ background: "#d4a843" }}
+                      style={{ background: "#d4a843", boxShadow: "0 0 6px rgba(212,168,67,0.5)" }}
                     >
                       {billSuggestionCount}
                     </span>
                   )}
                 </motion.span>
-                <span className="relative z-10 text-[13px] tracking-[-0.01em]">{item.label}</span>
+                <span className="relative z-10 text-[13px] tracking-[-0.005em]">{item.label}</span>
               </motion.div>
             </Link>
           );
@@ -305,37 +325,49 @@ function SidebarNav({ periodLabel, periodStart, periodEnd }: SidebarNavProps) {
 
       {/* Period Switcher */}
       <div
-        className="mx-3 mb-4 px-4 py-3 rounded-xl"
-        style={{ background: "rgba(212,168,67,0.08)", border: "1px solid rgba(212,168,67,0.16)" }}
+        className="mx-3 mb-4 px-4 py-3 rounded-2xl relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, rgba(212,168,67,0.12) 0%, rgba(212,168,67,0.06) 100%)",
+          border: "1px solid rgba(212,168,67,0.2)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+        }}
       >
-        <div className="flex items-center gap-2 text-xs font-semibold mb-2" style={{ color: "#d4a843" }}>
+        <div className="flex items-center gap-2 text-xs font-semibold mb-2.5" style={{ color: "#e2c074" }}>
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span>Budget Period</span>
+          <span style={{ letterSpacing: "0.06em", fontSize: "10.5px", textTransform: "uppercase" }}>Budget Period</span>
         </div>
         {periods.length > 1 ? (
           <select
             value={selectedPeriodId}
             onChange={(e) => handlePeriodChange(Number(e.target.value))}
-            className="w-full rounded-lg text-xs font-medium px-2 py-1.5 focus:outline-none"
-            style={{ background: "rgba(212,168,67,0.12)", border: "1px solid rgba(212,168,67,0.2)", color: "#d4a843" }}
+            className="w-full rounded-xl text-xs font-semibold px-3 py-2 focus:outline-none cursor-pointer"
+            style={{
+              background: "rgba(0,0,0,0.3)",
+              border: "1px solid rgba(212,168,67,0.25)",
+              color: "#e2c074",
+              WebkitAppearance: "none",
+              backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23d4a843' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' fill='none'/%3E%3C/svg%3E\")",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 10px center",
+            }}
           >
             {periods.map(p => (
-              <option key={p.id} value={p.id} style={{ background: "#0f172a" }}>{p.label}</option>
+              <option key={p.id} value={p.id} style={{ background: "#091220" }}>{p.label}</option>
             ))}
           </select>
         ) : (
-          <div className="text-xs font-semibold" style={{ color: "#d4a843" }}>{displayLabel || periodLabel || "Current Period"}</div>
+          <div className="text-xs font-bold" style={{ color: "#e2c074" }}>{displayLabel || periodLabel || "Current Period"}</div>
         )}
         {(displayStart || periodStart) && (displayEnd || periodEnd) && (
-          <div className="text-[11px] mt-1.5" style={{ color: "rgba(240,237,232,0.4)" }}>
+          <div className="text-[11px] mt-1.5 font-medium" style={{ color: "rgba(226,192,116,0.45)" }}>
             {(displayStart || periodStart)} → {(displayEnd || periodEnd)}
           </div>
         )}
         {periods.length > 1 && (
-          <div className="text-[10px] mt-1" style={{ color: "rgba(240,237,232,0.25)" }}>
-            [ / ] to switch
+          <div className="text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.2)", letterSpacing: "0.04em" }}>
+            [ ] to switch periods
           </div>
         )}
       </div>
