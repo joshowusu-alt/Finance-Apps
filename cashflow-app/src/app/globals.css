@@ -223,6 +223,23 @@
   --font-serif: var(--font-playfair);
 }
 
+/* ── Grain noise texture — applied via ::before on html ── */
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 300px 300px;
+}
+
+.dark html::before {
+  opacity: 0.04;
+}
+
 body {
   background: var(--background);
   color: var(--text-primary);
@@ -237,25 +254,16 @@ body {
   /* Prevent horizontal scroll on mobile */
   overflow-x: hidden;
   max-width: 100vw;
-  background-image: radial-gradient(
-    ellipse 80% 50% at 50% -10%,
-    rgba(197, 160, 70, 0.045) 0%,
-    transparent 60%
-  );
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -8%, rgba(197, 160, 70, 0.06) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 0% 100%, rgba(197, 160, 70, 0.025) 0%, transparent 55%);
 }
 
 .dark body {
   background-image:
-    radial-gradient(
-      ellipse 80% 40% at 50% -5%,
-      rgba(212, 175, 90, 0.055) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 60% 50% at 100% 100%,
-      rgba(0, 0, 0, 0.3) 0%,
-      transparent 60%
-    );
+    radial-gradient(ellipse 90% 50% at 50% -4%, rgba(212, 175, 90, 0.08) 0%, transparent 58%),
+    radial-gradient(ellipse 60% 55% at 100% 100%, rgba(0, 0, 0, 0.4) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 35% at 0% 60%, rgba(212, 175, 90, 0.03) 0%, transparent 50%);
 }
 
 html {
@@ -352,24 +360,73 @@ html {
   }
 }
 
-/* Velanovo Card System */
+/* ═══════════════════════════════════════════════
+   Velanovo Card System — world-class depth
+   ═══════════════════════════════════════════════ */
+
+@keyframes vn-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes vn-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vn-number-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .card-premium {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-hero);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-base), border-color var(--transition-base);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    var(--shadow-sm);
+  transition: box-shadow var(--transition-base), border-color var(--transition-base), transform var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-premium::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.025) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 .card-premium:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md);
+  border-color: rgba(197, 160, 70, 0.18);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    var(--shadow-md),
+    0 0 0 1px rgba(197, 160, 70, 0.06);
+  transform: translateY(-1px);
 }
 
 .dark .card-premium {
   background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 6px 18px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 8px 24px rgba(0, 0, 0, 0.38),
+    0 2px 6px rgba(0, 0, 0, 0.22);
+}
+
+.dark .card-premium:hover {
+  border-color: rgba(212, 175, 90, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 12px 32px rgba(0, 0, 0, 0.45),
+    0 3px 8px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(212, 175, 90, 0.1);
 }
 
 .card-elevated {
@@ -381,6 +438,45 @@ html {
 
 .dark .card-elevated {
   border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Card with left gold accent stripe — for priority/flagged items */
+.card-accent {
+  border-left: 2px solid var(--gold);
+  padding-left: calc(var(--padding, 1.5rem) - 2px);
+}
+
+/* Stat card — hero financial metric */
+.stat-hero {
+  animation: vn-number-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Gold shimmer text — for highlighted numbers */
+.text-shimmer {
+  background: linear-gradient(
+    100deg,
+    var(--gold) 0%,
+    var(--gold-strong) 30%,
+    #f0d080 50%,
+    var(--gold-strong) 70%,
+    var(--gold) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: vn-shimmer 3.5s linear infinite;
+}
+
+/* Page entry animation */
+.page-enter {
+  animation: vn-fade-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Staggered children — use style="--delay: Xms" on each child */
+.stagger-child {
+  animation: vn-fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--delay, 0ms);
 }
 
 .button-premium {
@@ -498,23 +594,79 @@ html {
 
 /* Selection styling */
 ::selection {
-  background: var(--accent-soft);
+  background: rgba(197, 160, 70, 0.22);
   color: var(--text-primary);
 }
 
-/* ── Sprint 7: Premium typography utilities ── */
+/* ── Custom scrollbars — refined, premium fintech feel ── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(197, 160, 70, 0.35);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 90, 0.3);
+}
+
+/* ── Sprint 7+: World-class typography utilities ── */
 .hero-number {
   font-size: clamp(2.5rem, 8vw, 3.75rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Tier 2 hero — slightly smaller for secondary metrics */
+.hero-number-sm {
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .label-premium {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--vn-muted);
+}
+
+/* Editorial section heading — Playfair + restrained size */
+.heading-editorial {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+/* Fine divider line with gold hint */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--vn-border) 20%, rgba(197,160,70,0.2) 50%, var(--vn-border) 80%, transparent 100%);
+}
+
+.dark .divider-gold {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 20%, rgba(212,175,90,0.18) 50%, rgba(255,255,255,0.05) 80%, transparent 100%);
 }
